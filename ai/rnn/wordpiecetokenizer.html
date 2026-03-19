@@ -1069,14 +1069,10 @@ function updateParam(rangeId, displayId) {
 <script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/polyfills-legacy.js" nomodule="true" defer="true"></script>
 <script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index-legacy.js" nomodule="true" defer="true"></script>
 <script>
-
- const ro = new ResizeObserver(entries => {
-  for (let entry of entries) {
-    const height = entry.target.scrollHeight;
+  window.onload = function() {
+    const height = document.body.scrollHeight;
     window.parent.postMessage({ height: height }, "*");
-  }
-});
-ro.observe(document.body);
+  };
 </script>
                 </body>
 </html>
