@@ -476,7 +476,8 @@
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab(0)">① 파라미터</button>
     <button class="tab-btn" onclick="switchTab(1)">② Vocab 구축</button>
-    <button class="tab-btn" onclick="switchTab(2)">③ BERT 학습</button>
+    <button class="tab-btn" onclick="switchTab(2)">③ Encoding</button>
+    <button class="tab-btn" onclick="switchTab(3)">④ BERT 학습</button>
   </div>
 
   <!-- TAB 1: 파라미터 -->
@@ -783,8 +784,182 @@
 
   </div><!-- /tab1 -->
 
-  <!-- TAB 3: BERT 학습 -->
+  <!-- TAB 3: Encoding -->
   <div class="tab-panel" id="tab2">
+
+  <!-- 토큰 ID 변환 -->
+  <div class="card">
+    <div class="card-title">🔢 토큰 ID 변환</div>
+    <div class="algo-desc">토크나이저는 각 토큰을 vocab에서의 <strong>인덱스(정수)</strong>로 바꿔요. 원핫 인코딩이 아니에요!</div>
+
+    <div class="algo-example" style="margin-bottom:12px">
+      <div class="algo-ex-title">텍스트 → 토큰 → ID</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"고양이가 좋아요"</span>
+          <span style="color:var(--text-muted)">→</span>
+          <div class="tokens-wrap">
+            <span class="token root" style="font-size:12px; padding:3px 9px">고양이가</span>
+            <span class="token root" style="font-size:12px; padding:3px 9px">좋아요</span>
+          </div>
+          <span style="color:var(--text-muted)">→</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[1523, 892]</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"강아지가 귀여워요"</span>
+          <span style="color:var(--text-muted)">→</span>
+          <div class="tokens-wrap">
+            <span class="token root" style="font-size:12px; padding:3px 9px">강아지가</span>
+            <span class="token root" style="font-size:12px; padding:3px 9px">귀여워요</span>
+          </div>
+          <span style="color:var(--text-muted)">→</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[884, 731]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-note">
+      💡 <span>vocab에서 해당 토큰의 위치(행 번호)를 그대로 꺼내는 거예요. 복잡한 계산 없이 <strong>단순 룩업</strong>이에요!</span>
+    </div>
+  </div>
+
+  <!-- 원핫 vs Embedding -->
+  <div class="card">
+    <div class="card-title">⚖️ 원핫 인코딩 vs nn.Embedding</div>
+    <div class="algo-desc">토큰 ID를 벡터로 바꾸는 방법은 두 가지가 있어요. 왜 원핫을 안 쓰는지 비교해봐요.</div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap">
+
+      <!-- 원핫 -->
+      <div style="flex:1; min-width:240px">
+        <div class="algo-example" style="border-color:#f0b0b0; background:#fff0f0; height:100%">
+          <div class="algo-ex-title" style="color:#b04040">❌ 원핫 인코딩</div>
+          <div style="font-size:12.5px; color:var(--text); margin-top:8px; line-height:1.9">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
+              고양이가 (ID=1523)<br>
+              → [0, 0, ..., <strong style="color:#b04040">1</strong>, ..., 0]<br>
+              <span style="color:var(--text-muted)">   (30,000차원!)</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#b04040">
+              <span>• vocab 크기만큼 차원 폭발</span>
+              <span>• 대부분이 0 → 비효율적</span>
+              <span>• 단어 간 의미 관계 표현 불가</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Embedding -->
+      <div style="flex:1; min-width:240px">
+        <div class="algo-example" style="border-color:var(--tag-special-border); background:var(--tag-special); height:100%">
+          <div class="algo-ex-title" style="color:#1a7a40">✅ nn.Embedding</div>
+          <div style="font-size:12.5px; color:var(--text); margin-top:8px; line-height:1.9">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
+              고양이가 (ID=1523)<br>
+              → [0.12, -0.34, 0.88, ...]<br>
+              <span style="color:var(--text-muted)">   (768차원, 밀집 벡터)</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#1a7a40">
+              <span>• 고정된 작은 차원 (보통 768)</span>
+              <span>• 모든 값이 의미 있음</span>
+              <span>• 학습을 통해 의미 관계 반영</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- nn.Embedding 동작 -->
+  <div class="card">
+    <div class="card-title">📖 nn.Embedding 동작 원리</div>
+    <div class="algo-desc">내부적으론 원핫 × 가중치행렬과 수학적으로 동일하지만, 실제론 <strong>인덱스로 행을 직접 꺼내는 룩업 테이블</strong>이에요.</div>
+
+    <div class="algo-example" style="margin-bottom:12px">
+      <div class="algo-ex-title">코드 예시</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; background:white; border-radius:6px; padding:14px; line-height:2; margin-top:10px">
+        <span style="color:#7b1fa2">import</span> torch<br>
+        <span style="color:#7b1fa2">import</span> torch.nn <span style="color:#7b1fa2">as</span> nn<br><br>
+        embedding = nn.Embedding(<span style="color:var(--accent2)">30000</span>, <span style="color:var(--accent2)">768</span>)<br>
+        token_ids = torch.tensor([<span style="color:var(--accent2)">5</span>, <span style="color:var(--accent2)">1523</span>, <span style="color:var(--accent2)">892</span>, <span style="color:var(--accent2)">6</span>])<br>
+        <span style="color:var(--text-muted)"># [CLS] 고양이가 좋아요 [SEP]</span><br>
+        vectors = embedding(token_ids)<br>
+        <span style="color:var(--text-muted)"># → [4, 768] 텐서 [토큰 수, 임베딩 차원]</span>
+      </div>
+    </div>
+
+    <div class="algo-example">
+      <div class="algo-ex-title">룩업 테이블 시각화</div>
+      <div style="margin-top:10px; display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; min-width:160px">
+          <div style="color:var(--text-muted); margin-bottom:6px; font-size:11px">Embedding Table (30000 × 768)</div>
+          <div style="color:var(--text-muted)">...</div>
+          <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 5 &nbsp;&nbsp;→ [0.03, ...]</div>
+          <div style="color:var(--text-muted)">...</div>
+          <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 6 &nbsp;&nbsp;→ [0.55, ...]</div>
+          <div style="color:var(--text-muted)">...</div>
+          <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 892 → [0.88, ...]</div>
+          <div style="color:var(--text-muted)">...</div>
+          <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 1523→ [0.12, ...]</div>
+          <div style="color:var(--text-muted)">...</div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; gap:8px; padding-top:30px">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span class="token special" style="font-size:12px; padding:2px 9px">[CLS]</span>
+            <span style="color:var(--text-muted)">ID 5 &nbsp;&nbsp;&nbsp;→</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.03, &nbsp;0.71, ...]</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <span class="token root" style="font-size:12px; padding:2px 9px">고양이가</span>
+            <span style="color:var(--text-muted)">ID 1523 →</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.12, -0.34, ...]</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <span class="token root" style="font-size:12px; padding:2px 9px">좋아요</span>
+            <span style="color:var(--text-muted)">ID 892 &nbsp;→</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.88, &nbsp;0.11, ...]</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <span class="token special" style="font-size:12px; padding:2px 9px">[SEP]</span>
+            <span style="color:var(--text-muted)">ID 6 &nbsp;&nbsp;&nbsp;→</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.55, -0.12, ...]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 전체 흐름 -->
+  <div class="card">
+    <div class="card-title">🔄 전체 흐름 요약</div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; padding:10px 0">
+      <div style="text-align:center">
+        <div style="background:var(--tag-root); border:1.5px solid var(--tag-root-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#c04010">텍스트</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">"고양이가 좋아요"</div>
+      </div>
+      <div style="font-size:20px; color:var(--text-muted)">→</div>
+      <div style="text-align:center">
+        <div style="background:var(--tag-cont); border:1.5px solid var(--tag-cont-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a3a80">토큰 ID</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">[5, 1523, 892, 6]<br>[CLS] 고양이가 좋아요 [SEP]</div>
+      </div>
+      <div style="font-size:20px; color:var(--text-muted)">→</div>
+      <div style="text-align:center">
+        <div style="background:var(--tag-special); border:1.5px solid var(--tag-special-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a7a40">밀집 벡터</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">nn.Embedding → [4, 768]</div>
+      </div>
+      <div style="font-size:20px; color:var(--text-muted)">→</div>
+      <div style="text-align:center">
+        <div style="background:#f3e5f5; border:1.5px solid #ce93d8; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#7b1fa2">BERT</div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">언어 이해 학습</div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /tab2 -->
+
+  <!-- TAB 4: BERT 학습 -->
+  <div class="tab-panel" id="tab3">
 
   <!-- BERT MLM -->
   <div class="card">
@@ -869,7 +1044,7 @@
       🚀 <span>이 과정을 수백만 번 반복하면 → 감정 분석, 질의응답, 문장 분류 등 다양한 NLP 태스크에 활용 가능한 모델이 완성돼요!</span>
     </div>
   </div>
-  </div><!-- /tab2 -->
+    </div><!-- /tab3 -->
 
 </div>
 
