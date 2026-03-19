@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seq2Seq RNN 시각화</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface2: #eef0f8;
+    --border: #dde1f0;
+    --enc-primary: #4a7cf7;
+    --enc-light: #dce8ff;
+    --dec-primary: #f7774a;
+    --dec-light: #ffe8dc;
+    --ctx-primary: #9c4af7;
+    --ctx-light: #ecdcff;
+    --text-main: #1e2a4a;
+    --text-sub: #64748b;
+    --text-label: #475569;
+    --shadow: 0 4px 24px rgba(30,42,74,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 8px; }
+  header p { color: var(--text-sub); font-size: 0.92rem; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-enc { background: var(--enc-light); color: var(--enc-primary); }
+  .badge-dec { background: var(--dec-light); color: var(--dec-primary); }
+  .badge-ctx { background: var(--ctx-light); color: var(--ctx-primary); }
+
+  .formula-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .formula-item .label {
+    font-size: 0.72rem; color: var(--text-sub); margin-bottom: 5px;
+    font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .formula-item code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
+    font-weight: 600; color: var(--text-main); background: var(--surface2);
+    padding: 6px 12px; border-radius: 8px; display: block;
+  }
+
+  .legend {
+    display: flex; gap: 18px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.82rem; color: var(--text-label); font-weight: 500;
+  }
+  .legend-dot {
+    width: 14px; height: 14px; border-radius: 4px;
+    border: 2px solid; flex-shrink: 0;
+  }
+  .ld-enc { background: var(--enc-light); border-color: var(--enc-primary); }
+  .ld-dec { background: var(--dec-light); border-color: var(--dec-primary); }
+  .ld-ctx { background: var(--ctx-light); border-color: var(--ctx-primary); }
+  .ld-tanh { background: #ede9fe; border-color: #7c3aed; }
+  .ld-softmax { background: #d1fae5; border-color: #059669; }
+
+  .canvas-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 24px 16px 16px;
+    box-shadow: var(--shadow); margin-bottom: 20px; overflow-x: auto;
+  }
+
+  svg#main-svg { display: block; margin: 0 auto; min-width: 720px; }
+
+  .info-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px 22px;
+    box-shadow: var(--shadow); margin-bottom: 20px; min-height: 80px;
+  }
+  .info-panel .step-title {
+    font-size: 1rem; font-weight: 700; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .info-panel .step-desc { color: var(--text-sub); font-size: 0.875rem; line-height: 1.7; }
+  .step-num {
+    background: var(--enc-primary); color: white;
+    width: 24px; height: 24px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .controls {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  button {
+    border: none; border-radius: 10px; padding: 10px 22px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  button:disabled { opacity: 0.38; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .btn-primary { background: var(--enc-primary); color: white; }
+  .btn-primary:not(:disabled):hover { background: #2d63f5; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text-main); border: 1px solid var(--border); }
+  .btn-secondary:not(:disabled):hover { background: var(--border); }
+  .btn-reset { background: var(--dec-light); color: var(--dec-primary); border: 1px solid #f7c4b4; }
+  .btn-reset:hover { background: #ffd5c5; }
+
+  .progress-bar-wrap {
+    background: var(--surface2); border-radius: 99px;
+    height: 6px; width: 200px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--enc-primary), var(--ctx-primary), var(--dec-primary));
+    transition: width 0.4s ease;
+  }
+  .step-indicator { font-size: 0.85rem; color: var(--text-sub); font-weight: 600; text-align: center; }
+
+  @keyframes pulse-enc {
+    0%,100% { filter: drop-shadow(0 0 6px rgba(74,124,247,0.4)); }
+    50% { filter: drop-shadow(0 0 18px rgba(74,124,247,0.7)); }
+  }
+  @keyframes pulse-dec {
+    0%,100% { filter: drop-shadow(0 0 6px rgba(247,119,74,0.4)); }
+    50% { filter: drop-shadow(0 0 18px rgba(247,119,74,0.7)); }
+  }
+  @keyframes pulse-ctx {
+    0%,100% { filter: drop-shadow(0 0 8px rgba(156,74,247,0.4)); }
+    50% { filter: drop-shadow(0 0 20px rgba(156,74,247,0.7)); }
+  }
+  .pulse-enc { animation: pulse-enc 1.2s infinite; }
+  .pulse-dec { animation: pulse-dec 1.2s infinite; }
+  .pulse-ctx { animation: pulse-ctx 1.2s infinite; }
+</style>
+
+                <style type="text/css">.another_category {
+    border: 1px solid #E5E5E5;
+    padding: 10px 10px 5px;
+    margin: 10px 0;
+    clear: both;
+}
+
+.another_category h4 {
+    font-size: 12px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #E5E5E5 !important;
+    padding: 2px 0 6px !important;
+}
+
+.another_category h4 a {
+    font-weight: bold !important;
+}
+
+.another_category table {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100% !important;
+    margin-top: 10px !important;
+}
+
+* html .another_category table {
+    width: auto !important;
+}
+
+*:first-child + html .another_category table {
+    width: auto !important;
+}
+
+.another_category th, .another_category td {
+    padding: 0 0 4px !important;
+}
+
+.another_category th {
+    text-align: left;
+    font-size: 12px !important;
+    font-weight: normal;
+    word-break: break-all;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.another_category td {
+    text-align: right;
+    width: 80px;
+    font-size: 11px;
+}
+
+.another_category th a {
+    font-weight: normal;
+    text-decoration: none;
+    border: none !important;
+}
+
+.another_category th a.current {
+    font-weight: bold;
+    text-decoration: none !important;
+    border-bottom: 1px solid !important;
+}
+
+.another_category th span {
+    font-weight: normal;
+    text-decoration: none;
+    font: 10px Tahoma, Sans-serif;
+    border: none !important;
+}
+
+.another_category_color_gray, .another_category_color_gray h4 {
+    border-color: #E5E5E5 !important;
+}
+
+.another_category_color_gray * {
+    color: #909090 !important;
+}
+
+.another_category_color_gray th a.current {
+    border-color: #909090 !important;
+}
+
+.another_category_color_gray h4, .another_category_color_gray h4 a {
+    color: #737373 !important;
+}
+
+.another_category_color_red, .another_category_color_red h4 {
+    border-color: #F6D4D3 !important;
+}
+
+.another_category_color_red * {
+    color: #E86869 !important;
+}
+
+.another_category_color_red th a.current {
+    border-color: #E86869 !important;
+}
+
+.another_category_color_red h4, .another_category_color_red h4 a {
+    color: #ED0908 !important;
+}
+
+.another_category_color_green, .another_category_color_green h4 {
+    border-color: #CCE7C8 !important;
+}
+
+.another_category_color_green * {
+    color: #64C05B !important;
+}
+
+.another_category_color_green th a.current {
+    border-color: #64C05B !important;
+}
+
+.another_category_color_green h4, .another_category_color_green h4 a {
+    color: #3EA731 !important;
+}
+
+.another_category_color_blue, .another_category_color_blue h4 {
+    border-color: #C8DAF2 !important;
+}
+
+.another_category_color_blue * {
+    color: #477FD6 !important;
+}
+
+.another_category_color_blue th a.current {
+    border-color: #477FD6 !important;
+}
+
+.another_category_color_blue h4, .another_category_color_blue h4 a {
+    color: #1960CA !important;
+}
+
+.another_category_color_violet, .another_category_color_violet h4 {
+    border-color: #E1CEEC !important;
+}
+
+.another_category_color_violet * {
+    color: #9D64C5 !important;
+}
+
+.another_category_color_violet th a.current {
+    border-color: #9D64C5 !important;
+}
+
+.another_category_color_violet h4, .another_category_color_violet h4 a {
+    color: #7E2CB5 !important;
+}
+</style>
+
+                
+                <link rel="stylesheet" type="text/css" href="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/style/revenue.css"/>
+<link rel="canonical" href="https://goodteacher.tistory.com/932"/>
+
+<!-- BEGIN STRUCTURED_DATA -->
+<script type="application/ld+json">
+    {"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@id":"https://goodteacher.tistory.com/932","name":null},"url":"https://goodteacher.tistory.com/932","headline":"RNN &amp; Seq2Seq 시각화","description":"🧠 RNN &amp; Seq2Seq 시각화 RNN 셀 개념부터 파라미터 구성, Seq2Seq 동작까지 순서대로 살펴봐요! ① RNN 셀 &mdash; 언롤링 개념 RNN은 토큰의 개수만큼 동일한 셀에서 반복 처리해요. 셀 자체는 하나지만, 각 타임스텝마다 이전 은닉 상태 h를 받아 순차적으로 실행돼요. 이를 시각적으로 펼쳐서 표현한 것이 언롤링(unrolling)이에요. RNN 셀 언롤링 (Unrolling) o RNN h x unroll ..","author":{"@type":"Person","name":"은서파","logo":null},"image":{"@type":"ImageObject","url":"https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Ftistory_admin%2Fstatic%2Fimages%2FopenGraph%2Fopengraph.png","width":"800px","height":"800px"},"datePublished":"2026-03-13T10:44:26+09:00","dateModified":"2026-03-13T10:53:09+09:00","publisher":{"@type":"Organization","name":"TISTORY","logo":{"@type":"ImageObject","url":"https://t1.daumcdn.net/tistory_admin/static/images/openGraph/opengraph.png","width":"800px","height":"800px"}}}
+</script>
+<!-- END STRUCTURED_DATA -->
+<link rel="stylesheet" type="text/css" href="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/style/dialog.css"/>
+<link rel="stylesheet" type="text/css" href="//t1.daumcdn.net/tistory_admin/www/style/top/font.css"/>
+<link rel="stylesheet" type="text/css" href="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/style/postBtn.css"/>
+<link rel="stylesheet" type="text/css" href="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/style/tistory.css"/>
+<script type="text/javascript" src="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/script/common.js"></script>
+
+                
+                </head>
+<body>
+
+<header>
+  <h1>🧠 RNN & Seq2Seq 시각화</h1>
+  <p>RNN 셀 개념부터 파라미터 구성, Seq2Seq 동작까지 순서대로 살펴봐요!</p>
+</header>
+
+<div style="display:flex; align-items:center; gap:10px; margin:28px 0 16px;">
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+  <span style="font-size:0.8rem; font-weight:700; letter-spacing:1.5px; color:var(--text-sub); text-transform:uppercase;">① RNN 셀 — 언롤링 개념</span>
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+</div>
+<!-- Unrolling concept diagram -->
+<p style="font-size:0.95rem; color:var(--text-main); line-height:1.75; margin-bottom:14px;">
+  RNN은 <strong>토큰의 개수만큼 동일한 셀에서 반복 처리</strong>해요. 셀 자체는 하나지만, 각 타임스텝마다 이전 은닉 상태 h를 받아 순차적으로 실행돼요. 이를 시각적으로 펼쳐서 표현한 것이 <em>언롤링(unrolling)</em>이에요.
+</p>
+<div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.2rem; margin-bottom:20px;">
+  <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.8px; color:var(--text-sub); text-transform:uppercase; margin-bottom:10px;">RNN 셀 언롤링 (Unrolling)</div>
+  <svg width="100%" viewBox="0 0 760 170">
+
+    <!-- === LEFT: Single cell === -->
+    <!-- o output circle -->
+    <circle cx="80" cy="24" r="18" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="600" x="80" y="24" fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o</text>
+    <!-- line: cell → o -->
+    <line x1="80" y1="54" x2="80" y2="42" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- RNN cell rect -->
+    <rect x="40" y="54" width="80" height="50" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="80" y="75" fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
+    <text font-family="JetBrains Mono" font-size="9" x="80" y="94" fill="#7c3aed" text-anchor="middle" dominant-baseline="central">h</text>
+    <!-- self-loop arrow (recurrence) -->
+    <path d="M120,72 Q148,72 148,79 Q148,90 120,90" fill="none" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#cu-arr-enc)"/>
+    <!-- line: x → cell -->
+    <line x1="80" y1="140" x2="80" y2="104" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- x input circle -->
+    <circle cx="80" cy="152" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="600" x="80" y="152" fill="#14532d" text-anchor="middle" dominant-baseline="central">x</text>
+
+    <!-- === BIG ARROW === -->
+    <defs>
+      <marker id="cu-arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="#64748b"/>
+      </marker>
+      <marker id="cu-arr-enc" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="#4a7cf7"/>
+      </marker>
+      <marker id="cu-arr-big" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+        <path d="M0,0 L0,10 L10,5 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+    <line x1="170" y1="85" x2="216" y2="85" stroke="#94a3b8" stroke-width="3" marker-end="url(#cu-arr-big)"/>
+    <text font-family="Noto Sans KR" font-size="9" x="193" y="100" fill="#94a3b8" text-anchor="middle">unroll</text>
+
+    <!-- === RIGHT: Unrolled cells (t-1, t, t+1) === -->
+    <!-- col centers: 280, 420, 560 -->
+
+    <!-- o_t-1 -->
+    <circle cx="280" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="280" y="24" fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_{t-1}</text>
+    <line x1="280" y1="50" x2="280" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- o_t -->
+    <circle cx="420" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="420" y="24" fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_t</text>
+    <line x1="420" y1="50" x2="420" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- o_t+1 -->
+    <circle cx="560" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="560" y="24" fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_{t+1}</text>
+    <line x1="560" y1="50" x2="560" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+
+    <!-- h_t-1 cell -->
+    <rect x="244" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="280" y="70" fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
+    <text font-family="JetBrains Mono" font-size="9" x="280" y="86" fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t-1}</text>
+    <!-- h_t cell -->
+    <rect x="384" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="420" y="70" fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
+    <text font-family="JetBrains Mono" font-size="9" x="420" y="86" fill="#64748b" text-anchor="middle" dominant-baseline="central">h_t</text>
+    <!-- h_t+1 cell -->
+    <rect x="524" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="560" y="70" fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
+    <text font-family="JetBrains Mono" font-size="9" x="560" y="86" fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t+1}</text>
+
+    <!-- h flow arrows between cells -->
+    <line x1="316" y1="74" x2="384" y2="74" stroke="#4a7cf7" stroke-width="1.8" marker-end="url(#cu-arr-enc)"/>
+    <line x1="456" y1="74" x2="524" y2="74" stroke="#4a7cf7" stroke-width="1.8" marker-end="url(#cu-arr-enc)"/>
+    <!-- ... continuation -->
+    <line x1="596" y1="74" x2="618" y2="74" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <!-- incoming from left -->
+    <line x1="235" y1="74" x2="244" y2="74" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+    <!-- x input circles -->
+    <line x1="280" y1="130" x2="280" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="280" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="280" y="144" fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t-1}</text>
+
+    <line x1="420" y1="130" x2="420" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="420" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="420" y="144" fill="#14532d" text-anchor="middle" dominant-baseline="central">x_t</text>
+
+    <line x1="560" y1="130" x2="560" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="560" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text font-family="JetBrains Mono" font-size="9" x="560" y="144" fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t+1}</text>
+
+    <!-- weight sharing brace -->
+    <path d="M244,106 L244,114 L596,114 L596,106" fill="none" stroke="#4a7cf7" stroke-width="1" stroke-dasharray="3,2" opacity="0.5"/>
+    <text font-family="Noto Sans KR" font-size="9" x="420" y="128" fill="#4a7cf7" text-anchor="middle" opacity="0.8">동일한 가중치 공유 (Wₓ, Wₕ) — 실제로는 하나의 셀!</text>
+
+    <!-- label: single cell -->
+    <text font-family="Noto Sans KR" font-size="9" x="80" y="168" fill="#94a3b8" text-anchor="middle">단일 셀</text>
+    <!-- label: unrolled -->
+    <text font-family="Noto Sans KR" font-size="9" x="420" y="168" fill="#94a3b8" text-anchor="middle">seq_len 만큼 펼친 표현 (unrolled)</text>
+
+  </svg>
+</div>
+
+
+<div style="display:flex; align-items:center; gap:10px; margin:28px 0 16px;">
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+  <span style="font-size:0.8rem; font-weight:700; letter-spacing:1.5px; color:var(--text-sub); text-transform:uppercase;">② nn.RNN 파라미터</span>
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+</div>
+<div>
+
+
+  <!-- Function signature -->
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; margin-bottom:16px;">
+    <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.8px; color:var(--text-sub); text-transform:uppercase; margin-bottom:12px;">함수 시그니처</div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:0.85rem; background:var(--surface2); border-radius:10px; padding:14px 18px; white-space:nowrap; overflow-x:auto;">
+      <span style="color:#9c4af7;">nn.RNN</span><span style="color:var(--text-sub);">(</span><span style="color:#185FA5; cursor:pointer; text-decoration:underline; text-underline-offset:3px;" onclick="document.getElementById('card-input').scrollIntoView({behavior:'smooth'})">input_size</span><span style="color:var(--text-sub);">, </span><span style="color:#166534; cursor:pointer; text-decoration:underline; text-underline-offset:3px;" onclick="document.getElementById('card-hidden').scrollIntoView({behavior:'smooth'})">hidden_size</span><span style="color:var(--text-sub);">, </span><span style="color:#854d0e; cursor:pointer; text-decoration:underline; text-underline-offset:3px;" onclick="document.getElementById('card-layers').scrollIntoView({behavior:'smooth'})">num_layers</span><span style="color:var(--text-sub);">=</span><span style="color:#d97706;">1</span><span style="color:var(--text-sub);">, </span><span style="color:#9d174d; cursor:pointer; text-decoration:underline; text-underline-offset:3px;" onclick="document.getElementById('card-bidir').scrollIntoView({behavior:'smooth'})">bidirectional</span><span style="color:var(--text-sub);">=</span><span style="color:#d97706;">False</span><span style="color:var(--text-sub);">, device=</span><span style="color:#d97706;">None</span><span style="color:var(--text-sub);">)</span>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px;">
+
+    <!-- input_size -->
+    <div id="card-input" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem;">
+      <div style="margin-bottom:10px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:99px; background:#dce8ff; color:#185FA5;">input_size</span>
+      </div>
+      <svg width="100%" viewBox="0 0 280 80">
+        <rect x="10" y="20" width="52" height="36" rx="5" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+        <text font-family="JetBrains Mono" font-size="10" x="36" y="35" fill="#64748b" text-anchor="middle" dominant-baseline="central">x₁</text>
+        <text font-family="JetBrains Mono" font-size="9" x="36" y="49" fill="#94a3b8" text-anchor="middle" dominant-baseline="central">dim=4</text>
+        <line x1="62" y1="38" x2="80" y2="38" stroke="#94a3b8" stroke-width="1"/><polygon points="80,34 88,38 80,42" fill="#94a3b8"/>
+        <rect x="88" y="14" width="52" height="48" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="10" x="114" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
+        <text font-family="Noto Sans KR" font-size="9" x="36" y="72" fill="#94a3b8" text-anchor="middle">input_size=4</text>
+
+        <rect x="168" y="26" width="28" height="24" rx="5" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+        <text font-family="JetBrains Mono" font-size="9" x="182" y="38" fill="#94a3b8" text-anchor="middle" dominant-baseline="central">dim=2</text>
+        <line x1="196" y1="38" x2="212" y2="38" stroke="#94a3b8" stroke-width="1"/><polygon points="212,34 220,38 212,42" fill="#94a3b8"/>
+        <rect x="220" y="20" width="50" height="36" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="10" x="245" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
+        <text font-family="Noto Sans KR" font-size="9" x="215" y="72" fill="#94a3b8" text-anchor="middle">input_size=2</text>
+      </svg>
+      <p style="font-size:0.82rem; color:var(--text-sub); line-height:1.6; margin-top:8px;">입력 벡터 하나의 차원 수예요. 단어 임베딩 크기가 128이면 <code style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; background:var(--surface2); padding:1px 5px; border-radius:4px;">input_size=128</code>로 설정해요.</p>
+    </div>
+
+    <!-- hidden_size -->
+    <div id="card-hidden" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem;">
+      <div style="margin-bottom:10px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:99px; background:#dcfce7; color:#166534;">hidden_size</span>
+      </div>
+      <svg width="100%" viewBox="0 0 280 80">
+        <rect x="10" y="22" width="44" height="32" rx="5" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="10" x="32" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
+        <line x1="54" y1="38" x2="70" y2="38" stroke="#16a34a" stroke-width="1.5"/><polygon points="70,34 78,38 70,42" fill="#16a34a"/>
+        <rect x="78" y="14" width="90" height="48" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="10" x="123" y="33" fill="#14532d" text-anchor="middle" dominant-baseline="central">hidden</text>
+        <text font-family="JetBrains Mono" font-size="9" x="123" y="49" fill="#166534" text-anchor="middle" dominant-baseline="central">size=256</text>
+
+        <rect x="186" y="22" width="36" height="32" rx="5" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="10" x="204" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
+        <line x1="222" y1="38" x2="238" y2="38" stroke="#16a34a" stroke-width="1.5"/><polygon points="238,34 246,38 238,42" fill="#16a34a"/>
+        <rect x="246" y="26" width="28" height="24" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="260" y="38" fill="#14532d" text-anchor="middle" dominant-baseline="central">64</text>
+
+        <text font-family="Noto Sans KR" font-size="9" x="123" y="74" fill="#94a3b8" text-anchor="middle">size=256 (넓은 기억)</text>
+        <text font-family="Noto Sans KR" font-size="9" x="242" y="74" fill="#94a3b8" text-anchor="middle">64</text>
+      </svg>
+      <p style="font-size:0.82rem; color:var(--text-sub); line-height:1.6; margin-top:8px;">RNN이 기억하는 은닉 상태의 크기예요. 클수록 더 많은 정보를 기억하지만 파라미터도 늘어나요.</p>
+    </div>
+
+    <!-- num_layers -->
+    <div id="card-layers" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem;">
+      <div style="margin-bottom:10px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:99px; background:#fef9c3; color:#854d0e;">num_layers</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; padding:2px 8px; border-radius:99px; background:var(--surface2); color:var(--text-sub); margin-left:4px;">기본값 = 1</span>
+      </div>
+      <svg width="100%" viewBox="0 0 280 96">
+        <rect x="14" y="52" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="44" y="65" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+        <text font-family="Noto Sans KR" font-size="9" x="44" y="90" fill="#94a3b8" text-anchor="middle">num_layers=1</text>
+
+        <rect x="112" y="52" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="142" y="65" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+        <rect x="112" y="26" width="60" height="24" rx="6" fill="#b5d4f4" stroke="#185FA5" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="142" y="38" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+        <rect x="112" y="4" width="60" height="20" rx="6" fill="#85b7eb" stroke="#185FA5" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="142" y="14" fill="#042C53" text-anchor="middle" dominant-baseline="central">Layer 3</text>
+        <line x1="142" y1="50" x2="142" y2="26" stroke="#185FA5" stroke-width="1" marker-end="none"/>
+        <polygon points="138,26 142,20 146,26" fill="#185FA5"/>
+        <text font-family="Noto Sans KR" font-size="9" x="142" y="90" fill="#94a3b8" text-anchor="middle">num_layers=3</text>
+
+        <rect x="204" y="42" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="234" y="55" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+        <rect x="204" y="14" width="60" height="26" rx="6" fill="#b5d4f4" stroke="#185FA5" stroke-width="1"/>
+        <text font-family="JetBrains Mono" font-size="9" x="234" y="27" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+        <polygon points="230,14 234,8 238,14" fill="#185FA5"/>
+        <text font-family="Noto Sans KR" font-size="9" x="234" y="90" fill="#94a3b8" text-anchor="middle">num_layers=2</text>
+      </svg>
+      <p style="font-size:0.82rem; color:var(--text-sub); line-height:1.6; margin-top:8px;">RNN 셀을 수직으로 몇 겹 쌓을지 결정해요. 층이 깊을수록 더 복잡한 패턴을 학습할 수 있어요.</p>
+    </div>
+
+    <!-- bidirectional -->
+    <div id="card-bidir" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem;">
+      <div style="margin-bottom:10px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:99px; background:#fce7f3; color:#9d174d;">bidirectional</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; padding:2px 8px; border-radius:99px; background:var(--surface2); color:var(--text-sub); margin-left:4px;">기본값 = False</span>
+      </div>
+      <svg width="100%" viewBox="0 0 280 100">
+        <text font-family="Noto Sans KR" font-size="9" x="74" y="12" fill="#94a3b8" text-anchor="middle">False (단방향)</text>
+        <rect x="18" y="18" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="10" x="36" y="29" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <rect x="62" y="18" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="10" x="80" y="29" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <rect x="106" y="18" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="10" x="124" y="29" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <line x1="54" y1="29" x2="62" y2="29" stroke="#16a34a" stroke-width="1"/>
+        <line x1="98" y1="29" x2="106" y2="29" stroke="#16a34a" stroke-width="1"/>
+        <text font-family="Noto Sans KR" font-size="8" x="18" y="52" fill="#94a3b8">나는</text>
+        <text font-family="Noto Sans KR" font-size="8" x="62" y="52" fill="#94a3b8">학교</text>
+        <text font-family="Noto Sans KR" font-size="8" x="106" y="52" fill="#94a3b8">간다</text>
+
+        <text font-family="Noto Sans KR" font-size="9" x="214" y="12" fill="#94a3b8" text-anchor="middle">True (양방향)</text>
+        <rect x="162" y="18" width="36" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="180" y="28" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <rect x="204" y="18" width="36" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="222" y="28" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <rect x="246" y="18" width="36" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="264" y="28" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+        <line x1="198" y1="28" x2="204" y2="28" stroke="#16a34a" stroke-width="1"/>
+        <line x1="240" y1="28" x2="246" y2="28" stroke="#16a34a" stroke-width="1"/>
+
+        <rect x="162" y="42" width="36" height="20" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="180" y="52" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+        <rect x="204" y="42" width="36" height="20" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="222" y="52" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+        <rect x="246" y="42" width="36" height="20" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+        <text font-family="JetBrains Mono" font-size="9" x="264" y="52" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+        <line x1="240" y1="52" x2="246" y2="52" stroke="#be185d" stroke-width="1"/>
+        <line x1="198" y1="52" x2="204" y2="52" stroke="#be185d" stroke-width="1"/>
+
+        <text font-family="Noto Sans KR" font-size="8" x="162" y="74" fill="#94a3b8">나는</text>
+        <text font-family="Noto Sans KR" font-size="8" x="204" y="74" fill="#94a3b8">학교</text>
+        <text font-family="Noto Sans KR" font-size="8" x="246" y="74" fill="#94a3b8">간다</text>
+        <text font-family="Noto Sans KR" font-size="8" x="162" y="86" fill="#16a34a">순방향</text>
+        <text font-family="Noto Sans KR" font-size="8" x="162" y="98" fill="#be185d">역방향 → hidden×2</text>
+      </svg>
+      <p style="font-size:0.82rem; color:var(--text-sub); line-height:1.6; margin-top:8px;"><code style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; background:var(--surface2); padding:1px 5px; border-radius:4px;">True</code>면 앞→뒤, 뒤→앞 두 방향으로 읽어요. 출력 은닉 상태가 <code style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; background:var(--surface2); padding:1px 5px; border-radius:4px;">hidden_size × 2</code>가 돼요.</p>
+    </div>
+
+  </div>
+</div>
+
+<div style="display:flex; align-items:center; gap:10px; margin:28px 0 16px;">
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+  <span style="font-size:0.8rem; font-weight:700; letter-spacing:1.5px; color:var(--text-sub); text-transform:uppercase;">③ Seq2Seq 전체 동작</span>
+  <div style="height:1px; flex:1; background:var(--border);"></div>
+</div>
+<div class="formula-box">
+  <div class="formula-item">
+    <div class="label">인코더 은닉 상태</div>
+    <code>h&#x209c; = tanh(W&#x2093;x&#x209c; + W&#x2095;h&#x209c;&#x208b;&#x2081; + b)</code>
+  </div>
+  <div class="formula-item">
+    <div class="label">컨텍스트 벡터</div>
+    <code>c = h_enc_last</code>
+  </div>
+  <div class="formula-item">
+    <div class="label">디코더 출력</div>
+    <code>y&#x209c; = softmax(W&#x1d67;s&#x#x209c; + b)</code>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot ld-enc"></div> 인코더 RNN 셀</div>
+  <div class="legend-item"><div class="legend-dot ld-ctx"></div> 컨텍스트 벡터</div>
+  <div class="legend-item"><div class="legend-dot ld-dec"></div> 디코더 RNN 셀</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ecdcff;border:2px solid #9c4af7;border-radius:4px;width:14px;height:14px;"></div> tanh</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#d1fae5;border:2px solid #059669;border-radius:4px;width:14px;height:14px;"></div> softmax</div>
+</div>
+
+<div class="canvas-wrap">
+  <svg id="main-svg" width="820" height="330" viewBox="0 0 820 330">
+    <defs>
+      <marker id="arr-enc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#4a7cf7"/>
+      </marker>
+      <marker id="arr-dec" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#f7774a"/>
+      </marker>
+      <marker id="arr-ctx" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#9c4af7"/>
+      </marker>
+    </defs>
+
+    <!-- Section backgrounds -->
+    <rect x="14" y="58" width="355" height="188" rx="14" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1"/>
+    <rect x="451" y="58" width="355" height="188" rx="14" fill="#fff5f0" stroke="#ffd5c5" stroke-width="1"/>
+    <text x="191" y="44" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="#4a7cf7" text-anchor="middle" letter-spacing="1">ENCODER</text>
+    <text x="628" y="44" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="1">DECODER</text>
+
+    <!-- ENCODER CELLS (always visible) -->
+    <rect id="enc1" x="30" y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="68" y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="44" y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="68" y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+
+    <rect id="enc2" x="140" y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="178" y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="154" y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="178" y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+
+    <rect id="enc3" x="250" y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="288" y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="264" y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="288" y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+
+    <!-- DECODER CELLS (always visible) -->
+    <rect id="dec1" x="470" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="508" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+
+    <rect id="dec2" x="578" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="616" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+
+    <rect id="dec3" x="686" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="724" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+
+    <!-- === ANIMATED ELEMENTS (all start opacity 0) === -->
+
+    <!-- h labels above enc -->
+    <text id="h1" font-family="JetBrains Mono" font-size="11" x="68" y="108" fill="#64748b" text-anchor="middle" opacity="0">h₁</text>
+    <text id="h2" font-family="JetBrains Mono" font-size="11" x="178" y="108" fill="#64748b" text-anchor="middle" opacity="0">h₂</text>
+    <text id="h3" font-family="JetBrains Mono" font-size="11" x="288" y="108" fill="#64748b" text-anchor="middle" opacity="0">h₃</text>
+
+    <!-- enc h-flow arrows -->
+    <line id="a-e1e2" x1="106" y1="148" x2="140" y2="148" stroke="#4a7cf7" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
+    <line id="a-e2e3" x1="216" y1="148" x2="250" y2="148" stroke="#4a7cf7" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
+
+    <!-- input tokens -->
+    <rect id="ti1" x="40" y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
+    <text id="tt1" font-family="Noto Sans KR" font-size="12" font-weight="600" x="68" y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">나는</text>
+    <rect id="ti2" x="150" y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
+    <text id="tt2" font-family="Noto Sans KR" font-size="12" font-weight="600" x="178" y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">학교</text>
+    <rect id="ti3" x="260" y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
+    <text id="tt3" font-family="Noto Sans KR" font-size="12" font-weight="600" x="288" y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">간다</text>
+
+    <!-- input → enc arrows -->
+    <line id="a-i1" x1="68" y1="242" x2="68" y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
+    <line id="a-i2" x1="178" y1="242" x2="178" y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
+    <line id="a-i3" x1="288" y1="242" x2="288" y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
+
+    <!-- Context vector -->
+    <rect id="ctx" x="374" y="124" width="72" height="52" rx="12" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.5" opacity="0"/>
+    <text id="ctx-t1" font-family="JetBrains Mono" font-size="10" font-weight="700" x="410" y="146" fill="#9c4af7" text-anchor="middle" opacity="0">Context</text>
+    <text id="ctx-t2" font-family="JetBrains Mono" font-size="10" font-weight="700" x="410" y="161" fill="#9c4af7" text-anchor="middle" opacity="0">Vector</text>
+
+    <!-- enc3 → ctx -->
+    <line id="a-ec" x1="326" y1="148" x2="374" y2="148" stroke="#9c4af7" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
+    <!-- ctx → dec1 -->
+    <line id="a-cd" x1="446" y1="148" x2="470" y2="148" stroke="#9c4af7" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
+
+    <!-- SOS token -->
+    <rect id="sos-r" x="480" y="76" width="56" height="28" rx="8" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5" opacity="0"/>
+    <text id="sos-t" font-family="JetBrains Mono" font-size="10" font-weight="600" x="508" y="90" fill="#9c4af7" text-anchor="middle" dominant-baseline="middle" opacity="0">&lt;SOS&gt;</text>
+    <line id="sos-a" x1="508" y1="104" x2="508" y2="116" stroke="#9c4af7" stroke-width="1.5" marker-end="url(#arr-ctx)" opacity="0"/>
+
+    <!-- s labels above dec -->
+    <text id="s1" font-family="JetBrains Mono" font-size="11" x="508" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₁</text>
+    <text id="s2" font-family="JetBrains Mono" font-size="11" x="616" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₂</text>
+    <text id="s3" font-family="JetBrains Mono" font-size="11" x="724" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₃</text>
+
+    <!-- dec h-flow arrows -->
+    <line id="a-d1d2" x1="546" y1="148" x2="578" y2="148" stroke="#f7774a" stroke-width="2" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-d2d3" x1="654" y1="148" x2="686" y2="148" stroke="#f7774a" stroke-width="2" marker-end="url(#arr-dec)" opacity="0"/>
+
+    <!-- output tokens -->
+    <rect id="to1" x="480" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
+    <text id="tot1" font-family="Noto Sans KR" font-size="12" font-weight="600" x="508" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">I</text>
+    <rect id="to2" x="588" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
+    <text id="tot2" font-family="Noto Sans KR" font-size="12" font-weight="600" x="616" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">go</text>
+    <rect id="to3" x="696" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
+    <text id="tot3" font-family="Noto Sans KR" font-size="12" font-weight="600" x="724" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">to school</text>
+
+    <!-- dec → softmax arrows -->
+    <line id="a-d1o" x1="508" y1="180" x2="508" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-d2o" x1="616" y1="180" x2="616" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-d3o" x1="724" y1="180" x2="724" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
+
+    <!-- softmax boxes -->
+    <rect id="sm1" x="480" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <text id="sm-t1" font-family="JetBrains Mono" font-size="9" font-weight="700" x="508" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
+    <rect id="sm2" x="588" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <text id="sm-t2" font-family="JetBrains Mono" font-size="9" font-weight="700" x="616" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
+    <rect id="sm3" x="696" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <text id="sm-t3" font-family="JetBrains Mono" font-size="9" font-weight="700" x="724" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
+
+    <!-- softmax → output arrows -->
+    <line id="a-s1o" x1="508" y1="222" x2="508" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-s2o" x1="616" y1="222" x2="616" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-s3o" x1="724" y1="222" x2="724" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
+  </svg>
+</div>
+
+<div class="info-panel">
+  <div class="step-title">
+    <span class="step-num" id="step-num">▶</span>
+    <span id="step-title-text">시작 전</span>
+  </div>
+  <div class="step-desc" id="step-desc">
+    아래 <strong>▶ 다음</strong> 버튼을 눌러 Seq2Seq RNN의 동작을 단계별로 확인해보세요~! 🐣
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn-secondary" id="btn-prev" onclick="go(-1)" disabled>◀ 이전</button>
+  <button class="btn-primary" id="btn-next" onclick="go(1)">다음 ▶</button>
+  <button class="btn-reset" onclick="reset()">↺ 처음으로</button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+    <div class="step-indicator" id="step-ind">0 / 9</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="prog" style="width:0%"></div></div>
+  </div>
+</div>
+
+<script>
+// ── Step definitions ──────────────────────────────────────────────────────────
+// Each step declares exactly which IDs are visible and which cells pulse.
+// render() does a full redraw from scratch every time — no incremental state!
+
+const STEPS = [
+  {
+    title: "① 입력 토큰 준비 (한국어 문장)",
+    desc: `"나는 학교 간다"를 토큰으로 분리해요. 각 단어가 인코더에 순서대로 입력될 준비를 해요.<br>순서: <strong>나는 → 학교 → 간다</strong>`,
+    color: "var(--enc-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3"],
+    pulse: {}
+  },
+  {
+    title: "② 인코더 — 첫 번째 토큰 '나는' 처리",
+    desc: `'나는'이 첫 번째 인코더 셀에 입력돼요.<br>은닉 상태 <strong>h₁ = tanh(Wₓ·x₁ + Wₕ·h₀ + b)</strong> 를 계산합니다.<br>초기 h₀은 0 벡터예요.`,
+    color: "var(--enc-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3","h1"],
+    pulse: { "enc1": "enc" }
+  },
+  {
+    title: "③ 인코더 — 두 번째 토큰 '학교' 처리",
+    desc: `'학교'와 이전 은닉 상태 h₁이 결합되어 <strong>h₂</strong>를 만들어요.<br>이전 문맥 정보가 h₁에 담겨 계속 이어져요!`,
+    color: "var(--enc-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3","h1","a-e1e2","h2"],
+    pulse: { "enc2": "enc" }
+  },
+  {
+    title: "④ 인코더 — 세 번째 토큰 '간다' 처리",
+    desc: `'간다'와 h₂가 결합되어 <strong>h₃ (최종 은닉 상태)</strong>를 생성해요.<br>h₃에 전체 문장의 의미가 집약됩니다!`,
+    color: "var(--enc-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3","h1","a-e1e2","h2","a-e2e3","h3"],
+    pulse: { "enc3": "enc" }
+  },
+  {
+    title: "⑤ 컨텍스트 벡터(Context Vector) 생성",
+    desc: `인코더의 마지막 은닉 상태 h₃가 <strong>Context Vector</strong>가 돼요!<br>이 벡터 하나에 "나는 학교 간다" 전체의 의미가 압축되어 있어요. 🗜️`,
+    color: "var(--ctx-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3",
+           "h1","a-e1e2","h2","a-e2e3","h3","a-ec","ctx","ctx-t1","ctx-t2"],
+    pulse: { "ctx": "ctx" }
+  },
+  {
+    title: "⑥ 디코더 초기화 — &lt;SOS&gt; 토큰 입력",
+    desc: `Context Vector가 디코더의 초기 은닉 상태가 되고,<br><strong>&lt;SOS&gt;</strong> (Start Of Sequence) 특수 토큰으로 디코딩을 시작해요!`,
+    color: "var(--ctx-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3",
+           "h1","a-e1e2","h2","a-e2e3","h3","a-ec","ctx","ctx-t1","ctx-t2",
+           "a-cd","sos-r","sos-t","sos-a","s1"],
+    pulse: { "dec1": "dec" }
+  },
+  {
+    title: "⑦ 디코더 — 첫 번째 단어 'I' 출력",
+    desc: `디코더가 첫 출력 토큰 <strong>'I'</strong>를 생성해요.<br>출력: <strong>y₁ = softmax(Wᵧ·s₁ + b)</strong> — softmax가 단어 확률로 변환해요!<br>생성된 'I'는 다음 셀의 입력으로도 사용됩니다. (Auto-regressive)`,
+    color: "var(--dec-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3",
+           "h1","a-e1e2","h2","a-e2e3","h3","a-ec","ctx","ctx-t1","ctx-t2",
+           "a-cd","sos-r","sos-t","sos-a","s1","a-d1o","sm1","sm-t1","a-s1o","to1","tot1"],
+    pulse: { "dec1": "dec" }
+  },
+  {
+    title: "⑧ 디코더 — 두 번째 단어 'go' 출력",
+    desc: `이전 출력 'I'와 은닉 상태 s₁이 결합되어 <strong>'go'</strong>를 생성해요.<br>s₂ = RNN(s₁, 'I') → softmax → 'go'`,
+    color: "var(--dec-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3",
+           "h1","a-e1e2","h2","a-e2e3","h3","a-ec","ctx","ctx-t1","ctx-t2",
+           "a-cd","sos-r","sos-t","sos-a","s1","a-d1o","sm1","sm-t1","a-s1o","to1","tot1",
+           "a-d1d2","s2","a-d2o","sm2","sm-t2","a-s2o","to2","tot2"],
+    pulse: { "dec2": "dec" }
+  },
+  {
+    title: "⑨ 디코더 — 최종 출력 완성! 🎉",
+    desc: `마지막으로 <strong>'to school'</strong>이 생성되며 번역 완료!<br>"나는 학교 간다" → <strong>"I go to school"</strong> 🏫<br>모든 출력 단어는 softmax를 거쳐 확률로 선택돼요.`,
+    color: "var(--dec-primary)",
+    show: ["ti1","tt1","ti2","tt2","ti3","tt3","a-i1","a-i2","a-i3",
+           "h1","a-e1e2","h2","a-e2e3","h3","a-ec","ctx","ctx-t1","ctx-t2",
+           "a-cd","sos-r","sos-t","sos-a","s1","a-d1o","sm1","sm-t1","a-s1o","to1","tot1",
+           "a-d1d2","s2","a-d2o","sm2","sm-t2","a-s2o","to2","tot2",
+           "a-d2d3","s3","a-d3o","sm3","sm-t3","a-s3o","to3","tot3"],
+    pulse: { "dec3": "dec" }
+  }
+];
+
+const ALL_ANIM_IDS = [
+  "ti1","tt1","ti2","tt2","ti3","tt3",
+  "a-i1","a-i2","a-i3",
+  "h1","h2","h3","a-e1e2","a-e2e3",
+  "a-ec","ctx","ctx-t1","ctx-t2","a-cd",
+  "sos-r","sos-t","sos-a",
+  "s1","s2","s3",
+  "a-d1d2","a-d2d3",
+  "a-d1o","a-d2o","a-d3o",
+  "sm1","sm-t1","sm2","sm-t2","sm3","sm-t3",
+  "a-s1o","a-s2o","a-s3o",
+  "to1","tot1","to2","tot2","to3","tot3"
+];
+const PULSE_IDS = ["enc1","enc2","enc3","ctx","dec1","dec2","dec3"];
+const PULSE_MAP = { enc: "pulse-enc", dec: "pulse-dec", ctx: "pulse-ctx" };
+
+let current = -1; // -1 = blank/reset
+
+function render(step) {
+  // 1. Hide all animated elements
+  ALL_ANIM_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute("opacity", "0");
+  });
+
+  // 2. Remove all pulse animations
+  PULSE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    Object.values(PULSE_MAP).forEach(cls => el.classList.remove(cls));
+  });
+
+  if (step < 0) {
+    // Blank state
+    document.getElementById("step-num").style.background = "var(--enc-primary)";
+    document.getElementById("step-num").textContent = "▶";
+    document.getElementById("step-title-text").textContent = "시작 전";
+    document.getElementById("step-desc").innerHTML = '아래 <strong>▶ 다음</strong> 버튼을 눌러 Seq2Seq RNN의 동작을 단계별로 확인해보세요~! 🐣';
+    document.getElementById("step-ind").textContent = "0 / 9";
+    document.getElementById("prog").style.width = "0%";
+    document.getElementById("btn-prev").disabled = true;
+    document.getElementById("btn-next").disabled = false;
+    document.getElementById("btn-next").textContent = "다음 ▶";
+    return;
+  }
+
+  const s = STEPS[step];
+
+  // 3. Show elements for this step
+  s.show.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute("opacity", "1");
+  });
+
+  // 4. Apply pulse
+  Object.entries(s.pulse).forEach(([id, type]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add(PULSE_MAP[type]);
+  });
+
+  // 5. Update UI
+  document.getElementById("step-num").style.background = s.color;
+  document.getElementById("step-num").textContent = step + 1;
+  document.getElementById("step-title-text").textContent = s.title;
+  document.getElementById("step-desc").innerHTML = s.desc;
+  document.getElementById("step-ind").textContent = `${step + 1} / 9`;
+  document.getElementById("prog").style.width = `${((step + 1) / 9) * 100}%`;
+  document.getElementById("btn-prev").disabled = (step === 0);
+  document.getElementById("btn-next").disabled = (step === STEPS.length - 1);
+  document.getElementById("btn-next").textContent = (step === STEPS.length - 1) ? "완료 ✓" : "다음 ▶";
+}
+
+function go(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= STEPS.length) return;
+  current = next;
+  render(current);
+}
+
+function reset() {
+  current = -1;
+  render(-1);
+}
+
+// Init
+render(-1);
+</script>
+
+
+                <div style="margin:0; padding:0; border:none; background:none; float:none; clear:none; z-index:0"></div>
+<script type="text/javascript" src="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/script/common.js"></script>
+
+                
+                <script>window.tiara = {"svcDomain":"user.tistory.com","section":"글뷰","trackPage":"글뷰_보기","page":"글뷰","key":"1922944-932","customProps":{"userId":"1446129","blogId":"1922944","entryId":"932","role":"owner","trackPage":"글뷰_보기","filterTarget":false},"entry":{"entryId":"932","entryTitle":"RNN & Seq2Seq 시각화","entryType":"POST","categoryName":"ML,DL,LangChain/03_토큰화와 합성데이터","categoryId":"1257178","serviceCategoryName":null,"serviceCategoryId":null,"author":"1446129","authorNickname":"은서파","blogNmae":"모두의 코딩","image":"","plink":"/932","tags":[]},"kakaoAppKey":"3e6ddd834b023f24221217e370daed18","appUserId":"1517393043","thirdProvideAgree":null}</script>
+<script type="module" src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index.js"></script>
+<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/polyfills-legacy.js" nomodule="true" defer="true"></script>
+<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index-legacy.js" nomodule="true" defer="true"></script>
+<script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+                </body>
+</html>
