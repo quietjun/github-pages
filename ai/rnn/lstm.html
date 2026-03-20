@@ -486,7 +486,7 @@
       </div>
     </div>
     <ul class="point-list">
-      <li><span class="ico">⚠️</span><span>역전파 시 기울기 소실 <em>(Vanishing Gradient)</em></span></li>
+      <li><span class="ico">⚠️</span><span>역전파 시 미분값 반복 곱셈 → 기울기 소실 <em>(Vanishing Gradient)</em></span></li>
       <li><span class="ico">⚠️</span><span>시퀀스 길이 ↑ → 앞 문맥 망각</span></li>
       <li><span class="ico">⚠️</span><span>기억 대상 선택 불가</span></li>
     </ul>
@@ -545,7 +545,7 @@
 <div class="candidate-note">
   <span class="note-icon">🟢</span>
   <ul class="note-list">
-    <li><strong>Candidate</strong>: tanh 통해 추출한 "기억 후보" / 범위 −1 ~ 1</li>
+    <li><strong>Candidate</strong>: 활성화 함수 tanh를 통해 추출한 "기억 후보" / 범위 −1 ~ 1</li>
     <li>단독으로 Cell State 반영 ✗ → <strong>Input Gate(0~1)</strong>와 곱한 후 반영</li>
     <li>"이 후보 중 얼마나 기억할까?" 결정 후 Cell State 갱신</li>
   </ul>
@@ -658,7 +658,6 @@
   <ul class="step-list" style="font-size:0.9rem;">
     <li>예시 문장: <strong>"나는 어제 학교에서 밥을 먹었다"</strong></li>
     <li>처리 대상 토큰: <strong>"먹었다"</strong></li>
-    <li>LSTM 셀의 게이트별 처리 흐름 단계별 추적</li>
   </ul>
 </div>
 
@@ -860,7 +859,7 @@ const STEPS = [
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt"],
     body:  `<ul class="step-list">
               <li>흐름: 잊을 것 제거 → 새 정보 추가 → 새 Cell State 완성</li>
-              <li><strong>덧셈 연산</strong> 구조 → 기울기 소실 없이 역전파 가능 🎯</li>
+              <li><strong>덧셈 연산</strong> 구조 → 기울기 소실 없이 역전파 가능 🎯 <em>(RNN은 미분 반복 곱셈 → 기울기 소실)</em></li>
             </ul>`
   },
   {
