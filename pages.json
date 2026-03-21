@@ -1,0 +1,28 @@
+[
+  {
+    "label": "ai",
+    "children": [
+      {
+        "label": "rnn",
+        "children": [
+          {
+            "label": "LSTM (Long Short-Term Memory)",
+            "path": "ai/rnn/lstm.html"
+          },
+          {
+            "label": "Seq2Seq RNN 시각화",
+            "path": "ai/rnn/rnn.html"
+          },
+          {
+            "label": "Transformer & Self-Attention 시각화",
+            "path": "ai/rnn/transformer.html"
+          },
+          {
+            "label": "BertWordPiece Tokenizer",
+            "path": "ai/rnn/wordpiecetokenizer.html"
+          }
+        ]
+      }
+    ]
+  }
+]
