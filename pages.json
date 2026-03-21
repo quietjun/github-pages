@@ -22,6 +22,15 @@
             "path": "ai/rnn/wordpiecetokenizer.html"
           }
         ]
+      },
+      {
+        "label": "spring",
+        "children": [
+          {
+            "label": "Spring AI — MCP 완전 가이드",
+            "path": "ai/spring/mcp.html"
+          }
+        ]
       }
     ]
   }
