@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM 샘플링 파라미터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #f4f5f9;
+    --surface: #ffffff;
+    --border:  #e2e5f0;
+    --s2:      #eef0f8;
+    --text:    #1a2540;
+    --sub:     #5a6a8a;
+    --shadow:  0 2px 16px rgba(26,37,64,0.08);
+
+    --ct:  #ef4444; --ctl: #fee2e2; --ctd: #b91c1c;
+    --ck:  #7c3aed; --ckl: #ede9fe; --ckd: #5b21b6;
+    --cp:  #0891b2; --cpl: #cffafe; --cpd: #0e7490;
+    --ok:  #059669; --okl: #d1fae5;
+    --no:  #94a3b8;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 36px 24px 60px;
+    max-width: 1024px;
+    margin: 0 auto;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── 헤더 ── */
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding: 36px 28px;
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--ct), var(--ck), var(--cp), var(--ok));
+  }
+  header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -.3px; }
+  header p { color: var(--sub); font-size: 0.9rem; }
+
+  /* ── 섹션 구분선 ── */
+  .sec {
+    display: flex; align-items: center; gap: 12px;
+    margin: 36px 0 18px;
+  }
+  .sec .ln { height: 1px; flex: 1; background: var(--border); }
+  .sec span {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 1.4px;
+    color: var(--sub); text-transform: uppercase; white-space: nowrap;
+    background: var(--s2); border: 1px solid var(--border);
+    border-radius: 99px; padding: 5px 14px;
+  }
+
+  /* ── 개조식 목록 ── */
+  .bullet-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .bullet-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 0.875rem; color: var(--sub); line-height: 1.65;
+  }
+  .bullet-list li::before {
+    content: '·'; font-weight: 700; color: var(--sub);
+    flex-shrink: 0; margin-top: 0px;
+  }
+
+  /* ══════════════════════════════════
+     ① 파이프라인
+  ══════════════════════════════════ */
+  .pipeline {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .pipe-row {
+    display: flex; align-items: center;
+    gap: 0; min-width: 680px;
+  }
+  .pipe-node {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .pipe-box {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 0.85rem; font-weight: 700;
+    text-align: center; border: 2px solid;
+    min-width: 96px; line-height: 1.45;
+  }
+  .pipe-label {
+    font-size: 0.7rem; color: var(--sub); font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; text-align: center;
+  }
+  .pipe-arrow { flex: 1; display: flex; align-items: center; padding: 0 4px; min-width: 36px; }
+  .pipe-arrow-inner { width: 100%; height: 2px; background: var(--border); position: relative; }
+  .pipe-arrow-inner::after {
+    content: ''; position: absolute; right: -1px; top: -4px;
+    border: 5px solid transparent; border-left-color: var(--border);
+  }
+  .pipe-step-label {
+    font-size: 0.67rem; font-weight: 700;
+    background: var(--s2); border-radius: 4px;
+    padding: 2px 7px; color: var(--sub); letter-spacing: .5px;
+  }
+  .order-note {
+    margin-top: 20px; padding: 14px 18px;
+    background: var(--s2); border-radius: 12px;
+    border-left: 4px solid var(--border);
+  }
+  .order-note ul { margin-top: 6px; }
+
+  /* ══════════════════════════════════
+     ② 파라미터 카드
+  ══════════════════════════════════ */
+  .param-cards-top {
+    margin-bottom: 16px;
+  }
+  .param-cards-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) { .param-cards-bottom { grid-template-columns: 1fr; } }
+
+  .param-card-full {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 40px;
+    align-items: start;
+  }
+  .param-card-full.temp { border-top-color: var(--ct); }
+  .param-card-full .card-left { }
+  .param-card-full .card-right { }
+
+  .param-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 18px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid;
+  }
+  .param-card.topk { border-top-color: var(--ck); }
+  .param-card.topp { border-top-color: var(--cp); }
+
+  .param-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem; font-weight: 700; border: 2.5px solid;
+    margin-bottom: 12px;
+  }
+  .param-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .param-sub {
+    font-size: 0.78rem; color: var(--sub);
+    margin-bottom: 14px; line-height: 1.6;
+  }
+
+  /* 슬라이더 */
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .slider-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; font-weight: 700;
+    min-width: 46px; text-align: right;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    flex: 1; height: 6px; border-radius: 3px;
+    outline: none; cursor: pointer; background: var(--s2);
+  }
+  input[type=range].temp::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--ct); cursor: pointer;
+    border: 2px solid white; box-shadow: 0 2px 6px rgba(239,68,68,.4);
+  }
+  input[type=range].topk::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--ck); cursor: pointer;
+    border: 2px solid white; box-shadow: 0 2px 6px rgba(124,58,237,.4);
+  }
+  input[type=range].topp::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--cp); cursor: pointer;
+    border: 2px solid white; box-shadow: 0 2px 6px rgba(8,145,178,.4);
+  }
+  input[type=range].temp::-moz-range-thumb { width:18px;height:18px;border-radius:50%;background:var(--ct);cursor:pointer;border:2px solid white; }
+  input[type=range].topk::-moz-range-thumb { width:18px;height:18px;border-radius:50%;background:var(--ck);cursor:pointer;border:2px solid white; }
+  input[type=range].topp::-moz-range-thumb { width:18px;height:18px;border-radius:50%;background:var(--cp);cursor:pointer;border:2px solid white; }
+
+  .slider-hint {
+    font-size: 0.72rem; color: var(--sub);
+    display: flex; justify-content: space-between;
+  }
+  .param-effect {
+    margin-top: 12px; padding: 10px 13px;
+    border-radius: 10px; font-size: 0.8rem;
+    line-height: 1.65; color: var(--sub); border: 1px solid;
+  }
+
+  /* ══════════════════════════════════
+     ③ 차트
+  ══════════════════════════════════ */
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+  }
+  .chart-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .chart-sub { font-size: 0.82rem; color: var(--sub); margin-bottom: 20px; line-height: 1.65; }
+  .chart-legend {
+    display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.77rem; color: var(--sub); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  .bars-area { position: relative; }
+  .bar-group { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px; }
+  .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-outer {
+    width: 100%; height: 160px;
+    background: var(--s2); border-radius: 8px;
+    display: flex; align-items: flex-end;
+    overflow: hidden; position: relative;
+    border: 1px solid var(--border);
+  }
+  .bar-fill {
+    width: 100%; border-radius: 6px 6px 0 0;
+    transition: height .35s cubic-bezier(.4,0,.2,1), background .25s;
+    position: relative;
+  }
+  .bar-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.73rem; font-weight: 700;
+    transition: color .25s;
+  }
+  .bar-pct-norm {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: var(--sub);
+    transition: opacity .25s;
+  }
+  .bar-label { font-size: 0.73rem; font-weight: 700; text-align: center; color: var(--text); line-height: 1.3; }
+  .bar-mask {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,0) 0px, rgba(255,255,255,0) 4px, rgba(255,255,255,0.55) 4px, rgba(255,255,255,0.55) 8px);
+    border-radius: 6px 6px 0 0; pointer-events: none; display: none;
+  }
+  .bar-item.filtered .bar-fill { filter: saturate(0.3); opacity: 0.45; }
+  .bar-item.filtered .bar-pct { color: var(--no) !important; }
+  .bar-item.filtered .bar-mask { display: block; }
+  .bar-item.filtered .bar-pct-norm { opacity: 0; }
+
+  .cum-bar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 3;
+    border-top: 2px dashed rgba(255,255,255,0.7);
+    transition: height .35s cubic-bezier(.4,0,.2,1);
+    background: rgba(255,255,255,0.15);
+  }
+  .cum-label {
+    position: absolute; top: -18px; right: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.25); border-radius: 3px; padding: 1px 4px;
+    white-space: nowrap;
+  }
+  .threshold-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    pointer-events: none; z-index: 5;
+    transition: top .35s cubic-bezier(.4,0,.2,1);
+  }
+  .threshold-label {
+    position: absolute; right: 4px; top: -18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+  }
+
+  .result-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .result-box {
+    flex: 1; min-width: 120px;
+    background: var(--s2); border-radius: 12px;
+    padding: 14px 16px; border: 1px solid var(--border);
+  }
+  .rb-label {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--sub); margin-bottom: 6px;
+  }
+  .rb-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; font-weight: 700; color: var(--text);
+  }
+  .rb-sub { font-size: 0.72rem; color: var(--sub); margin-top: 3px; line-height: 1.45; }
+
+  /* ══════════════════════════════════
+     ④ 조합 가이드
+  ══════════════════════════════════ */
+  .matrix-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 640px) { .matrix-grid { grid-template-columns: 1fr; } }
+
+  .matrix-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px 18px; box-shadow: var(--shadow);
+  }
+  .matrix-card h3 {
+    font-size: 0.9rem; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .matrix-tag {
+    font-size: 0.7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 99px; border: 1.5px solid;
+  }
+  .usecase {
+    margin-top: 10px; font-size: 0.77rem; color: var(--sub);
+    padding: 8px 12px; background: var(--s2);
+    border-radius: 8px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ 헤더 ══ -->
+<header>
+  <h1>🎲 LLM 샘플링 파라미터</h1>
+  <p>Temperature · Top-k · Top-p — 세 파라미터가 다음 토큰 선택을 제어하는 방식</p>
+</header>
+
+
+<!-- ══ ① 처리 순서 ══ -->
+<div class="sec"><div class="ln"></div><span>① 처리 순서 — 세 파라미터 적용 순서</span><div class="ln"></div></div>
+
+<div class="pipeline">
+  <div class="pipe-row">
+    <div class="pipe-node">
+      <div class="pipe-step-label">START</div>
+      <div class="pipe-box" style="background:#f8fafc;border-color:#cbd5e1;color:var(--sub);">원시 로짓<br>(Logits)</div>
+      <div class="pipe-label">모든 토큰 점수<br>(실수값, 정규화 전)</div>
+    </div>
+    <div class="pipe-arrow"><div class="pipe-arrow-inner"></div></div>
+    <div class="pipe-node">
+      <div class="pipe-step-label" style="color:var(--ctd);background:var(--ctl);">STEP 1</div>
+      <div class="pipe-box" style="background:var(--ctl);border-color:var(--ct);color:var(--ctd);">🌡️ Temperature<br>스케일링</div>
+      <div class="pipe-label" style="color:var(--ctd);">logit ÷ Temperature<br>→ 분포 조절</div>
+    </div>
+    <div class="pipe-arrow"><div class="pipe-arrow-inner"></div></div>
+    <div class="pipe-node">
+      <div class="pipe-step-label" style="color:var(--ckd);background:var(--ckl);">STEP 2</div>
+      <div class="pipe-box" style="background:var(--ckl);border-color:var(--ck);color:var(--ckd);">🔢 Top-k<br>필터링</div>
+      <div class="pipe-label" style="color:var(--ckd);">상위 k개만<br>유지</div>
+    </div>
+    <div class="pipe-arrow"><div class="pipe-arrow-inner"></div></div>
+    <div class="pipe-node">
+      <div class="pipe-step-label" style="color:var(--cpd);background:var(--cpl);">STEP 3</div>
+      <div class="pipe-box" style="background:var(--cpl);border-color:var(--cp);color:var(--cpd);">📊 Top-p<br>필터링</div>
+      <div class="pipe-label" style="color:var(--cpd);">누적확률 합이<br>p 이상이 될 때까지</div>
+    </div>
+    <div class="pipe-arrow"><div class="pipe-arrow-inner"></div></div>
+    <div class="pipe-node">
+      <div class="pipe-step-label" style="color:var(--ok);background:var(--okl);">STEP 4</div>
+      <div class="pipe-box" style="background:var(--okl);border-color:var(--ok);color:var(--ok);">✅ Softmax<br>→ 샘플링</div>
+      <div class="pipe-label" style="color:var(--ok);">확률 정규화<br>→ 토큰 선택</div>
+    </div>
+  </div>
+  <div class="order-note">
+    <ul class="bullet-list">
+      <li><strong>Temperature 최우선</strong> — 분포 모양 자체를 바꾸므로 필터링(Top-k/p)보다 반드시 먼저 적용</li>
+      <li><strong>Top-k → Top-p 순차 적용</strong> — Top-k로 k개로 줄인 후, 그 안에서 Top-p가 재필터링 → 두 조건 모두 통과한 토큰만 최종 후보</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ══ ② 파라미터 카드 ══ -->
+<div class="sec"><div class="ln"></div><span>② 파라미터별 개념 — 슬라이더 조절</span><div class="ln"></div></div>
+
+<!-- Temperature 단독 1행 (2열 내부 레이아웃) -->
+<div class="param-cards-top">
+  <div class="param-card-full temp">
+    <!-- 왼쪽: 개념 설명 + 슬라이더 + 효과 설명 -->
+    <div class="card-left">
+      <div class="param-badge" style="background:var(--ctl);border-color:var(--ct);color:var(--ctd);">T</div>
+      <div class="param-title">🌡️ Temperature</div>
+      <ul class="param-sub bullet-list">
+        <li>확률 분포의 <strong>"돋보기"</strong> — logit ÷ Temperature로 점수 차이 조절</li>
+        <li>범위: <span class="mono">T &gt; 0</span> (보통 0.1 ~ 2.0)</li>
+      </ul>
+      <div class="slider-row" style="margin-top:16px;">
+        <input type="range" class="temp" id="sl-temp" min="10" max="200" value="100" step="5">
+        <div class="slider-val" style="color:var(--ct);" id="val-temp">1.0</div>
+      </div>
+      <div class="slider-hint"><span>0.1 Sharp</span><span>2.0 Flat</span></div>
+      <div class="param-effect" style="background:var(--ctl);border-color:var(--ct);margin-top:12px;" id="eff-temp">
+        <strong>T = 1.0</strong> — logit 분포 그대로 (기본값)
+      </div>
+    </div>
+    <!-- 오른쪽: 권장값 테이블 -->
+    <div class="card-right">
+      <div style="height:54px;"></div>
+      <div id="eff-temp-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ③ 실시간 시각화 ══ -->
+<div class="sec"><div class="ln"></div><span>③ 실시간 시각화 — 파라미터 영향 확인</span><div class="ln"></div></div>
+
+<div class="chart-wrap">
+  <div class="chart-title">다음 토큰 후보 분포</div>
+  <div class="chart-sub">
+    예시 문장: "나는 학교에서 밥을 ___" — 막대 높이는 <strong>Temperature 적용 후 확률</strong> 기준 (softmax 변환 완료). 위 슬라이더 조절 시 실시간 반영.
+  </div>
+  <div class="chart-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ok);"></div>후보 유지</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--no);"></div>필터됨</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--ck);opacity:.6;width:22px;height:4px;border-radius:2px;"></div>Top-k 커트라인</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cp);opacity:.6;width:22px;height:4px;border-radius:2px;"></div>Top-p 임계선</div>
+  </div>
+
+  <div class="bars-area" style="position:relative;">
+    <div class="threshold-line" id="topk-line" style="background:var(--ck);opacity:0;top:0;">
+      <span class="threshold-label" style="background:var(--ckl);color:var(--ckd);border:1px solid var(--ck);" id="topk-line-lbl"></span>
+    </div>
+    <div class="threshold-line" id="topp-line" style="background:var(--cp);opacity:0;top:0;">
+      <span class="threshold-label" style="background:var(--cpl);color:var(--cpd);border:1px solid var(--cp);" id="topp-line-lbl"></span>
+    </div>
+    <div class="bar-group" id="bar-group"></div>
+  </div>
+
+  <div class="result-row">
+    <div class="result-box">
+      <div class="rb-label">살아남은 후보</div>
+      <div class="rb-val" id="rb-alive">8 / 8개</div>
+      <div class="rb-sub">이 중 하나가 최종 선택</div>
+    </div>
+    <div class="result-box">
+      <div class="rb-label">유효 확률 합</div>
+      <div class="rb-val" id="rb-prob">100.0%</div>
+      <div class="rb-sub">필터 후 정규화 → 합 = 1</div>
+    </div>
+    <div class="result-box">
+      <div class="rb-label">후보 다양성</div>
+      <div class="rb-val" id="rb-entropy">—</div>
+      <div class="rb-sub">높을수록 다양한 결과 가능</div>
+    </div>
+    <div class="result-box">
+      <div class="rb-label">현재 모드</div>
+      <div class="rb-val" id="rb-mode" style="font-size:.85rem;">균형</div>
+      <div class="rb-sub" id="rb-mode-sub">적당한 다양성</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ Top-k / Top-p ══ -->
+<div class="sec"><div class="ln"></div><span>② Top-k · Top-p — 슬라이더 조절</span><div class="ln"></div></div>
+
+<!-- Top-k / Top-p 2열 -->
+<div class="param-cards-bottom">
+
+  <!-- Top-k -->
+  <div class="param-card topk">
+    <div class="param-badge" style="background:var(--ckl);border-color:var(--ck);color:var(--ckd);">K</div>
+    <div class="param-title">🔢 Top-k</div>
+    <ul class="param-sub bullet-list">
+      <li>확률 상위 k개 토큰만 후보로 유지 (고정 개수)</li>
+      <li>분포 형태와 무관하게 항상 k개 유지</li>
+      <li>범위: <span class="mono">1 ~ V</span> (V = 어휘 크기)</li>
+    </ul>
+    <div class="slider-row">
+      <input type="range" class="topk" id="sl-topk" min="1" max="8" value="8" step="1">
+      <div class="slider-val" style="color:var(--ck);" id="val-topk">8</div>
+    </div>
+    <div class="slider-hint"><span>1 Greedy</span><span>8 전부</span></div>
+    <div class="param-effect" style="background:var(--ckl);border-color:var(--ck);" id="eff-topk">
+      <strong>k = 8</strong> — 필터 없음. 후보 8개 전체 유지
+    </div>
+  </div>
+
+  <!-- Top-p -->
+  <div class="param-card topp">
+    <div class="param-badge" style="background:var(--cpl);border-color:var(--cp);color:var(--cpd);">P</div>
+    <div class="param-title">📊 Top-p <span style="font-size:0.75rem;font-weight:500;color:var(--sub);">(Nucleus Sampling)</span></div>
+    <ul class="param-sub bullet-list">
+      <li>누적 확률 합 ≥ p가 되는 <strong>최소 토큰 집합</strong> 유지</li>
+      <li>분포가 뾰족하면 후보 少, 평평하면 후보 多 (적응적)</li>
+      <li>범위: <span class="mono">0.0 ~ 1.0</span></li>
+    </ul>
+    <div class="slider-row">
+      <input type="range" class="topp" id="sl-topp" min="0" max="100" value="100" step="5">
+      <div class="slider-val" style="color:var(--cp);" id="val-topp">1.00</div>
+    </div>
+    <div class="slider-hint"><span>0.1 좁게</span><span>1.0 전부</span></div>
+    <div class="param-effect" style="background:var(--cpl);border-color:var(--cp);" id="eff-topp">
+      <strong>p = 1.0</strong> — 필터 없음. 전체 후보 유지
+    </div>
+  </div>
+
+</div>
+<div class="sec"><div class="ln"></div><span>④ 파라미터 조합 가이드 — 용도별 권장 설정</span><div class="ln"></div></div>
+
+<div class="matrix-grid">
+
+  <div class="matrix-card">
+    <h3>🎯 정확·일관 답변
+      <span class="matrix-tag" style="background:var(--ctl);border-color:var(--ct);color:var(--ctd);">Sharp</span>
+    </h3>
+    <ul class="bullet-list">
+      <li>Temperature 낮게 → 분포 뾰족 → 1위 토큰 집중 선택</li>
+      <li>Top-k/p는 보조적 — Temperature만으로 충분한 경우 多</li>
+    </ul>
+    <div class="usecase">
+      <strong>✅ 용도:</strong> 코드 생성 / 수학 계산 / 사실 Q&A / 번역 / 요약<br>
+      <strong>⚙️ 권장:</strong> T=0.2, Top-p=0.9
+    </div>
+  </div>
+
+  <div class="matrix-card">
+    <h3>🎨 창의적 글쓰기
+      <span class="matrix-tag" style="background:var(--okl);border-color:var(--ok);color:var(--ok);">Flat</span>
+    </h3>
+    <ul class="bullet-list">
+      <li>Temperature 높게 → 분포 평평 → 다양한 표현 후보 확보</li>
+      <li>Top-p로 완전 엉뚱한 토큰만 걸러냄</li>
+    </ul>
+    <div class="usecase">
+      <strong>✅ 용도:</strong> 소설 / 시 / 브레인스토밍 / 광고 카피<br>
+      <strong>⚙️ 권장:</strong> T=1.0, Top-p=0.95, Top-k 비활성화
+    </div>
+  </div>
+
+  <div class="matrix-card">
+    <h3>⚡ Top-k 단독
+      <span class="matrix-tag" style="background:var(--ckl);border-color:var(--ck);color:var(--ckd);">고정 개수</span>
+    </h3>
+    <ul class="bullet-list">
+      <li>분포 형태와 무관하게 항상 k개 → 예측 가능한 후보 수</li>
+      <li>분포가 뾰족해도 k개 강제 유지 → 불필요 후보 포함 가능</li>
+    </ul>
+    <div class="usecase">
+      <strong>✅ 용도:</strong> 출력 후보 수를 일정하게 유지해야 하는 시스템<br>
+      <strong>⚙️ 권장:</strong> T=1.0, Top-k=40~50
+    </div>
+  </div>
+
+  <div class="matrix-card">
+    <h3>🌊 Top-p 단독
+      <span class="matrix-tag" style="background:var(--cpl);border-color:var(--cp);color:var(--cpd);">적응적</span>
+    </h3>
+    <ul class="bullet-list">
+      <li>분포에 따라 후보 수 자동 조절 → 상황 적응적</li>
+      <li>Claude·GPT-4 등 최신 모델이 선호하는 방식</li>
+    </ul>
+    <div class="usecase">
+      <strong>✅ 용도:</strong> 대화형 AI / 챗봇 / 일반 텍스트 생성<br>
+      <strong>⚙️ 권장:</strong> T=1.0, Top-p=0.9 (가장 흔한 조합)
+    </div>
+  </div>
+
+</div>
+
+
+
+
+<script>
+// ── 데이터 ──────────────────────────────────
+const TOKENS  = ["먹었다","먹는다","먹겠다","먹어요","먹었어","먹습니다","먹자","먹지"];
+const LOGITS  = [4.2, 3.1, 2.8, 2.4, 1.9, 1.5, 0.8, 0.3];
+const COLORS8 = ["#ef4444","#f97316","#eab308","#22c55e","#06b6d4","#6366f1","#a855f7","#94a3b8"];
+
+let T = 1.0, K = 8, P = 1.0;
+
+const slTemp = document.getElementById("sl-temp");
+const slTopk = document.getElementById("sl-topk");
+const slTopp = document.getElementById("sl-topp");
+slTemp.addEventListener("input", () => { T = slTemp.value / 100; update(); });
+slTopk.addEventListener("input", () => { K = parseInt(slTopk.value); update(); });
+slTopp.addEventListener("input", () => { P = slTopp.value / 100; update(); });
+
+// ── 바 생성 ──────────────────────────────────
+const barGroup = document.getElementById("bar-group");
+const barItems = [];
+TOKENS.forEach((tok, i) => {
+  const item = document.createElement("div");
+  item.className = "bar-item";
+  item.innerHTML = `
+    <div class="bar-outer">
+      <div class="bar-fill" id="bf-${i}" style="background:${COLORS8[i]};height:0%;">
+        <div class="bar-mask" id="bm-${i}"></div>
+        <div class="cum-bar" id="cb-${i}" style="display:none;"><span class="cum-label" id="cl-${i}"></span></div>
+      </div>
+    </div>
+    <div class="bar-pct" id="bp-${i}" style="color:${COLORS8[i]};">0%</div>
+    <div class="bar-pct-norm" id="bn-${i}"></div>
+    <div class="bar-label">${tok}</div>
+  `;
+  barGroup.appendChild(item);
+  barItems.push(item);
+});
+
+// ── Softmax ──────────────────────────────────
+function softmax(logits, temperature) {
+  const scaled = logits.map(l => l / temperature);
+  const maxV   = Math.max(...scaled);
+  const exps   = scaled.map(l => Math.exp(l - maxV));
+  const sum    = exps.reduce((a, b) => a + b, 0);
+  return exps.map(e => e / sum);
+}
+
+// ── 메인 업데이트 ──────────────────────────────
+function update() {
+  const rawProbs  = softmax(LOGITS, T);
+  const sortedIdx = [...rawProbs.keys()].sort((a, b) => rawProbs[b] - rawProbs[a]);
+
+  // Top-k 마스크
+  const kMask = new Array(8).fill(false);
+  for (let i = 0; i < K; i++) kMask[sortedIdx[i]] = true;
+
+  // Top-p 마스크
+  const pMask = new Array(8).fill(false);
+  let cumRaw = 0;
+  for (let i = 0; i < sortedIdx.length; i++) {
+    const idx = sortedIdx[i];
+    if (!kMask[idx]) continue;
+    pMask[idx] = true;
+    cumRaw += rawProbs[idx];
+    if (cumRaw >= P) break;
+  }
+
+  const alive    = rawProbs.map((_, i) => kMask[i] && pMask[i]);
+  const aliveSum = rawProbs.reduce((s, p, i) => s + (alive[i] ? p : 0), 0);
+  const normProbs = rawProbs.map((p, i) => alive[i] ? p / aliveSum : 0);
+  const maxRaw   = Math.max(...rawProbs);
+  const CHART_H  = 160;
+
+  // 누적 추적
+  let cumTrack = 0;
+  const cumByIdx = new Array(8).fill(0);
+  for (let i = 0; i < sortedIdx.length; i++) {
+    const idx = sortedIdx[i];
+    if (kMask[idx]) {
+      cumTrack += rawProbs[idx];
+      cumByIdx[idx] = Math.min(cumTrack, 1.0);
+    }
+  }
+
+  rawProbs.forEach((rp, i) => {
+    const bf = document.getElementById(`bf-${i}`);
+    const bp = document.getElementById(`bp-${i}`);
+    const bn = document.getElementById(`bn-${i}`);
+    const cb = document.getElementById(`cb-${i}`);
+    const cl = document.getElementById(`cl-${i}`);
+
+    bf.style.height = (rp / maxRaw * 100) + "%";
+    bf.style.background = COLORS8[i];
+    bp.textContent = (rp * 100).toFixed(1) + "%";
+    bp.style.color = alive[i] ? COLORS8[i] : "var(--no)";
+
+    if (alive[i] && aliveSum < 0.999) {
+      bn.textContent = `(→${(normProbs[i]*100).toFixed(1)}%)`;
+    } else { bn.textContent = ""; }
+
+    if (kMask[i] && P < 1.0) {
+      const barPx = (rp / maxRaw) * CHART_H;
+      const overH = Math.min((cumByIdx[i] / maxRaw) * CHART_H, barPx);
+      cb.style.display = "block";
+      cb.style.height  = overH + "px";
+      cl.textContent   = `Σ${(cumByIdx[i]*100).toFixed(0)}%`;
+    } else { cb.style.display = "none"; }
+
+    barItems[i].className = "bar-item" + (alive[i] ? "" : " filtered");
+  });
+
+  // Top-k 커트라인
+  const topkLine = document.getElementById("topk-line");
+  const topkLbl  = document.getElementById("topk-line-lbl");
+  if (K < 8 && sortedIdx[K] !== undefined) {
+    const midP = (rawProbs[sortedIdx[K-1]] + rawProbs[sortedIdx[K]]) / 2;
+    topkLine.style.top     = (CHART_H * (1 - midP / maxRaw)) + "px";
+    topkLine.style.opacity = "0.85";
+    topkLbl.textContent    = `Top-k=${K} 커트라인`;
+  } else { topkLine.style.opacity = "0"; }
+
+  // Top-p 커트라인
+  const toppLine = document.getElementById("topp-line");
+  const toppLbl  = document.getElementById("topp-line-lbl");
+  if (P < 1.0) {
+    let lastAliveIdx = -1, firstExcludeIdx = -1;
+    for (let i = 0; i < sortedIdx.length; i++) {
+      const idx = sortedIdx[i];
+      if (!kMask[idx]) continue;
+      if (pMask[idx]) lastAliveIdx = idx;
+      else if (firstExcludeIdx < 0) firstExcludeIdx = idx;
+    }
+    if (lastAliveIdx >= 0) {
+      const lastP = rawProbs[lastAliveIdx];
+      const nextP = firstExcludeIdx >= 0 ? rawProbs[firstExcludeIdx] : 0;
+      const lineP = firstExcludeIdx >= 0 ? (lastP + nextP) / 2 : lastP * 0.5;
+      toppLine.style.top     = (CHART_H * (1 - lineP / maxRaw)) + "px";
+      toppLine.style.opacity = "0.85";
+      toppLbl.textContent    = `Top-p=${P.toFixed(2)} 임계선`;
+    }
+  } else { toppLine.style.opacity = "0"; }
+
+  // 결과 박스
+  const aliveCount = alive.filter(Boolean).length;
+  document.getElementById("rb-alive").textContent = `${aliveCount} / 8개`;
+  document.getElementById("rb-prob").textContent  = (aliveSum * 100).toFixed(1) + "%";
+  const H         = -normProbs.reduce((s, p) => p > 0 ? s + p * Math.log2(p) : s, 0);
+  const diversity = Math.round((H / Math.log2(8)) * 100);
+  document.getElementById("rb-entropy").textContent = diversity + "%";
+
+  const rbMode    = document.getElementById("rb-mode");
+  const rbModeSub = document.getElementById("rb-mode-sub");
+  if      (T < 0.4)                    { rbMode.textContent = "결정적";    rbModeSub.textContent = "거의 항상 같은 단어"; }
+  else if (aliveCount === 1)            { rbMode.textContent = "Greedy";   rbModeSub.textContent = "최고 확률 토큰 단독 선택"; }
+  else if (T < 0.7 && aliveCount <= 3) { rbMode.textContent = "보수적";   rbModeSub.textContent = "안전·예측 가능"; }
+  else if (T > 1.3 && aliveCount > 5)  { rbMode.textContent = "🔥 창의적"; rbModeSub.textContent = "다양·예측 어려움"; }
+  else                                  { rbMode.textContent = "균형";     rbModeSub.textContent = "적당한 다양성"; }
+
+  // 슬라이더 설명 업데이트
+  const tVal = T.toFixed(1);
+  document.getElementById("val-temp").textContent = tVal;
+
+  // 슬라이더 아래: 현재 값 설명
+  const effTemp = document.getElementById("eff-temp");
+  if      (T < 0.4) effTemp.innerHTML = `<strong>T = ${tVal} (Sharp ↑↑)</strong> — 점수 차이 극대화 → 1위 확률 ≈ 1.0 → 샘플링해도 항상 1위 선택 (Greedy와 동일한 결과)`;
+  else if (T < 0.8) effTemp.innerHTML = `<strong>T = ${tVal} (Sharp)</strong> — 점수 차이 확대 → 분포 뾰족 → 정확·보수적`;
+  else if (T < 1.1) effTemp.innerHTML = `<strong>T = ${tVal} (기본값)</strong> — logit 분포 그대로 유지`;
+  else if (T < 1.5) effTemp.innerHTML = `<strong>T = ${tVal} (Flat)</strong> — 점수 차이 축소 → 분포 평평 → 다양·창의적`;
+  else              effTemp.innerHTML = `<strong>T = ${tVal} (Flat ↑)</strong> — 점수 차이 더 축소 → 낮은 확률 토큰도 선택될 가능성 증가`;
+
+  // 오른쪽: 권장값 테이블 (현재 구간 하이라이트)
+  const TEMP_RANGES = [
+    { label: "코드 생성 / 수학 / 사실 Q&A", min: 0,   max: 0.3 },
+    { label: "번역 / 요약 / 구조화 출력",   min: 0.3, max: 0.7 },
+    { label: "일반 대화 / 챗봇",            min: 0.7, max: 1.0 },
+    { label: "창의적 글쓰기 / 브레인스토밍",min: 1.0, max: 1.5 },
+    { label: "실험적·탐색적 생성",          min: 1.5, max: 2.01 },
+  ];
+  const rows = TEMP_RANGES.map(r => {
+    const active = T >= r.min && T < r.max;
+    const rowStyle = active ? `background:var(--ctl);` : ``;
+    const textStyle = active ? `font-weight:700;color:var(--ctd);` : `color:var(--sub);`;
+    return `<tr style="${rowStyle}">
+      <td style="padding:6px 10px;font-size:0.8rem;${textStyle}">${r.label}</td>
+      <td style="padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;text-align:right;white-space:nowrap;${textStyle}">${r.min.toFixed(1)}~${r.max === 2.01 ? '2.0' : r.max.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById("eff-temp-table").innerHTML = `
+    <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:var(--s2);border-bottom:1px solid var(--border);">
+        <th style="padding:6px 10px;font-size:0.72rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--sub);text-align:left;">용도</th>
+        <th style="padding:6px 10px;font-size:0.72rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--sub);text-align:right;">권장 T</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  document.getElementById("val-topk").textContent = K;
+  const effTopk = document.getElementById("eff-topk");
+  if      (K === 1) effTopk.innerHTML = `<strong>k = 1</strong> — Greedy: 1위 토큰만 선택`;
+  else if (K <= 3)  effTopk.innerHTML = `<strong>k = ${K}</strong> — 상위 ${K}개만 후보 유지`;
+  else if (K >= 8)  effTopk.innerHTML = `<strong>k = 8</strong> — 필터 없음. 후보 8개 전체 유지`;
+  else              effTopk.innerHTML = `<strong>k = ${K}</strong> — 상위 ${K}개만 후보 유지`;
+
+  document.getElementById("val-topp").textContent = P.toFixed(2);
+  const effTopp = document.getElementById("eff-topp");
+  if      (P <= 0.5) effTopp.innerHTML = `<strong>p = ${P.toFixed(2)}</strong> — 누적 합 ${(P*100).toFixed(0)}% 이상 최소 집합만 유지`;
+  else if (P < 0.9)  effTopp.innerHTML = `<strong>p = ${P.toFixed(2)}</strong> — 누적 합 ${(P*100).toFixed(0)}% 이상 최소 집합 유지`;
+  else if (P < 1.0)  effTopp.innerHTML = `<strong>p = ${P.toFixed(2)}</strong> — 넓은 범위. 대부분의 후보 유지`;
+  else               effTopp.innerHTML = `<strong>p = 1.0</strong> — 필터 없음. 전체 후보 유지`;
+}
+
+update();
+</script>
+
+<script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+</body>
+</html>
