@@ -1,1 +1,660 @@
-<h1>Hello Github Page</h1>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docs Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #e2e6ea;
+      --border-light: #eef0f3;
+      --sidebar-bg: #ffffff;
+      --text-primary: #1a1d23;
+      --text-secondary: #5a6475;
+      --text-muted: #8e97a8;
+      --accent: #2563eb;
+      --accent-light: #eff4ff;
+      --accent-hover: #1d4ed8;
+      --active-bg: #eff4ff;
+      --active-text: #1e40af;
+      --hover-bg: #f1f4f8;
+      --sidebar-width: 280px;
+      --header-height: 52px;
+      --folder-color: #f59e0b;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    #header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-height);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    #header .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+      text-decoration: none;
+      user-select: none;
+    }
+
+    #header .logo svg {
+      color: var(--accent);
+    }
+
+    #header .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: 8px;
+      overflow: hidden;
+    }
+
+    #header .breadcrumb span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #header .breadcrumb .sep {
+      color: var(--border);
+      flex-shrink: 0;
+    }
+
+    #header .breadcrumb .active {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* toggle button for mobile */
+    #sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      color: var(--text-secondary);
+      border-radius: 6px;
+    }
+
+    #sidebar-toggle:hover { background: var(--hover-bg); }
+
+    /* ── Layout ── */
+    #layout {
+      display: flex;
+      height: 100vh;
+      padding-top: var(--header-height);
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      height: 100%;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.25s ease, min-width 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    #sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+    }
+
+    #sidebar-inner {
+      padding: 12px 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    #sidebar-inner::-webkit-scrollbar { width: 4px; }
+    #sidebar-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── Tree ── */
+    .tree-section {
+      padding: 4px 8px 12px;
+    }
+
+    .tree-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 10px 4px;
+    }
+
+    .tree-node {
+      user-select: none;
+    }
+
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.12s;
+      position: relative;
+    }
+
+    .tree-row:hover { background: var(--hover-bg); }
+    .tree-row.active { background: var(--active-bg); }
+    .tree-row.active .tree-label { color: var(--active-text); font-weight: 600; }
+
+    .tree-indent {
+      flex-shrink: 0;
+    }
+
+    .tree-chevron {
+      width: 20px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform 0.18s ease;
+    }
+
+    .tree-chevron svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .tree-chevron.open { transform: rotate(90deg); }
+    .tree-chevron.leaf { opacity: 0; pointer-events: none; }
+
+    .tree-icon {
+      width: 18px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+
+    .tree-label {
+      font-size: 13.5px;
+      line-height: 28px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .tree-children {
+      overflow: hidden;
+      transition: max-height 0.22s ease;
+    }
+
+    /* ── Main Content ── */
+    #content {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    #iframe-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #doc-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    /* ── Welcome Screen ── */
+    #welcome {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    #welcome .welcome-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    #welcome h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    #welcome p {
+      font-size: 13px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    #welcome.hidden { display: none; }
+
+    /* ── Loading Overlay ── */
+    #loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+
+    #loading.show { opacity: 1; pointer-events: all; }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Resize Handle ── */
+    #resize-handle {
+      width: 4px;
+      min-width: 4px;
+      height: 100%;
+      cursor: col-resize;
+      background: transparent;
+      transition: background 0.15s;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    #resize-handle:hover,
+    #resize-handle.dragging {
+      background: var(--accent);
+    }
+
+    /* ── Error State ── */
+    #error-msg {
+      display: none;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    #error-msg.show { display: flex; }
+    #error-msg .err-icon { font-size: 32px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      :root { --sidebar-width: 260px; }
+
+      #sidebar-toggle { display: flex; }
+
+      #sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        bottom: 0;
+        z-index: 50;
+        box-shadow: 4px 0 16px rgba(0,0,0,0.08);
+      }
+
+      #resize-handle { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header id="header">
+  <button id="sidebar-toggle" onclick="toggleSidebar()" title="사이드바 토글">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <a class="logo" href="#">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+    <span>Docs</span>
+  </a>
+
+  <div id="breadcrumb" class="breadcrumb" style="display:none;">
+    <span class="sep">›</span>
+    <span id="breadcrumb-text" class="active"></span>
+  </div>
+</header>
+
+<!-- ── Layout ── -->
+<div id="layout">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div id="sidebar-inner">
+      <div class="tree-section">
+        <div class="tree-section-title">문서 목록</div>
+        <div id="tree-root"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Resize Handle -->
+  <div id="resize-handle"></div>
+
+  <!-- Content -->
+  <main id="content">
+    <div id="iframe-container">
+      <div id="welcome">
+        <div class="welcome-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <h2>문서를 선택하세요</h2>
+        <p>왼쪽 트리에서 항목을 클릭하면<br>이 화면에 내용이 표시됩니다.</p>
+      </div>
+
+      <div id="loading">
+        <div class="spinner"></div>
+      </div>
+
+      <div id="error-msg">
+        <span class="err-icon">⚠️</span>
+        <strong>문서를 불러올 수 없습니다</strong>
+        <span id="error-path" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#aaa;"></span>
+      </div>
+
+      <iframe id="doc-frame" title="문서 뷰어" style="display:none;"></iframe>
+    </div>
+  </main>
+
+</div>
+
+<script>
+// ── 상태 ──
+let activeRow = null;
+let sidebarOpen = true;
+
+// ── pages.json 로드 ──
+async function loadTree() {
+  try {
+    const res = await fetch('pages.json');
+    if (!res.ok) throw new Error('pages.json 로드 실패');
+    const data = await res.json();
+    renderTree(data, document.getElementById('tree-root'), 0);
+  } catch (e) {
+    document.getElementById('tree-root').innerHTML =
+      `<div style="padding:12px 16px;font-size:12px;color:#e53e3e;">
+        ⚠️ pages.json을 찾을 수 없습니다.<br>
+        루트에 pages.json 파일을 추가해 주세요.
+      </div>`;
+  }
+}
+
+// ── 트리 렌더링 ──
+function renderTree(nodes, container, depth) {
+  nodes.forEach(node => {
+    const el = document.createElement('div');
+    el.className = 'tree-node';
+
+    const isLeaf = !node.children || node.children.length === 0;
+    const label = node.label || node.path?.split('/').pop() || '(unnamed)';
+
+    // 아이콘
+    let icon = '';
+    if (!isLeaf) {
+      icon = `<span style="font-size:13px;">📁</span>`;
+    } else {
+      icon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8"
+        style="flex-shrink:0;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>`;
+    }
+
+    // 라벨에서 이모지 폴더 prefix 제거 (label에 직접 이모지 넣은 경우 그대로 유지)
+    const displayLabel = label.replace(/^📁\s*/, '');
+
+    el.innerHTML = `
+      <div class="tree-row" data-path="${node.path || ''}" data-leaf="${isLeaf}" data-label="${displayLabel}">
+        <div class="tree-indent" style="width:${depth * 16 + 8}px;"></div>
+        <div class="tree-chevron ${isLeaf ? 'leaf' : ''}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+        <div class="tree-icon">${icon}</div>
+        <div class="tree-label">${displayLabel}</div>
+      </div>
+    `;
+
+    if (!isLeaf) {
+      const childContainer = document.createElement('div');
+      childContainer.className = 'tree-children';
+      childContainer.style.maxHeight = '0px';
+      el.appendChild(childContainer);
+      renderTree(node.children, childContainer, depth + 1);
+    }
+
+    container.appendChild(el);
+
+    const row = el.querySelector('.tree-row');
+    row.addEventListener('click', () => handleRowClick(row, el, isLeaf, node));
+  });
+}
+
+// ── 행 클릭 처리 ──
+function handleRowClick(row, el, isLeaf, node) {
+  if (isLeaf) {
+    // 문서 로드
+    if (activeRow) activeRow.classList.remove('active');
+    row.classList.add('active');
+    activeRow = row;
+
+    const label = row.dataset.label;
+    loadDoc(node.path, label);
+
+    // 모바일: 클릭 후 사이드바 닫기
+    if (window.innerWidth <= 700) {
+      document.getElementById('sidebar').classList.add('collapsed');
+      sidebarOpen = false;
+    }
+  } else {
+    // 폴더 토글
+    const childContainer = el.querySelector('.tree-children');
+    const chevron = row.querySelector('.tree-chevron');
+    const isOpen = chevron.classList.contains('open');
+
+    if (isOpen) {
+      childContainer.style.maxHeight = '0px';
+      chevron.classList.remove('open');
+    } else {
+      childContainer.style.maxHeight = childContainer.scrollHeight + 2000 + 'px';
+      chevron.classList.add('open');
+    }
+  }
+}
+
+// ── 문서 로드 ──
+function loadDoc(path, label) {
+  const frame = document.getElementById('doc-frame');
+  const welcome = document.getElementById('welcome');
+  const loading = document.getElementById('loading');
+  const errorMsg = document.getElementById('error-msg');
+
+  welcome.classList.add('hidden');
+  errorMsg.classList.remove('show');
+  frame.style.display = 'none';
+  loading.classList.add('show');
+
+  // 브레드크럼 업데이트
+  const bc = document.getElementById('breadcrumb');
+  const bcText = document.getElementById('breadcrumb-text');
+  bcText.textContent = label;
+  bc.style.display = 'flex';
+
+  // iframe 로드
+  frame.onload = () => {
+    loading.classList.remove('show');
+    frame.style.display = 'block';
+  };
+
+  frame.onerror = () => {
+    loading.classList.remove('show');
+    document.getElementById('error-path').textContent = path;
+    errorMsg.classList.add('show');
+  };
+
+  // 일정 시간 후 오류 처리 (GitHub Pages는 404도 onload 발생)
+  const timeoutId = setTimeout(() => {
+    // iframe이 정상 로드되었으면 패스, 아니면 체크
+    if (frame.style.display === 'none') {
+      loading.classList.remove('show');
+      frame.style.display = 'block';
+    }
+  }, 8000);
+
+  frame.src = path;
+}
+
+// ── 사이드바 토글 ──
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebarOpen = !sidebarOpen;
+  sidebar.classList.toggle('collapsed', !sidebarOpen);
+}
+
+// ── 리사이즈 핸들 ──
+(function initResize() {
+  const handle = document.getElementById('resize-handle');
+  const sidebar = document.getElementById('sidebar');
+  let dragging = false;
+  let startX = 0;
+  let startWidth = 0;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startWidth = sidebar.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = e.clientX - startX;
+    const newWidth = Math.min(480, Math.max(180, startWidth + delta));
+    sidebar.style.width = newWidth + 'px';
+    sidebar.style.minWidth = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+})();
+
+// ── 폴더 전체 펼치기/접기 단축키 ──
+document.addEventListener('keydown', e => {
+  if (e.key === '[') {
+    document.querySelectorAll('.tree-chevron:not(.leaf).open').forEach(ch => {
+      ch.classList.remove('open');
+      ch.closest('.tree-node').querySelector('.tree-children').style.maxHeight = '0px';
+    });
+  }
+  if (e.key === ']') {
+    document.querySelectorAll('.tree-chevron:not(.leaf):not(.open)').forEach(ch => {
+      ch.classList.add('open');
+      ch.closest('.tree-node').querySelector('.tree-children').style.maxHeight = '9999px';
+    });
+  }
+});
+
+// ── Init ──
+loadTree();
+
+window.onload = function() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+};
+</script>
+</body>
+</html>
