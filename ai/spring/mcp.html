@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Spring AI — MCP 완전 가이드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --surface2:#f9fafb;
+  --border:#e4e7ec;
+  --border2:#d0d5dd;
+  --text-1:#0f1117;
+  --text-2:#3d4451;
+  --text-3:#6b7280;
+  --text-4:#9ca3af;
+
+  --spring:#6db33f;
+  --spring-dark:#4a7c2a;
+  --spring-bg:#f0f7e9;
+  --spring-border:#c3e6a0;
+
+  --mcp:#0ea5e9;
+  --mcp-dark:#0369a1;
+  --mcp-bg:#e0f2fe;
+  --mcp-border:#7dd3fc;
+
+  --tool:#f59e0b;
+  --tool-dark:#b45309;
+  --tool-bg:#fef9ee;
+  --tool-border:#fcd34d;
+
+  --red:#ef4444;
+  --red-bg:#fef2f2;
+  --green:#22c55e;
+  --green-bg:#f0fdf4;
+
+  --code-bg:#1e2433;
+  --code-text:#e2e8f0;
+  --code-keyword:#7dd3fc;
+  --code-annotation:#86efac;
+  --code-string:#fca5a5;
+  --code-comment:#64748b;
+  --code-type:#c4b5fd;
+
+  --radius:10px;
+  --radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
+  --shadow-lg:0 4px 16px rgba(0,0,0,.1),0 8px 32px rgba(0,0,0,.08);
+}
+
+html{font-size:14px;overflow-x:hidden}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--bg);
+  color:var(--text-1);
+  line-height:1.7;
+  max-width:1024px;
+  margin:0 auto;
+  padding:0;
+  overflow-x:hidden;
+}
+
+/* ── 헤더 ── */
+.hero{
+  background:linear-gradient(135deg,#0f1b2d 0%,#1a2e4a 60%,#0d3a2e 100%);
+  padding:48px 40px 40px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 80% at 80% 20%,rgba(109,179,63,.15) 0%,transparent 60%),
+             radial-gradient(ellipse 40% 60% at 20% 80%,rgba(14,165,233,.12) 0%,transparent 60%);
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(109,179,63,.15);border:1px solid rgba(109,179,63,.3);
+  color:#86efac;font-size:11px;font-weight:600;letter-spacing:.06em;
+  padding:4px 10px;border-radius:99px;margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace;
+  position:relative;
+}
+.hero h1{
+  font-size:28px;font-weight:700;color:#fff;
+  line-height:1.3;position:relative;margin-bottom:10px;
+}
+.hero h1 span{color:#6db33f;}
+.hero p{
+  font-size:14px;color:rgba(255,255,255,.6);
+  max-width:540px;position:relative;line-height:1.8;
+}
+.hero-tags{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;position:relative;
+}
+.hero-tag{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.7);font-size:11.5px;padding:3px 10px;border-radius:6px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ── 탭 네비 ── */
+.tab-nav{
+  display:flex;gap:0;background:var(--surface);
+  border-bottom:2px solid var(--border);
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  overflow-x:auto;scrollbar-width:none;
+}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:1;min-width:120px;padding:14px 16px;
+  background:none;border:none;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
+  color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-2px;
+  transition:all .18s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--text-1);background:var(--surface2);}
+.tab-btn.active{color:var(--mcp);border-bottom-color:var(--mcp);font-weight:600;}
+
+/* ── 섹션 ── */
+.section{display:none;padding:32px 32px 48px;animation:fadeIn .2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 공통 컴포넌트 ── */
+.section-title{
+  font-size:18px;font-weight:700;color:var(--text-1);
+  margin-bottom:6px;display:flex;align-items:center;gap:8px;
+}
+.section-sub{font-size:13px;color:var(--text-3);margin-bottom:28px;line-height:1.7;}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:24px;
+  box-shadow:var(--shadow);
+}
+.card+.card,.card+.grid,.grid+.card{margin-top:16px;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* ── 배지 ── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:600;letter-spacing:.04em;
+  padding:2px 8px;border-radius:99px;
+  font-family:'JetBrains Mono',monospace;
+}
+.badge-tool{background:var(--tool-bg);color:var(--tool-dark);border:1px solid var(--tool-border);}
+.badge-mcp{background:var(--mcp-bg);color:var(--mcp-dark);border:1px solid var(--mcp-border);}
+.badge-spring{background:var(--spring-bg);color:var(--spring-dark);border:1px solid var(--spring-border);}
+.badge-new{background:#fdf4ff;color:#7c3aed;border:1px solid #ddd6fe;}
+
+/* ── 비교 테이블 ── */
+.compare-table{width:100%;border-collapse:collapse;font-size:13px;}
+.compare-table th{
+  padding:10px 14px;text-align:left;font-weight:600;font-size:11.5px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);
+  border-bottom:2px solid var(--border);background:var(--surface2);
+}
+.compare-table th:first-child{border-radius:8px 0 0 0;}
+.compare-table th:last-child{border-radius:0 8px 0 0;}
+.compare-table td{
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  vertical-align:top;line-height:1.6;
+}
+.compare-table tr:last-child td{border-bottom:none;}
+.compare-table tr:hover td{background:var(--surface2);}
+.compare-table .col-feature{font-weight:600;color:var(--text-2);width:22%;}
+.compare-table .col-tool{background:rgba(245,158,11,.04);}
+.compare-table .col-mcp{background:rgba(14,165,233,.04);}
+.ok{color:var(--green);font-weight:600;}
+.no{color:var(--red);}
+.partial{color:var(--tool-dark);}
+
+/* ── 코드 블록 ── */
+.code-block{
+  background:var(--code-bg);border-radius:var(--radius);
+  overflow:hidden;margin:12px 0;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.code-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.code-lang{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:rgba(255,255,255,.35);letter-spacing:.06em;
+}
+.code-title{font-size:12px;color:rgba(255,255,255,.5);}
+.code-body{
+  padding:16px 20px;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;line-height:1.8;color:var(--code-text);
+  overflow-x:auto;white-space:pre;
+}
+.kw{color:var(--code-keyword);}
+.an{color:var(--code-annotation);}
+.st{color:var(--code-string);}
+.cm{color:var(--code-comment);font-style:italic;}
+.ty{color:var(--code-type);}
+.nm{color:#fbbf24;}
+
+/* ── 아키텍처 다이어그램 ── */
+.arch-diagram{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:28px;
+  box-shadow:var(--shadow);
+}
+
+/* ── 플로우 ── */
+.flow{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;}
+.flow-box{
+  flex-shrink:0;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 14px;font-size:12.5px;font-weight:500;
+  text-align:center;min-width:80px;
+}
+.flow-arrow{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  padding:0 6px;color:var(--text-4);font-size:11px;
+}
+.flow-arrow .arr{font-size:16px;line-height:1;}
+.flow-arrow .lbl{font-size:10.5px;color:var(--text-4);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+
+/* ── 특징 카드 ── */
+.feature-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;
+  box-shadow:var(--shadow);transition:box-shadow .18s,transform .18s;
+  cursor:default;
+}
+.feature-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+.feature-icon{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:12px;
+}
+.feature-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.feature-desc{font-size:12.5px;color:var(--text-3);line-height:1.7;}
+
+/* ── 태그 목록 ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tag{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text-2);font-size:11.5px;padding:2px 8px;
+  border-radius:6px;font-family:'JetBrains Mono',monospace;
+}
+
+/* ── 섹션 구분선 ── */
+.divider{
+  height:1px;background:var(--border);margin:28px 0;
+}
+
+/* ── 강조 박스 ── */
+.callout{
+  display:flex;gap:12px;padding:14px 16px;
+  border-radius:var(--radius);border-left:3px solid;
+  margin:16px 0;font-size:13px;line-height:1.7;
+}
+.callout.info{background:var(--mcp-bg);border-color:var(--mcp);color:var(--mcp-dark);}
+.callout.warn{background:var(--tool-bg);border-color:var(--tool);color:var(--tool-dark);}
+.callout.good{background:var(--green-bg);border-color:var(--green);color:#166534;}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* ── 수직 타임라인 ── */
+.timeline{padding-left:24px;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:20px;}
+.tl-item{position:relative;}
+.tl-dot{
+  position:absolute;left:-31px;top:4px;
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--surface);
+}
+.tl-title{font-size:13.5px;font-weight:600;margin-bottom:4px;}
+.tl-body{font-size:12.5px;color:var(--text-3);line-height:1.7;}
+
+/* ── Transport 탭 ── */
+.sub-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.sub-tab{
+  padding:6px 14px;border-radius:6px;font-size:12.5px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface2);
+  color:var(--text-3);transition:all .15s;
+}
+.sub-tab.active{background:var(--mcp);color:#fff;border-color:var(--mcp);}
+.sub-panel{display:none;}
+.sub-panel.active{display:block;}
+
+/* ── 반응형 ── */
+@media(max-width:680px){
+  .hero{padding:32px 20px 28px;}
+  .hero h1{font-size:22px;}
+  .section{padding:20px 16px 40px;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .tab-btn{min-width:90px;font-size:12px;padding:12px 10px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<div class="hero">
+  <div class="hero-badge">⚡ Spring AI 1.0</div>
+  <h1>Model Context Protocol<br><span>완전 가이드</span></h1>
+  <p>@Tool 방식과의 차이점부터 MCP 아키텍처, Transport, 클라이언트·서버 구성까지 Spring AI 기준으로 정리.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">spring-ai-mcp</span>
+    <span class="hero-tag">McpClient</span>
+    <span class="hero-tag">McpServer</span>
+    <span class="hero-tag">STDIO</span>
+    <span class="hero-tag">SSE</span>
+    <span class="hero-tag">Tool / Resource / Prompt</span>
+  </div>
+</div>
+
+<!-- ── 탭 네비 ── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('compare')">① @Tool vs MCP</button>
+  <button class="tab-btn" onclick="showTab('arch')">② 아키텍처</button>
+  <button class="tab-btn" onclick="showTab('features')">③ 핵심 기능</button>
+  <button class="tab-btn" onclick="showTab('transport')">④ Transport</button>
+  <button class="tab-btn" onclick="showTab('setup')">⑤ 구성 코드</button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+  탭 ① @Tool vs MCP
+═══════════════════════════════════════════ -->
+<div class="section active" id="tab-compare">
+  <div class="section-title">🔧 @Tool vs MCP — 무엇이 다른가</div>
+  <div class="section-sub">
+    Spring AI의 두 가지 Tool 통합 방식. @Tool은 인프로세스, MCP는 아웃오브프로세스(프로토콜 기반) 연동.
+  </div>
+
+  <!-- 핵심 차이 한 눈에 -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="border-top:3px solid var(--tool);">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <span class="badge badge-tool">@Tool</span>
+        <span style="font-size:12px;color:var(--text-3);">Spring AI Native</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.9;">
+        <div>📦 <b>In-Process</b> — 같은 JVM 내 실행</div>
+        <div>⚙️ 메서드에 <code style="background:var(--tool-bg);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11.5px;">@Tool</code> 어노테이션 선언</div>
+        <div>🔗 Spring Bean으로 등록, 자동 연결</div>
+        <div>📝 스키마: 파라미터 타입 → 자동 생성</div>
+        <div>🚫 외부 시스템 공유 불가</div>
+        <div>🚫 언어 종속 (Java/Kotlin 전용)</div>
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--mcp);">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <span class="badge badge-mcp">MCP</span>
+        <span style="font-size:12px;color:var(--text-3);">Anthropic 표준 프로토콜</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.9;">
+        <div>🌐 <b>Out-of-Process</b> — 별도 프로세스/서버</div>
+        <div>📡 JSON-RPC 2.0 기반 통신</div>
+        <div>🔗 STDIO / SSE 두 가지 Transport</div>
+        <div>📝 스키마: JSON Schema로 명시 정의</div>
+        <div>✅ 여러 AI 에이전트에서 재사용</div>
+        <div>✅ 언어 독립 (Node, Python, Java 등)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상세 비교 테이블 -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>비교 항목</th>
+          <th style="color:var(--tool-dark);">@Tool 방식</th>
+          <th style="color:var(--mcp-dark);">MCP 방식</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-feature">실행 위치</td>
+          <td class="col-tool">동일 JVM 내부</td>
+          <td class="col-mcp">독립 프로세스 / 원격 서버</td>
+        </tr>
+        <tr>
+          <td class="col-feature">통신 방식</td>
+          <td class="col-tool">메서드 직접 호출</td>
+          <td class="col-mcp">JSON-RPC 2.0 over STDIO/SSE</td>
+        </tr>
+        <tr>
+          <td class="col-feature">선언 방법</td>
+          <td class="col-tool"><code style="font-family:'JetBrains Mono',monospace;font-size:12px;">@Tool</code> 어노테이션</td>
+          <td class="col-mcp">McpServerFeatures.SyncToolSpecification</td>
+        </tr>
+        <tr>
+          <td class="col-feature">재사용성</td>
+          <td class="col-tool"><span class="no">✗</span> 단일 앱 내부</td>
+          <td class="col-mcp"><span class="ok">✓</span> 다중 클라이언트/에이전트</td>
+        </tr>
+        <tr>
+          <td class="col-feature">언어 독립성</td>
+          <td class="col-tool"><span class="no">✗</span> Java/Kotlin 전용</td>
+          <td class="col-mcp"><span class="ok">✓</span> 모든 언어 구현체</td>
+        </tr>
+        <tr>
+          <td class="col-feature">동적 갱신</td>
+          <td class="col-tool"><span class="no">✗</span> 재기동 필요</td>
+          <td class="col-mcp"><span class="ok">✓</span> 런타임 Tools 변경 알림</td>
+        </tr>
+        <tr>
+          <td class="col-feature">제공 기능</td>
+          <td class="col-tool">Tool(함수) 만</td>
+          <td class="col-mcp">Tool + Resource + Prompt</td>
+        </tr>
+        <tr>
+          <td class="col-feature">적합한 상황</td>
+          <td class="col-tool">단순 앱 내 기능 호출</td>
+          <td class="col-mcp">공유 서비스, 마이크로서비스 통합</td>
+        </tr>
+        <tr>
+          <td class="col-feature">복잡도</td>
+          <td class="col-tool"><span class="ok">낮음</span> — 빠른 시작</td>
+          <td class="col-mcp"><span class="partial">중간</span> — 설정 필요</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 코드 비교 -->
+  <div class="section-title" style="font-size:15px;">코드로 보는 차이</div>
+  <div class="grid-2" style="margin-top:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span class="badge badge-tool">@Tool 방식</span>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">JAVA</span>
+          <span class="code-title">WeatherService.java</span>
+        </div>
+        <div class="code-body"><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">WeatherService</span> {
+
+  <span class="an">@Tool</span>(description = <span class="st">"날씨 조회"</span>)
+  <span class="kw">public</span> <span class="ty">String</span> <span class="nm">getWeather</span>(
+    <span class="an">@ToolParam</span> <span class="ty">String</span> city
+  ) {
+    <span class="kw">return</span> weatherApi.fetch(city);
+  }
+}
+
+<span class="cm">// ChatClient에 직접 등록</span>
+chatClient.tools(weatherService);</div>
+      </div>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <span>이 서비스는 이 앱에서만 사용 가능. 다른 AI 에이전트에서 재활용하려면 코드 복사 필요.</span>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span class="badge badge-mcp">MCP 방식</span>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">JAVA</span>
+          <span class="code-title">WeatherMcpServer.java</span>
+        </div>
+        <div class="code-body"><span class="cm">// MCP 서버 — 독립 프로세스로 기동</span>
+<span class="kw">var</span> tool = <span class="kw">new</span> <span class="ty">McpServerFeatures</span>
+  .<span class="nm">SyncToolSpecification</span>(
+    <span class="kw">new</span> <span class="ty">Tool</span>(<span class="st">"get_weather"</span>,
+              <span class="st">"날씨 조회"</span>, schema),
+    req -> {
+      <span class="ty">String</span> city = req.arguments()
+                        .get(<span class="st">"city"</span>);
+      <span class="kw">return</span> callResult(fetch(city));
+    }
+  );
+
+<span class="cm">// 어느 AI 클라이언트든 연결 가능 ✓</span></div>
+      </div>
+      <div class="callout good">
+        <span class="callout-icon">✅</span>
+        <span>MCP 서버 하나를 여러 Claude / GPT / Spring AI 클라이언트가 동시에 연결해서 사용.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+  탭 ② 아키텍처
+═══════════════════════════════════════════ -->
+<div class="section" id="tab-arch">
+  <div class="section-title">🏗️ MCP 아키텍처 — Host / Client / Server</div>
+  <div class="section-sub">
+    세 계층으로 구성. Host가 여러 MCP Client를 관리하고, 각 Client가 외부 MCP Server와 연결.
+  </div>
+
+  <!-- 아키텍처 SVG -->
+  <div class="arch-diagram">
+    <svg width="100%" viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'Noto Sans KR',sans-serif;">
+      <!-- 배경 레이어 -->
+      <rect x="10" y="10" width="860" height="340" rx="12" fill="#f8fafc" stroke="#e4e7ec" stroke-width="1.5"/>
+
+      <!-- HOST 영역 -->
+      <rect x="30" y="30" width="380" height="300" rx="10" fill="#fff" stroke="#6db33f" stroke-width="2" stroke-dasharray="6,3"/>
+      <rect x="45" y="22" width="80" height="20" rx="4" fill="#6db33f"/>
+      <text x="85" y="35" text-anchor="middle" fill="white" font-size="11" font-weight="700">HOST APP</text>
+
+      <!-- AI Model -->
+      <rect x="60" y="50" width="160" height="64" rx="8" fill="#f0f7e9" stroke="#6db33f" stroke-width="1.5"/>
+      <text x="140" y="74" text-anchor="middle" fill="#2d5a1b" font-size="12" font-weight="700">🤖 AI Model</text>
+      <text x="140" y="91" text-anchor="middle" fill="#4a7c2a" font-size="11">(Claude / GPT 등)</text>
+
+      <!-- MCP Client 1 -->
+      <rect x="60" y="140" width="160" height="54" rx="8" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.5"/>
+      <text x="140" y="163" text-anchor="middle" fill="#0369a1" font-size="11.5" font-weight="700">MCP Client 1</text>
+      <text x="140" y="179" text-anchor="middle" fill="#0369a1" font-size="10.5">McpSyncClient</text>
+
+      <!-- MCP Client 2 -->
+      <rect x="60" y="212" width="160" height="54" rx="8" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.5"/>
+      <text x="140" y="235" text-anchor="middle" fill="#0369a1" font-size="11.5" font-weight="700">MCP Client 2</text>
+      <text x="140" y="251" text-anchor="middle" fill="#0369a1" font-size="10.5">McpAsyncClient</text>
+
+      <!-- Spring AI 브릿지 -->
+      <rect x="250" y="140" width="140" height="126" rx="8" fill="#fef9ee" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="320" y="170" text-anchor="middle" fill="#b45309" font-size="11" font-weight="700">Spring AI</text>
+      <text x="320" y="186" text-anchor="middle" fill="#b45309" font-size="10.5">ToolCallbackProvider</text>
+      <rect x="265" y="200" width="110" height="22" rx="5" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+      <text x="320" y="215" text-anchor="middle" fill="#92400e" font-size="10.5" font-weight="600">Tool Callbacks</text>
+      <rect x="265" y="228" width="110" height="22" rx="5" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+      <text x="320" y="243" text-anchor="middle" fill="#92400e" font-size="10.5" font-weight="600">ChatClient 연동</text>
+
+      <!-- 화살표: AI → Client 1 -->
+      <line x1="220" y1="80" x2="235" y2="80" stroke="#94a3b8" stroke-width="1"/>
+      <line x1="235" y1="80" x2="235" y2="167" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="220" y1="167" x2="235" y2="167" stroke="#94a3b8" stroke-width="1"/>
+      <line x1="235" y1="167" x2="220" y2="167" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+      <!-- 화살표: AI → Client 2 -->
+      <line x1="235" y1="238" x2="220" y2="238" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+      <!-- TRANSPORT 레이블 -->
+      <text x="450" y="25" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" letter-spacing="1">TRANSPORT LAYER</text>
+
+      <!-- 연결선: Client1 → Server A -->
+      <line x1="420" y1="167" x2="500" y2="130" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-blue2)"/>
+      <!-- 연결선: Client2 → Server B -->
+      <line x1="420" y1="238" x2="500" y2="238" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-blue2)"/>
+      <!-- 연결선: Client2 → Server C -->
+      <line x1="420" y1="238" x2="500" y2="310" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+
+      <!-- Transport 라벨 -->
+      <text x="460" y="140" text-anchor="middle" fill="#0369a1" font-size="10" font-style="italic">SSE</text>
+      <text x="460" y="228" text-anchor="middle" fill="#0369a1" font-size="10" font-style="italic">STDIO</text>
+      <text x="450" y="284" text-anchor="middle" fill="#6b7280" font-size="10" font-style="italic">SSE</text>
+
+      <!-- MCP Server A -->
+      <rect x="500" y="88" width="160" height="80" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="580" y="116" text-anchor="middle" fill="#166534" font-size="12" font-weight="700">🗄️ MCP Server A</text>
+      <text x="580" y="133" text-anchor="middle" fill="#15803d" font-size="10.5">Tools: DB 조회/수정</text>
+      <text x="580" y="149" text-anchor="middle" fill="#15803d" font-size="10.5">Resources: 스키마 정보</text>
+
+      <!-- MCP Server B -->
+      <rect x="500" y="196" width="160" height="80" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="580" y="224" text-anchor="middle" fill="#6b21a8" font-size="12" font-weight="700">🌐 MCP Server B</text>
+      <text x="580" y="241" text-anchor="middle" fill="#7e22ce" font-size="10.5">Tools: 웹 검색/스크래핑</text>
+      <text x="580" y="257" text-anchor="middle" fill="#7e22ce" font-size="10.5">Prompts: 검색 템플릿</text>
+
+      <!-- MCP Server C -->
+      <rect x="500" y="294" width="160" height="46" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+      <text x="580" y="316" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="700">📁 MCP Server C</text>
+      <text x="580" y="332" text-anchor="middle" fill="#c2410c" font-size="10.5">Tools: 파일 시스템</text>
+
+      <!-- 외부 시스템 -->
+      <rect x="690" y="100" width="155" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="767" y="126" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">🗃️ Database</text>
+      <text x="767" y="143" text-anchor="middle" fill="#64748b" font-size="10.5">PostgreSQL / MySQL</text>
+      <line x1="660" y1="128" x2="690" y2="128" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+      <rect x="690" y="196" width="155" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="767" y="222" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">🔍 Search API</text>
+      <text x="767" y="239" text-anchor="middle" fill="#64748b" font-size="10.5">Google / Tavily</text>
+      <line x1="660" y1="228" x2="690" y2="228" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+      <!-- 화살표 정의 -->
+      <defs>
+        <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#0ea5e9"/>
+        </marker>
+        <marker id="arr-blue2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#0ea5e9"/>
+        </marker>
+        <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 3계층 설명 -->
+  <div class="grid-3">
+    <div class="card" style="border-top:3px solid var(--spring);">
+      <div class="feature-icon" style="background:var(--spring-bg);">🏠</div>
+      <div class="feature-title">Host Application</div>
+      <div class="feature-desc">
+        AI 모델을 실행하는 메인 앱.<br>
+        → Spring Boot 앱 자체<br>
+        → 여러 MCP Client를 보유<br>
+        → ChatClient 통해 AI 호출
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--mcp);">
+      <div class="feature-icon" style="background:var(--mcp-bg);">🔌</div>
+      <div class="feature-title">MCP Client</div>
+      <div class="feature-desc">
+        MCP 서버와 1:1 연결 담당.<br>
+        → <code style="font-size:11px;font-family:'JetBrains Mono',monospace;">McpSyncClient</code> / <code style="font-size:11px;font-family:'JetBrains Mono',monospace;">McpAsyncClient</code><br>
+        → 서버 Tool 목록 캐시<br>
+        → 요청/응답 직렬화 처리
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e;">
+      <div class="feature-icon" style="background:var(--green-bg);">⚙️</div>
+      <div class="feature-title">MCP Server</div>
+      <div class="feature-desc">
+        실제 기능을 제공하는 서버.<br>
+        → Tool / Resource / Prompt 노출<br>
+        → 독립 프로세스 or HTTP 서버<br>
+        → 언어 무관하게 구현 가능
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+  탭 ③ 핵심 기능
+═══════════════════════════════════════════ -->
+<div class="section" id="tab-features">
+  <div class="section-title">⚙️ MCP 핵심 기능 3종</div>
+  <div class="section-sub">
+    MCP 서버가 클라이언트에 제공할 수 있는 세 가지 기능 유형. 각각 역할이 명확히 구분됨.
+  </div>
+
+  <!-- 3종 개요 -->
+  <div class="grid-3">
+    <div class="feature-card" style="border-top:3px solid #f59e0b;">
+      <div class="feature-icon" style="background:#fef9ee;">🛠️</div>
+      <div class="feature-title" style="color:#b45309;">Tool</div>
+      <div class="feature-desc">
+        AI가 직접 <b>호출(실행)</b>하는 함수.<br>
+        → 부수효과 있는 액션<br>
+        → DB 조회/수정, API 호출<br>
+        → LLM이 판단해서 호출 시점 결정
+      </div>
+      <div class="tag-list">
+        <span class="tag">model-controlled</span>
+        <span class="tag">action</span>
+      </div>
+    </div>
+    <div class="feature-card" style="border-top:3px solid #0ea5e9;">
+      <div class="feature-icon" style="background:#e0f2fe;">📄</div>
+      <div class="feature-title" style="color:#0369a1;">Resource</div>
+      <div class="feature-desc">
+        AI에게 제공하는 <b>읽기 전용 컨텍스트</b>.<br>
+        → 파일, DB 레코드, API 결과<br>
+        → URI로 식별 (file:// / db://<br> → 앱이 언제 포함할지 결정
+      </div>
+      <div class="tag-list">
+        <span class="tag">app-controlled</span>
+        <span class="tag">read-only</span>
+      </div>
+    </div>
+    <div class="feature-card" style="border-top:3px solid #a855f7;">
+      <div class="feature-icon" style="background:#fdf4ff;">💬</div>
+      <div class="feature-title" style="color:#7c3aed;">Prompt</div>
+      <div class="feature-desc">
+        재사용 가능한 <b>프롬프트 템플릿</b>.<br>
+        → 파라미터화된 메시지 구조<br>
+        → 멀티턴 대화 시나리오<br>
+        → 사용자 또는 앱이 선택
+      </div>
+      <div class="tag-list">
+        <span class="tag">user-controlled</span>
+        <span class="tag">template</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Tool 상세 -->
+  <div class="section-title" style="font-size:15px;">🛠️ Tool — Spring AI 서버 구현</div>
+  <div class="code-block" style="margin-top:12px;">
+    <div class="code-header">
+      <span class="code-lang">JAVA</span>
+      <span class="code-title">McpServer Tool 등록</span>
+    </div>
+    <div class="code-body"><span class="cm">// 1. JSON Schema 정의</span>
+<span class="ty">String</span> schema = <span class="st">"""
+  {
+    "type": "object",
+    "properties": {
+      "city": { "type": "string", "description": "도시명" }
+    },
+    "required": ["city"]
+  }
+  """</span>;
+
+<span class="cm">// 2. Tool Specification 생성</span>
+<span class="kw">var</span> weatherTool = <span class="kw">new</span> <span class="ty">McpServerFeatures.SyncToolSpecification</span>(
+  <span class="kw">new</span> <span class="ty">Tool</span>(<span class="st">"get_weather"</span>, <span class="st">"현재 날씨 조회"</span>, schema),
+  (<span class="ty">McpSyncServerExchange</span> exchange, <span class="ty">Map</span> args) -> {
+    <span class="ty">String</span> city = (<span class="ty">String</span>) args.get(<span class="st">"city"</span>);
+    <span class="kw">return new</span> <span class="ty">CallToolResult</span>(List.of(
+      <span class="kw">new</span> <span class="ty">TextContent</span>(fetchWeather(city))
+    ), <span class="kw">false</span>);
+  }
+);
+
+<span class="cm">// 3. McpServer에 등록</span>
+<span class="ty">McpSyncServer</span> server = <span class="ty">McpServer</span>.sync(transport)
+  .serverInfo(<span class="st">"weather-server"</span>, <span class="st">"1.0"</span>)
+  .tools(weatherTool)       <span class="cm">// Tool 등록</span>
+  .build();</div>
+  </div>
+
+  <!-- Resource 상세 -->
+  <div class="section-title" style="font-size:15px;margin-top:24px;">📄 Resource — 컨텍스트 제공</div>
+  <div class="code-block" style="margin-top:12px;">
+    <div class="code-header">
+      <span class="code-lang">JAVA</span>
+      <span class="code-title">Resource 등록</span>
+    </div>
+    <div class="code-body"><span class="kw">var</span> schemaResource = <span class="kw">new</span> <span class="ty">McpServerFeatures.SyncResourceSpecification</span>(
+  <span class="kw">new</span> <span class="ty">Resource</span>(
+    <span class="st">"db://schema/users"</span>,          <span class="cm">// URI</span>
+    <span class="st">"users 테이블 스키마"</span>,            <span class="cm">// 이름</span>
+    <span class="st">"DB 스키마 구조 정보"</span>,            <span class="cm">// 설명</span>
+    <span class="st">"text/plain"</span>, <span class="kw">null</span>             <span class="cm">// mimeType</span>
+  ),
+  (exchange, req) -> <span class="kw">new</span> <span class="ty">ReadResourceResult</span>(List.of(
+    <span class="kw">new</span> <span class="ty">TextResourceContents</span>(
+      req.uri(), <span class="st">"text/plain"</span>,
+      getSchemaText()           <span class="cm">// 실제 내용 반환</span>
+    )
+  ))
+);</div>
+  </div>
+
+  <!-- Prompt 상세 -->
+  <div class="section-title" style="font-size:15px;margin-top:24px;">💬 Prompt — 템플릿 제공</div>
+  <div class="code-block" style="margin-top:12px;">
+    <div class="code-header">
+      <span class="code-lang">JAVA</span>
+      <span class="code-title">Prompt 템플릿 등록</span>
+    </div>
+    <div class="code-body"><span class="kw">var</span> sqlPrompt = <span class="kw">new</span> <span class="ty">McpServerFeatures.SyncPromptSpecification</span>(
+  <span class="kw">new</span> <span class="ty">Prompt</span>(<span class="st">"sql-query-helper"</span>, <span class="st">"SQL 작성 도우미"</span>,
+    List.of(<span class="kw">new</span> <span class="ty">PromptArgument</span>(<span class="st">"table"</span>, <span class="st">"테이블명"</span>, <span class="kw">true</span>))
+  ),
+  (exchange, req) -> {
+    <span class="ty">String</span> table = req.arguments().get(<span class="st">"table"</span>);
+    <span class="kw">return new</span> <span class="ty">GetPromptResult</span>(<span class="st">"SQL 쿼리 작성 도우미"</span>, List.of(
+      <span class="kw">new</span> <span class="ty">PromptMessage</span>(<span class="ty">Role.USER</span>,
+        <span class="kw">new</span> <span class="ty">TextContent</span>(<span class="st">"</span>" + table + <span class="st">" 테이블 조회 쿼리를 작성해줘"</span>))
+    ));
+  }
+);</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+  탭 ④ Transport
+═══════════════════════════════════════════ -->
+<div class="section" id="tab-transport">
+  <div class="section-title">🚌 Transport — STDIO vs SSE</div>
+  <div class="section-sub">
+    MCP Client ↔ Server 간 통신 채널. 두 가지 방식 중 배포 환경에 맞게 선택.
+  </div>
+
+  <!-- 서브 탭 -->
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSubTab('stdio')">STDIO</div>
+    <div class="sub-tab" onclick="showSubTab('sse')">SSE (HTTP)</div>
+    <div class="sub-tab" onclick="showSubTab('compare-tr')">비교</div>
+  </div>
+
+  <!-- STDIO -->
+  <div class="sub-panel active" id="subtab-stdio">
+    <div class="card" style="border-left:4px solid #22c55e;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="font-size:22px;">⚡</span>
+        <div>
+          <div style="font-weight:700;font-size:15px;">STDIO Transport</div>
+          <div style="font-size:12px;color:var(--text-3);">표준 입출력 파이프로 통신 — 로컬 프로세스 전용</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#166534;">✅ 장점</div>
+          <div style="color:var(--text-2);line-height:1.9;">
+            → 네트워크 설정 불필요<br>
+            → 오버헤드 최소 (매우 빠름)<br>
+            → 보안 설정 단순<br>
+            → 개발/테스트 환경 최적
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#991b1b;">⚠️ 제약</div>
+          <div style="color:var(--text-2);line-height:1.9;">
+            → 동일 머신에서만 동작<br>
+            → 원격 서버 연결 불가<br>
+            → 다중 클라이언트 공유 어려움<br>
+            → 클라이언트가 서버 프로세스 관리
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:16px;">
+      <div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JAVA</span><span class="code-title">STDIO 서버</span></div>
+          <div class="code-body"><span class="cm">// 서버: STDIO로 기동</span>
+<span class="kw">var</span> transport = <span class="kw">new</span>
+  <span class="ty">StdioServerTransport</span>();
+
+<span class="ty">McpSyncServer</span> server =
+  <span class="ty">McpServer</span>.sync(transport)
+    .serverInfo(<span class="st">"my-server"</span>,<span class="st">"1.0"</span>)
+    .tools(myTool)
+    .build();</div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JAVA</span><span class="code-title">STDIO 클라이언트</span></div>
+          <div class="code-body"><span class="cm">// 클라이언트: 프로세스 실행</span>
+<span class="kw">var</span> params = <span class="ty">ServerParameters</span>
+  .builder(<span class="st">"java"</span>)
+  .args(<span class="st">"-jar"</span>,<span class="st">"server.jar"</span>)
+  .build();
+<span class="kw">var</span> transport = <span class="kw">new</span>
+  <span class="ty">StdioClientTransport</span>(params);
+<span class="kw">var</span> client = <span class="ty">McpClient</span>
+  .sync(transport).build();</div>
+        </div>
+      </div>
+    </div>
+    <!-- 플로우 -->
+    <div class="card" style="margin-top:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:12px;letter-spacing:.04em;">STDIO 통신 흐름</div>
+      <div class="flow">
+        <div class="flow-box" style="background:var(--mcp-bg);border-color:var(--mcp-border);">Client<br><small>Host JVM</small></div>
+        <div class="flow-arrow"><div class="arr">→</div><div class="lbl">stdin (JSON-RPC)</div></div>
+        <div class="flow-box" style="background:var(--green-bg);border-color:#86efac;">Server<br><small>자식 프로세스</small></div>
+        <div class="flow-arrow"><div class="arr">→</div><div class="lbl">stdout (JSON-RPC)</div></div>
+        <div class="flow-box" style="background:var(--mcp-bg);border-color:var(--mcp-border);">Client<br><small>응답 수신</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SSE -->
+  <div class="sub-panel" id="subtab-sse">
+    <div class="card" style="border-left:4px solid var(--mcp);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="font-size:22px;">🌐</span>
+        <div>
+          <div style="font-weight:700;font-size:15px;">SSE Transport (HTTP)</div>
+          <div style="font-size:12px;color:var(--text-3);">Server-Sent Events — 원격 HTTP 서버 연결</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#166534;">✅ 장점</div>
+          <div style="color:var(--text-2);line-height:1.9;">
+            → 원격 서버 연결 가능<br>
+            → 다중 클라이언트 동시 접속<br>
+            → HTTP 표준 — 방화벽 친화적<br>
+            → 마이크로서비스 환경 적합
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#991b1b;">⚠️ 제약</div>
+          <div style="color:var(--text-2);line-height:1.9;">
+            → STDIO 대비 약간의 오버헤드<br>
+            → 서버 별도 배포 필요<br>
+            → 인증/보안 설정 추가 필요<br>
+            → 연결 유지 관리 필요
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:16px;">
+      <div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JAVA</span><span class="code-title">SSE 서버 (Spring Boot)</span></div>
+          <div class="code-body"><span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="ty">McpServerConfig</span> {
+
+  <span class="an">@Bean</span>
+  <span class="ty">WebMvcSseServerTransport</span> <span class="nm">transport</span>(
+      <span class="ty">ObjectMapper</span> mapper) {
+    <span class="kw">return new</span> <span class="ty">WebMvcSseServerTransport</span>(
+      mapper, <span class="st">"/mcp/message"</span>);
+  }
+
+  <span class="an">@Bean</span>
+  <span class="ty">RouterFunction</span> <span class="nm">mcpRouter</span>(
+      <span class="ty">WebMvcSseServerTransport</span> t) {
+    <span class="kw">return</span> t.getRouterFunction();
+  }
+}</div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JAVA</span><span class="code-title">SSE 클라이언트</span></div>
+          <div class="code-body"><span class="kw">var</span> transport = <span class="kw">new</span>
+  <span class="ty">HttpClientSseClientTransport</span>(
+    <span class="st">"http://mcp-server:8080"</span>
+  );
+
+<span class="kw">var</span> client = <span class="ty">McpClient</span>
+  .sync(transport)
+  .requestTimeout(
+    <span class="ty">Duration</span>.ofSeconds(10))
+  .build();
+
+client.initialize();</div>
+        </div>
+      </div>
+    </div>
+    <!-- 플로우 -->
+    <div class="card" style="margin-top:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:12px;letter-spacing:.04em;">SSE 통신 흐름</div>
+      <div class="flow">
+        <div class="flow-box" style="background:var(--mcp-bg);border-color:var(--mcp-border);">Client</div>
+        <div class="flow-arrow"><div class="arr">→</div><div class="lbl">POST /message</div></div>
+        <div class="flow-box">HTTP Server<br><small>:8080</small></div>
+        <div class="flow-arrow"><div class="arr">←</div><div class="lbl">GET /sse (stream)</div></div>
+        <div class="flow-box" style="background:var(--mcp-bg);border-color:var(--mcp-border);">Client<br><small>이벤트 수신</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비교 -->
+  <div class="sub-panel" id="subtab-compare-tr">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>⚡ STDIO</th>
+            <th>🌐 SSE (HTTP)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="col-feature">통신 매체</td><td>표준 입출력 파이프</td><td>HTTP + Server-Sent Events</td></tr>
+          <tr><td class="col-feature">서버 위치</td><td>로컬 머신 전용</td><td>원격 서버 가능</td></tr>
+          <tr><td class="col-feature">다중 클라이언트</td><td class="no">✗ 어려움</td><td class="ok">✓ 용이</td></tr>
+          <tr><td class="col-feature">성능</td><td><span class="ok">최고</span> (메모리 직접)</td><td>약간의 네트워크 오버헤드</td></tr>
+          <tr><td class="col-feature">보안 설정</td><td>OS 프로세스 격리</td><td>HTTPS / 인증 토큰 필요</td></tr>
+          <tr><td class="col-feature">주요 용도</td><td>로컬 도구, IDE 플러그인</td><td>공유 서비스, 마이크로서비스</td></tr>
+          <tr><td class="col-feature">Spring 클래스</td><td><code style="font-family:'JetBrains Mono',monospace;font-size:11.5px;">StdioClientTransport</code></td><td><code style="font-family:'JetBrains Mono',monospace;font-size:11.5px;">HttpClientSseClientTransport</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info" style="margin-top:16px;">
+      <span class="callout-icon">💡</span>
+      <span><b>선택 기준:</b> 개발 환경·로컬 전용 툴 → STDIO. 팀 공유 서비스·원격 배포 → SSE.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+  탭 ⑤ 구성 코드
+═══════════════════════════════════════════ -->
+<div class="section" id="tab-setup">
+  <div class="section-title">⚙️ Spring AI MCP 전체 구성</div>
+  <div class="section-sub">
+    의존성 추가부터 ChatClient 연동까지 — 실제 동작하는 최소 구성 코드.
+  </div>
+
+  <!-- 타임라인 -->
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--spring);"></div>
+      <div class="tl-title">① 의존성 추가</div>
+      <div class="tl-body">클라이언트 / 서버 역할에 따라 다른 starter 사용.</div>
+      <div class="code-block" style="margin-top:10px;">
+        <div class="code-header"><span class="code-lang">XML</span><span class="code-title">pom.xml</span></div>
+        <div class="code-body"><span class="cm">&lt;!-- MCP 클라이언트 (Host 앱) --&gt;</span>
+&lt;<span class="kw">dependency</span>&gt;
+  &lt;<span class="ty">groupId</span>&gt;org.springframework.ai&lt;/<span class="ty">groupId</span>&gt;
+  &lt;<span class="ty">artifactId</span>&gt;spring-ai-mcp-client-spring-boot-starter&lt;/<span class="ty">artifactId</span>&gt;
+&lt;/<span class="kw">dependency</span>&gt;
+
+<span class="cm">&lt;!-- MCP 서버 (Spring Boot 기반) --&gt;</span>
+&lt;<span class="kw">dependency</span>&gt;
+  &lt;<span class="ty">groupId</span>&gt;org.springframework.ai&lt;/<span class="ty">groupId</span>&gt;
+  &lt;<span class="ty">artifactId</span>&gt;spring-ai-mcp-server-webmvc-spring-boot-starter&lt;/<span class="ty">artifactId</span>&gt;
+&lt;/<span class="kw">dependency</span>&gt;</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--mcp);"></div>
+      <div class="tl-title">② 클라이언트 application.yml</div>
+      <div class="tl-body">연결할 MCP 서버 목록을 설정. STDIO / SSE 모두 지원.</div>
+      <div class="code-block" style="margin-top:10px;">
+        <div class="code-header"><span class="code-lang">YAML</span><span class="code-title">application.yml (클라이언트)</span></div>
+        <div class="code-body">spring:
+  ai:
+    mcp:
+      client:
+        <span class="kw">enabled</span>: <span class="st">true</span>
+        toolcallback:
+          <span class="kw">enabled</span>: <span class="st">true</span>   <span class="cm"># Tool → ChatClient 자동 연동</span>
+        connections:
+          <span class="cm"># STDIO 방식</span>
+          weather-server:
+            <span class="kw">type</span>: STDIO
+            <span class="kw">command</span>: java
+            <span class="kw">args</span>: [<span class="st">"-jar"</span>, <span class="st">"weather-mcp.jar"</span>]
+          <span class="cm"># SSE 방식</span>
+          search-server:
+            <span class="kw">type</span>: SSE
+            <span class="kw">url</span>: <span class="st">http://search-mcp:8080</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--tool);"></div>
+      <div class="tl-title">③ ChatClient에서 MCP Tool 사용</div>
+      <div class="tl-body">
+        <code style="font-family:'JetBrains Mono',monospace;font-size:12px;">ToolCallbackProvider</code>가 자동 등록 → 별도 코드 없이 AI가 MCP Tool 호출 가능.
+      </div>
+      <div class="code-block" style="margin-top:10px;">
+        <div class="code-header"><span class="code-lang">JAVA</span><span class="code-title">ChatService.java</span></div>
+        <div class="code-body"><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ChatService</span> {
+
+  <span class="kw">private final</span> <span class="ty">ChatClient</span> chatClient;
+
+  <span class="kw">public</span> <span class="ty">ChatService</span>(
+      <span class="ty">ChatClient.Builder</span> builder,
+      <span class="ty">ToolCallbackProvider</span> mcpTools  <span class="cm">// 자동 주입</span>
+  ) {
+    <span class="kw">this</span>.chatClient = builder
+      .defaultTools(mcpTools)           <span class="cm">// MCP Tool 전체 등록</span>
+      .build();
+  }
+
+  <span class="kw">public</span> <span class="ty">String</span> <span class="nm">ask</span>(<span class="ty">String</span> question) {
+    <span class="kw">return</span> chatClient.prompt()
+      .user(question)
+      .call()
+      .content();
+    <span class="cm">// AI가 필요시 MCP Tool 자동 호출 ✓</span>
+  }
+}</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:#22c55e;"></div>
+      <div class="tl-title">④ MCP 서버 application.yml</div>
+      <div class="tl-body">서버 측 최소 설정. Tool Bean을 자동 감지.</div>
+      <div class="code-block" style="margin-top:10px;">
+        <div class="code-header"><span class="code-lang">YAML</span><span class="code-title">application.yml (서버)</span></div>
+        <div class="code-body">spring:
+  ai:
+    mcp:
+      server:
+        <span class="kw">name</span>: <span class="st">weather-mcp-server</span>
+        <span class="kw">version</span>: <span class="st">1.0.0</span>
+        <span class="kw">type</span>: SYNC   <span class="cm"># or ASYNC</span>
+        <span class="kw">sse-message-endpoint</span>: <span class="st">/mcp/message</span>
+        <span class="kw">capabilities</span>:
+          <span class="kw">tool-change-notification</span>: <span class="st">true</span>  <span class="cm"># 동적 Tool 변경 알림</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 정리 -->
+  <div class="callout good">
+    <span class="callout-icon">🎯</span>
+    <div>
+      <b>핵심 요약:</b> Spring AI의 <code style="font-family:'JetBrains Mono',monospace;font-size:12px;">toolcallback.enabled: true</code> 옵션 하나로 MCP 서버의 모든 Tool이 ChatClient에 자동 연동됨.
+      개발자는 MCP 서버의 비즈니스 로직만 집중하면 됨.
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function showSubTab(id) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('subtab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+window.onload = function() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+};
+</script>
+</body>
+</html>
