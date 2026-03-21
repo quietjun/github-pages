@@ -464,7 +464,7 @@
      헤더
 ══════════════════════════════════════════════ -->
 <header>
-  <h1>🧠 RNN &amp; Seq2Seq 시각화</h1>
+  <h1>🧠 RNN 시각화</h1>
   <p>RNN 셀 개념부터 파라미터 구성, Seq2Seq 동작까지 순서대로 살펴봅니다.</p>
 </header>
 
@@ -518,22 +518,22 @@
 
     <!-- 언롤된 셀 3개 (t-1, t, t+1) -->
     <!-- o_t-1 -->
-    <circle cx="280" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="280" y="24"
-          fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_{t-1}</text>
-    <line x1="280" y1="50" x2="280" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="280" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="280" y="24"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t-1</tspan></text>
+    <line x1="280" y1="46" x2="280" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
 
     <!-- o_t -->
-    <circle cx="420" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="420" y="24"
-          fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_t</text>
-    <line x1="420" y1="50" x2="420" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="420" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="420" y="24"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t</tspan></text>
+    <line x1="420" y1="46" x2="420" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
 
     <!-- o_t+1 -->
-    <circle cx="560" cy="24" r="16" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="560" y="24"
-          fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o_{t+1}</text>
-    <line x1="560" y1="50" x2="560" y2="40" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="560" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="560" y="24"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t+1</tspan></text>
+    <line x1="560" y1="46" x2="560" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
 
     <!-- 셀 h_{t-1} -->
     <rect x="244" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
@@ -563,20 +563,20 @@
     <line x1="235" y1="74" x2="244" y2="74" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,3"/>
 
     <!-- 입력 x -->
-    <line x1="280" y1="130" x2="280" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="280" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="280" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t-1}</text>
+    <line x1="280" y1="124" x2="280" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="280" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="280" y="144"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t-1</tspan></text>
 
-    <line x1="420" y1="130" x2="420" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="420" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="420" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x_t</text>
+    <line x1="420" y1="124" x2="420" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="420" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="420" y="144"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t</tspan></text>
 
-    <line x1="560" y1="130" x2="560" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="560" cy="144" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="9" x="560" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t+1}</text>
+    <line x1="560" y1="124" x2="560" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="560" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="560" y="144"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t+1</tspan></text>
 
     <!-- 가중치 공유 표시 -->
     <path d="M244,106 L244,114 L596,114 L596,106"
