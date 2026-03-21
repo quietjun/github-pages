@@ -464,7 +464,7 @@
      헤더
 ══════════════════════════════════════════════ -->
 <header>
-  <h1>🧠 RNN 시각화</h1>
+  <h1>🧠 RNN &amp; Seq2Seq 시각화</h1>
   <p>RNN 셀 개념부터 파라미터 구성, Seq2Seq 동작까지 순서대로 살펴봅니다.</p>
 </header>
 
@@ -482,111 +482,110 @@
 
 <div class="diagram-wrap">
   <div class="card-label">RNN 셀 언롤링 (Unrolling)</div>
-  <svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 920 285" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <marker id="cu-arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L7,3 z" fill="#64748b"/>
+      <marker id="cu-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
       </marker>
-      <marker id="cu-arr-enc" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L7,3 z" fill="#4a7cf7"/>
+      <marker id="cu-arr-enc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#4a7cf7"/>
       </marker>
-      <marker id="cu-arr-big" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-        <path d="M0,0 L0,10 L10,5 z" fill="#94a3b8"/>
+      <marker id="cu-arr-big" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+        <path d="M0,0 L0,12 L12,6 z" fill="#94a3b8"/>
       </marker>
     </defs>
 
-    <!-- 단일 셀 -->
-    <circle cx="80" cy="24" r="18" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="600" x="80" y="24"
-          fill="#7c3aed" text-anchor="middle" dominant-baseline="central">o</text>
-    <line x1="80" y1="54" x2="80" y2="42" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <rect x="40" y="54" width="80" height="50" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="80" y="75"
+    <!-- ── 단일 셀 ── -->
+    <circle cx="82" cy="36" r="26" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="16" font-weight="700" x="82" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o</text>
+    <line x1="82" y1="62" x2="82" y2="80" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+
+    <rect x="36" y="82" width="92" height="60" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
+    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="82" y="106"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="9" x="80" y="94"
+    <text font-family="JetBrains Mono" font-size="11" x="82" y="128"
           fill="#7c3aed" text-anchor="middle" dominant-baseline="central">h</text>
-    <path d="M120,72 Q148,72 148,79 Q148,90 120,90"
-          fill="none" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#cu-arr-enc)"/>
-    <line x1="80" y1="140" x2="80" y2="104" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="80" cy="152" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="600" x="80" y="152"
+    <path d="M128,100 Q156,100 156,110 Q156,124 128,124"
+          fill="none" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#cu-arr-enc)"/>
+
+    <line x1="82" y1="142" x2="82" y2="188" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+    <circle cx="82" cy="212" r="26" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="16" font-weight="700" x="82" y="212"
           fill="#14532d" text-anchor="middle" dominant-baseline="central">x</text>
+    <text font-family="Noto Sans KR" font-size="12" x="82" y="252" fill="#94a3b8" text-anchor="middle">단일 셀</text>
 
-    <!-- 화살표 + unroll 레이블 -->
-    <line x1="170" y1="85" x2="216" y2="85" stroke="#94a3b8" stroke-width="3" marker-end="url(#cu-arr-big)"/>
-    <text font-family="Noto Sans KR" font-size="9" x="193" y="100" fill="#94a3b8" text-anchor="middle">unroll</text>
+    <!-- ── unroll 화살표 ── -->
+    <text font-family="Noto Sans KR" font-size="12" x="208" y="82" fill="#94a3b8" text-anchor="middle">unroll</text>
+    <line x1="174" y1="113" x2="240" y2="113" stroke="#94a3b8" stroke-width="3" marker-end="url(#cu-arr-big)"/>
 
-    <!-- 언롤된 셀 3개 (t-1, t, t+1) -->
-    <!-- o_t-1 -->
-    <circle cx="280" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="280" y="24"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t-1</tspan></text>
-    <line x1="280" y1="46" x2="280" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- ── 언롤된 셀 — cx: 320, 500, 680 ── -->
 
-    <!-- o_t -->
-    <circle cx="420" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="420" y="24"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t</tspan></text>
-    <line x1="420" y1="46" x2="420" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <!-- o 원 -->
+    <circle cx="320" cy="36" r="26" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="320" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="10" dy="5">t-1</tspan></text>
+    <line x1="320" y1="62" x2="320" y2="80" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
-    <!-- o_t+1 -->
-    <circle cx="560" cy="24" r="22" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="560" y="24"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o<tspan font-size="9" dy="3">t+1</tspan></text>
-    <line x1="560" y1="46" x2="560" y2="50" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
+    <circle cx="500" cy="36" r="26" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="500" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="10" dy="5">t</tspan></text>
+    <line x1="500" y1="62" x2="500" y2="80" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
-    <!-- 셀 h_{t-1} -->
-    <rect x="244" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="280" y="70"
+    <circle cx="680" cy="36" r="26" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="680" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="10" dy="5">t+1</tspan></text>
+    <line x1="680" y1="62" x2="680" y2="80" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+
+    <!-- RNN 셀 박스 -->
+    <rect x="274" y="82" width="92" height="60" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="320" y="104"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="9" x="280" y="86"
+    <text font-family="JetBrains Mono" font-size="11" x="320" y="128"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t-1}</text>
 
-    <!-- 셀 h_t -->
-    <rect x="384" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="420" y="70"
+    <rect x="454" y="82" width="92" height="60" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="500" y="104"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="9" x="420" y="86"
+    <text font-family="JetBrains Mono" font-size="11" x="500" y="128"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_t</text>
 
-    <!-- 셀 h_{t+1} -->
-    <rect x="524" y="50" width="72" height="48" rx="10" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text font-family="JetBrains Mono" font-size="11" font-weight="600" x="560" y="70"
+    <rect x="634" y="82" width="92" height="60" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="680" y="104"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="9" x="560" y="86"
+    <text font-family="JetBrains Mono" font-size="11" x="680" y="128"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t+1}</text>
 
     <!-- 셀 간 h 흐름 화살표 -->
-    <line x1="316" y1="74" x2="384" y2="74" stroke="#4a7cf7" stroke-width="1.8" marker-end="url(#cu-arr-enc)"/>
-    <line x1="456" y1="74" x2="524" y2="74" stroke="#4a7cf7" stroke-width="1.8" marker-end="url(#cu-arr-enc)"/>
-    <line x1="596" y1="74" x2="618" y2="74" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,3"/>
-    <line x1="235" y1="74" x2="244" y2="74" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <line x1="252" y1="112" x2="274" y2="112" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="4,3"/>
+    <line x1="366" y1="112" x2="454" y2="112" stroke="#4a7cf7" stroke-width="2.2" marker-end="url(#cu-arr-enc)"/>
+    <line x1="546" y1="112" x2="634" y2="112" stroke="#4a7cf7" stroke-width="2.2" marker-end="url(#cu-arr-enc)"/>
+    <line x1="726" y1="112" x2="752" y2="112" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="4,3"/>
 
-    <!-- 입력 x -->
-    <line x1="280" y1="124" x2="280" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="280" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="280" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t-1</tspan></text>
+    <!-- x 입력 원 -->
+    <line x1="320" y1="142" x2="320" y2="188" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+    <circle cx="320" cy="212" r="26" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="320" y="212"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="10" dy="5">t-1</tspan></text>
 
-    <line x1="420" y1="124" x2="420" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="420" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="420" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t</tspan></text>
+    <line x1="500" y1="142" x2="500" y2="188" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+    <circle cx="500" cy="212" r="26" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="500" y="212"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="10" dy="5">t</tspan></text>
 
-    <line x1="560" y1="124" x2="560" y2="98" stroke="#64748b" stroke-width="1.5" marker-end="url(#cu-arr)"/>
-    <circle cx="560" cy="144" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="12" font-weight="700" x="560" y="144"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central">x<tspan font-size="9" dy="3">t+1</tspan></text>
+    <line x1="680" y1="142" x2="680" y2="188" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
+    <circle cx="680" cy="212" r="26" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="680" y="212"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="10" dy="5">t+1</tspan></text>
 
-    <!-- 가중치 공유 표시 -->
-    <path d="M244,106 L244,114 L596,114 L596,106"
-          fill="none" stroke="#4a7cf7" stroke-width="1" stroke-dasharray="3,2" opacity="0.5"/>
-    <text font-family="Noto Sans KR" font-size="9" x="420" y="128"
-          fill="#4a7cf7" text-anchor="middle" opacity="0.8">동일한 가중치 공유 (Wₓ, Wₕ) — 실제로는 하나의 셀!</text>
+    <!-- 가중치 공유 -->
+    <path d="M274,242 L274,254 L726,254 L726,242"
+          fill="none" stroke="#4a7cf7" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.5"/>
+    <text font-family="Noto Sans KR" font-size="11" x="500" y="272"
+          fill="#64748b" text-anchor="middle" opacity="0.9">동일한 가중치 공유 (Wₓ, Wₕ) — 실제로는 하나의 셀! : seq_len 만큼 펼친 표현 (unrolled)</text>
 
     <!-- 하단 레이블 -->
-    <text font-family="Noto Sans KR" font-size="9" x="80" y="168" fill="#94a3b8" text-anchor="middle">단일 셀</text>
-    <text font-family="Noto Sans KR" font-size="9" x="420" y="168" fill="#94a3b8" text-anchor="middle">seq_len 만큼 펼친 표현 (unrolled)</text>
+    <text font-family="Noto Sans KR" font-size="12" x="82" y="252" fill="#94a3b8" text-anchor="middle">단일 셀</text>
   </svg>
 </div>
 
@@ -669,24 +668,42 @@
       <span class="param-tag" style="background:#fef9c3;color:#854d0e;">num_layers</span>
       <span class="param-default">기본값 = 1</span>
     </div>
-    <svg viewBox="0 0 280 96" xmlns="http://www.w3.org/2000/svg">
-      <rect x="14" y="52" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="44" y="65" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <text font-family="Noto Sans KR" font-size="9" x="44" y="90" fill="#94a3b8" text-anchor="middle">num_layers=1</text>
-      <rect x="112" y="52" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="142" y="65" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <rect x="112" y="26" width="60" height="24" rx="6" fill="#b5d4f4" stroke="#185FA5" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="142" y="38" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
-      <rect x="112" y="4" width="60" height="20" rx="6" fill="#85b7eb" stroke="#185FA5" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="142" y="14" fill="#042C53" text-anchor="middle" dominant-baseline="central">Layer 3</text>
-      <polygon points="138,26 142,20 146,26" fill="#185FA5"/>
-      <text font-family="Noto Sans KR" font-size="9" x="142" y="90" fill="#94a3b8" text-anchor="middle">num_layers=3</text>
-      <rect x="204" y="42" width="60" height="26" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="234" y="55" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <rect x="204" y="14" width="60" height="26" rx="6" fill="#b5d4f4" stroke="#185FA5" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" x="234" y="27" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
-      <polygon points="230,14 234,8 238,14" fill="#185FA5"/>
-      <text font-family="Noto Sans KR" font-size="9" x="234" y="90" fill="#94a3b8" text-anchor="middle">num_layers=2</text>
+    <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- num_layers=1 : Layer1 y=90~118 -->
+      <rect x="10" y="90" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="42" y="104" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+      <text font-family="Noto Sans KR" font-size="9" x="42" y="148" fill="#94a3b8" text-anchor="middle">num_layers=1</text>
+
+      <!-- num_layers=3 : L1 y=100~128 / gap=18 / L2 y=54~82 / gap=18 / L3 y=8~36 -->
+      <!-- Layer 1 -->
+      <rect x="109" y="100" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="141" y="114" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+      <!-- 화살표 L1→L2 (gap: y=82~100) -->
+      <line x1="141" y1="99" x2="141" y2="90" stroke="#185FA5" stroke-width="1.5"/>
+      <polygon points="137,90 145,90 141,83" fill="#185FA5"/>
+      <!-- Layer 2 -->
+      <rect x="109" y="54" width="64" height="28" rx="7" fill="#b5d4f4" stroke="#185FA5" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="141" y="68" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+      <!-- 화살표 L2→L3 (gap: y=36~54) -->
+      <line x1="141" y1="53" x2="141" y2="44" stroke="#185FA5" stroke-width="1.5"/>
+      <polygon points="137,44 145,44 141,37" fill="#185FA5"/>
+      <!-- Layer 3 -->
+      <rect x="109" y="8" width="64" height="28" rx="7" fill="#85b7eb" stroke="#185FA5" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="141" y="22" fill="#042C53" text-anchor="middle" dominant-baseline="central">Layer 3</text>
+      <text font-family="Noto Sans KR" font-size="9" x="141" y="148" fill="#94a3b8" text-anchor="middle">num_layers=3</text>
+
+      <!-- num_layers=2 : L1 y=96~124 / gap=22 / L2 y=38~66 -->
+      <!-- Layer 1 -->
+      <rect x="205" y="96" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="237" y="110" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+      <!-- 화살표 L1→L2 (gap: y=66~96) -->
+      <line x1="237" y1="95" x2="237" y2="84" stroke="#185FA5" stroke-width="1.5"/>
+      <polygon points="233,84 241,84 237,77" fill="#185FA5"/>
+      <!-- Layer 2 -->
+      <rect x="205" y="38" width="64" height="28" rx="7" fill="#b5d4f4" stroke="#185FA5" stroke-width="1.2"/>
+      <text font-family="JetBrains Mono" font-size="9" x="237" y="52" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+      <text font-family="Noto Sans KR" font-size="9" x="237" y="148" fill="#94a3b8" text-anchor="middle">num_layers=2</text>
     </svg>
     <ul class="param-desc">
       <li>RNN 셀의 수직 적층 수</li>
