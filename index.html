@@ -6,215 +6,188 @@
   <title>Docs Viewer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f8f9fa;
-      --surface: #ffffff;
-      --border: #e2e6ea;
-      --border-light: #eef0f3;
-      --sidebar-bg: #ffffff;
-      --text-primary: #1a1d23;
-      --text-secondary: #5a6475;
-      --text-muted: #8e97a8;
-      --accent: #2563eb;
-      --accent-light: #eff4ff;
-      --accent-hover: #1d4ed8;
-      --active-bg: #eff4ff;
-      --active-text: #1e40af;
-      --hover-bg: #f1f4f8;
-      --sidebar-width: 280px;
-      --header-height: 52px;
-      --folder-color: #f59e0b;
+      --bg:       #f4f5f9;
+      --surface:  #ffffff;
+      --border:   #e2e5f0;
+      --s2:       #eef0f8;
+      --text:     #1a2540;
+      --sub:      #5a6a8a;
+      --muted:    #8e97a8;
+      --shadow:   0 2px 16px rgba(26,37,64,0.08);
+      --accent:   #4a7cf7;
+      --accent-l: #dce8ff;
+      --accent-d: #2d63f5;
+      --sidebar-w: 268px;
+      --header-h:  52px;
     }
 
     html, body {
       height: 100%;
       font-family: 'Noto Sans KR', sans-serif;
       background: var(--bg);
-      color: var(--text-primary);
+      color: var(--text);
       overflow: hidden;
     }
 
-    /* ── Header ── */
+    /* ── 헤더 ── */
     #header {
       position: fixed;
       top: 0; left: 0; right: 0;
-      height: var(--header-height);
+      height: var(--header-h);
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 16px;
       gap: 12px;
       z-index: 100;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow);
     }
 
-    #header .logo {
+    /* 토글 버튼 */
+    #toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--sub);
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    #toggle-btn:hover { background: var(--s2); color: var(--accent); }
+
+    /* 로고 */
+    .logo {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 600;
       font-size: 15px;
-      color: var(--text-primary);
+      font-weight: 700;
+      color: var(--text);
       text-decoration: none;
       user-select: none;
+      letter-spacing: -.3px;
     }
+    .logo svg { color: var(--accent); flex-shrink: 0; }
 
-    #header .logo svg {
-      color: var(--accent);
-    }
-
-    #header .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-left: 8px;
-      overflow: hidden;
-    }
-
-    #header .breadcrumb span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #header .breadcrumb .sep {
-      color: var(--border);
+    /* 구분선 */
+    .header-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
       flex-shrink: 0;
     }
 
-    #header .breadcrumb .active {
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    /* toggle button for mobile */
-    #sidebar-toggle {
+    /* 브레드크럼 */
+    #breadcrumb {
       display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      color: var(--text-secondary);
-      border-radius: 6px;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      overflow: hidden;
     }
+    #breadcrumb span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #breadcrumb .sep { color: var(--border); flex-shrink: 0; }
+    #breadcrumb .active { color: var(--sub); font-weight: 600; }
 
-    #sidebar-toggle:hover { background: var(--hover-bg); }
-
-    /* ── Layout ── */
+    /* ── 레이아웃 ── */
     #layout {
       display: flex;
       height: 100vh;
-      padding-top: var(--header-height);
+      padding-top: var(--header-h);
     }
 
-    /* ── Sidebar ── */
+    /* ── 사이드바 ── */
     #sidebar {
-      width: var(--sidebar-width);
-      min-width: var(--sidebar-width);
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
       height: 100%;
-      background: var(--sidebar-bg);
+      background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: width 0.25s ease, min-width 0.25s ease;
+      transition: width 0.22s ease, min-width 0.22s ease, opacity 0.22s ease;
       flex-shrink: 0;
     }
-
     #sidebar.collapsed {
       width: 0;
       min-width: 0;
+      opacity: 0;
     }
 
     #sidebar-inner {
-      padding: 12px 0;
+      padding: 10px 0 16px;
       overflow-y: auto;
       overflow-x: hidden;
       flex: 1;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
-
     #sidebar-inner::-webkit-scrollbar { width: 4px; }
     #sidebar-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* ── Tree ── */
-    .tree-section {
-      padding: 4px 8px 12px;
-    }
-
+    /* ── 섹션 레이블 ── */
+    .tree-section { padding: 0 8px 8px; }
     .tree-section-title {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 8px 10px 4px;
+      color: var(--muted);
+      padding: 8px 10px 6px;
     }
 
-    .tree-node {
-      user-select: none;
-    }
+    /* ── 트리 노드 ── */
+    .tree-node { user-select: none; }
 
     .tree-row {
       display: flex;
       align-items: center;
-      gap: 0;
       padding: 0;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 8px;
       transition: background 0.12s;
-      position: relative;
+      margin: 1px 2px;
     }
+    .tree-row:hover { background: var(--s2); }
+    .tree-row.active { background: var(--accent-l); }
+    .tree-row.active .tree-label { color: var(--accent); font-weight: 600; }
 
-    .tree-row:hover { background: var(--hover-bg); }
-    .tree-row.active { background: var(--active-bg); }
-    .tree-row.active .tree-label { color: var(--active-text); font-weight: 600; }
-
-    .tree-indent {
-      flex-shrink: 0;
-    }
+    .tree-indent { flex-shrink: 0; }
 
     .tree-chevron {
-      width: 20px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 20px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      color: var(--text-muted);
+      color: var(--muted);
       transition: transform 0.18s ease;
     }
-
-    .tree-chevron svg {
-      width: 12px;
-      height: 12px;
-    }
-
+    .tree-chevron svg { width: 11px; height: 11px; }
     .tree-chevron.open { transform: rotate(90deg); }
     .tree-chevron.leaf { opacity: 0; pointer-events: none; }
 
     .tree-icon {
-      width: 18px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 13px;
+      width: 18px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 13px;
     }
 
     .tree-label {
-      font-size: 13.5px;
+      font-size: 13px;
       line-height: 28px;
-      color: var(--text-primary);
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -227,7 +200,21 @@
       transition: max-height 0.22s ease;
     }
 
-    /* ── Main Content ── */
+    /* ── 리사이즈 핸들 ── */
+    #resize-handle {
+      width: 4px; min-width: 4px;
+      height: 100%;
+      cursor: col-resize;
+      background: transparent;
+      transition: background 0.15s;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+    #resize-handle:hover,
+    #resize-handle.dragging { background: var(--accent); }
+
+    /* ── 메인 콘텐츠 ── */
     #content {
       flex: 1;
       height: 100%;
@@ -247,10 +234,11 @@
       width: 100%;
       height: 100%;
       border: none;
-      background: #fff;
+      background: var(--surface);
+      display: none;
     }
 
-    /* ── Welcome Screen ── */
+    /* ── 웰컴 화면 ── */
     #welcome {
       position: absolute;
       inset: 0;
@@ -258,150 +246,99 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      color: var(--text-muted);
+      gap: 14px;
+      color: var(--muted);
       pointer-events: none;
     }
-
     #welcome .welcome-icon {
-      width: 64px;
-      height: 64px;
+      width: 60px; height: 60px;
       border-radius: 16px;
-      background: var(--accent-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--accent-l);
+      display: flex; align-items: center; justify-content: center;
       color: var(--accent);
     }
-
-    #welcome h2 {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    #welcome p {
-      font-size: 13px;
-      line-height: 1.7;
-      text-align: center;
-    }
-
+    #welcome h2 { font-size: 16px; font-weight: 700; color: var(--sub); }
+    #welcome p { font-size: 13px; line-height: 1.7; text-align: center; color: var(--muted); }
     #welcome.hidden { display: none; }
 
-    /* ── Loading Overlay ── */
+    /* ── 로딩 ── */
     #loading {
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.85);
+      display: flex; align-items: center; justify-content: center;
       z-index: 10;
       backdrop-filter: blur(2px);
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
       transition: opacity 0.15s;
     }
-
     #loading.show { opacity: 1; pointer-events: all; }
 
     .spinner {
-      width: 28px;
-      height: 28px;
+      width: 26px; height: 26px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Resize Handle ── */
-    #resize-handle {
-      width: 4px;
-      min-width: 4px;
-      height: 100%;
-      cursor: col-resize;
-      background: transparent;
-      transition: background 0.15s;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-    }
-
-    #resize-handle:hover,
-    #resize-handle.dragging {
-      background: var(--accent);
-    }
-
-    /* ── Error State ── */
+    /* ── 에러 ── */
     #error-msg {
       display: none;
-      position: absolute;
-      inset: 0;
-      align-items: center;
-      justify-content: center;
+      position: absolute; inset: 0;
+      align-items: center; justify-content: center;
       flex-direction: column;
-      gap: 10px;
-      color: var(--text-muted);
-      font-size: 13px;
+      gap: 10px; font-size: 13px; color: var(--muted);
     }
-
     #error-msg.show { display: flex; }
     #error-msg .err-icon { font-size: 32px; }
 
-    /* ── Responsive ── */
+    /* ── 반응형 ── */
     @media (max-width: 700px) {
-      :root { --sidebar-width: 260px; }
-
-      #sidebar-toggle { display: flex; }
-
       #sidebar {
         position: fixed;
-        top: var(--header-height);
-        left: 0;
-        bottom: 0;
+        top: var(--header-h); left: 0; bottom: 0;
         z-index: 50;
-        box-shadow: 4px 0 16px rgba(0,0,0,0.08);
+        box-shadow: 4px 0 20px rgba(26,37,64,0.12);
       }
-
       #resize-handle { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Header ── -->
+<!-- ── 헤더 ── -->
 <header id="header">
-  <button id="sidebar-toggle" onclick="toggleSidebar()" title="사이드바 토글">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="3" y1="18" x2="21" y2="18"/>
+  <!-- 사이드바 토글 -->
+  <button id="toggle-btn" onclick="toggleSidebar()" title="사이드바 열기/닫기">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="9" y1="3" x2="9" y2="21"/>
     </svg>
   </button>
 
+  <div class="header-sep"></div>
+
   <a class="logo" href="#">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
       <polyline points="14 2 14 8 20 8"/>
       <line x1="16" y1="13" x2="8" y2="13"/>
       <line x1="16" y1="17" x2="8" y2="17"/>
-      <polyline points="10 9 9 9 8 9"/>
     </svg>
     <span>Docs</span>
   </a>
 
-  <div id="breadcrumb" class="breadcrumb" style="display:none;">
+  <div id="breadcrumb" class="breadcrumb">
     <span class="sep">›</span>
     <span id="breadcrumb-text" class="active"></span>
   </div>
 </header>
 
-<!-- ── Layout ── -->
+<!-- ── 레이아웃 ── -->
 <div id="layout">
 
-  <!-- Sidebar -->
+  <!-- 사이드바 -->
   <nav id="sidebar">
     <div id="sidebar-inner">
       <div class="tree-section">
@@ -411,15 +348,16 @@
     </div>
   </nav>
 
-  <!-- Resize Handle -->
+  <!-- 리사이즈 핸들 -->
   <div id="resize-handle"></div>
 
-  <!-- Content -->
+  <!-- 콘텐츠 -->
   <main id="content">
     <div id="iframe-container">
+
       <div id="welcome">
         <div class="welcome-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
           </svg>
@@ -435,17 +373,16 @@
       <div id="error-msg">
         <span class="err-icon">⚠️</span>
         <strong>문서를 불러올 수 없습니다</strong>
-        <span id="error-path" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#aaa;"></span>
+        <span id="error-path" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#aaa;margin-top:4px;"></span>
       </div>
 
-      <iframe id="doc-frame" title="문서 뷰어" style="display:none;"></iframe>
+      <iframe id="doc-frame" title="문서 뷰어"></iframe>
     </div>
   </main>
 
 </div>
 
 <script>
-// ── 상태 ──
 let activeRow = null;
 let sidebarOpen = true;
 
@@ -458,9 +395,8 @@ async function loadTree() {
     renderTree(data, document.getElementById('tree-root'), 0);
   } catch (e) {
     document.getElementById('tree-root').innerHTML =
-      `<div style="padding:12px 16px;font-size:12px;color:#e53e3e;">
-        ⚠️ pages.json을 찾을 수 없습니다.<br>
-        루트에 pages.json 파일을 추가해 주세요.
+      `<div style="padding:12px 16px;font-size:12px;color:#e53e3e;line-height:1.6;">
+        ⚠️ pages.json을 찾을 수 없습니다.<br>루트에 pages.json 파일을 추가해 주세요.
       </div>`;
   }
 }
@@ -473,25 +409,18 @@ function renderTree(nodes, container, depth) {
 
     const isLeaf = !node.children || node.children.length === 0;
     const label = node.label || node.path?.split('/').pop() || '(unnamed)';
-
-    // 아이콘
-    let icon = '';
-    if (!isLeaf) {
-      icon = `<span style="font-size:13px;">📁</span>`;
-    } else {
-      icon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8"
-        style="flex-shrink:0;">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>`;
-    }
-
-    // 라벨에서 이모지 폴더 prefix 제거 (label에 직접 이모지 넣은 경우 그대로 유지)
     const displayLabel = label.replace(/^📁\s*/, '');
+
+    const icon = isLeaf
+      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8e97a8" stroke-width="1.8" style="flex-shrink:0;">
+           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+           <polyline points="14 2 14 8 20 8"/>
+         </svg>`
+      : `<span style="font-size:13px;">📁</span>`;
 
     el.innerHTML = `
       <div class="tree-row" data-path="${node.path || ''}" data-leaf="${isLeaf}" data-label="${displayLabel}">
-        <div class="tree-indent" style="width:${depth * 16 + 8}px;"></div>
+        <div class="tree-indent" style="width:${depth * 14 + 8}px;"></div>
         <div class="tree-chevron ${isLeaf ? 'leaf' : ''}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="9 18 15 12 9 6"/>
@@ -517,28 +446,23 @@ function renderTree(nodes, container, depth) {
   });
 }
 
-// ── 행 클릭 처리 ──
+// ── 행 클릭 ──
 function handleRowClick(row, el, isLeaf, node) {
   if (isLeaf) {
-    // 문서 로드
     if (activeRow) activeRow.classList.remove('active');
     row.classList.add('active');
     activeRow = row;
+    loadDoc(node.path, row.dataset.label);
 
-    const label = row.dataset.label;
-    loadDoc(node.path, label);
-
-    // 모바일: 클릭 후 사이드바 닫기
     if (window.innerWidth <= 700) {
       document.getElementById('sidebar').classList.add('collapsed');
       sidebarOpen = false;
+      updateToggleIcon(false);
     }
   } else {
-    // 폴더 토글
     const childContainer = el.querySelector('.tree-children');
     const chevron = row.querySelector('.tree-chevron');
     const isOpen = chevron.classList.contains('open');
-
     if (isOpen) {
       childContainer.style.maxHeight = '0px';
       chevron.classList.remove('open');
@@ -551,23 +475,20 @@ function handleRowClick(row, el, isLeaf, node) {
 
 // ── 문서 로드 ──
 function loadDoc(path, label) {
-  const frame = document.getElementById('doc-frame');
+  const frame   = document.getElementById('doc-frame');
   const welcome = document.getElementById('welcome');
   const loading = document.getElementById('loading');
-  const errorMsg = document.getElementById('error-msg');
+  const errorMsg= document.getElementById('error-msg');
 
   welcome.classList.add('hidden');
   errorMsg.classList.remove('show');
   frame.style.display = 'none';
   loading.classList.add('show');
 
-  // 브레드크럼 업데이트
   const bc = document.getElementById('breadcrumb');
-  const bcText = document.getElementById('breadcrumb-text');
-  bcText.textContent = label;
+  document.getElementById('breadcrumb-text').textContent = label;
   bc.style.display = 'flex';
 
-  // iframe 로드
   frame.onload = () => {
     loading.classList.remove('show');
     frame.style.display = 'block';
@@ -579,9 +500,7 @@ function loadDoc(path, label) {
     errorMsg.classList.add('show');
   };
 
-  // 일정 시간 후 오류 처리 (GitHub Pages는 404도 onload 발생)
-  const timeoutId = setTimeout(() => {
-    // iframe이 정상 로드되었으면 패스, 아니면 체크
+  setTimeout(() => {
     if (frame.style.display === 'none') {
       loading.classList.remove('show');
       frame.style.display = 'block';
@@ -593,23 +512,28 @@ function loadDoc(path, label) {
 
 // ── 사이드바 토글 ──
 function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
   sidebarOpen = !sidebarOpen;
-  sidebar.classList.toggle('collapsed', !sidebarOpen);
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  updateToggleIcon(sidebarOpen);
+}
+
+function updateToggleIcon(open) {
+  const btn = document.getElementById('toggle-btn');
+  btn.title = open ? '사이드바 닫기' : '사이드바 열기';
+  // 열린 상태: 패널 아이콘, 닫힌 상태: 같은 아이콘에 accent 색상 변화는 CSS로
+  btn.style.color = open ? '' : 'var(--accent)';
 }
 
 // ── 리사이즈 핸들 ──
 (function initResize() {
-  const handle = document.getElementById('resize-handle');
+  const handle  = document.getElementById('resize-handle');
   const sidebar = document.getElementById('sidebar');
-  let dragging = false;
-  let startX = 0;
-  let startWidth = 0;
+  let dragging = false, startX = 0, startW = 0;
 
   handle.addEventListener('mousedown', e => {
     dragging = true;
     startX = e.clientX;
-    startWidth = sidebar.offsetWidth;
+    startW = sidebar.offsetWidth;
     handle.classList.add('dragging');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
@@ -617,10 +541,9 @@ function toggleSidebar() {
 
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
-    const delta = e.clientX - startX;
-    const newWidth = Math.min(480, Math.max(180, startWidth + delta));
-    sidebar.style.width = newWidth + 'px';
-    sidebar.style.minWidth = newWidth + 'px';
+    const w = Math.min(480, Math.max(180, startW + e.clientX - startX));
+    sidebar.style.width    = w + 'px';
+    sidebar.style.minWidth = w + 'px';
   });
 
   document.addEventListener('mouseup', () => {
@@ -632,7 +555,7 @@ function toggleSidebar() {
   });
 })();
 
-// ── 폴더 전체 펼치기/접기 단축키 ──
+// ── 단축키 [ ] ──
 document.addEventListener('keydown', e => {
   if (e.key === '[') {
     document.querySelectorAll('.tree-chevron:not(.leaf).open').forEach(ch => {
@@ -648,12 +571,10 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── Init ──
 loadTree();
 
 window.onload = function() {
-  const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "*");
+  window.parent.postMessage({ height: document.body.scrollHeight }, "*");
 };
 </script>
 </body>
