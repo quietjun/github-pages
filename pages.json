@@ -8,6 +8,10 @@
           {
             "label": "LLM 샘플링 파라미터",
             "path": "ai/rag/llmsampling.html"
+          },
+          {
+            "label": "LLM Role 정리",
+            "path": "ai/rag/roles.html"
           }
         ]
       },
