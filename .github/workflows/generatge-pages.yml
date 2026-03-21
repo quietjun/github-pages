@@ -1,0 +1,40 @@
+name: Generate pages.json
+
+on:
+  push:
+    branches:
+      - main          # main 브랜치에 push될 때 실행
+      - master        # master 브랜치도 지원
+    paths:
+      - '**/*.html'   # HTML 파일이 변경될 때만 실행
+      - '**/*.htm'
+      - '.github/scripts/generate_pages.py'  # 스크립트 변경 시도 실행
+
+  workflow_dispatch:  # 수동 실행 버튼
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # pages.json 커밋을 위한 쓰기 권한
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate pages.json
+        run: python .github/scripts/generate_pages.py
+
+      - name: Commit & push pages.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pages.json
+          # 변경사항이 있을 때만 커밋
+          git diff --cached --quiet || git commit -m "chore: auto-update pages.json [skip ci]"
+          git push
