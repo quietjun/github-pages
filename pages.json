@@ -46,5 +46,14 @@
         ]
       }
     ]
+  },
+  {
+    "label": "git",
+    "children": [
+      {
+        "label": "CI/CD 구성 가이드 — GitHub & GitLab",
+        "path": "git/cicd.html"
+      }
+    ]
   }
 ]
