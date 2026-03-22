@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI/CD 구성 가이드 — GitHub & GitLab</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f7f8fc;
+    overflow-x: hidden;
+  }
+  .page { max-width: 1024px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  /* ── 서비스 탭 ── */
+  .service-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    background: #fff;
+    border: 1px solid #e3e8f0;
+    border-radius: 14px;
+    padding: 6px;
+    width: fit-content;
+  }
+  .svc-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: #9ca3af;
+  }
+  .svc-btn .logo { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .svc-btn.active-github { background: #0f2447; color: #fff; box-shadow: 0 2px 8px rgba(15,36,71,0.18); }
+  .svc-btn.active-gitlab { background: #fc6d26; color: #fff; box-shadow: 0 2px 8px rgba(252,109,38,0.22); }
+  .svc-btn:not(.active-github):not(.active-gitlab):hover { background: #f3f4f6; color: #374151; }
+
+  /* ── Header ── */
+  .doc-header {
+    border-radius: 16px;
+    padding: 48px 40px 40px;
+    margin-bottom: 40px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header.gh { background: linear-gradient(135deg, #0f2447 0%, #1a3a6e 60%, #1e4d8c 100%); }
+  .doc-header.gl { background: linear-gradient(135deg, #292961 0%, #6b4fbb 50%, #fc6d26 100%); }
+  .doc-header::before { content:''; position:absolute; top:-40px; right:-40px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.04); }
+  .header-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:4px 14px; font-size:12px; color:rgba(255,255,255,0.8); margin-bottom:16px; letter-spacing:0.5px; }
+  .header-badge .dot { width:6px; height:6px; border-radius:50%; background:#4ade80; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .doc-header h1 { font-size:32px; font-weight:700; margin-bottom:10px; letter-spacing:-0.5px; }
+  .doc-header p { font-size:15px; color:rgba(255,255,255,0.75); max-width:560px; }
+  .header-meta { display:flex; gap:24px; margin-top:28px; flex-wrap:wrap; }
+  .header-meta span { font-size:13px; color:rgba(255,255,255,0.7); }
+  .header-meta strong { color:#fff; }
+
+  /* ── TOC ── */
+  .toc-card { background:#fff; border:1px solid #e3e8f0; border-radius:12px; padding:24px 28px; margin-bottom:40px; }
+  .toc-title { font-size:13px; font-weight:700; color:#6b7280; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+  .toc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; }
+  .toc-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; text-decoration:none; color:#374151; font-size:14px; transition:background 0.15s; }
+  .toc-item:hover { background:#f0f4ff; color:#1e40af; }
+  .toc-item.gl-toc:hover { background:#fff4ee; color:#c2410c; }
+  .toc-num { width:22px; height:22px; border-radius:6px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .toc-num.gh-num { background:#e8eeff; color:#3b5bdb; }
+  .toc-num.gl-num { background:#ffedd5; color:#c2410c; }
+
+  /* ── Section ── */
+  .section { margin-bottom:48px; }
+  .section-header { display:flex; align-items:center; gap:14px; margin-bottom:24px; padding-bottom:14px; border-bottom:2px solid #e8eeff; }
+  .section-header.gl-border { border-bottom-color:#ffedd5; }
+  .section-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .icon-blue{background:#dbeafe;} .icon-green{background:#dcfce7;} .icon-orange{background:#ffedd5;}
+  .icon-purple{background:#ede9fe;} .icon-red{background:#fee2e2;} .icon-teal{background:#ccfbf1;}
+  .icon-gl-orange{background:#ffe4d6;} .icon-gl-purple{background:#ede9fe;}
+  .section-title { font-size:20px; font-weight:700; color:#111827; }
+  .section-num { font-size:12px; color:#9ca3af; font-weight:400; }
+
+  /* ── Cards ── */
+  .card { background:#fff; border:1px solid #e3e8f0; border-radius:12px; padding:20px 24px; margin-bottom:16px; }
+  .card-title { font-size:14px; font-weight:700; color:#374151; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .tag { font-size:11px; padding:2px 8px; border-radius:4px; font-weight:600; letter-spacing:0.3px; }
+  .tag-blue{background:#dbeafe;color:#1e40af;} .tag-green{background:#dcfce7;color:#166534;}
+  .tag-orange{background:#ffedd5;color:#c2410c;} .tag-purple{background:#ede9fe;color:#5b21b6;}
+  .tag-red{background:#fee2e2;color:#991b1b;} .tag-gl{background:#ffe4d6;color:#9a3412;}
+
+  /* ── Lists ── */
+  .info-list { list-style:none; }
+  .info-list li { padding:7px 0; border-bottom:1px solid #f3f4f6; font-size:14px; color:#374151; display:flex; align-items:flex-start; gap:10px; line-height:1.6; }
+  .info-list li:last-child { border-bottom:none; }
+  .info-list li::before { content:'→'; color:#3b82f6; flex-shrink:0; margin-top:1px; }
+  .info-list.gl-list li::before { color:#f97316; }
+  .kv-list { list-style:none; }
+  .kv-list li { padding:8px 0; border-bottom:1px solid #f3f4f6; font-size:14px; display:grid; grid-template-columns:150px 1fr; gap:12px; align-items:flex-start; line-height:1.6; }
+  .kv-list li:last-child { border-bottom:none; }
+  .kv-key { font-family:'JetBrains Mono',monospace; font-size:12px; color:#7c3aed; background:#f5f3ff; padding:2px 8px; border-radius:4px; display:inline-block; height:fit-content; }
+  .kv-key.gl-key { color:#c2410c; background:#fff4ee; }
+  .kv-val { color:#374151; }
+
+  /* ── Code blocks ── */
+  .code-block { background:#0f172a; border-radius:12px; margin-bottom:16px; overflow:hidden; }
+  .code-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:#1e293b; border-bottom:1px solid #334155; }
+  .code-filename { font-family:'JetBrains Mono',monospace; font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:8px; }
+  .code-filename::before { content:''; width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block; }
+  .copy-btn { font-size:11px; color:#64748b; background:transparent; border:1px solid #334155; border-radius:4px; padding:3px 10px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+  .copy-btn:hover { background:#334155; color:#e2e8f0; }
+  pre { padding:20px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; color:#e2e8f0; }
+  .c-comment{color:#64748b;} .c-key{color:#7dd3fc;} .c-str{color:#86efac;}
+  .c-val{color:#fca5a5;} .c-op{color:#f59e0b;} .c-bash{color:#c084fc;}
+  .c-gl-key{color:#fdba74;} .c-gl-str{color:#6ee7b7;} .c-gl-var{color:#f0abfc;}
+
+  /* ── Flow diagram ── */
+  .flow-diagram { display:flex; align-items:center; background:#fff; border:1px solid #e3e8f0; border-radius:12px; padding:24px; margin-bottom:16px; overflow-x:auto; flex-wrap:nowrap; }
+  .flow-step { display:flex; flex-direction:column; align-items:center; text-align:center; min-width:100px; flex-shrink:0; }
+  .flow-circle { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:8px; }
+  .flow-label { font-size:12px; font-weight:600; color:#374151; line-height:1.3; }
+  .flow-sub { font-size:11px; color:#9ca3af; margin-top:3px; }
+  .flow-arrow { flex-shrink:0; color:#9ca3af; font-size:18px; margin:0 4px 28px; }
+
+  /* ── Trigger grid ── */
+  .trigger-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin-bottom:16px; }
+  .trigger-card { background:#fff; border:1px solid #e3e8f0; border-radius:10px; padding:14px 16px; transition:border-color .15s,box-shadow .15s; }
+  .trigger-card:hover { border-color:#93c5fd; box-shadow:0 2px 8px rgba(59,130,246,.08); }
+  .trigger-card.gl-trigger:hover { border-color:#fdba74; box-shadow:0 2px 8px rgba(249,115,22,.08); }
+  .trigger-name { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:500; color:#7c3aed; margin-bottom:6px; }
+  .trigger-name.gl-tname { color:#c2410c; }
+  .trigger-desc { font-size:12px; color:#6b7280; line-height:1.5; }
+
+  /* ── Steps table ── */
+  .steps-table { width:100%; border-collapse:collapse; font-size:14px; }
+  .steps-table th { background:#f8fafc; padding:10px 14px; text-align:left; font-size:12px; font-weight:700; color:#6b7280; letter-spacing:0.5px; border-bottom:2px solid #e3e8f0; }
+  .steps-table td { padding:10px 14px; border-bottom:1px solid #f3f4f6; vertical-align:top; line-height:1.6; color:#374151; }
+  .steps-table tr:last-child td { border-bottom:none; }
+  .steps-table tr:hover td { background:#f9fafb; }
+  code { font-family:'JetBrains Mono',monospace; font-size:12px; background:#f5f3ff; color:#7c3aed; padding:2px 6px; border-radius:4px; }
+  code.gl-code { background:#fff4ee; color:#c2410c; }
+
+  /* ── Inner tab (section 내부) ── */
+  .tab-bar { display:flex; gap:4px; background:#f3f4f6; border-radius:8px; padding:4px; margin-bottom:16px; width:fit-content; }
+  .tab-btn { padding:6px 16px; border-radius:6px; border:none; background:transparent; font-size:13px; font-weight:500; color:#6b7280; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all .15s; }
+  .tab-btn.active { background:#fff; color:#111827; box-shadow:0 1px 3px rgba(0,0,0,.1); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* ── Checklist ── */
+  .checklist { list-style:none; }
+  .checklist li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:14px; color:#374151; border-bottom:1px solid #f3f4f6; line-height:1.6; }
+  .checklist li:last-child { border-bottom:none; }
+  .check-icon { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; margin-top:2px; }
+  .check-green{background:#dcfce7;color:#16a34a;} .check-yellow{background:#fef9c3;color:#ca8a04;} .check-blue{background:#dbeafe;color:#2563eb;}
+
+  /* ── Alert ── */
+  .alert { padding:14px 18px; border-radius:8px; font-size:14px; line-height:1.6; margin-bottom:16px; display:flex; gap:12px; align-items:flex-start; }
+  .alert-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+  .alert-info { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+  .alert-warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+  .alert-tip { background:#f0fdf4; border:1px solid #bbf7d0; color:#14532d; }
+  .alert-gl { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; }
+
+  /* ── 비교 테이블 ── */
+  .compare-table { width:100%; border-collapse:collapse; font-size:14px; background:#fff; border-radius:12px; overflow:hidden; border:1px solid #e3e8f0; margin-bottom:16px; }
+  .compare-table th { padding:12px 16px; text-align:left; font-size:13px; font-weight:700; }
+  .compare-table th:first-child { background:#f8fafc; color:#6b7280; width:28%; }
+  .compare-table th.gh-th { background:#0f2447; color:#fff; }
+  .compare-table th.gl-th { background:#fc6d26; color:#fff; }
+  .compare-table td { padding:10px 16px; border-top:1px solid #f3f4f6; vertical-align:top; line-height:1.6; }
+  .compare-table td:first-child { color:#6b7280; font-weight:500; background:#fafafa; }
+  .compare-table tr:hover td { background:#f9fafb; }
+  .compare-table tr:hover td:first-child { background:#f3f4f6; }
+
+  /* ── Strategy grid ── */
+  .strategy-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
+  @media(max-width:640px){.strategy-grid{grid-template-columns:1fr;}}
+  .strategy-card { background:#fff; border:1px solid #e3e8f0; border-radius:10px; padding:16px; }
+  .strategy-card h4 { font-size:13px; font-weight:700; color:#111827; margin-bottom:8px; }
+  .strategy-card ul { list-style:none; }
+  .strategy-card ul li { font-size:12px; color:#6b7280; padding:3px 0; display:flex; gap:6px; line-height:1.5; }
+  .strategy-card ul li::before { content:'·'; color:#9ca3af; }
+
+  /* ── Env grid ── */
+  .env-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:640px){.env-grid{grid-template-columns:1fr;}}
+
+  /* ── GitLab stage pipeline ── */
+  .stage-flow { display:flex; align-items:center; gap:0; background:#fff; border:1px solid #e3e8f0; border-radius:12px; padding:20px 24px; margin-bottom:16px; overflow-x:auto; }
+  .stage-box { display:flex; flex-direction:column; align-items:center; min-width:110px; flex-shrink:0; }
+  .stage-circle { width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:8px; }
+  .stage-label { font-size:12px; font-weight:700; color:#374151; }
+  .stage-jobs { font-size:11px; color:#9ca3af; margin-top:3px; text-align:center; }
+  .stage-arrow { flex-shrink:0; color:#9ca3af; font-size:18px; margin:0 4px 28px; }
+
+  /* ── Footer ── */
+  .doc-footer { margin-top:60px; padding-top:24px; border-top:1px solid #e3e8f0; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#9ca3af; flex-wrap:wrap; gap:8px; }
+  .doc-footer a { color:#6b7280; text-decoration:none; }
+  .doc-footer a:hover { color:#374151; }
+
+  /* ── Service panel ── */
+  .svc-panel { display:none; }
+  .svc-panel.active { display:block; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── 서비스 탭 ── -->
+  <div class="service-tabs">
+    <button class="svc-btn active-github" id="btn-github" onclick="switchService('github')">
+      <span class="logo">🐙</span> GitHub Actions
+    </button>
+    <button class="svc-btn" id="btn-gitlab" onclick="switchService('gitlab')">
+      <span class="logo">🦊</span> GitLab CI/CD
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       GITHUB PANEL
+  ═══════════════════════════════════════ -->
+  <div class="svc-panel active" id="panel-github">
+
+    <div class="doc-header gh">
+      <div class="header-badge"><span class="dot"></span>GitHub Actions Documentation</div>
+      <h1>GitHub CI/CD 구성 가이드</h1>
+      <p>GitHub Actions를 활용한 지속적 통합·배포 파이프라인 설계 및 구현 레퍼런스</p>
+      <div class="header-meta">
+        <span><strong>버전</strong> v2.0</span>
+        <span><strong>대상</strong> GitHub Actions</span>
+        <span><strong>난이도</strong> 초급 ~ 중급</span>
+        <span><strong>업데이트</strong> 2025년</span>
+      </div>
+    </div>
+
+    <div class="toc-card">
+      <div class="toc-title">목차</div>
+      <div class="toc-grid">
+        <a href="#gh-s1" class="toc-item"><span class="toc-num gh-num">1</span> CI/CD 개요</a>
+        <a href="#gh-s2" class="toc-item"><span class="toc-num gh-num">2</span> 디렉토리 구조</a>
+        <a href="#gh-s3" class="toc-item"><span class="toc-num gh-num">3</span> Workflow 기본 구조</a>
+        <a href="#gh-s4" class="toc-item"><span class="toc-num gh-num">4</span> 트리거(on) 설정</a>
+        <a href="#gh-s5" class="toc-item"><span class="toc-num gh-num">5</span> Jobs & Steps</a>
+        <a href="#gh-s6" class="toc-item"><span class="toc-num gh-num">6</span> 환경변수 & 시크릿</a>
+        <a href="#gh-s7" class="toc-item"><span class="toc-num gh-num">7</span> 실전 예제 모음</a>
+        <a href="#gh-s8" class="toc-item"><span class="toc-num gh-num">8</span> 배포 전략</a>
+        <a href="#gh-s9" class="toc-item"><span class="toc-num gh-num">9</span> 보안 체크리스트</a>
+      </div>
+    </div>
+
+    <!-- 1. CI/CD 개요 -->
+    <div class="section" id="gh-s1">
+      <div class="section-header">
+        <div class="section-icon icon-blue">🔄</div>
+        <div><div class="section-num">SECTION 01</div><div class="section-title">CI/CD 개요</div></div>
+      </div>
+      <div class="flow-diagram">
+        <div class="flow-step"><div class="flow-circle" style="background:#dbeafe">💻</div><div class="flow-label">코드 작성</div><div class="flow-sub">Local Dev</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="flow-circle" style="background:#ede9fe">📤</div><div class="flow-label">Push / PR</div><div class="flow-sub">GitHub</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="flow-circle" style="background:#fef9c3">🔬</div><div class="flow-label">CI 빌드·테스트</div><div class="flow-sub">자동화</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="flow-circle" style="background:#dcfce7">✅</div><div class="flow-label">품질 검증</div><div class="flow-sub">통과/실패</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="flow-circle" style="background:#ffedd5">📦</div><div class="flow-label">아티팩트 빌드</div><div class="flow-sub">패키징</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="flow-circle" style="background:#fee2e2">🚀</div><div class="flow-label">CD 배포</div><div class="flow-sub">Prod/Stage</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">CI (지속적 통합) <span class="tag tag-blue">Continuous Integration</span></div>
+          <ul class="info-list">
+            <li>코드 변경 시 자동으로 빌드·테스트 실행</li>
+            <li>PR 단계에서 버그·오류 조기 발견</li>
+            <li>코드 품질 기준 자동 검증 (lint, coverage)</li>
+            <li>팀 전체 코드베이스 안정성 ↑</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">CD (지속적 배포) <span class="tag tag-green">Continuous Deployment</span></div>
+          <ul class="info-list">
+            <li>테스트 통과 후 자동으로 배포 진행</li>
+            <li>스테이징 → 프로덕션 단계별 릴리즈</li>
+            <li>롤백 전략 포함한 안전한 배포</li>
+            <li>수동 개입 최소화 → 배포 주기 단축</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 디렉토리 구조 -->
+    <div class="section" id="gh-s2">
+      <div class="section-header">
+        <div class="section-icon icon-purple">📁</div>
+        <div><div class="section-num">SECTION 02</div><div class="section-title">디렉토리 구조</div></div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Workflow 파일은 반드시 <code>.github/workflows/</code> 디렉토리에 위치 → YAML 형식 사용</div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">프로젝트 루트</span></div>
+        <pre><span class="c-comment"># 권장 디렉토리 구성</span>
+.github/
+├── workflows/                  <span class="c-comment"># ← Workflow 파일 위치 (필수)</span>
+│   ├── ci.yml                  <span class="c-comment"># CI: 빌드 + 테스트</span>
+│   ├── cd.yml                  <span class="c-comment"># CD: 배포</span>
+│   ├── release.yml             <span class="c-comment"># 릴리즈 자동화</span>
+│   └── security.yml            <span class="c-comment"># 보안 스캔</span>
+├── actions/                    <span class="c-comment"># 커스텀 액션 (선택)</span>
+│   └── setup/
+│       └── action.yml
+└── CODEOWNERS                  <span class="c-comment"># 코드 오너 설정</span>
+
+<span class="c-comment"># 파일명 → 영문 소문자, 하이픈 사용 권장
+# 확장자 → .yml 또는 .yaml 모두 가능</span></pre>
+      </div>
+    </div>
+
+    <!-- 3. Workflow 기본 구조 -->
+    <div class="section" id="gh-s3">
+      <div class="section-header">
+        <div class="section-icon icon-orange">📋</div>
+        <div><div class="section-num">SECTION 03</div><div class="section-title">Workflow 기본 구조</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">핵심 구성 요소</div>
+        <ul class="kv-list">
+          <li><span class="kv-key">name</span><span class="kv-val">Workflow 이름 → GitHub Actions UI에 표시</span></li>
+          <li><span class="kv-key">on</span><span class="kv-val">트리거 조건 → push, pull_request, schedule 등</span></li>
+          <li><span class="kv-key">env</span><span class="kv-val">전역 환경변수 → 모든 job에서 사용 가능</span></li>
+          <li><span class="kv-key">jobs</span><span class="kv-val">실행 단위 → 병렬 또는 순서 실행 가능</span></li>
+          <li><span class="kv-key">runs-on</span><span class="kv-val">Runner 환경 → ubuntu-latest, windows-latest, macos-latest</span></li>
+          <li><span class="kv-key">steps</span><span class="kv-val">실제 실행 명령 → uses(액션) 또는 run(쉘 명령)</span></li>
+        </ul>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">.github/workflows/ci.yml</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">CI Pipeline</span>
+
+<span class="c-key">on</span><span class="c-op">:</span>
+  <span class="c-key">push</span><span class="c-op">:</span>
+    <span class="c-key">branches</span><span class="c-op">:</span> <span class="c-str">[ main, develop ]</span>
+  <span class="c-key">pull_request</span><span class="c-op">:</span>
+    <span class="c-key">branches</span><span class="c-op">:</span> <span class="c-str">[ main ]</span>
+
+<span class="c-key">env</span><span class="c-op">:</span>
+  <span class="c-key">NODE_VERSION</span><span class="c-op">:</span> <span class="c-str">'20'</span>
+
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">build-and-test</span><span class="c-op">:</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">코드 체크아웃</span>
+        <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/checkout@v4</span>
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Node.js 설정</span>
+        <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/setup-node@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">node-version</span><span class="c-op">:</span> <span class="c-str">${{ env.NODE_VERSION }}</span>
+          <span class="c-key">cache</span><span class="c-op">:</span> <span class="c-str">'npm'</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">npm ci</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">npm run lint && npm test && npm run build</span></pre>
+      </div>
+    </div>
+
+    <!-- 4. 트리거 -->
+    <div class="section" id="gh-s4">
+      <div class="section-header">
+        <div class="section-icon icon-green">⚡</div>
+        <div><div class="section-num">SECTION 04</div><div class="section-title">트리거(on) 설정</div></div>
+      </div>
+      <div class="trigger-grid">
+        <div class="trigger-card"><div class="trigger-name">push</div><div class="trigger-desc">브랜치 push 시 → branches, tags, paths 필터 지원</div></div>
+        <div class="trigger-card"><div class="trigger-name">pull_request</div><div class="trigger-desc">PR 생성·수정·동기화 시 → types로 이벤트 세분화</div></div>
+        <div class="trigger-card"><div class="trigger-name">schedule</div><div class="trigger-desc">cron 표현식으로 정기 실행 → UTC 기준</div></div>
+        <div class="trigger-card"><div class="trigger-name">workflow_dispatch</div><div class="trigger-desc">수동 실행 버튼 → UI/API에서 직접 트리거</div></div>
+        <div class="trigger-card"><div class="trigger-name">release</div><div class="trigger-desc">GitHub Release 생성 시 → published, created 등</div></div>
+        <div class="trigger-card"><div class="trigger-name">workflow_call</div><div class="trigger-desc">다른 Workflow에서 호출 → 재사용 가능한 Workflow</div></div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">트리거 예시 (고급)</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-key">on</span><span class="c-op">:</span>
+  <span class="c-key">push</span><span class="c-op">:</span>
+    <span class="c-key">branches</span><span class="c-op">:</span> <span class="c-str">[ main, 'release/**' ]</span>
+    <span class="c-key">paths</span><span class="c-op">:</span> <span class="c-str">[ 'src/**', 'package*.json' ]</span>
+    <span class="c-key">paths-ignore</span><span class="c-op">:</span> <span class="c-str">[ 'docs/**' ]</span>
+  <span class="c-key">pull_request</span><span class="c-op">:</span>
+    <span class="c-key">types</span><span class="c-op">:</span> <span class="c-str">[ opened, synchronize, reopened ]</span>
+  <span class="c-key">schedule</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-key">cron</span><span class="c-op">:</span> <span class="c-str">'0 2 * * 1-5'</span>   <span class="c-comment"># 평일 오전 2시 (UTC)</span>
+  <span class="c-key">workflow_dispatch</span><span class="c-op">:</span>
+    <span class="c-key">inputs</span><span class="c-op">:</span>
+      <span class="c-key">environment</span><span class="c-op">:</span>
+        <span class="c-key">description</span><span class="c-op">:</span> <span class="c-str">'배포 환경'</span>
+        <span class="c-key">required</span><span class="c-op">:</span> <span class="c-val">true</span>
+        <span class="c-key">type</span><span class="c-op">:</span> <span class="c-str">choice</span>
+        <span class="c-key">options</span><span class="c-op">:</span> <span class="c-str">[ staging, production ]</span></pre>
+      </div>
+    </div>
+
+    <!-- 5. Jobs & Steps -->
+    <div class="section" id="gh-s5">
+      <div class="section-header">
+        <div class="section-icon icon-teal">⚙️</div>
+        <div><div class="section-num">SECTION 05</div><div class="section-title">Jobs & Steps 심화</div></div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'gh-matrix')">컨텍스트 참조</button>
+        <button class="tab-btn" onclick="switchTab(this,'gh-needs')">Job 의존성</button>
+        <button class="tab-btn" onclick="switchTab(this,'gh-cond')">조건부 실행</button>
+      </div>
+      <div id="gh-matrix" class="tab-panel active">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">컨텍스트란?</div>
+          <ul class="info-list">
+            <li><code>${{ 컨텍스트.속성 }}</code> 형식 → Workflow 실행 중 각종 값에 접근하는 표현식</li>
+            <li>컨텍스트 종류에 따라 GitHub 정보·시크릿·이전 스텝 결과 등 참조 가능</li>
+          </ul>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">주요 컨텍스트 참조 예시</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">env</span><span class="c-op">:</span>
+  <span class="c-key">NODE_VERSION</span><span class="c-op">:</span> <span class="c-str">'20'</span>
+
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">deploy</span><span class="c-op">:</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">github 컨텍스트 — GitHub 실행 정보</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-op">|</span>
+          <span class="c-bash">echo "브랜치: ${{ github.ref_name }}"</span>        <span class="c-comment"># 현재 브랜치명</span>
+          <span class="c-bash">echo "커밋: ${{ github.sha }}"</span>             <span class="c-comment"># 커밋 SHA</span>
+          <span class="c-bash">echo "이벤트: ${{ github.event_name }}"</span>    <span class="c-comment"># push / pull_request 등</span>
+          <span class="c-bash">echo "저장소: ${{ github.repository }}"</span>    <span class="c-comment"># owner/repo 형식</span>
+
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">env 컨텍스트 — 환경변수 참조</span>
+        <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/setup-node@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">node-version</span><span class="c-op">:</span> <span class="c-str">${{ env.NODE_VERSION }}</span>     <span class="c-comment"># 위 env 블록에서 정의한 값</span>
+
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">secrets 컨텍스트 — 시크릿 참조</span>
+        <span class="c-key">env</span><span class="c-op">:</span>
+          <span class="c-key">API_KEY</span><span class="c-op">:</span> <span class="c-str">${{ secrets.API_KEY }}</span>           <span class="c-comment"># Settings에서 등록한 시크릿</span>
+          <span class="c-key">TOKEN</span><span class="c-op">:</span>   <span class="c-str">${{ secrets.GITHUB_TOKEN }}</span>      <span class="c-comment"># GitHub 자동 발급 토큰</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">curl -H "Authorization: Bearer $TOKEN" https://api.example.com</span>
+
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">출력값 생성</span>
+        <span class="c-key">id</span><span class="c-op">:</span> <span class="c-str">meta</span>                                       <span class="c-comment"># ← id 지정 필수</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">echo "image-tag=v1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT</span>
+
+      <span class="c-op">-</span> <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">steps 컨텍스트 — 이전 스텝 출력값 참조</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">echo "태그: ${{ steps.meta.outputs.image-tag }}"</span>  <span class="c-comment"># steps.{id}.outputs.{key}</span></pre>
+        </div>
+        <div class="card">
+          <div class="card-title">컨텍스트 종류 요약</div>
+          <table class="steps-table">
+            <thead><tr><th>컨텍스트</th><th>주요 속성</th><th>참조 예시</th></tr></thead>
+            <tbody>
+              <tr><td><code>github</code></td><td>브랜치·커밋·이벤트·저장소 정보</td><td><code>${{ github.ref_name }}</code></td></tr>
+              <tr><td><code>env</code></td><td><code>env:</code> 블록에서 정의한 변수</td><td><code>${{ env.NODE_VERSION }}</code></td></tr>
+              <tr><td><code>secrets</code></td><td>Settings에서 등록한 시크릿</td><td><code>${{ secrets.API_KEY }}</code></td></tr>
+              <tr><td><code>steps</code></td><td>이전 스텝의 outputs</td><td><code>${{ steps.myid.outputs.val }}</code></td></tr>
+              <tr><td><code>needs</code></td><td>이전 Job의 outputs</td><td><code>${{ needs.build.outputs.tag }}</code></td></tr>
+              <tr><td><code>inputs</code></td><td>workflow_dispatch 입력값</td><td><code>${{ inputs.environment }}</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="gh-needs" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">needs — Job 순서 제어</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">test</span><span class="c-op">:</span>                      <span class="c-comment"># 1단계</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+  <span class="c-key">build</span><span class="c-op">:</span>
+    <span class="c-key">needs</span><span class="c-op">:</span> <span class="c-str">test</span>              <span class="c-comment"># 2단계: test 완료 후</span>
+    <span class="c-key">outputs</span><span class="c-op">:</span>
+      <span class="c-key">image-tag</span><span class="c-op">:</span> <span class="c-str">${{ steps.meta.outputs.tags }}</span>
+  <span class="c-key">deploy</span><span class="c-op">:</span>
+    <span class="c-key">needs</span><span class="c-op">:</span> <span class="c-str">[ test, build ]</span>   <span class="c-comment"># 3단계: 복수 의존성</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">echo "${{ needs.build.outputs.image-tag }}"</span></pre>
+        </div>
+      </div>
+      <div id="gh-cond" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">if 조건 — 브랜치/이벤트별 분기</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">deploy-staging</span><span class="c-op">:</span>
+    <span class="c-key">if</span><span class="c-op">:</span> <span class="c-str">github.ref == 'refs/heads/develop'</span>
+  <span class="c-key">deploy-production</span><span class="c-op">:</span>
+    <span class="c-key">if</span><span class="c-op">:</span> <span class="c-str">github.ref == 'refs/heads/main'</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">if</span><span class="c-op">:</span> <span class="c-str">always()</span>          <span class="c-comment"># 이전 실패해도 항상 실행</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">echo "클린업"</span>
+      <span class="c-op">-</span> <span class="c-key">if</span><span class="c-op">:</span> <span class="c-str">failure()</span>         <span class="c-comment"># 실패 시에만</span>
+        <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">echo "Slack 알림"</span></pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Steps 주요 키워드</div>
+        <table class="steps-table">
+          <thead><tr><th>키워드</th><th>설명</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td><code>uses</code></td><td>Marketplace 액션 사용 → <a href="https://github.com/marketplace?type=actions" target="_blank" style="color:#2563eb;font-size:12px;font-weight:500;">github.com/marketplace</a></td><td><code>actions/checkout@v4</code></td></tr>
+            <tr><td><code>run</code></td><td>쉘 명령 직접 실행</td><td><code>npm test</code></td></tr>
+            <tr><td><code>with</code></td><td>액션 입력값 전달</td><td><code>node-version: '20'</code></td></tr>
+            <tr><td><code>env</code></td><td>스텝 전용 환경변수</td><td><code>API_KEY: ${{ secrets.KEY }}</code></td></tr>
+            <tr><td><code>id</code></td><td>스텝 ID → 출력값 참조 시</td><td><code>steps.myid.outputs.val</code></td></tr>
+            <tr><td><code>continue-on-error</code></td><td>오류 무시 후 진행</td><td><code>true</code> / <code>false</code></td></tr>
+            <tr><td><code>timeout-minutes</code></td><td>스텝 최대 실행 시간</td><td><code>10</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 6. 환경변수 & 시크릿 -->
+    <div class="section" id="gh-s6">
+      <div class="section-header">
+        <div class="section-icon icon-red">🔐</div>
+        <div><div class="section-num">SECTION 06</div><div class="section-title">환경변수 & 시크릿 관리</div></div>
+      </div>
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div>시크릿은 코드에 직접 입력 금지 → Settings → Secrets and variables → Actions에서 등록</div>
+      </div>
+      <div class="env-grid">
+        <div class="card">
+          <div class="card-title">시크릿 등록 위치 <span class="tag tag-red">보안</span></div>
+          <ul class="info-list">
+            <li>Repository Secrets: 단일 저장소 전용</li>
+            <li>Environment Secrets: 환경(prod/stage)별 분리</li>
+            <li>Organization Secrets: 조직 전체 공유</li>
+            <li>참조: <code>${{ secrets.SECRET_NAME }}</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">환경변수 우선순위</div>
+          <ul class="info-list">
+            <li>Step env → 가장 높은 우선순위</li>
+            <li>Job env → Step 하위에 적용</li>
+            <li>Workflow env → 전역 기본값</li>
+            <li>참조: <code>${{ env.VAR_NAME }}</code></li>
+          </ul>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">OIDC 인증 — AWS 액세스 키 없이 배포</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-key">permissions</span><span class="c-op">:</span>
+  <span class="c-key">id-token</span><span class="c-op">:</span> <span class="c-str">write</span>           <span class="c-comment"># OIDC 토큰 발급</span>
+  <span class="c-key">contents</span><span class="c-op">:</span> <span class="c-str">read</span>
+
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">deploy</span><span class="c-op">:</span>
+    <span class="c-key">environment</span><span class="c-op">:</span> <span class="c-str">production</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">aws-actions/configure-aws-credentials@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">role-to-assume</span><span class="c-op">:</span> <span class="c-str">arn:aws:iam::123456789:role/GitHubActionsRole</span>
+          <span class="c-key">aws-region</span><span class="c-op">:</span>     <span class="c-str">ap-northeast-2</span>
+          <span class="c-comment"># 장기 자격증명 없이 임시 토큰 자동 발급</span></pre>
+      </div>
+    </div>
+
+    <!-- 7. 실전 예제 -->
+    <div class="section" id="gh-s7">
+      <div class="section-header">
+        <div class="section-icon icon-blue">🛠️</div>
+        <div><div class="section-num">SECTION 07</div><div class="section-title">실전 예제 모음</div></div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'gh-docker')">Docker 빌드·배포</button>
+        <button class="tab-btn" onclick="switchTab(this,'gh-node')">Node.js + AWS</button>
+        <button class="tab-btn" onclick="switchTab(this,'gh-release')">릴리즈 자동화</button>
+      </div>
+      <div id="gh-docker" class="tab-panel active">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.github/workflows/docker-deploy.yml</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Docker Build & Deploy</span>
+<span class="c-key">on</span><span class="c-op">:</span>
+  <span class="c-key">push</span><span class="c-op">:</span>
+    <span class="c-key">branches</span><span class="c-op">:</span> <span class="c-str">[ main ]</span>
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">build-and-push</span><span class="c-op">:</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">permissions</span><span class="c-op">:</span>
+      <span class="c-key">contents</span><span class="c-op">:</span> <span class="c-str">read</span>
+      <span class="c-key">packages</span><span class="c-op">:</span> <span class="c-str">write</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/checkout@v4</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">docker/setup-buildx-action@v3</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">docker/login-action@v3</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">registry</span><span class="c-op">:</span> <span class="c-str">ghcr.io</span>
+          <span class="c-key">username</span><span class="c-op">:</span> <span class="c-str">${{ github.actor }}</span>
+          <span class="c-key">password</span><span class="c-op">:</span> <span class="c-str">${{ secrets.GITHUB_TOKEN }}</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">docker/build-push-action@v5</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">push</span><span class="c-op">:</span> <span class="c-val">true</span>
+          <span class="c-key">tags</span><span class="c-op">:</span> <span class="c-str">ghcr.io/${{ github.repository }}:${{ github.sha }}</span>
+          <span class="c-key">cache-from</span><span class="c-op">:</span> <span class="c-str">type=gha</span>
+          <span class="c-key">cache-to</span><span class="c-op">:</span>   <span class="c-str">type=gha,mode=max</span></pre>
+        </div>
+      </div>
+      <div id="gh-node" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.github/workflows/node-aws.yml</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Node.js CI/CD → AWS ECS</span>
+<span class="c-key">on</span><span class="c-op">:</span>
+  <span class="c-key">push</span><span class="c-op">:</span>
+    <span class="c-key">branches</span><span class="c-op">:</span> <span class="c-str">[ main ]</span>
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">ci</span><span class="c-op">:</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/checkout@v4</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/setup-node@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span> <span class="c-op">{</span> <span class="c-key">node-version</span><span class="c-op">:</span> <span class="c-str">'20'</span>, <span class="c-key">cache</span><span class="c-op">:</span> <span class="c-str">'npm'</span> <span class="c-op">}</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">npm ci && npm run lint && npm test</span>
+  <span class="c-key">deploy</span><span class="c-op">:</span>
+    <span class="c-key">needs</span><span class="c-op">:</span> <span class="c-str">ci</span>
+    <span class="c-key">environment</span><span class="c-op">:</span> <span class="c-str">production</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">aws-actions/configure-aws-credentials@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">role-to-assume</span><span class="c-op">:</span> <span class="c-str">${{ secrets.AWS_ROLE_ARN }}</span>
+          <span class="c-key">aws-region</span><span class="c-op">:</span>     <span class="c-str">ap-northeast-2</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">aws ecs update-service --cluster prod --force-new-deployment</span></pre>
+        </div>
+      </div>
+      <div id="gh-release" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.github/workflows/release.yml</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">자동 릴리즈</span>
+<span class="c-key">on</span><span class="c-op">:</span>
+  <span class="c-key">push</span><span class="c-op">:</span>
+    <span class="c-key">tags</span><span class="c-op">:</span> <span class="c-str">[ 'v*.*.*' ]</span>       <span class="c-comment"># v1.0.0 형식 태그 시 실행</span>
+<span class="c-key">jobs</span><span class="c-op">:</span>
+  <span class="c-key">release</span><span class="c-op">:</span>
+    <span class="c-key">runs-on</span><span class="c-op">:</span> <span class="c-str">ubuntu-latest</span>
+    <span class="c-key">permissions</span><span class="c-op">:</span>
+      <span class="c-key">contents</span><span class="c-op">:</span> <span class="c-str">write</span>
+    <span class="c-key">steps</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">actions/checkout@v4</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">fetch-depth</span><span class="c-op">:</span> <span class="c-val">0</span>        <span class="c-comment"># 전체 히스토리 필요</span>
+      <span class="c-op">-</span> <span class="c-key">run</span><span class="c-op">:</span> <span class="c-bash">npm ci && npm run build</span>
+      <span class="c-op">-</span> <span class="c-key">uses</span><span class="c-op">:</span> <span class="c-str">softprops/action-gh-release@v2</span>
+        <span class="c-key">with</span><span class="c-op">:</span>
+          <span class="c-key">generate_release_notes</span><span class="c-op">:</span> <span class="c-val">true</span>
+          <span class="c-key">files</span><span class="c-op">:</span> <span class="c-str">dist/**</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. 배포 전략 -->
+    <div class="section" id="gh-s8">
+      <div class="section-header">
+        <div class="section-icon icon-green">🚀</div>
+        <div><div class="section-num">SECTION 08</div><div class="section-title">배포 전략</div></div>
+      </div>
+      <div class="strategy-grid">
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🔵</div><h4>Blue-Green 배포</h4><ul><li>현재·신규 환경 병렬 운영</li><li>트래픽 전환 → 즉각 롤백</li><li>다운타임: 0</li><li>비용: 2배 인프라 필요</li></ul></div>
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🌊</div><h4>Canary 배포</h4><ul><li>소수 트래픽에 신버전 먼저</li><li>점진적 비율 확대</li><li>실제 사용자 대상 검증</li><li>문제 발생 시 조기 탐지</li></ul></div>
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🔄</div><h4>Rolling 배포</h4><ul><li>인스턴스 순차적 교체</li><li>서비스 중단 없이 업데이트</li><li>헬스체크 기반 자동 롤백</li><li>가장 일반적인 방식</li></ul></div>
+      </div>
+    </div>
+
+    <!-- 9. 보안 체크리스트 -->
+    <div class="section" id="gh-s9">
+      <div class="section-header">
+        <div class="section-icon icon-red">🛡️</div>
+        <div><div class="section-num">SECTION 09</div><div class="section-title">보안 체크리스트</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">필수 보안 설정</div>
+          <ul class="checklist">
+            <li><span class="check-icon check-green">✓</span><span><code>permissions</code> 명시적 선언 → 기본값 write 방지</span></li>
+            <li><span class="check-icon check-green">✓</span><span>외부 액션 SHA 핀닝 → <code>@v4</code> 대신 <code>@abc1234</code></span></li>
+            <li><span class="check-icon check-green">✓</span><span>시크릿 로그 출력 금지 → <code>echo $SECRET</code> 절대 금지</span></li>
+            <li><span class="check-icon check-yellow">!</span><span>Dependabot 활성화 → 액션 자동 버전 업데이트</span></li>
+            <li><span class="check-icon check-blue">i</span><span>OIDC 활용 → AWS/GCP 자격증명 토큰 기반 인증</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">Branch Protection 설정</div>
+          <ul class="checklist">
+            <li><span class="check-icon check-green">✓</span><span>main 브랜치 직접 push 차단</span></li>
+            <li><span class="check-icon check-green">✓</span><span>PR 머지 전 CI 통과 필수 설정</span></li>
+            <li><span class="check-icon check-green">✓</span><span>Required reviewers 최소 1명 지정</span></li>
+            <li><span class="check-icon check-yellow">!</span><span>CODEOWNERS 파일로 파일별 소유자 지정</span></li>
+            <li><span class="check-icon check-blue">i</span><span>Environment 보호 규칙 → prod 배포 수동 승인</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>GitHub CI/CD 가이드 · GitHub Actions 공식 문서 기반</span>
+      <a href="https://docs.github.com/en/actions" target="_blank">docs.github.com/en/actions</a>
+    </div>
+  </div><!-- /panel-github -->
+
+
+  <!-- ═══════════════════════════════════════
+       GITLAB PANEL
+  ═══════════════════════════════════════ -->
+  <div class="svc-panel" id="panel-gitlab">
+
+    <div class="doc-header gl">
+      <div class="header-badge"><span class="dot"></span>GitLab CI/CD Documentation</div>
+      <h1>GitLab CI/CD 구성 가이드</h1>
+      <p>GitLab CI/CD를 활용한 지속적 통합·배포 파이프라인 설계 및 구현 레퍼런스</p>
+      <div class="header-meta">
+        <span><strong>버전</strong> v2.0</span>
+        <span><strong>대상</strong> GitLab CI/CD</span>
+        <span><strong>난이도</strong> 초급 ~ 중급</span>
+        <span><strong>업데이트</strong> 2025년</span>
+      </div>
+    </div>
+
+    <div class="toc-card">
+      <div class="toc-title">목차</div>
+      <div class="toc-grid">
+        <a href="#gl-s1" class="toc-item gl-toc"><span class="toc-num gl-num">1</span> CI/CD 개요</a>
+        <a href="#gl-s2" class="toc-item gl-toc"><span class="toc-num gl-num">2</span> 파일 구조</a>
+        <a href="#gl-s3" class="toc-item gl-toc"><span class="toc-num gl-num">3</span> Pipeline 기본 구조</a>
+        <a href="#gl-s4" class="toc-item gl-toc"><span class="toc-num gl-num">4</span> 트리거 설정</a>
+        <a href="#gl-s5" class="toc-item gl-toc"><span class="toc-num gl-num">5</span> Jobs & Stages</a>
+        <a href="#gl-s6" class="toc-item gl-toc"><span class="toc-num gl-num">6</span> 변수 & 시크릿</a>
+        <a href="#gl-s7" class="toc-item gl-toc"><span class="toc-num gl-num">7</span> 실전 예제 모음</a>
+        <a href="#gl-s8" class="toc-item gl-toc"><span class="toc-num gl-num">8</span> 배포 전략</a>
+        <a href="#gl-s9" class="toc-item gl-toc"><span class="toc-num gl-num">9</span> 보안 체크리스트</a>
+      </div>
+    </div>
+
+    <!-- GL 1. CI/CD 개요 -->
+    <div class="section" id="gl-s1">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-orange">🔄</div>
+        <div><div class="section-num">SECTION 01</div><div class="section-title">CI/CD 개요</div></div>
+      </div>
+      <div class="stage-flow">
+        <div class="stage-box"><div class="stage-circle" style="background:#ffe4d6">💻</div><div class="stage-label">코드 작성</div><div class="stage-jobs">Local Dev</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box"><div class="stage-circle" style="background:#fde68a">📤</div><div class="stage-label">Push / MR</div><div class="stage-jobs">GitLab</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box"><div class="stage-circle" style="background:#dbeafe">🔬</div><div class="stage-label">build stage</div><div class="stage-jobs">컴파일·패키징</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box"><div class="stage-circle" style="background:#ede9fe">🧪</div><div class="stage-label">test stage</div><div class="stage-jobs">lint·unit·e2e</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box"><div class="stage-circle" style="background:#dcfce7">🔒</div><div class="stage-label">security stage</div><div class="stage-jobs">SAST·DAST</div></div>
+        <div class="stage-arrow">→</div>
+        <div class="stage-box"><div class="stage-circle" style="background:#fee2e2">🚀</div><div class="stage-label">deploy stage</div><div class="stage-jobs">Prod/Stage</div></div>
+      </div>
+      <div class="alert alert-gl">
+        <span class="alert-icon">🦊</span>
+        <div>GitHub Actions는 <strong>Job 단위</strong> 병렬 실행 / GitLab CI는 <strong>Stage 단위</strong> 순차 실행 + Stage 내 Job은 병렬 → 구조적 차이 이해 필수</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">GitLab CI/CD 특징 <span class="tag tag-gl">GitLab</span></div>
+          <ul class="info-list gl-list">
+            <li>단일 파일 <code>.gitlab-ci.yml</code>로 전체 파이프라인 정의</li>
+            <li>Stage → Job 계층 구조로 실행 순서 제어</li>
+            <li>내장 Container Registry · Artifact 저장소</li>
+            <li>GitLab Runner: SaaS(공유) 또는 Self-hosted 선택</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">GitHub Actions와 핵심 차이</div>
+          <ul class="info-list gl-list">
+            <li>워크플로우 파일 → 단일 <code>.gitlab-ci.yml</code> (복수 파일 불가)</li>
+            <li>트리거 키워드: <code>on</code> → <code>rules</code> / <code>only</code> / <code>except</code></li>
+            <li>Marketplace 없음 → 템플릿 / <code>include</code>로 재사용</li>
+            <li>환경 변수 → CI/CD Variables (마스킹·보호 지원)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- GL 2. 파일 구조 -->
+    <div class="section" id="gl-s2">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-purple">📁</div>
+        <div><div class="section-num">SECTION 02</div><div class="section-title">파일 구조</div></div>
+      </div>
+      <div class="alert alert-gl">
+        <span class="alert-icon">ℹ️</span>
+        <div>GitLab CI는 반드시 프로젝트 루트의 <code class="gl-code">.gitlab-ci.yml</code> 단일 파일 사용 → <code>include</code> 키워드로 분리 가능</div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">프로젝트 루트 구성</span></div>
+        <pre><span class="c-comment"># GitLab CI 파일 구성</span>
+.gitlab-ci.yml              <span class="c-comment"># ← 메인 파이프라인 파일 (필수, 루트에 위치)</span>
+
+<span class="c-comment"># include로 파일 분리 시 권장 구조</span>
+.gitlab/
+├── ci/
+│   ├── build.yml           <span class="c-comment"># 빌드 관련 job 모음</span>
+│   ├── test.yml            <span class="c-comment"># 테스트 관련 job 모음</span>
+│   ├── deploy.yml          <span class="c-comment"># 배포 관련 job 모음</span>
+│   └── security.yml        <span class="c-comment"># 보안 스캔 job 모음</span>
+└── templates/
+    └── .job-template.yml   <span class="c-comment"># 공통 job 템플릿 (앵커 활용)</span>
+
+<span class="c-comment"># .gitlab-ci.yml에서 분리된 파일 불러오기</span>
+<span class="c-gl-key">include</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-key">local</span><span class="c-op">:</span> <span class="c-gl-str">'.gitlab/ci/build.yml'</span>
+  <span class="c-op">-</span> <span class="c-gl-key">local</span><span class="c-op">:</span> <span class="c-gl-str">'.gitlab/ci/test.yml'</span>
+  <span class="c-op">-</span> <span class="c-gl-key">template</span><span class="c-op">:</span> <span class="c-gl-str">'Security/SAST.gitlab-ci.yml'</span>  <span class="c-comment"># GitLab 내장 템플릿</span></pre>
+      </div>
+    </div>
+
+    <!-- GL 3. Pipeline 기본 구조 -->
+    <div class="section" id="gl-s3">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-orange">📋</div>
+        <div><div class="section-num">SECTION 03</div><div class="section-title">Pipeline 기본 구조</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">핵심 구성 요소</div>
+        <ul class="kv-list">
+          <li><span class="kv-key gl-key">stages</span><span class="kv-val">파이프라인 단계 순서 정의 → 나열 순서대로 실행</span></li>
+          <li><span class="kv-key gl-key">image</span><span class="kv-val">실행 Docker 이미지 → 전역 또는 Job별 지정 가능</span></li>
+          <li><span class="kv-key gl-key">variables</span><span class="kv-val">전역 환경변수 → 모든 Job에서 사용</span></li>
+          <li><span class="kv-key gl-key">before_script</span><span class="kv-val">각 Job 실행 전 공통 명령 → 의존성 설치 등</span></li>
+          <li><span class="kv-key gl-key">script</span><span class="kv-val">실제 실행 명령 목록 → Job의 핵심 (필수)</span></li>
+          <li><span class="kv-key gl-key">after_script</span><span class="kv-val">Job 완료 후 실행 → 성공·실패 관계없이 실행</span></li>
+          <li><span class="kv-key gl-key">artifacts</span><span class="kv-val">Job 결과물 저장 → 이후 Stage에서 다운로드 가능</span></li>
+          <li><span class="kv-key gl-key">cache</span><span class="kv-val">의존성 캐싱 → paths + key로 캐시 전략 설정</span></li>
+        </ul>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">.gitlab-ci.yml — 기본 구조</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-gl-key">stages</span><span class="c-op">:</span>               <span class="c-comment"># 실행 순서 정의</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">test</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">image</span><span class="c-op">:</span> <span class="c-gl-str">node:20-alpine</span>   <span class="c-comment"># 전역 Docker 이미지</span>
+
+<span class="c-gl-key">variables</span><span class="c-op">:</span>             <span class="c-comment"># 전역 변수</span>
+  <span class="c-gl-key">NODE_ENV</span><span class="c-op">:</span> <span class="c-gl-str">production</span>
+  <span class="c-gl-key">FF_USE_FASTZIP</span><span class="c-op">:</span> <span class="c-gl-str">"true"</span>  <span class="c-comment"># 빠른 아티팩트 압축</span>
+
+<span class="c-gl-key">cache</span><span class="c-op">:</span>                 <span class="c-comment"># 전역 캐시 설정</span>
+  <span class="c-gl-key">key</span><span class="c-op">:</span> <span class="c-gl-str">${CI_COMMIT_REF_SLUG}</span>
+  <span class="c-gl-key">paths</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-str">node_modules/</span>
+  <span class="c-gl-key">policy</span><span class="c-op">:</span> <span class="c-gl-str">pull-push</span>   <span class="c-comment"># pull: 읽기만 / push: 쓰기만 / pull-push: 둘다</span>
+
+<span class="c-gl-key">build-job</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">before_script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm ci</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run build</span>
+  <span class="c-gl-key">artifacts</span><span class="c-op">:</span>           <span class="c-comment"># 빌드 결과물 저장</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span>
+      <span class="c-op">-</span> <span class="c-gl-str">dist/</span>
+    <span class="c-gl-key">expire_in</span><span class="c-op">:</span> <span class="c-gl-str">1 week</span>  <span class="c-comment"># 아티팩트 보관 기간</span>
+
+<span class="c-gl-key">test-job</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">test</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run lint</span>
+    <span class="c-op">-</span> <span class="c-bash">npm test -- --coverage</span>
+  <span class="c-gl-key">coverage</span><span class="c-op">:</span> <span class="c-gl-str">'/Statements\s*:\s*(\d+\.?\d*)%/'</span>  <span class="c-comment"># 커버리지 파싱 정규식</span>
+
+<span class="c-gl-key">deploy-job</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">environment</span><span class="c-op">:</span>
+    <span class="c-gl-key">name</span><span class="c-op">:</span> <span class="c-gl-str">production</span>
+    <span class="c-gl-key">url</span><span class="c-op">:</span> <span class="c-gl-str">https://app.example.com</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "Deploying to production"</span></pre>
+      </div>
+    </div>
+
+    <!-- GL 4. 트리거 -->
+    <div class="section" id="gl-s4">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-orange">⚡</div>
+        <div><div class="section-num">SECTION 04</div><div class="section-title">트리거 설정</div></div>
+      </div>
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div><code class="gl-code">only</code> / <code class="gl-code">except</code>는 레거시 → 신규 프로젝트는 <code class="gl-code">rules</code> 사용 권장</div>
+      </div>
+      <div class="trigger-grid">
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">rules</div><div class="trigger-desc">조건부 실행 (권장) → if, changes, exists 조합</div></div>
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">only / except</div><div class="trigger-desc">브랜치·태그 필터 (레거시) → rules로 마이그레이션 권장</div></div>
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">when</div><div class="trigger-desc">실행 조건 → on_success, on_failure, always, manual, delayed</div></div>
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">pipeline triggers</div><div class="trigger-desc">API / 다른 프로젝트에서 파이프라인 직접 트리거</div></div>
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">schedules</div><div class="trigger-desc">GitLab UI에서 cron 스케줄 설정 → CI/CD → Schedules</div></div>
+        <div class="trigger-card gl-trigger"><div class="trigger-name gl-tname">needs</div><div class="trigger-desc">Stage 경계를 넘는 Job 의존성 → DAG 파이프라인 구성</div></div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">rules 활용 예시 (권장 방식)</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-gl-key">deploy-staging</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">./deploy.sh staging</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_COMMIT_BRANCH == "develop"</span>   <span class="c-comment"># develop 브랜치 push 시</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_PIPELINE_SOURCE == "merge_request_event"</span>  <span class="c-comment"># MR 생성 시</span>
+
+<span class="c-gl-key">deploy-production</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">./deploy.sh production</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_COMMIT_BRANCH == "main"</span>
+      <span class="c-gl-key">when</span><span class="c-op">:</span> <span class="c-gl-str">manual</span>             <span class="c-comment"># 수동 승인 후 실행</span>
+      <span class="c-gl-key">allow_failure</span><span class="c-op">:</span> <span class="c-val">false</span>
+
+<span class="c-gl-key">test-changes</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">test</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm test</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">changes</span><span class="c-op">:</span>             <span class="c-comment"># 특정 파일 변경 시에만 실행</span>
+        <span class="c-op">-</span> <span class="c-gl-str">src/**/*</span>
+        <span class="c-op">-</span> <span class="c-gl-str">package*.json</span></pre>
+      </div>
+    </div>
+
+    <!-- GL 5. Jobs & Stages -->
+    <div class="section" id="gl-s5">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-teal">⚙️</div>
+        <div><div class="section-num">SECTION 05</div><div class="section-title">Jobs & Stages 심화</div></div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'gl-parallel')">내장변수 활용</button>
+        <button class="tab-btn" onclick="switchTab(this,'gl-dag')">DAG (needs)</button>
+        <button class="tab-btn" onclick="switchTab(this,'gl-anchor')">YAML 앵커</button>
+      </div>
+      <div id="gl-parallel" class="tab-panel active">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">GitLab 내장변수란?</div>
+          <ul class="info-list gl-list">
+            <li>GitHub의 <code>${{ github.xxx }}</code> 와 동일한 개념 → GitLab은 <code class="gl-code">$CI_xxx</code> 형식</li>
+            <li>파이프라인 실행 시 GitLab이 자동으로 주입 → 별도 정의 없이 바로 사용</li>
+          </ul>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">내장변수 활용 예시</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-gl-key">build-image</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-comment"># $CI_COMMIT_xxx — 커밋 정보</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "브랜치: $CI_COMMIT_BRANCH"</span>          <span class="c-comment"># 현재 브랜치명</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "커밋: $CI_COMMIT_SHORT_SHA"</span>         <span class="c-comment"># 커밋 SHA 단축 (8자)</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "메시지: $CI_COMMIT_MESSAGE"</span>         <span class="c-comment"># 커밋 메시지</span>
+
+    <span class="c-comment"># $CI_REGISTRY_xxx — 내장 Container Registry</span>
+    <span class="c-op">-</span> <span class="c-bash">docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY</span>
+    <span class="c-op">-</span> <span class="c-bash">docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .</span>
+    <span class="c-op">-</span> <span class="c-bash">docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA</span>
+
+    <span class="c-comment"># $CI_PIPELINE_xxx — 파이프라인 정보</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "트리거: $CI_PIPELINE_SOURCE"</span>        <span class="c-comment"># push / schedule / web 등</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "파이프라인 ID: $CI_PIPELINE_ID"</span>
+
+    <span class="c-comment"># $CI_PROJECT_xxx — 프로젝트 정보</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "프로젝트: $CI_PROJECT_NAME"</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "URL: $CI_PROJECT_URL"</span>
+
+    <span class="c-comment"># $CI_JOB_TOKEN — Job 임시 토큰 (API 호출 시)</span>
+    <span class="c-op">-</span> <span class="c-bash">curl -H "JOB-TOKEN: $CI_JOB_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages"</span></pre>
+        </div>
+        <div class="card">
+          <div class="card-title">GitHub ↔ GitLab 변수 대응표</div>
+          <table class="steps-table">
+            <thead><tr><th>의미</th><th>GitHub Actions</th><th>GitLab CI</th></tr></thead>
+            <tbody>
+              <tr><td>현재 브랜치명</td><td><code>${{ github.ref_name }}</code></td><td><code class="gl-code">$CI_COMMIT_BRANCH</code></td></tr>
+              <tr><td>커밋 SHA</td><td><code>${{ github.sha }}</code></td><td><code class="gl-code">$CI_COMMIT_SHORT_SHA</code></td></tr>
+              <tr><td>트리거 이벤트</td><td><code>${{ github.event_name }}</code></td><td><code class="gl-code">$CI_PIPELINE_SOURCE</code></td></tr>
+              <tr><td>저장소 이름</td><td><code>${{ github.repository }}</code></td><td><code class="gl-code">$CI_PROJECT_NAME</code></td></tr>
+              <tr><td>자동 발급 토큰</td><td><code>${{ secrets.GITHUB_TOKEN }}</code></td><td><code class="gl-code">$CI_JOB_TOKEN</code></td></tr>
+              <tr><td>실행 번호</td><td><code>${{ github.run_number }}</code></td><td><code class="gl-code">$CI_PIPELINE_IID</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="gl-dag" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">needs — DAG 파이프라인 (Stage 경계 초월)</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-gl-key">stages</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">test</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">build-frontend</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span> <span class="c-bash">npm run build:frontend</span>
+
+<span class="c-gl-key">build-backend</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span> <span class="c-bash">npm run build:backend</span>
+
+<span class="c-gl-key">deploy-frontend</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">needs</span><span class="c-op">:</span> <span class="c-str">[ "build-frontend" ]</span>   <span class="c-comment"># test stage 건너뜀 → 즉시 배포</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span> <span class="c-bash">./deploy-cdn.sh</span>
+
+<span class="c-gl-key">deploy-backend</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">needs</span><span class="c-op">:</span> <span class="c-str">[ "build-backend", "test-backend" ]</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span> <span class="c-bash">./deploy-api.sh</span></pre>
+        </div>
+      </div>
+      <div id="gl-anchor" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">YAML 앵커 — 공통 설정 재사용 (DRY)</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-comment"># 앵커 정의 (& = 정의, * = 참조, << = 병합)</span>
+<span class="c-gl-key">.default-config</span><span class="c-op">:</span> <span class="c-gl-var">&amp;default-config</span>
+  <span class="c-gl-key">image</span><span class="c-op">:</span> <span class="c-gl-str">node:20-alpine</span>
+  <span class="c-gl-key">before_script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm ci --prefer-offline</span>
+  <span class="c-gl-key">cache</span><span class="c-op">:</span>
+    <span class="c-gl-key">key</span><span class="c-op">:</span> <span class="c-gl-str">${CI_COMMIT_REF_SLUG}</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ node_modules/ ]</span>
+
+<span class="c-gl-key">test-unit</span><span class="c-op">:</span>
+  <span class="c-op">&lt;&lt;:</span> <span class="c-gl-var">*default-config</span>         <span class="c-comment"># 앵커 병합</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">test</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run test:unit</span>
+
+<span class="c-gl-key">test-e2e</span><span class="c-op">:</span>
+  <span class="c-op">&lt;&lt;:</span> <span class="c-gl-var">*default-config</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">test</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run test:e2e</span></pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Job 주요 키워드 참조</div>
+        <table class="steps-table">
+          <thead><tr><th>키워드</th><th>설명</th><th>예시값</th></tr></thead>
+          <tbody>
+            <tr><td><code class="gl-code">stage</code></td><td>소속 Stage 지정</td><td><code class="gl-code">build</code> / <code class="gl-code">test</code></td></tr>
+            <tr><td><code class="gl-code">image</code></td><td>Job 전용 Docker 이미지</td><td><code class="gl-code">node:20-alpine</code></td></tr>
+            <tr><td><code class="gl-code">services</code></td><td>사이드카 컨테이너 (DB 등)</td><td><code class="gl-code">postgres:15</code></td></tr>
+            <tr><td><code class="gl-code">artifacts</code></td><td>결과물 저장 → 다음 Stage 전달</td><td><code class="gl-code">paths: [dist/]</code></td></tr>
+            <tr><td><code class="gl-code">dependencies</code></td><td>아티팩트 다운로드 대상 Job</td><td><code class="gl-code">["build-job"]</code></td></tr>
+            <tr><td><code class="gl-code">retry</code></td><td>실패 시 재시도 횟수</td><td><code class="gl-code">2</code></td></tr>
+            <tr><td><code class="gl-code">timeout</code></td><td>Job 최대 실행 시간</td><td><code class="gl-code">30 minutes</code></td></tr>
+            <tr><td><code class="gl-code">tags</code></td><td>특정 Runner 선택</td><td><code class="gl-code">["docker", "linux"]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GL 6. 변수 & 시크릿 -->
+    <div class="section" id="gl-s6">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-red">🔐</div>
+        <div><div class="section-num">SECTION 06</div><div class="section-title">변수 & 시크릿 관리</div></div>
+      </div>
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div>민감 변수는 Settings → CI/CD → Variables에서 등록 → Masked 옵션 필수 체크</div>
+      </div>
+      <div class="env-grid">
+        <div class="card">
+          <div class="card-title">변수 등록 위치 <span class="tag tag-gl">보안</span></div>
+          <ul class="info-list gl-list">
+            <li>Project Variables: 프로젝트 전용 → 가장 많이 사용</li>
+            <li>Group Variables: 그룹 내 전체 프로젝트 공유</li>
+            <li>Instance Variables: GitLab 인스턴스 전체 (관리자 전용)</li>
+            <li>참조: <code class="gl-code">$VARIABLE_NAME</code> 또는 <code class="gl-code">${VARIABLE_NAME}</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">변수 보호 옵션</div>
+          <ul class="info-list gl-list">
+            <li>Masked: 로그에서 값 숨김 → 민감 정보 필수</li>
+            <li>Protected: 보호된 브랜치·태그에서만 사용</li>
+            <li>Expanded: 다른 변수 참조 가능 여부</li>
+            <li>File type: 파일로 전달 → 인증서·키 파일 등</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">내장 CI/CD 변수 주요 목록</span></div>
+        <pre><span class="c-comment"># GitLab이 자동으로 제공하는 내장 변수</span>
+<span class="c-gl-var">$CI_COMMIT_SHA</span>          <span class="c-comment"># 현재 커밋 SHA (40자)</span>
+<span class="c-gl-var">$CI_COMMIT_SHORT_SHA</span>    <span class="c-comment"># 커밋 SHA 단축 (8자)</span>
+<span class="c-gl-var">$CI_COMMIT_BRANCH</span>       <span class="c-comment"># 현재 브랜치 이름</span>
+<span class="c-gl-var">$CI_COMMIT_TAG</span>          <span class="c-comment"># 현재 태그 이름 (태그 파이프라인 시)</span>
+<span class="c-gl-var">$CI_COMMIT_REF_SLUG</span>     <span class="c-comment"># URL 안전 브랜치명 (슬러그)</span>
+<span class="c-gl-var">$CI_PIPELINE_SOURCE</span>     <span class="c-comment"># 파이프라인 트리거 원인 (push, web, schedule...)</span>
+<span class="c-gl-var">$CI_PROJECT_NAME</span>        <span class="c-comment"># 프로젝트 이름</span>
+<span class="c-gl-var">$CI_REGISTRY_IMAGE</span>      <span class="c-comment"># GitLab Container Registry 주소</span>
+<span class="c-gl-var">$CI_REGISTRY_USER</span>       <span class="c-comment"># Container Registry 로그인 사용자</span>
+<span class="c-gl-var">$CI_REGISTRY_PASSWORD</span>   <span class="c-comment"># Container Registry 로그인 패스워드</span>
+<span class="c-gl-var">$CI_JOB_TOKEN</span>           <span class="c-comment"># Job 실행 중 임시 토큰 → API 호출 시 활용</span>
+<span class="c-gl-var">$GITLAB_USER_NAME</span>       <span class="c-comment"># 파이프라인 트리거한 사용자 이름</span></pre>
+      </div>
+    </div>
+
+    <!-- GL 7. 실전 예제 -->
+    <div class="section" id="gl-s7">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-orange">🛠️</div>
+        <div><div class="section-num">SECTION 07</div><div class="section-title">실전 예제 모음</div></div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'gl-docker')">Docker 빌드·배포</button>
+        <button class="tab-btn" onclick="switchTab(this,'gl-node')">Node.js 풀 파이프라인</button>
+        <button class="tab-btn" onclick="switchTab(this,'gl-pages')">GitLab Pages</button>
+      </div>
+      <div id="gl-docker" class="tab-panel active">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.gitlab-ci.yml — Docker 빌드 + GHCR 배포</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-gl-key">stages</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">build-image</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">image</span><span class="c-op">:</span> <span class="c-gl-str">docker:24</span>
+  <span class="c-gl-key">services</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-str">docker:24-dind</span>           <span class="c-comment"># Docker-in-Docker</span>
+  <span class="c-gl-key">variables</span><span class="c-op">:</span>
+    <span class="c-gl-key">DOCKER_TLS_CERTDIR</span><span class="c-op">:</span> <span class="c-gl-str">"/certs"</span>
+  <span class="c-gl-key">before_script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .</span>
+    <span class="c-op">-</span> <span class="c-bash">docker build -t $CI_REGISTRY_IMAGE:latest .</span>
+    <span class="c-op">-</span> <span class="c-bash">docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA</span>
+    <span class="c-op">-</span> <span class="c-bash">docker push $CI_REGISTRY_IMAGE:latest</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_COMMIT_BRANCH == "main"</span>
+
+<span class="c-gl-key">deploy-prod</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">environment</span><span class="c-op">:</span>
+    <span class="c-gl-key">name</span><span class="c-op">:</span> <span class="c-gl-str">production</span>
+    <span class="c-gl-key">url</span><span class="c-op">:</span> <span class="c-gl-str">https://app.example.com</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">kubectl set image deployment/app app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_COMMIT_BRANCH == "main"</span>
+      <span class="c-gl-key">when</span><span class="c-op">:</span> <span class="c-gl-str">manual</span>               <span class="c-comment"># 수동 승인</span></pre>
+        </div>
+      </div>
+      <div id="gl-node" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.gitlab-ci.yml — Node.js 풀 CI/CD 파이프라인</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-gl-key">stages</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-str">install</span>
+  <span class="c-op">-</span> <span class="c-gl-str">quality</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">image</span><span class="c-op">:</span> <span class="c-gl-str">node:20-alpine</span>
+
+<span class="c-gl-key">.base</span><span class="c-op">:</span> <span class="c-gl-var">&amp;base</span>
+  <span class="c-gl-key">cache</span><span class="c-op">:</span>
+    <span class="c-gl-key">key</span><span class="c-op">:</span> <span class="c-gl-str">${CI_COMMIT_REF_SLUG}-npm</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ node_modules/ ]</span>
+    <span class="c-gl-key">policy</span><span class="c-op">:</span> <span class="c-gl-str">pull</span>             <span class="c-comment"># 읽기만 (install job이 씀)</span>
+
+<span class="c-gl-key">install</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">install</span>
+  <span class="c-gl-key">cache</span><span class="c-op">:</span>
+    <span class="c-gl-key">key</span><span class="c-op">:</span> <span class="c-gl-str">${CI_COMMIT_REF_SLUG}-npm</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ node_modules/ ]</span>
+    <span class="c-gl-key">policy</span><span class="c-op">:</span> <span class="c-gl-str">push</span>             <span class="c-comment"># 쓰기만</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm ci</span>
+
+<span class="c-gl-key">lint</span><span class="c-op">:</span>
+  <span class="c-op">&lt;&lt;:</span> <span class="c-gl-var">*base</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">quality</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run lint</span>
+
+<span class="c-gl-key">test</span><span class="c-op">:</span>
+  <span class="c-op">&lt;&lt;:</span> <span class="c-gl-var">*base</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">quality</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm test -- --coverage</span>
+  <span class="c-gl-key">artifacts</span><span class="c-op">:</span>
+    <span class="c-gl-key">reports</span><span class="c-op">:</span>
+      <span class="c-gl-key">junit</span><span class="c-op">:</span> <span class="c-gl-str">junit.xml</span>
+
+<span class="c-gl-key">build</span><span class="c-op">:</span>
+  <span class="c-op">&lt;&lt;:</span> <span class="c-gl-var">*base</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm run build</span>
+  <span class="c-gl-key">artifacts</span><span class="c-op">:</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ dist/ ]</span>
+    <span class="c-gl-key">expire_in</span><span class="c-op">:</span> <span class="c-gl-str">1 day</span></pre>
+        </div>
+      </div>
+      <div id="gl-pages" class="tab-panel">
+        <div class="code-block">
+          <div class="code-header"><span class="code-filename">.gitlab-ci.yml — GitLab Pages 자동 배포</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+          <pre><span class="c-gl-key">stages</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">build-site</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">build</span>
+  <span class="c-gl-key">image</span><span class="c-op">:</span> <span class="c-gl-str">node:20-alpine</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">npm ci && npm run build</span>
+  <span class="c-gl-key">artifacts</span><span class="c-op">:</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ public/ ]</span>      <span class="c-comment"># GitLab Pages는 반드시 public/ 디렉토리</span>
+
+<span class="c-gl-key">pages</span><span class="c-op">:</span>                     <span class="c-comment"># job 이름이 반드시 'pages' 여야 함</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">echo "Deploying to GitLab Pages"</span>
+  <span class="c-gl-key">artifacts</span><span class="c-op">:</span>
+    <span class="c-gl-key">paths</span><span class="c-op">:</span> <span class="c-str">[ public/ ]</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_COMMIT_BRANCH == "main"</span>  <span class="c-comment"># main 브랜치만 배포</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- GL 8. 배포 전략 -->
+    <div class="section" id="gl-s8">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-gl-orange">🚀</div>
+        <div><div class="section-num">SECTION 08</div><div class="section-title">배포 전략</div></div>
+      </div>
+      <div class="strategy-grid">
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🔵</div><h4>Environment + when: manual</h4><ul><li>프로덕션 Job에 when: manual 설정</li><li>GitLab UI에서 버튼 클릭으로 승인</li><li>승인자 제한 → Protected Environments</li><li>배포 이력 자동 기록</li></ul></div>
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🌊</div><h4>Review Apps (동적 환경)</h4><ul><li>MR마다 독립적인 환경 자동 생성</li><li>브랜치명 기반 URL 자동 부여</li><li>MR 닫힘 시 환경 자동 삭제</li><li>environment: name: review/$CI_COMMIT_REF_SLUG</li></ul></div>
+        <div class="strategy-card"><div style="font-size:20px;margin-bottom:8px;">🔄</div><h4>Auto DevOps</h4><ul><li>.gitlab-ci.yml 없이 자동 파이프라인</li><li>빌드·테스트·보안·배포 자동 구성</li><li>Kubernetes 클러스터 연동 시 활성화</li><li>커스터마이즈 가능 → 점진적 전환</li></ul></div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">Review Apps 구성 예시</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-gl-key">deploy-review</span><span class="c-op">:</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">./deploy.sh review $CI_ENVIRONMENT_SLUG</span>
+  <span class="c-gl-key">environment</span><span class="c-op">:</span>
+    <span class="c-gl-key">name</span><span class="c-op">:</span> <span class="c-gl-str">review/$CI_COMMIT_REF_SLUG</span>    <span class="c-comment"># 브랜치별 독립 환경</span>
+    <span class="c-gl-key">url</span><span class="c-op">:</span> <span class="c-gl-str">https://$CI_ENVIRONMENT_SLUG.example.com</span>
+    <span class="c-gl-key">on_stop</span><span class="c-op">:</span> <span class="c-gl-str">stop-review</span>
+  <span class="c-gl-key">rules</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-gl-key">if</span><span class="c-op">:</span> <span class="c-gl-str">$CI_PIPELINE_SOURCE == "merge_request_event"</span>
+
+<span class="c-gl-key">stop-review</span><span class="c-op">:</span>                          <span class="c-comment"># MR 닫힐 때 환경 정리</span>
+  <span class="c-gl-key">stage</span><span class="c-op">:</span> <span class="c-gl-str">deploy</span>
+  <span class="c-gl-key">script</span><span class="c-op">:</span>
+    <span class="c-op">-</span> <span class="c-bash">./teardown.sh $CI_ENVIRONMENT_SLUG</span>
+  <span class="c-gl-key">environment</span><span class="c-op">:</span>
+    <span class="c-gl-key">name</span><span class="c-op">:</span> <span class="c-gl-str">review/$CI_COMMIT_REF_SLUG</span>
+    <span class="c-gl-key">action</span><span class="c-op">:</span> <span class="c-gl-str">stop</span>
+  <span class="c-gl-key">when</span><span class="c-op">:</span> <span class="c-gl-str">manual</span></pre>
+      </div>
+    </div>
+
+    <!-- GL 9. 보안 -->
+    <div class="section" id="gl-s9">
+      <div class="section-header gl-border">
+        <div class="section-icon icon-red">🛡️</div>
+        <div><div class="section-num">SECTION 09</div><div class="section-title">보안 체크리스트</div></div>
+      </div>
+      <div class="alert alert-tip">
+        <span class="alert-icon">✅</span>
+        <div>GitLab Ultimate 플랜에서 SAST·DAST·Dependency Scanning 내장 제공 → <code class="gl-code">include: template: Security/SAST.gitlab-ci.yml</code>으로 즉시 활성화</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">필수 보안 설정</div>
+          <ul class="checklist">
+            <li><span class="check-icon check-green">✓</span><span>민감 변수 Masked + Protected 옵션 활성화</span></li>
+            <li><span class="check-icon check-green">✓</span><span>Protected Branches → main 직접 push 차단</span></li>
+            <li><span class="check-icon check-green">✓</span><span>Protected Environments → 프로덕션 배포 승인자 지정</span></li>
+            <li><span class="check-icon check-yellow">!</span><span><code class="gl-code">$CI_JOB_TOKEN</code> 권한 범위 최소화 설정</span></li>
+            <li><span class="check-icon check-blue">i</span><span>Runner 태그로 민감 Job은 전용 Runner 격리</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">보안 스캔 자동화</div>
+          <ul class="checklist">
+            <li><span class="check-icon check-green">✓</span><span>SAST → 소스코드 정적 분석</span></li>
+            <li><span class="check-icon check-green">✓</span><span>Dependency Scanning → 취약 패키지 탐지</span></li>
+            <li><span class="check-icon check-yellow">!</span><span>Container Scanning → Docker 이미지 취약점</span></li>
+            <li><span class="check-icon check-yellow">!</span><span>Secret Detection → 코드 내 시크릿 노출 탐지</span></li>
+            <li><span class="check-icon check-blue">i</span><span>DAST → 배포된 앱 동적 보안 테스트</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">보안 스캔 템플릿 포함 예시</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+        <pre><span class="c-gl-key">include</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-key">template</span><span class="c-op">:</span> <span class="c-gl-str">Security/SAST.gitlab-ci.yml</span>
+  <span class="c-op">-</span> <span class="c-gl-key">template</span><span class="c-op">:</span> <span class="c-gl-str">Security/Dependency-Scanning.gitlab-ci.yml</span>
+  <span class="c-op">-</span> <span class="c-gl-key">template</span><span class="c-op">:</span> <span class="c-gl-str">Security/Secret-Detection.gitlab-ci.yml</span>
+  <span class="c-op">-</span> <span class="c-gl-key">template</span><span class="c-op">:</span> <span class="c-gl-str">Security/Container-Scanning.gitlab-ci.yml</span>
+
+<span class="c-gl-key">stages</span><span class="c-op">:</span>
+  <span class="c-op">-</span> <span class="c-gl-str">build</span>
+  <span class="c-op">-</span> <span class="c-gl-str">test</span>
+  <span class="c-op">-</span> <span class="c-gl-str">.pre</span>              <span class="c-comment"># 템플릿이 사용하는 내장 stage</span>
+  <span class="c-op">-</span> <span class="c-gl-str">deploy</span>
+
+<span class="c-gl-key">variables</span><span class="c-op">:</span>
+  <span class="c-gl-key">SAST_EXCLUDED_PATHS</span><span class="c-op">:</span> <span class="c-gl-str">"tests, node_modules"</span>
+  <span class="c-gl-key">DS_EXCLUDED_ANALYZERS</span><span class="c-op">:</span> <span class="c-gl-str">"bundler-audit"</span></pre>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>GitLab CI/CD 가이드 · GitLab 공식 문서 기반</span>
+      <a href="https://docs.gitlab.com/ee/ci/" target="_blank">docs.gitlab.com/ee/ci</a>
+    </div>
+  </div><!-- /panel-gitlab -->
+
+</div><!-- /page -->
+
+<script>
+function switchService(svc) {
+  document.querySelectorAll('.svc-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + svc).classList.add('active');
+  document.querySelectorAll('.svc-btn').forEach(b => {
+    b.classList.remove('active-github', 'active-gitlab');
+  });
+  document.getElementById('btn-' + svc).classList.add('active-' + svc);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchTab(btn, panelId) {
+  const bar = btn.closest('.tab-bar');
+  bar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const section = bar.parentElement;
+  section.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText || pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '복사됨!';
+    btn.style.color = '#16a34a';
+    setTimeout(() => { btn.textContent = '복사'; btn.style.color = ''; }, 1800);
+  });
+}
+
+window.onload = function() {
+  window.parent.postMessage({ height: document.body.scrollHeight }, "*");
+};
+</script>
+</body>
+</html>
