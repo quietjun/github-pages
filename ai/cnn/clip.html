@@ -319,4 +319,10 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
 
 </div>
 </body>
+  <script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
 </html>
