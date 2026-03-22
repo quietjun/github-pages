@@ -22,6 +22,8 @@
       --accent:   #4a7cf7;
       --accent-l: #dce8ff;
       --accent-d: #2d63f5;
+      --ok:       #059669;
+      --ok-l:     #d1fae5;
       --sidebar-w: 268px;
       --header-h:  52px;
     }
@@ -49,15 +51,12 @@
       box-shadow: var(--shadow);
     }
 
-    /* 토글 버튼 */
     #toggle-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: none;
+      width: 32px; height: 32px;
+      border: none; background: none;
       border-radius: 8px;
       cursor: pointer;
       color: var(--sub);
@@ -66,71 +65,43 @@
     }
     #toggle-btn:hover { background: var(--s2); color: var(--accent); }
 
-    /* 로고 */
     .logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      text-decoration: none;
-      user-select: none;
-      letter-spacing: -.3px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700;
+      color: var(--text); text-decoration: none;
+      user-select: none; letter-spacing: -.3px;
     }
     .logo svg { color: var(--accent); flex-shrink: 0; }
 
-    /* 구분선 */
-    .header-sep {
-      width: 1px;
-      height: 20px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
+    .header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
 
-    /* 브레드크럼 */
     #breadcrumb {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-      overflow: hidden;
+      display: none; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--muted); overflow: hidden;
     }
     #breadcrumb span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #breadcrumb .sep { color: var(--border); flex-shrink: 0; }
     #breadcrumb .active { color: var(--sub); font-weight: 600; }
 
     /* ── 레이아웃 ── */
-    #layout {
-      display: flex;
-      height: 100vh;
-      padding-top: var(--header-h);
-    }
+    #layout { display: flex; height: 100vh; padding-top: var(--header-h); }
 
     /* ── 사이드바 ── */
     #sidebar {
-      width: var(--sidebar-w);
-      min-width: var(--sidebar-w);
+      width: var(--sidebar-w); min-width: var(--sidebar-w);
       height: 100%;
       background: var(--surface);
       border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       overflow: hidden;
       transition: width 0.22s ease, min-width 0.22s ease, opacity 0.22s ease;
       flex-shrink: 0;
     }
-    #sidebar.collapsed {
-      width: 0;
-      min-width: 0;
-      opacity: 0;
-    }
+    #sidebar.collapsed { width: 0; min-width: 0; opacity: 0; }
 
     #sidebar-inner {
       padding: 10px 0 16px;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow-y: auto; overflow-x: hidden;
       flex: 1;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
@@ -138,40 +109,49 @@
     #sidebar-inner::-webkit-scrollbar { width: 4px; }
     #sidebar-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* ── 섹션 레이블 ── */
     .tree-section { padding: 0 8px 8px; }
     .tree-section-title {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 10px 6px;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--muted); padding: 8px 10px 6px;
     }
 
     /* ── 트리 노드 ── */
     .tree-node { user-select: none; }
 
     .tree-row {
-      display: flex;
-      align-items: center;
-      padding: 0;
-      cursor: pointer;
+      display: flex; align-items: center;
+      padding: 0; cursor: pointer;
       border-radius: 8px;
       transition: background 0.12s;
       margin: 1px 2px;
+      position: relative;
     }
     .tree-row:hover { background: var(--s2); }
     .tree-row.active { background: var(--accent-l); }
     .tree-row.active .tree-label { color: var(--accent); font-weight: 600; }
+
+    /* 롱클릭 진행 표시 */
+    .tree-row.long-pressing::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 6px; right: 6px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: longpress-bar 0.6s linear forwards;
+    }
+    @keyframes longpress-bar {
+      from { width: 0; right: auto; }
+      to   { width: calc(100% - 12px); right: auto; }
+    }
 
     .tree-indent { flex-shrink: 0; }
 
     .tree-chevron {
       width: 20px; height: 28px;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      color: var(--muted);
+      flex-shrink: 0; color: var(--muted);
       transition: transform 0.18s ease;
     }
     .tree-chevron svg { width: 11px; height: 11px; }
@@ -185,74 +165,47 @@
     }
 
     .tree-label {
-      font-size: 13px;
-      line-height: 28px;
+      font-size: 13px; line-height: 28px;
       color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-      padding-right: 8px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      flex: 1; padding-right: 8px;
     }
 
-    .tree-children {
-      overflow: hidden;
-      transition: max-height 0.22s ease;
-    }
+    .tree-children { overflow: hidden; transition: max-height 0.22s ease; }
 
     /* ── 리사이즈 핸들 ── */
     #resize-handle {
-      width: 4px; min-width: 4px;
-      height: 100%;
-      cursor: col-resize;
-      background: transparent;
-      transition: background 0.15s;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
+      width: 4px; min-width: 4px; height: 100%;
+      cursor: col-resize; background: transparent;
+      transition: background 0.15s; flex-shrink: 0;
+      position: relative; z-index: 10;
     }
     #resize-handle:hover,
     #resize-handle.dragging { background: var(--accent); }
 
     /* ── 메인 콘텐츠 ── */
     #content {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--bg);
+      flex: 1; height: 100%;
+      display: flex; flex-direction: column;
+      overflow: hidden; background: var(--bg);
     }
 
-    #iframe-container {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
+    #iframe-container { flex: 1; overflow: hidden; position: relative; }
 
     #doc-frame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: var(--surface);
-      display: none;
+      width: 100%; height: 100%;
+      border: none; background: var(--surface); display: none;
     }
 
-    /* ── 웰컴 화면 ── */
+    /* ── 웰컴 ── */
     #welcome {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      color: var(--muted);
-      pointer-events: none;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; color: var(--muted); pointer-events: none;
     }
     #welcome .welcome-icon {
-      width: 60px; height: 60px;
-      border-radius: 16px;
+      width: 60px; height: 60px; border-radius: 16px;
       background: var(--accent-l);
       display: flex; align-items: center; justify-content: center;
       color: var(--accent);
@@ -266,10 +219,8 @@
       position: absolute; inset: 0;
       background: rgba(255,255,255,0.85);
       display: flex; align-items: center; justify-content: center;
-      z-index: 10;
-      backdrop-filter: blur(2px);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.15s;
+      z-index: 10; backdrop-filter: blur(2px);
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
     }
     #loading.show { opacity: 1; pointer-events: all; }
 
@@ -284,14 +235,36 @@
 
     /* ── 에러 ── */
     #error-msg {
-      display: none;
-      position: absolute; inset: 0;
+      display: none; position: absolute; inset: 0;
       align-items: center; justify-content: center;
-      flex-direction: column;
-      gap: 10px; font-size: 13px; color: var(--muted);
+      flex-direction: column; gap: 10px;
+      font-size: 13px; color: var(--muted);
     }
     #error-msg.show { display: flex; }
     #error-msg .err-icon { font-size: 32px; }
+
+    /* ── 토스트 ── */
+    #toast {
+      position: fixed;
+      bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px);
+      background: var(--text);
+      color: #fff;
+      font-size: 13px; font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 99px;
+      box-shadow: 0 4px 20px rgba(26,37,64,0.22);
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    #toast.ok  { background: var(--ok); }
+    #toast.err { background: #e53e3e; }
 
     /* ── 반응형 ── */
     @media (max-width: 700px) {
@@ -307,9 +280,7 @@
 </head>
 <body>
 
-<!-- ── 헤더 ── -->
 <header id="header">
-  <!-- 사이드바 토글 -->
   <button id="toggle-btn" onclick="toggleSidebar()" title="사이드바 열기/닫기">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
       <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -335,23 +306,19 @@
   </div>
 </header>
 
-<!-- ── 레이아웃 ── -->
 <div id="layout">
 
-  <!-- 사이드바 -->
   <nav id="sidebar">
     <div id="sidebar-inner">
       <div class="tree-section">
-        <div class="tree-section-title">문서 목록</div>
+        <div class="tree-section-title">문서 목록 — 길게 누르면 임베드 코드 복사</div>
         <div id="tree-root"></div>
       </div>
     </div>
   </nav>
 
-  <!-- 리사이즈 핸들 -->
   <div id="resize-handle"></div>
 
-  <!-- 콘텐츠 -->
   <main id="content">
     <div id="iframe-container">
 
@@ -363,12 +330,10 @@
           </svg>
         </div>
         <h2>문서를 선택하세요</h2>
-        <p>왼쪽 트리에서 항목을 클릭하면<br>이 화면에 내용이 표시됩니다.</p>
+        <p>왼쪽 트리에서 항목을 클릭하면<br>이 화면에 내용이 표시됩니다.<br><span style="font-size:11px;color:var(--muted);">길게 누르면 임베드 코드를 복사합니다.</span></p>
       </div>
 
-      <div id="loading">
-        <div class="spinner"></div>
-      </div>
+      <div id="loading"><div class="spinner"></div></div>
 
       <div id="error-msg">
         <span class="err-icon">⚠️</span>
@@ -382,9 +347,100 @@
 
 </div>
 
+<!-- 토스트 -->
+<div id="toast"></div>
+
 <script>
-let activeRow = null;
+let activeRow  = null;
 let sidebarOpen = true;
+
+// ── 베이스 URL 계산 ──
+// index.html이 있는 디렉토리까지의 절대 URL
+function getBaseUrl() {
+  const loc = window.location;
+  const path = loc.pathname.endsWith('/')
+    ? loc.pathname
+    : loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+  return loc.origin + path;
+}
+
+// ── 임베드 코드 생성 ──
+function buildEmbedCode(path) {
+  const fullUrl = getBaseUrl() + path;
+  const id = 'iframe_' + Math.random().toString(36).slice(2, 7);
+  return `<p><iframe src="${fullUrl}" id="${id}" width="100%" frameborder="0" scrolling="no"></iframe></p>\n` +
+    `<p data-ke-size="size16">\n` +
+    `<script>\n` +
+    `  window.addEventListener('message', function(e) {\n` +
+    `    if(e.data.height) {\n` +
+    `      document.getElementById('${id}').style.height = e.data.height + 'px';\n` +
+    `    }\n` +
+    `  });\n` +
+    `<\/script>\n` +
+    `</p>`;
+}
+
+// ── 토스트 ──
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2200);
+}
+
+// ── 롱클릭 처리 ──
+const LONG_PRESS_MS = 600;
+
+function attachLongPress(row, node) {
+  let timer = null;
+  let moved = false;
+
+  function start(e) {
+    moved = false;
+    row.classList.add('long-pressing');
+    timer = setTimeout(() => {
+      if (!moved) {
+        e.preventDefault();
+        const code = buildEmbedCode(node.path);
+        navigator.clipboard.writeText(code).then(() => {
+          showToast('📋 임베드 코드 복사됨', 'ok');
+        }).catch(() => {
+          showToast('⚠️ 복사 실패 — 브라우저 권한 확인', 'err');
+        });
+      }
+      row.classList.remove('long-pressing');
+      timer = null;
+    }, LONG_PRESS_MS);
+  }
+
+  function cancel() {
+    row.classList.remove('long-pressing');
+    clearTimeout(timer);
+    timer = null;
+  }
+
+  function move() {
+    moved = true;
+    cancel();
+  }
+
+  // 마우스
+  row.addEventListener('mousedown',  start);
+  row.addEventListener('mouseup',    cancel);
+  row.addEventListener('mouseleave', cancel);
+  row.addEventListener('mousemove',  move);
+
+  // 터치
+  row.addEventListener('touchstart', start,  { passive: true });
+  row.addEventListener('touchend',   cancel, { passive: true });
+  row.addEventListener('touchcancel',cancel, { passive: true });
+  row.addEventListener('touchmove',  move,   { passive: true });
+
+  // 컨텍스트 메뉴 방지 (롱탭 시 브라우저 메뉴 억제)
+  row.addEventListener('contextmenu', e => e.preventDefault());
+}
 
 // ── pages.json 로드 ──
 async function loadTree() {
@@ -408,7 +464,7 @@ function renderTree(nodes, container, depth) {
     el.className = 'tree-node';
 
     const isLeaf = !node.children || node.children.length === 0;
-    const label = node.label || node.path?.split('/').pop() || '(unnamed)';
+    const label  = node.label || node.path?.split('/').pop() || '(unnamed)';
     const displayLabel = label.replace(/^📁\s*/, '');
 
     const icon = isLeaf
@@ -443,6 +499,9 @@ function renderTree(nodes, container, depth) {
 
     const row = el.querySelector('.tree-row');
     row.addEventListener('click', () => handleRowClick(row, el, isLeaf, node));
+
+    // 파일 노드에만 롱클릭 부착
+    if (isLeaf && node.path) attachLongPress(row, node);
   });
 }
 
@@ -462,7 +521,7 @@ function handleRowClick(row, el, isLeaf, node) {
   } else {
     const childContainer = el.querySelector('.tree-children');
     const chevron = row.querySelector('.tree-chevron');
-    const isOpen = chevron.classList.contains('open');
+    const isOpen  = chevron.classList.contains('open');
     if (isOpen) {
       childContainer.style.maxHeight = '0px';
       chevron.classList.remove('open');
@@ -475,25 +534,20 @@ function handleRowClick(row, el, isLeaf, node) {
 
 // ── 문서 로드 ──
 function loadDoc(path, label) {
-  const frame   = document.getElementById('doc-frame');
-  const welcome = document.getElementById('welcome');
-  const loading = document.getElementById('loading');
-  const errorMsg= document.getElementById('error-msg');
+  const frame    = document.getElementById('doc-frame');
+  const welcome  = document.getElementById('welcome');
+  const loading  = document.getElementById('loading');
+  const errorMsg = document.getElementById('error-msg');
 
   welcome.classList.add('hidden');
   errorMsg.classList.remove('show');
   frame.style.display = 'none';
   loading.classList.add('show');
 
-  const bc = document.getElementById('breadcrumb');
   document.getElementById('breadcrumb-text').textContent = label;
-  bc.style.display = 'flex';
+  document.getElementById('breadcrumb').style.display = 'flex';
 
-  frame.onload = () => {
-    loading.classList.remove('show');
-    frame.style.display = 'block';
-  };
-
+  frame.onload = () => { loading.classList.remove('show'); frame.style.display = 'block'; };
   frame.onerror = () => {
     loading.classList.remove('show');
     document.getElementById('error-path').textContent = path;
@@ -520,7 +574,6 @@ function toggleSidebar() {
 function updateToggleIcon(open) {
   const btn = document.getElementById('toggle-btn');
   btn.title = open ? '사이드바 닫기' : '사이드바 열기';
-  // 열린 상태: 패널 아이콘, 닫힌 상태: 같은 아이콘에 accent 색상 변화는 CSS로
   btn.style.color = open ? '' : 'var(--accent)';
 }
 
@@ -531,21 +584,17 @@ function updateToggleIcon(open) {
   let dragging = false, startX = 0, startW = 0;
 
   handle.addEventListener('mousedown', e => {
-    dragging = true;
-    startX = e.clientX;
-    startW = sidebar.offsetWidth;
+    dragging = true; startX = e.clientX; startW = sidebar.offsetWidth;
     handle.classList.add('dragging');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   });
-
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
     const w = Math.min(480, Math.max(180, startW + e.clientX - startX));
-    sidebar.style.width    = w + 'px';
+    sidebar.style.width = w + 'px';
     sidebar.style.minWidth = w + 'px';
   });
-
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
@@ -572,10 +621,6 @@ document.addEventListener('keydown', e => {
 });
 
 loadTree();
-
-window.onload = function() {
-  window.parent.postMessage({ height: document.body.scrollHeight }, "*");
-};
 </script>
 </body>
 </html>
