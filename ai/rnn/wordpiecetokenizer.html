@@ -35,11 +35,13 @@
     color: var(--text);
     min-height: 100vh;
     padding: 40px 20px;
-     max-width: 900px;   /* ← 추가 */
-  margin: 0 auto;     /* ← 추가 */
+    max-width: 1024px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    line-height: 1.6;
   }
 
-  .container { max-width: 900px; margin: 0 auto; }
+  .container { max-width: 1024px; margin: 0 auto; overflow-x: hidden; }
 
   header { margin-bottom: 32px; }
 
@@ -53,8 +55,8 @@
     padding: 4px 10px; border-radius: 4px; margin-bottom: 12px;
   }
 
-  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .subtitle { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .subtitle { color: var(--text-muted); font-size: 14px; line-height: 1.7; }
 
   .card {
     background: var(--surface);
@@ -71,319 +73,104 @@
     color: var(--text-muted); margin-bottom: 16px;
   }
 
-  .config-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .config-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
+  /* ── 토크나이저 카드 ── */
+  .tok-item {
+    border: 1.5px solid var(--border);
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 14px 16px;
+    background: var(--surface2);
   }
-
-  .config-item label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    cursor: pointer;
-  }
-
-  .config-key {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 600;
-    color: var(--accent);
-  }
-
-  .config-desc {
-    font-size: 11.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;
-  }
-
-  .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; inset: 0;
-    background: #ccc; border-radius: 20px;
-    transition: background 0.2s; cursor: pointer;
-  }
-  .slider::before {
-    content: ''; position: absolute;
-    width: 14px; height: 14px;
-    left: 3px; top: 3px;
-    background: white; border-radius: 50%;
-    transition: transform 0.2s;
-  }
-  input:checked + .slider { background: var(--accent3); }
-  input:checked + .slider::before { transform: translateX(16px); }
-
-  .param-row {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
-  }
-  .param-row:last-child { margin-bottom: 0; }
-
-  .param-row label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 600; color: var(--accent);
-    min-width: 160px;
-  }
-
-  .param-row input[type=range] { flex: 1; accent-color: var(--accent); }
-
-  .param-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; color: var(--text);
-    min-width: 54px; text-align: right;
-  }
-
-  .special-tokens-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-
-  .sp-token {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 600;
-    padding: 4px 10px; border-radius: 6px;
-    border: 1.5px solid var(--tag-special-border);
-    background: var(--tag-special); color: #1a7a40;
-  }
-
-  .sp-desc-row {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    font-size: 11.5px; color: var(--text-muted);
-  }
-
-  .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-
-  input[type="text"] {
-    flex: 1; font-family: 'JetBrains Mono', monospace;
-    font-size: 14px; padding: 9px 13px;
-    border: 2px solid var(--border); border-radius: 8px;
-    background: var(--surface); color: var(--text); outline: none;
-    transition: border-color 0.2s;
-  }
-  input[type="text"]:focus { border-color: var(--accent); }
-
-  .btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 700;
-    padding: 9px 20px; border: none; border-radius: 8px;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #c05520; transform: translateY(-1px); }
-
-  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .preset-btn {
-    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
-    padding: 4px 11px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 20px;
-    cursor: pointer; color: var(--text-muted); transition: all 0.15s;
-  }
-  .preset-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--tag-root); }
-
-  .word-section { margin-bottom: 22px; }
-  .word-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .word-original { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; }
-  .pipeline { display: flex; flex-direction: column; gap: 10px; }
-
-  .pipeline-row {
-    display: flex; align-items: center; gap: 10px;
-    opacity: 0; transform: translateY(6px); transition: all 0.35s ease;
-  }
-  .pipeline-row.show { opacity: 1; transform: translateY(0); }
-
-  .pipeline-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px; font-weight: 600;
-    color: var(--text-muted); min-width: 88px; text-align: right;
-  }
-  .pipeline-arrow { color: var(--border); font-size: 14px; }
-  .tokens-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
-
-  .token {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px; font-weight: 600;
-    padding: 3px 9px; border-radius: 5px; border: 1.5px solid;
-    animation: popIn 0.25s ease forwards;
-  }
-  @keyframes popIn { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-  .token.root    { background: var(--tag-root);    border-color: var(--tag-root-border);    color: #c04010; }
-  .token.cont    { background: var(--tag-cont);    border-color: var(--tag-cont-border);    color: #1a4db0; }
-  .token.char    { background: var(--surface2);    border-color: var(--border);             color: var(--text-muted); }
-  .token.unk     { background: var(--tag-unk);     border-color: var(--tag-unk-border);     color: #a07010; }
-  .token.special { background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40; }
-
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-
-  .final-tokens { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-
-  .final-token-wrap {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    opacity: 0; transform: translateY(8px); transition: all 0.35s ease;
-  }
-  .final-token-wrap.show { opacity: 1; transform: translateY(0); }
-
-  .final-token {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 700;
-    padding: 6px 12px; border-radius: 7px; border: 2px solid;
-  }
-  .final-token.root    { background: var(--tag-root);    border-color: var(--tag-root-border);    color: #c04010; }
-  .final-token.cont    { background: var(--tag-cont);    border-color: var(--tag-cont-border);    color: #1a4db0; }
-  .final-token.unk     { background: var(--tag-unk);     border-color: var(--tag-unk-border);     color: #a07010; }
-  .final-token.special { background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40; }
-
-  .token-idx { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
-
-  .stats-row { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--border); }
-  .stat { text-align: center; }
-  .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 14px; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid; }
-  .legend-dot.root    { background: var(--tag-root);    border-color: var(--tag-root-border); }
-  .legend-dot.cont    { background: var(--tag-cont);    border-color: var(--tag-cont-border); }
-  .legend-dot.special { background: var(--tag-special); border-color: var(--tag-special-border); }
-  .legend-dot.unk     { background: var(--tag-unk);     border-color: var(--tag-unk-border); }
-
-  .empty-state { text-align: center; padding: 36px 0; color: var(--text-muted); font-size: 13.5px; }
-  .empty-icon  { font-size: 30px; margin-bottom: 8px; }
-
-  .info-note {
-    display: flex; align-items: flex-start; gap: 8px;
-    background: var(--tag-cont); border: 1px solid var(--tag-cont-border);
-    border-radius: 8px; padding: 10px 14px; font-size: 12.5px;
-    color: #1a3a80; line-height: 1.5;
-  }
-
-  .tab-nav {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
-    padding-bottom: 0;
-  }
-
-  .tab-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 700;
-    padding: 10px 20px;
-    border: none; border-bottom: 3px solid transparent;
-    background: transparent; color: var(--text-muted);
-    cursor: pointer; transition: all 0.2s;
-    margin-bottom: -2px; border-radius: 6px 6px 0 0;
-  }
-
-  .tab-btn:hover { color: var(--accent); background: var(--tag-root); }
-
-  .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+  .tok-item.tok-active {
+    border-color: var(--tag-root-border);
     background: var(--tag-root);
   }
+  .tok-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .tok-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
+  .tok-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; border: 1.5px solid;
+  }
+  .tok-model { font-size: 11.5px; color: var(--accent2); font-weight: 500; margin-bottom: 5px; }
+  .tok-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
+  /* ── 파라미터 카드 ── */
   .param-desc-list { display: flex; flex-direction: column; gap: 10px; }
-
   .param-desc-item {
     border: 1.5px solid var(--border);
     border-radius: 8px;
     padding: 12px 16px;
     background: var(--surface2);
   }
-
-  .param-desc-header {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
-  }
-
+  .param-desc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
   .param-default {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; color: var(--text-muted);
     background: var(--surface); border: 1px solid var(--border);
     padding: 2px 7px; border-radius: 4px;
   }
-
-  .param-desc-body {
-    font-size: 13px; color: var(--text-muted); line-height: 1.65;
-  }
-
+  .param-desc-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
   .param-sub {
-    margin-top: 6px; padding-left: 18px;
-    display: flex; flex-direction: column; gap: 3px;
-    font-size: 12.5px;
+    margin-top: 8px; padding-left: 14px;
+    display: flex; flex-direction: column; gap: 5px;
+    font-size: 12.5px; list-style: none;
   }
+  .param-sub li::before { content: "→ "; color: var(--accent); font-weight: 700; }
 
-  .tag-inline {
-    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
-    background: rgba(212,98,42,0.1); color: var(--accent);
-    padding: 1px 6px; border-radius: 3px;
+  /* ── 탭 ── */
+  .tab-nav {
+    display: flex; gap: 6px; margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+    flex-wrap: wrap;
   }
-
-  .algo-desc {
-    font-size: 13.5px; color: var(--text-muted); line-height: 1.7;
-    margin-bottom: 16px;
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; font-weight: 700;
+    padding: 9px 18px;
+    border: none; border-bottom: 3px solid transparent;
+    background: transparent; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s;
+    margin-bottom: -2px; border-radius: 6px 6px 0 0;
   }
+  .tab-btn:hover { color: var(--accent); background: var(--tag-root); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--tag-root); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
+  /* ── 알고리즘 블록 ── */
+  .algo-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
   .algo-example {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 16px;
   }
-
   .algo-ex-title {
-    font-size: 12px; font-weight: 700;
-    color: var(--text-muted); letter-spacing: 0.06em;
-    text-transform: uppercase; margin-bottom: 14px;
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px;
   }
-
   .algo-steps-viz { display: flex; flex-direction: column; gap: 10px; }
-
-  .algo-step-row {
-    display: flex; align-items: center; gap: 14px;
-  }
-
+  .algo-step-row { display: flex; align-items: flex-start; gap: 14px; }
   .algo-step-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; color: var(--text-muted);
-    min-width: 130px; text-align: right;
+    min-width: 120px; text-align: right; padding-top: 3px;
+    flex-shrink: 0;
   }
+  .algo-step-content { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 6px; flex-direction: column; }
 
-  .algo-step-content {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-  }
-
-  .algo-word-try {
+  /* ── 토큰 ── */
+  .tokens-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+  .token {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 600;
-    padding: 3px 10px; border-radius: 5px; border: 1.5px solid;
+    font-size: 12.5px; font-weight: 600;
+    padding: 3px 9px; border-radius: 5px; border: 1.5px solid;
   }
+  .token.root    { background: var(--tag-root);    border-color: var(--tag-root-border);    color: #c04010; }
+  .token.cont    { background: var(--tag-cont);    border-color: var(--tag-cont-border);    color: #1a4db0; }
+  .token.char    { background: var(--surface2);    border-color: var(--border);             color: var(--text-muted); }
+  .token.unk     { background: var(--tag-unk);     border-color: var(--tag-unk-border);     color: #a07010; }
+  .token.special { background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40; }
 
-  .algo-word-try.fail {
-    background: #fff0f0; border-color: #f0b0b0; color: #b04040;
-    text-decoration: line-through; opacity: 0.7;
-  }
-
-  .algo-word-try.pass {
-    background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40;
-  }
-
-  .algo-result-label {
-    font-size: 12px; font-weight: 500;
-  }
-
-  .algo-result-label.fail { color: #b04040; }
-  .algo-result-label.pass { color: #1a7a40; }
-
+  /* ── 빈도 바 ── */
   .algo-freq-pair {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px; font-weight: 700;
@@ -398,18 +185,11 @@
     color: #1a4db0; padding: 2px 7px; border-radius: 0 4px 4px 0;
     border-left: none;
   }
-  .freq-bar-wrap {
-    width: 120px; height: 8px;
-    background: var(--border); border-radius: 4px; overflow: hidden;
-  }
-  .freq-bar {
-    height: 100%; background: var(--accent3); border-radius: 4px;
-  }
-  .freq-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: #1a7a40;
-  }
+  .freq-bar-wrap { width: 100px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .freq-bar { height: 100%; background: var(--accent3); border-radius: 4px; }
+  .freq-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1a7a40; }
 
+  /* ── 병합 스텝 ── */
   .merge-step-num {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; font-weight: 700;
@@ -418,51 +198,56 @@
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .merge-plus  { font-size: 13px; color: var(--text-muted); }
+  .algo-word-try {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    padding: 3px 10px; border-radius: 5px; border: 1.5px solid;
+  }
+  .algo-word-try.pass { background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40; }
+  .algo-word-try.fail { background: #fff0f0; border-color: #f0b0b0; color: #b04040; text-decoration: line-through; opacity: 0.7; }
+  .algo-result-label { font-size: 12px; font-weight: 500; }
+  .algo-result-label.pass { color: #1a7a40; }
+  .algo-result-label.fail { color: #b04040; }
+  .merge-plus { font-size: 13px; color: var(--text-muted); }
   .merge-arrow { font-size: 14px; color: var(--text-muted); margin: 0 2px; }
-  .merge-result { font-weight: 700; }
-  .tok-item {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    background: var(--surface2);
-    transition: border-color 0.2s;
+
+  /* ── 인포 노트 ── */
+  .info-note {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: var(--tag-cont); border: 1px solid var(--tag-cont-border);
+    border-radius: 8px; padding: 10px 14px; font-size: 12.5px;
+    color: #1a3a80; line-height: 1.6;
   }
 
-  .tok-item.tok-active {
-    border-color: var(--tag-root-border);
-    background: var(--tag-root);
-  }
-
-  .tok-header {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
-  }
-
-  .tok-name {
+  /* ── 스페셜 토큰 ── */
+  .sp-token {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; font-weight: 700; color: var(--text);
+    font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px;
+    border: 1.5px solid var(--tag-special-border);
+    background: var(--tag-special); color: #1a7a40;
   }
 
-  .tok-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px; font-weight: 700;
-    padding: 2px 8px; border-radius: 4px; border: 1.5px solid;
-  }
-
-  .tok-model {
-    font-size: 11.5px; color: var(--accent2);
-    font-weight: 500; margin-bottom: 5px;
-  }
-
-  .tok-desc {
-    font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
-  }
-
+  /* ── 코드 인라인 ── */
   code {
     font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
     background: rgba(212,98,42,0.1); color: var(--accent);
     padding: 1px 5px; border-radius: 3px;
   }
+
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  /* ── 최종 흐름 ── */
+  .flow-box {
+    border-radius: 8px; padding: 10px 16px;
+    font-size: 13px; font-weight: 700;
+    border: 1.5px solid; text-align: center;
+  }
+  .flow-arrow { font-size: 20px; color: var(--text-muted); }
+
+  /* ── 스크롤 힌트 방지 ── */
+  * { word-break: keep-all; }
+  pre, .font-mono { word-break: break-all; }
 </style>
 </head>
 <body>
@@ -471,7 +256,7 @@
   <header>
     <div class="title-badge">HuggingFace / tokenizers</div>
     <h1>BertWordPieceTokenizer</h1>
-    <p class="subtitle">학습되지 않은 빈 토크나이저를 생성하고, WordPiece 알고리즘으로 서브워드를 분리하는 과정을 시각화합니다.</p>
+    <p class="subtitle">학습되지 않은 빈 토크나이저 생성 → WordPiece 알고리즘으로 서브워드 분리 과정 시각화</p>
   </header>
 
   <!-- TAB NAV -->
@@ -482,573 +267,595 @@
     <button class="tab-btn" onclick="switchTab(3)">④ BERT 학습</button>
   </div>
 
-  <!-- TAB 1: 파라미터 -->
+  <!-- ═══════════════════════════════ TAB 1: 파라미터 ═══════════════════════════════ -->
   <div class="tab-panel active" id="tab0">
 
-  <!-- Tokenizer 종류 -->
-  <div class="card">
-    <div class="card-title">🗂️ Tokenizer 종류 및 역할</div>
-    <div class="tok-list">
-
+    <!-- 토크나이저 종류 -->
+    <div class="card">
+      <div class="card-title">🗂️ Tokenizer 종류 및 역할</div>
       <div class="tok-item tok-active">
         <div class="tok-header">
           <span class="tok-name">BertWordPieceTokenizer</span>
-          <span class="tok-badge" style="background:var(--tag-root);border-color:var(--tag-root-border);color:#c04010">현재</span>
         </div>
-        <div class="tok-model">사용 모델: BERT, DistilBERT, ALBERT</div>
-        <div class="tok-desc">WordPiece 알고리즘으로 단어를 서브워드로 분리합니다. 연속 서브워드에는 <code>##</code> 접두사를 붙여 구분하며, <code>[CLS]</code> <code>[SEP]</code> 등 특수 토큰을 함께 사용합니다.</div>
+        <div class="tok-desc">
+          WordPiece 알고리즘으로 단어를 서브워드로 분리<br>
+          단어 내 연속 서브워드에는 <code>##</code> 접두사 부착 → 단어 시작 위치 구분<br>
+          <code>[CLS]</code> <code>[SEP]</code> 등 특수 토큰 함께 사용
+        </div>
       </div>
-
     </div>
-  </div>
 
-  <!-- 훈련 파라미터 -->
-  <div class="card">
-    <div class="card-title">📚 훈련(train) 파라미터</div>
-    <div class="param-desc-list">
+    <!-- 훈련 파라미터 -->
+    <div class="card">
+      <div class="card-title">📚 훈련(train) 파라미터</div>
+      <div class="param-desc-list">
 
-      <div class="param-desc-item">
-        <div class="param-desc-header">
-          <code>vocab_size</code>
-          <span class="param-default">default: 30,000</span>
+        <div class="param-desc-item">
+          <div class="param-desc-header">
+            <code>vocab_size</code>
+            <span class="param-default">default: 30,000</span>
+          </div>
+          <div class="param-desc-body">
+            WordPiece 학습 완료 후 최종 토큰 목록의 총 크기<br>
+            자주 등장하는 서브워드 쌍을 병합하다가 이 수에 도달하면 학습 종료.
+            <ul class="param-sub">
+              <li><span style="color:var(--accent);font-weight:700">너무 작으면</span> → 병합 조기 종료 → 짧은 서브워드·문자 단위 토큰 다수 잔존 → 시퀀스 길어짐 → 연산량 증가</li>
+              <li><span style="color:var(--accent);font-weight:700">너무 크면</span> → 희귀 단어도 vocab에 포함, 메모리·학습 비용 증가</li>
+              <li>BERT 기본값 <code>30,000</code> : 영어 기준 균형점 / 한국어는 형태소 다양성으로 더 큰 값 사용 권장</li>
+            </ul>
+          </div>
         </div>
-        <div class="param-desc-body">
-          WordPiece 학습이 끝났을 때 최종적으로 만들어지는 토큰 목록의 크기입니다. 자주 등장하는 서브워드 쌍을 합치다가 vocab이 이 숫자에 도달하면 학습을 멈춰요.
-          <ul class="param-sub">
-            <li><span class="tag-inline">너무 작으면</span> 단어를 잘게 쪼개야 해서 <code>##ing</code> <code>##s</code> 같은 토큰이 많아지고 시퀀스가 길어집니다.</li>
-            <li><span class="tag-inline">너무 크면</span> 희귀 단어까지 통째로 vocab에 들어가지만 메모리·학습 비용이 증가합니다.</li>
-            <li>BERT 기본값 <span class="tag-inline">30,000</span>은 영어 기준 균형점이며, 한국어는 형태소가 다양해 보통 더 큰 값을 사용합니다.</li>
-          </ul>
+
+        <div class="param-desc-item">
+          <div class="param-desc-header">
+            <code>initial_alphabet</code>
+          </div>
+          <div class="param-desc-body">
+            학습 전에 vocab에 미리 추가해 둘 <strong>문자(character) 집합</strong>
+            <ul class="param-sub">
+              <li>학습 데이터에 등장하지 않아도 반드시 포함시켜야 하는 문자 지정 가능</li>
+              <li>특수 토큰(<code>[CLS]</code>, <code>[SEP]</code> 등)은 별도 <code>special_tokens</code> 인자로 추가 → <code>initial_alphabet</code>과 구분됨</li>
+            </ul>
+          </div>
         </div>
+
+        <div class="param-desc-item">
+          <div class="param-desc-header">
+            <code>limit_alphabet</code>
+            <span class="param-default">default: 1,000</span>
+          </div>
+          <div class="param-desc-body">
+            base vocab(문자 단위 초기 vocab)에 등록될 문자의 최대 개수 상한선<br>
+            빈도가 낮은 문자부터 제외 → 제외된 문자는 추론 시 <code>[UNK]</code>로 처리될 수 있음
+          </div>
+        </div>
+
+        <div class="param-desc-item">
+          <div class="param-desc-header">
+            <code>min_frequency</code>
+            <span class="param-default">default: 2</span>
+          </div>
+          <div class="param-desc-body">
+            서브워드 <strong>쌍(pair)을 병합할 때</strong> 적용되는 최소 등장 빈도 조건
+            <ul class="param-sub">
+              <li>인접 서브워드 쌍이 이 값 이상 등장해야만 병합 후 vocab에 추가됨</li>
+              <li>기본값 <code>2</code> : 딱 1번만 붙어서 등장한 쌍은 병합 안 됨</li>
+              <li><strong>개별 문자(base vocab)에는 미적용</strong> → 학습 데이터에 단 1번 등장해도 문자는 vocab에 무조건 등록</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="param-desc-item">
+          <div class="param-desc-header">
+            <code>special_tokens</code>
+          </div>
+          <div class="param-desc-body">
+            특수 토큰 목록 직접 지정. BERT 기본 5종:
+            <ul class="param-sub">
+              <li><code>[PAD]</code> : 배치 처리 시 시퀀스 길이를 맞추기 위한 패딩 토큰</li>
+              <li><code>[UNK]</code> : vocab에 없는 OOV 단어를 대체하는 토큰</li>
+              <li><code>[CLS]</code> : 문장 시작 / 분류(Classification) 태스크에서 문장 전체 표현으로 활용</li>
+              <li><code>[SEP]</code> : 두 문장 사이 구별자 / 문장 경계 표시</li>
+              <li><code>[MASK]</code> : MLM 학습 시 마스킹된 위치를 나타내는 토큰</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="param-desc-item" style="border-color:var(--tag-cont-border); background:var(--tag-cont)">
+          <div class="param-desc-header">
+            <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">wordpiece_prefix</code>
+            <span class="param-default">default: '##'</span>
+          </div>
+          <div class="param-desc-body" style="color:#1a3a80">
+            단어 내 첫 번째 위치가 아닌 연속 서브워드임을 표시하는 접두사
+            <ul class="param-sub" style="color:#1a3a80">
+              <li>"playing" → <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">play</code> + <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">##ing</code></li>
+              <li>"unbelievable" → <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">un</code> + <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">##believ</code> + <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">##able</code></li>
+              <li>첫 서브워드는 <code>##</code> 없음 → 단어 시작 위치 구분 가능</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
-
-      <div class="param-desc-item">
-        <div class="param-desc-header">
-          <code>initial_alphabet</code>
-        </div>
-        <div class="param-desc-body">
-          학습 전에 미리 vocab에 넣어 둘 문자(alphabet) 목록입니다. 반드시 포함되어야 하는 문자를 사전에 추가할 때 사용해요.
-          <ul class="param-sub">
-            <li>initial은 학습 이전에 미리 단어를 vocab에 넣는 것을 의미합니다.</li>
-            <li>special token들도 initial에 포함되어 vocab에 추가됩니다.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="param-desc-item">
-        <div class="param-desc-header">
-          <code>limit_alphabet</code>
-          <span class="param-default">default: 1,000</span>
-        </div>
-        <div class="param-desc-body">initial token(문자 단위)의 최대 갯수를 제한합니다. 너무 많은 문자가 초기 vocab에 들어가지 않도록 상한선을 두는 역할이에요.</div>
-      </div>
-
-      <div class="param-desc-item">
-        <div class="param-desc-header">
-          <code>min_frequency</code>
-          <span class="param-default">default: 2</span>
-        </div>
-        <div class="param-desc-body">
-          서브워드 <strong>쌍(pair)을 병합할 때</strong> 적용되는 최소 등장 빈도수입니다. 개별 문자(base vocab) 등록에는 적용되지 않아요.
-          <ul class="param-sub">
-            <li>두 서브워드가 이 값 이상 붙어서 등장해야 병합 후 vocab에 추가됩니다.</li>
-            <li>기본값 <span class="tag-inline">2</span>이면 딱 1번만 붙어서 등장한 쌍은 병합되지 않습니다.</li>
-            <li>개별 문자는 단어를 표현하기 위해 무조건 base vocab에 등록되며, 이 값의 영향을 받지 않습니다.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="param-desc-item">
-        <div class="param-desc-header">
-          <code>special_tokens</code>
-        </div>
-        <div class="param-desc-body">
-          특수 토큰 목록을 직접 지정할 수 있습니다. BERT는 아래 5개의 스페셜 토큰을 기본으로 사용해요.
-          <ul class="param-sub" style="margin-top:8px">
-            <li><code>[PAD]</code> 시퀀스 길이를 맞추기 위한 패딩 토큰</li>
-            <li><code>[UNK]</code> vocab에 없는 OOV(Out Of Vocabulary) 단어를 대체하는 토큰</li>
-            <li><code>[CLS]</code> 문장의 시작을 알리며, 분류(Classification) 태스크에서 문장 전체 표현으로 활용</li>
-            <li><code>[SEP]</code> 두 문장 사이를 구별하는 구분자 토큰</li>
-            <li><code>[MASK]</code> MLM(Masked Language Modeling) 학습 시 마스킹된 위치를 나타내는 토큰</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="param-desc-item" style="border-color:var(--tag-cont-border); background:var(--tag-cont)">
-        <div class="param-desc-header">
-          <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">wordpiece_prefix</code>
-          <span class="param-default">default: '##'</span>
-        </div>
-        <div class="param-desc-body" style="color:#1a3a80">
-          서브워드임을 표시하는 접두사입니다. BERT는 기본적으로 <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">'##'</code>을 씁니다.
-          <ul class="param-sub" style="color:#1a3a80">
-            <li>예: <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">SS</code>, <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">##AF</code>, <code style="background:rgba(42,125,212,0.12); color:var(--accent2)">##Y</code> → sub-word 구분에 활용</li>
-          </ul>
-        </div>
-      </div>
-
     </div>
-  </div>
 
   </div><!-- /tab0 -->
 
-  <!-- TAB 2: Vocab 구축 -->
+  <!-- ═══════════════════════════════ TAB 2: Vocab 구축 ═══════════════════════════════ -->
   <div class="tab-panel" id="tab1">
 
-  <!-- Vocab 구축 과정 -->
-  <div class="card">
-    <div class="card-title">🏗️ Vocab 구축 과정 (학습 단계)</div>
+    <div class="card">
+      <div class="card-title">🏗️ Vocab 구축 과정 (학습 단계)</div>
 
-    <div class="info-note" style="margin-bottom:14px; background:var(--tag-unk); border-color:var(--tag-unk-border); color:#a07010">
-      ⚠️ <span>다음 내용은 개념적으로 단순화시킨 것으로, 실제 디테일은 많이 다를 수 있습니다.</span>
-    </div>
-
-    <div class="algo-desc">
-      WordPiece 학습은 아래 4단계를 거쳐 vocab을 구성합니다. <code>vocab_size</code>에 도달할 때까지 병합을 반복해요.
-    </div>
-
-    <div class="algo-example">
-      <div class="algo-ex-title">예시</div>
-      <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:4px">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
-          <span>"고양이가 좋아요"</span><span style="color:var(--accent2)">100회</span>
-        </div>
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
-          <span>"강아지가 귀여워요"</span><span style="color:var(--accent2)">90회</span>
-        </div>
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
-          <span>"앵무새를 봤어요"</span><span style="color:#b04040">1회</span>
-        </div>
+      <div class="info-note" style="margin-bottom:14px; background:var(--tag-unk); border-color:var(--tag-unk-border); color:#a07010">
+        ⚠️ <span>다음 내용은 개념적으로 단순화된 설명입니다. 실제 구현 디테일은 다를 수 있습니다.</span>
       </div>
-    </div>
 
-    <div class="algo-steps-viz" style="margin-top:14px">
+      <div class="algo-desc">
+        WordPiece 학습은 아래 4단계를 거쳐 vocab을 구성<br>
+        <code>vocab_size</code>에 도달할 때까지 쌍 병합 반복
+      </div>
 
-      <!-- Step 1 -->
-      <div class="algo-step-row" style="align-items:flex-start">
-        <div class="algo-step-label" style="padding-top:2px">① 스페셜 토큰<br>먼저 등록</div>
-        <div class="algo-step-content" style="flex-direction:column; gap:6px">
-          <div style="font-size:12px; color:var(--text-muted)">빈도와 무관하게 vocab에 제일 먼저 고정 ID로 추가됩니다.</div>
-          <div class="tokens-wrap">
-            <span class="token special" style="font-size:12px; padding:3px 9px">[PAD]</span>
-            <span class="token special" style="font-size:12px; padding:3px 9px">[UNK]</span>
-            <span class="token special" style="font-size:12px; padding:3px 9px">[CLS]</span>
-            <span class="token special" style="font-size:12px; padding:3px 9px">[SEP]</span>
-            <span class="token special" style="font-size:12px; padding:3px 9px">[MASK]</span>
+      <!-- 예시 데이터 -->
+      <div class="algo-example" style="margin-bottom:16px">
+        <div class="algo-ex-title">학습 데이터 예시</div>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
+            <span>"고양이가 좋아요"</span><span style="color:var(--accent2)">2회</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
+            <span>"강아지가 귀여워요"</span><span style="color:var(--accent2)">2회</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:6px 10px; display:flex; justify-content:space-between">
+            <span>"앵무새를 봤어요"</span><span style="color:#b04040">1회</span>
           </div>
         </div>
       </div>
 
-      <div style="height:1px; background:var(--border); margin: 6px 0"></div>
+      <div class="algo-steps-viz">
 
-      <!-- Step 2 -->
-      <div class="algo-step-row" style="align-items:flex-start">
-        <div class="algo-step-label" style="padding-top:2px">② 개별 문자<br>전부 등록</div>
-        <div class="algo-step-content" style="flex-direction:column; gap:6px">
-          <div style="font-size:12px; color:var(--text-muted)">학습 데이터에 등장한 <strong>모든 개별 문자</strong>를 base vocab에 추가합니다. <code>min_frequency</code>와 무관해요.</div>
-          <div class="tokens-wrap">
-            <span class="token char" style="font-size:12px; padding:3px 9px">고</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">양</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">이</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">강</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">아</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">지</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">앵</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">무</span>
-            <span class="token char" style="font-size:12px; padding:3px 9px">새</span>
-            <span style="font-size:12px; color:var(--text-muted); align-self:center">…</span>
-          </div>
-          <div class="info-note" style="font-size:12px">
-            💡 <span>"앵무새"는 1번만 등장했지만 <strong>앵, 무, 새</strong>는 모두 base vocab에 등록돼요. WordPiece가 [UNK]를 최소화하는 핵심 원리예요!</span>
-          </div>
-        </div>
-      </div>
-
-      <div style="height:1px; background:var(--border); margin: 6px 0"></div>
-
-      <!-- Step 3 -->
-      <div class="algo-step-row" style="align-items:flex-start">
-        <div class="algo-step-label" style="padding-top:2px">③ 문자 쌍<br>병합</div>
-        <div class="algo-step-content" style="flex-direction:column; gap:6px">
-          <div style="font-size:12px; color:var(--text-muted)">단어를 문자 단위로 쪼갤 때 첫 번째 문자는 그대로, 나머지는 <code>##</code>을 붙여요. 인접 쌍의 빈도를 계산해 <code>min_frequency</code> 이상인 쌍만 병합합니다.</div>
-          <div style="display:flex; flex-direction:column; gap:5px">
-            <div style="display:flex; align-items:center; gap:8px">
-              <span class="algo-freq-pair"><span class="freq-a">고</span><span class="freq-b">##양</span></span>
-              <div class="freq-bar-wrap"><div class="freq-bar" style="width:100%"></div></div>
-              <span class="freq-count">180회 ✓ → <span class="token char" style="font-size:11px; padding:2px 6px">고양</span></span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px">
-              <span class="algo-freq-pair"><span class="freq-a">강</span><span class="freq-b">##아</span></span>
-              <div class="freq-bar-wrap"><div class="freq-bar" style="width:88%"></div></div>
-              <span class="freq-count">160회 ✓ → <span class="token char" style="font-size:11px; padding:2px 6px">강아</span></span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px">
-              <span class="algo-freq-pair"><span class="freq-a">앵</span><span class="freq-b">##무</span></span>
-              <div class="freq-bar-wrap"><div class="freq-bar" style="width:5%; background:#f0b0b0"></div></div>
-              <span class="freq-count" style="color:#b04040">1회 ✗ → 병합 안 됨</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="height:1px; background:var(--border); margin: 6px 0"></div>
-
-      <!-- Step 4 -->
-      <div class="algo-step-row" style="align-items:flex-start">
-        <div class="algo-step-label" style="padding-top:2px">④ 더 긴<br>서브워드 병합</div>
-        <div class="algo-step-content" style="flex-direction:column; gap:6px">
-          <div style="font-size:12px; color:var(--text-muted)">병합된 서브워드끼리 다시 빈도를 계산해 더 긴 서브워드를 만들어요. <code>vocab_size</code>에 도달하면 종료.</div>
-          <div style="display:flex; flex-direction:column; gap:6px">
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
-              <span class="merge-step-num">1</span>
-              <span class="algo-word-try pass">고양</span><span class="merge-plus">+</span><span class="algo-word-try pass">##이</span>
-              <span class="merge-arrow">→</span>
-              <span class="token root" style="font-size:12px; padding:2px 9px">고양이</span>
-              <span class="algo-result-label pass">180회 ✓</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
-              <span class="merge-step-num">2</span>
-              <span class="algo-word-try pass">강아</span><span class="merge-plus">+</span><span class="algo-word-try pass">##지</span>
-              <span class="merge-arrow">→</span>
-              <span class="token root" style="font-size:12px; padding:2px 9px">강아지</span>
-              <span class="algo-result-label pass">160회 ✓</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
-              <span class="merge-step-num">3</span>
-              <span class="algo-word-try pass">고양이</span><span class="merge-plus">+</span><span class="algo-word-try pass">##가</span>
-              <span class="merge-arrow">→</span>
-              <span class="token root" style="font-size:12px; padding:2px 9px">고양이가</span>
-              <span class="algo-result-label pass">100회 ✓</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="algo-desc" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border)">
-      <code>min_frequency</code>는 문자 등록이 아닌 <strong>쌍 병합 조건</strong>으로만 작용해요. 개별 문자는 학습 데이터에 등장하는 순간 무조건 base vocab에 들어갑니다.
-    </div>
-  </div>
-
-  <!-- 토크나이저 사용: 스페셜 토큰 & UNK -->
-  <div class="card">
-    <div class="card-title">🔖 스페셜 토큰 사용</div>
-
-    <div style="display:flex; flex-direction:column; gap:12px">
-
-      <div class="algo-example">
-        <div class="algo-ex-title">[CLS] / [SEP] — 문장 구조</div>
-        <div class="tokens-wrap" style="margin-top:10px">
-          <span class="token special" style="font-size:13px; padding:4px 11px">[CLS]</span>
-          <span class="token root" style="font-size:13px; padding:4px 11px">강아지가</span>
-          <span class="token root" style="font-size:13px; padding:4px 11px">귀여워요</span>
-          <span class="token special" style="font-size:13px; padding:4px 11px">[SEP]</span>
-        </div>
-        <div class="info-note" style="margin-top:10px">🎯 <span>스페셜 토큰이 문장의 시작과 끝 구조를 잡아줘요!</span></div>
-      </div>
-
-      <div class="algo-example">
-        <div class="algo-ex-title" style="color:#a07010">[UNK] — 평가 시 활용 · "我爱你" (학습 데이터에 없는 문자)</div>
-        <div class="tokens-wrap" style="margin-top:10px">
-          <span class="token unk" style="font-size:13px; padding:4px 11px">[UNK]</span>
-          <span class="token unk" style="font-size:13px; padding:4px 11px">[UNK]</span>
-          <span class="token unk" style="font-size:13px; padding:4px 11px">[UNK]</span>
-        </div>
-        <div class="info-note" style="margin-top:10px; background:var(--tag-unk); border-color:var(--tag-unk-border); color:#a07010">
-          ❌ <span>base vocab에 없는 문자는 모두 [UNK]로 처리됩니다. 학습 때는 거의 등장하지 않지만, <strong>평가·추론 시</strong> 미등록 문자를 만날 때 활용됩니다.</span>
-        </div>
-      </div>
-
-      <div class="algo-example">
-        <div class="algo-ex-title">[PAD] — 배치 처리 시 길이 맞추기</div>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
-          <div>
-            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:5px">문장 1: "고양이가 좋아요" (2토큰)</div>
+        <!-- Step 1 -->
+        <div class="algo-step-row">
+          <div class="algo-step-label">① 스페셜 토큰<br>먼저 등록</div>
+          <div class="algo-step-content">
+            <div style="font-size:12px; color:var(--text-muted)">빈도와 무관하게 고정 ID로 vocab 최우선 추가</div>
             <div class="tokens-wrap">
-              <span class="token root" style="font-size:12px; padding:3px 9px">고양이가</span>
-              <span class="token root" style="font-size:12px; padding:3px 9px">좋아요</span>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:5px">문장 2: "토끼" (1토큰) → 최대 길이 2로 패딩</div>
-            <div class="tokens-wrap">
-              <span class="token root" style="font-size:12px; padding:3px 9px">토끼</span>
-              <span class="token special" style="font-size:12px; padding:3px 9px">[PAD]</span>
+              <span class="token special">[PAD]</span>
+              <span class="token special">[UNK]</span>
+              <span class="token special">[CLS]</span>
+              <span class="token special">[SEP]</span>
+              <span class="token special">[MASK]</span>
             </div>
           </div>
         </div>
-        <div class="info-note" style="margin-top:10px">📦 <span>배치로 여러 문장을 묶을 때 길이를 맞추기 위해 짧은 문장 뒤에 <code>[PAD]</code>를 채워요.</span></div>
+
+        <div class="divider"></div>
+
+        <!-- Step 2 -->
+        <div class="algo-step-row">
+          <div class="algo-step-label">② 개별 문자<br>전부 등록</div>
+          <div class="algo-step-content">
+            <div style="font-size:12px; color:var(--text-muted)">학습 데이터에 등장한 <strong>모든 개별 문자</strong>를 base vocab에 추가<br>→ <code>min_frequency</code> 와 무관하게 단 1회 등장해도 등록됨</div>
+            <div class="tokens-wrap">
+              <span class="token char">고</span><span class="token char">양</span><span class="token char">이</span>
+              <span class="token char">강</span><span class="token char">아</span><span class="token char">지</span>
+              <span class="token char">앵</span><span class="token char">무</span><span class="token char">새</span>
+              <span style="font-size:12px; color:var(--text-muted); align-self:center">…</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Step 3 -->
+        <div class="algo-step-row">
+          <div class="algo-step-label">③ 인접 문자<br>쌍 병합</div>
+          <div class="algo-step-content">
+            <div style="font-size:12px; color:var(--text-muted)">
+              단어를 문자 단위로 분리 : 첫 문자는 그대로, 나머지는 <code>##</code> 접두사 부착<br>
+              인접 쌍의 빈도 계산 → <code>min_frequency</code> 이상인 쌍만 병합해 vocab 추가
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; width:100%">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                <span class="algo-freq-pair"><span class="freq-a">고</span><span class="freq-b">##양</span></span>
+                <div class="freq-bar-wrap"><div class="freq-bar" style="width:100%"></div></div>
+                <span class="freq-count">2회 ✓ → <span class="token char" style="font-size:11px; padding:2px 6px">고양</span></span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                <span class="algo-freq-pair"><span class="freq-a">강</span><span class="freq-b">##아</span></span>
+                <div class="freq-bar-wrap"><div class="freq-bar" style="width:100%"></div></div>
+                <span class="freq-count">2회 ✓ → <span class="token char" style="font-size:11px; padding:2px 6px">강아</span></span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                <span class="algo-freq-pair"><span class="freq-a">앵</span><span class="freq-b">##무</span></span>
+                <div class="freq-bar-wrap"><div class="freq-bar" style="width:5%; background:#f0b0b0"></div></div>
+                <span class="freq-count" style="color:#b04040">1회 ✗ → 병합 안 됨</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Step 4 -->
+        <div class="algo-step-row">
+          <div class="algo-step-label">④ 더 긴<br>서브워드 병합</div>
+          <div class="algo-step-content">
+            <div style="font-size:12px; color:var(--text-muted)">
+              병합된 서브워드끼리 다시 빈도 계산 → 더 긴 서브워드 생성<br>
+              <code>vocab_size</code>에 도달하면 학습 종료
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; width:100%">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span class="merge-step-num">1</span>
+                <span class="algo-word-try pass">고양</span><span class="merge-plus">+</span><span class="algo-word-try pass">##이</span>
+                <span class="merge-arrow">→</span>
+                <span class="token root" style="font-size:12px; padding:2px 9px">고양이</span>
+                <span class="algo-result-label pass">2회 ✓</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span class="merge-step-num">2</span>
+                <span class="algo-word-try pass">강아</span><span class="merge-plus">+</span><span class="algo-word-try pass">##지</span>
+                <span class="merge-arrow">→</span>
+                <span class="token root" style="font-size:12px; padding:2px 9px">강아지</span>
+                <span class="algo-result-label pass">2회 ✓</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span class="merge-step-num">3</span>
+                <span class="algo-word-try pass">고양이</span><span class="merge-plus">+</span><span class="algo-word-try pass">##가</span>
+                <span class="merge-arrow">→</span>
+                <span class="token root" style="font-size:12px; padding:2px 9px">고양이가</span>
+                <span class="algo-result-label pass">2회 ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
+
     </div>
-  </div>
+
+    <!-- 스페셜 토큰 사용 -->
+    <div class="card">
+      <div class="card-title">🔖 스페셜 토큰 사용 예시</div>
+      <div style="display:flex; flex-direction:column; gap:12px">
+
+        <!-- CLS/SEP -->
+        <div class="algo-example">
+          <div class="algo-ex-title">[CLS] / [SEP] — 문장 구조 표시</div>
+          <div class="tokens-wrap" style="margin-top:10px">
+            <span class="token special">[CLS]</span>
+            <span class="token root">강아지가</span>
+            <span class="token root">귀여워요</span>
+            <span class="token special">[SEP]</span>
+          </div>
+          <div class="info-note" style="margin-top:10px">
+            🎯 <span>[CLS] : 문장 시작 + 분류 태스크에서 전체 문장 표현으로 활용<br>
+            [SEP] : 문장 끝 경계 / 두 문장 입력 시 구분자</span>
+          </div>
+        </div>
+
+        <!-- UNK -->
+        <div class="algo-example">
+          <div class="algo-ex-title" style="color:#a07010">[UNK] — base vocab에 없는 문자 처리 : "我爱你" (한국어 모델 학습 데이터에 미포함)</div>
+          <div class="tokens-wrap" style="margin-top:10px">
+            <span class="token unk">[UNK]</span>
+            <span class="token unk">[UNK]</span>
+            <span class="token unk">[UNK]</span>
+          </div>
+          <div class="info-note" style="margin-top:10px; background:var(--tag-unk); border-color:var(--tag-unk-border); color:#a07010">
+            ❌ <span>base vocab에 없는 문자 → 모두 [UNK] 처리<br>
+            학습 시 거의 등장 안 함 / <strong>추론 시</strong> 미등록 문자 처리에 활용</span>
+          </div>
+        </div>
+
+        <!-- PAD -->
+        <div class="algo-example">
+          <div class="algo-ex-title">[PAD] — 배치 처리 시 길이 통일</div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
+            <div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:5px">문장 1 : "고양이가 좋아요" → 2토큰</div>
+              <div class="tokens-wrap">
+                <span class="token root">고양이가</span>
+                <span class="token root">좋아요</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:5px">문장 2 : "토끼" → 1토큰 → 최대 길이 2로 패딩</div>
+              <div class="tokens-wrap">
+                <span class="token root">토끼</span>
+                <span class="token special">[PAD]</span>
+              </div>
+            </div>
+          </div>
+          <div class="info-note" style="margin-top:10px">
+            📦 <span>배치로 여러 문장을 묶을 때 길이 통일 → 짧은 문장 뒤에 <code>[PAD]</code> 채움<br>
+            → Attention mask로 [PAD] 위치는 어텐션 계산에서 제외</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
   </div><!-- /tab1 -->
 
-  <!-- TAB 3: Encoding -->
+  <!-- ═══════════════════════════════ TAB 3: Encoding ═══════════════════════════════ -->
   <div class="tab-panel" id="tab2">
 
-  <!-- 토큰 ID 변환 -->
-  <div class="card">
-    <div class="card-title">🔢 토큰 ID 변환</div>
-    <div class="algo-desc">토크나이저는 각 토큰을 vocab에서의 <strong>인덱스(정수)</strong>로 바꿔요. 원핫 인코딩이 아니에요!</div>
+    <!-- 토큰 ID 변환 -->
+    <div class="card">
+      <div class="card-title">🔢 토큰 ID 변환</div>
+      <div class="algo-desc">토크나이저는 각 토큰을 vocab에서의 <strong>인덱스(정수)</strong>로 변환<br>원핫 인코딩이 아닌 단순 정수 인덱스</div>
 
-    <div class="algo-example" style="margin-bottom:12px">
-      <div class="algo-ex-title">텍스트 → 토큰 → ID</div>
-      <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px">
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
-          <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"고양이가 좋아요"</span>
-          <span style="color:var(--text-muted)">→</span>
-          <div class="tokens-wrap">
-            <span class="token root" style="font-size:12px; padding:3px 9px">고양이가</span>
-            <span class="token root" style="font-size:12px; padding:3px 9px">좋아요</span>
-          </div>
-          <span style="color:var(--text-muted)">→</span>
-          <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[1523, 892]</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
-          <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"강아지가 귀여워요"</span>
-          <span style="color:var(--text-muted)">→</span>
-          <div class="tokens-wrap">
-            <span class="token root" style="font-size:12px; padding:3px 9px">강아지가</span>
-            <span class="token root" style="font-size:12px; padding:3px 9px">귀여워요</span>
-          </div>
-          <span style="color:var(--text-muted)">→</span>
-          <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[884, 731]</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="info-note">
-      💡 <span>vocab에서 해당 토큰의 위치(행 번호)를 그대로 꺼내는 거예요. 복잡한 계산 없이 <strong>단순 룩업</strong>이에요!</span>
-    </div>
-  </div>
-
-  <!-- 원핫 vs Embedding -->
-  <div class="card">
-    <div class="card-title">⚖️ 원핫 인코딩 vs nn.Embedding</div>
-    <div class="algo-desc">토큰 ID를 벡터로 바꾸는 방법은 두 가지가 있어요. 왜 원핫을 안 쓰는지 비교해봐요.</div>
-
-    <div style="display:flex; gap:12px; flex-wrap:wrap">
-
-      <!-- 원핫 -->
-      <div style="flex:1; min-width:240px">
-        <div class="algo-example" style="border-color:#f0b0b0; background:#fff0f0; height:100%">
-          <div class="algo-ex-title" style="color:#b04040">❌ 원핫 인코딩</div>
-          <div style="font-size:12.5px; color:var(--text); margin-top:8px; line-height:1.9">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
-              고양이가 (ID=1523)<br>
-              → [0, 0, ..., <strong style="color:#b04040">1</strong>, ..., 0]<br>
-              <span style="color:var(--text-muted)">   (30,000차원!)</span>
+      <div class="algo-example" style="margin-bottom:12px">
+        <div class="algo-ex-title">텍스트 → 토큰 → ID</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"고양이가 좋아요"</span>
+            <span style="color:var(--text-muted)">→</span>
+            <div class="tokens-wrap">
+              <span class="token root">고양이가</span>
+              <span class="token root">좋아요</span>
             </div>
-            <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#b04040">
-              <span>• vocab 크기만큼 차원 폭발</span>
-              <span>• 대부분이 0 → 비효율적</span>
-              <span>• 단어 간 의미 관계 표현 불가</span>
+            <span style="color:var(--text-muted)">→</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[1523, 892]</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px">"강아지가 귀여워요"</span>
+            <span style="color:var(--text-muted)">→</span>
+            <div class="tokens-wrap">
+              <span class="token root">강아지가</span>
+              <span class="token root">귀여워요</span>
             </div>
+            <span style="color:var(--text-muted)">→</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent2)">[884, 731]</span>
           </div>
         </div>
       </div>
 
-      <!-- Embedding -->
-      <div style="flex:1; min-width:240px">
-        <div class="algo-example" style="border-color:var(--tag-special-border); background:var(--tag-special); height:100%">
-          <div class="algo-ex-title" style="color:#1a7a40">✅ nn.Embedding</div>
-          <div style="font-size:12.5px; color:var(--text); margin-top:8px; line-height:1.9">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
-              고양이가 (ID=1523)<br>
-              → [0.12, -0.34, 0.88, ...]<br>
-              <span style="color:var(--text-muted)">   (768차원, 밀집 벡터)</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#1a7a40">
-              <span>• 고정된 작은 차원 (보통 768)</span>
-              <span>• 모든 값이 의미 있음</span>
-              <span>• 학습을 통해 의미 관계 반영</span>
+      <div class="info-note">
+        💡 <span>vocab에서 해당 토큰의 행 번호를 그대로 사용 → <strong>단순 룩업(lookup)</strong> / 별도 계산 없음</span>
+      </div>
+    </div>
+
+    <!-- 원핫 vs Embedding -->
+    <div class="card">
+      <div class="card-title">⚖️ 원핫 인코딩 vs nn.Embedding</div>
+      <div class="algo-desc">토큰 ID를 밀집 벡터로 변환하는 두 방식 비교 — BERT는 <code>nn.Embedding</code> 사용</div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+
+        <div style="flex:1; min-width:220px">
+          <div class="algo-example" style="border-color:#f0b0b0; background:#fff0f0; height:100%">
+            <div class="algo-ex-title" style="color:#b04040">❌ 원핫 인코딩</div>
+            <div style="font-size:12.5px; margin-top:8px; line-height:1.9">
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
+                고양이가 (ID=1523)<br>
+                → [0, 0, …, <strong style="color:#b04040">1</strong>, …, 0]<br>
+                <span style="color:var(--text-muted)">   (30,000차원)</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#b04040">
+                <span>→ vocab 크기만큼 차원 폭발</span>
+                <span>→ 대부분 0 → 비효율적</span>
+                <span>→ 단어 간 의미 관계 표현 불가</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-    </div>
-  </div>
-
-  <!-- nn.Embedding 동작 -->
-  <div class="card">
-    <div class="card-title">📖 nn.Embedding 동작 원리</div>
-    <div class="algo-desc">내부적으론 원핫 × 가중치행렬과 수학적으로 동일하지만, 실제론 <strong>인덱스로 행을 직접 꺼내는 룩업 테이블</strong>이에요.</div>
-
-    <div class="algo-example" style="margin-bottom:12px">
-      <div class="algo-ex-title">코드 예시</div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; background:white; border-radius:6px; padding:14px; line-height:2; margin-top:10px">
-        <span style="color:#7b1fa2">import</span> torch<br>
-        <span style="color:#7b1fa2">import</span> torch.nn <span style="color:#7b1fa2">as</span> nn<br><br>
-        embedding = nn.Embedding(<span style="color:var(--accent2)">30000</span>, <span style="color:var(--accent2)">768</span>)<br>
-        token_ids = torch.tensor([<span style="color:var(--accent2)">5</span>, <span style="color:var(--accent2)">1523</span>, <span style="color:var(--accent2)">892</span>, <span style="color:var(--accent2)">6</span>])<br>
-        <span style="color:var(--text-muted)"># [CLS] 고양이가 좋아요 [SEP]</span><br>
-        vectors = embedding(token_ids)<br>
-        <span style="color:var(--text-muted)"># → [4, 768] 텐서 [토큰 수, 임베딩 차원]</span>
-      </div>
-    </div>
-
-    <div class="algo-example">
-      <div class="algo-ex-title">룩업 테이블 시각화</div>
-      <div style="margin-top:10px; display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; min-width:160px">
-          <div style="color:var(--text-muted); margin-bottom:6px; font-size:11px">Embedding Table (30000 × 768)</div>
-          <div style="color:var(--text-muted)">...</div>
-          <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 5 &nbsp;&nbsp;→ [0.03, ...]</div>
-          <div style="color:var(--text-muted)">...</div>
-          <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 6 &nbsp;&nbsp;→ [0.55, ...]</div>
-          <div style="color:var(--text-muted)">...</div>
-          <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 892 → [0.88, ...]</div>
-          <div style="color:var(--text-muted)">...</div>
-          <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 1523→ [0.12, ...]</div>
-          <div style="color:var(--text-muted)">...</div>
-        </div>
-        <div style="display:flex; flex-direction:column; justify-content:center; gap:8px; padding-top:30px">
-          <div style="display:flex; align-items:center; gap:8px">
-            <span class="token special" style="font-size:12px; padding:2px 9px">[CLS]</span>
-            <span style="color:var(--text-muted)">ID 5 &nbsp;&nbsp;&nbsp;→</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.03, &nbsp;0.71, ...]</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px">
-            <span class="token root" style="font-size:12px; padding:2px 9px">고양이가</span>
-            <span style="color:var(--text-muted)">ID 1523 →</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.12, -0.34, ...]</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px">
-            <span class="token root" style="font-size:12px; padding:2px 9px">좋아요</span>
-            <span style="color:var(--text-muted)">ID 892 &nbsp;→</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.88, &nbsp;0.11, ...]</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px">
-            <span class="token special" style="font-size:12px; padding:2px 9px">[SEP]</span>
-            <span style="color:var(--text-muted)">ID 6 &nbsp;&nbsp;&nbsp;→</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.55, -0.12, ...]</span>
+        <div style="flex:1; min-width:220px">
+          <div class="algo-example" style="border-color:var(--tag-special-border); background:var(--tag-special); height:100%">
+            <div class="algo-ex-title" style="color:#1a7a40">✅ nn.Embedding</div>
+            <div style="font-size:12.5px; margin-top:8px; line-height:1.9">
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; margin-bottom:10px">
+                고양이가 (ID=1523)<br>
+                → [0.12, -0.34, 0.88, …]<br>
+                <span style="color:var(--text-muted)">   (768차원, 밀집 벡터)</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#1a7a40">
+                <span>→ 고정된 작은 차원 (보통 768)</span>
+                <span>→ 모든 값이 의미를 담음</span>
+                <span>→ 학습을 통해 의미 관계 반영</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- 전체 흐름 -->
-  <div class="card">
-    <div class="card-title">🔄 전체 흐름 요약</div>
-    <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; padding:10px 0">
-      <div style="text-align:center">
-        <div style="background:var(--tag-root); border:1.5px solid var(--tag-root-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#c04010">텍스트</div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">"고양이가 좋아요"</div>
-      </div>
-      <div style="font-size:20px; color:var(--text-muted)">→</div>
-      <div style="text-align:center">
-        <div style="background:var(--tag-cont); border:1.5px solid var(--tag-cont-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a3a80">토큰 ID</div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">[5, 1523, 892, 6]<br>[CLS] 고양이가 좋아요 [SEP]</div>
-      </div>
-      <div style="font-size:20px; color:var(--text-muted)">→</div>
-      <div style="text-align:center">
-        <div style="background:var(--tag-special); border:1.5px solid var(--tag-special-border); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#1a7a40">밀집 벡터</div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">nn.Embedding → [4, 768]</div>
-      </div>
-      <div style="font-size:20px; color:var(--text-muted)">→</div>
-      <div style="text-align:center">
-        <div style="background:#f3e5f5; border:1.5px solid #ce93d8; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; color:#7b1fa2">BERT</div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:4px">언어 이해 학습</div>
       </div>
     </div>
-  </div>
+
+    <!-- nn.Embedding 동작 -->
+    <div class="card">
+      <div class="card-title">📖 nn.Embedding 동작 원리</div>
+      <div class="algo-desc">
+        수학적으로는 원핫 × 가중치행렬과 동일하지만,<br>
+        실제 구현은 <strong>인덱스로 행을 직접 꺼내는 룩업 테이블</strong> → 효율적이고 빠름<br>
+        쉽게 말하면 <code>map[token_id]</code> → 벡터를 바로 반환하는 구조
+      </div>
+
+      <div class="algo-example" style="margin-bottom:12px">
+        <div class="algo-ex-title">코드 예시</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; background:white; border-radius:6px; padding:14px; line-height:2; margin-top:10px; overflow-x:auto">
+          <span style="color:#7b1fa2">import</span> torch<br>
+          <span style="color:#7b1fa2">import</span> torch.nn <span style="color:#7b1fa2">as</span> nn<br><br>
+          embedding = nn.Embedding(<span style="color:var(--accent2)">30000</span>, <span style="color:var(--accent2)">768</span>)<br>
+          token_ids = torch.tensor([<span style="color:var(--accent2)">5</span>, <span style="color:var(--accent2)">1523</span>, <span style="color:var(--accent2)">892</span>, <span style="color:var(--accent2)">6</span>])<br>
+          <span style="color:var(--text-muted)"># [CLS] 고양이가 좋아요 [SEP]</span><br>
+          vectors = embedding(token_ids)<br>
+          <span style="color:var(--text-muted)"># → shape: [4, 768]  (토큰 수 × 임베딩 차원)</span>
+        </div>
+      </div>
+
+      <div class="algo-example">
+        <div class="algo-ex-title">룩업 테이블 시각화</div>
+        <div style="margin-top:10px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; background:white; border-radius:6px; padding:10px; min-width:170px">
+            <div style="color:var(--text-muted); margin-bottom:6px; font-size:11px">Embedding Table<br>(30,000 × 768)</div>
+            <div style="color:var(--text-muted)">…</div>
+            <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 5 &nbsp;&nbsp;→ [0.03, …]</div>
+            <div style="color:var(--text-muted)">…</div>
+            <div style="background:var(--tag-special); border-radius:4px; padding:2px 4px; color:#1a7a40; font-weight:700">ID 6 &nbsp;&nbsp;→ [0.55, …]</div>
+            <div style="color:var(--text-muted)">…</div>
+            <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 892 → [0.88, …]</div>
+            <div style="color:var(--text-muted)">…</div>
+            <div style="background:var(--tag-root); border-radius:4px; padding:2px 4px; color:#c04010; font-weight:700">ID 1523→ [0.12, …]</div>
+            <div style="color:var(--text-muted)">…</div>
+          </div>
+          <div style="display:flex; flex-direction:column; justify-content:center; gap:10px; padding-top:26px">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+              <span class="token special">[CLS]</span>
+              <span style="color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:11px">ID 5 &nbsp;&nbsp;&nbsp;→</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.03, 0.71, …]</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+              <span class="token root">고양이가</span>
+              <span style="color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:11px">ID 1523 →</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.12, -0.34, …]</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+              <span class="token root">좋아요</span>
+              <span style="color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:11px">ID 892 &nbsp;→</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.88, 0.11, …]</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+              <span class="token special">[SEP]</span>
+              <span style="color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:11px">ID 6 &nbsp;&nbsp;&nbsp;→</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2)">[0.55, -0.12, …]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 전체 흐름 -->
+    <div class="card">
+      <div class="card-title">🔄 전체 흐름 요약</div>
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; padding:10px 0">
+        <div style="text-align:center">
+          <div class="flow-box" style="background:var(--tag-root); border-color:var(--tag-root-border); color:#c04010">텍스트</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px">"고양이가 좋아요"</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div style="text-align:center">
+          <div class="flow-box" style="background:var(--tag-cont); border-color:var(--tag-cont-border); color:#1a3a80">토큰 ID</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px">[5, 1523, 892, 6]<br>[CLS] 고양이가 좋아요 [SEP]</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div style="text-align:center">
+          <div class="flow-box" style="background:var(--tag-special); border-color:var(--tag-special-border); color:#1a7a40">밀집 벡터</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px">nn.Embedding<br>shape: [4, 768]</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div style="text-align:center">
+          <div class="flow-box" style="background:#f3e5f5; border-color:#ce93d8; color:#7b1fa2">BERT</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px">언어 이해 학습</div>
+        </div>
+      </div>
+    </div>
 
   </div><!-- /tab2 -->
 
-  <!-- TAB 4: BERT 학습 -->
+  <!-- ═══════════════════════════════ TAB 4: BERT 학습 ═══════════════════════════════ -->
   <div class="tab-panel" id="tab3">
 
-  <!-- BERT MLM -->
-  <div class="card">
-    <div class="card-title">🤖 BERT 학습 — MLM (Masked Language Modeling)</div>
+    <!-- MLM -->
+    <div class="card">
+      <div class="card-title">🤖 BERT 학습 — MLM (Masked Language Modeling)</div>
 
-    <div class="algo-desc">BERT는 Tokenizer가 만든 vocab으로 변환된 문장에서 일부 토큰을 <code>[MASK]</code>로 가리고 맞추는 방식으로 언어를 학습해요.</div>
+      <div class="algo-desc">
+        BERT는 입력 토큰 시퀀스에서 일부를 <code>[MASK]</code>로 가리고,<br>
+        주변 문맥을 보고 원래 토큰을 맞추는 방식으로 언어 표현을 학습합니다.
+      </div>
 
-    <div class="algo-example" style="margin-bottom:12px">
-      <div class="algo-ex-title">① 원본 문장 → 토크나이저 변환</div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:13px; margin:8px 0 10px; color:var(--text)">"고양이가 생선을 먹어요"</div>
-      <div class="tokens-wrap">
-        <span class="token root" style="font-size:12px; padding:3px 9px">고양이가</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">생</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">선</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">을</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">먹</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">어</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">요</span>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2); margin-top:8px">
-        Token IDs: [1523, 8821, 4532, 221, 9012, 334, 219]
-      </div>
-    </div>
-
-    <div class="algo-example" style="border-color:var(--tag-unk-border); background:var(--tag-unk)">
-      <div class="algo-ex-title" style="color:#a07010">② 랜덤 15% 마스킹 → "생" 토큰을 [MASK]로 대체</div>
-      <div class="tokens-wrap" style="margin-top:10px">
-        <span class="token root" style="font-size:12px; padding:3px 9px">고양이가</span>
-        <span class="token special" style="font-size:12px; padding:3px 9px">[MASK]</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">선</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">을</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">먹</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">어</span>
-        <span class="token char" style="font-size:12px; padding:3px 9px">요</span>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; margin-top:8px; display:flex; flex-direction:column; gap:3px">
-        <div>입력 IDs: [1523, <span style="color:#b04040; font-weight:700">4</span>, 4532, 221, 9012, 334, 219]</div>
-        <div>정답 label: [<span style="color:var(--text-muted)">-100</span>, <span style="color:#1a7a40; font-weight:700">8821</span>, <span style="color:var(--text-muted)">-100, -100, -100, -100, -100</span>]</div>
-        <div style="color:var(--text-muted); font-size:11px">💡 -100은 "손실 계산 안 함", 8821은 "생"의 ID</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BERT 예측 & 학습 -->
-  <div class="card">
-    <div class="card-title">📈 BERT 예측 & 가중치 업데이트</div>
-
-    <div class="algo-example" style="margin-bottom:12px; border-color:var(--tag-special-border); background:var(--tag-special)">
-      <div class="algo-ex-title" style="color:#1a7a40">BERT가 문제 풀기</div>
-      <div style="font-size:12.5px; color:#1a3a80; margin-top:8px; line-height:1.8">
-        📥 입력: [고양이가] [MASK] [선] [을] [먹] [어] [요]<br>
-        🧠 "고양이가" 다음 + "선"과 함께 "○선" + "먹어요"와 연관 → vocab 30,000개 각각 확률 계산
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:10px; background:white; border-radius:6px; padding:10px; display:flex; flex-direction:column; gap:3px">
-        <span style="color:var(--text-muted)">ID 1: "고" → 0.001%</span>
-        <span style="color:var(--text-muted)">ID 2: "양" → 0.003%</span>
-        <span style="color:var(--text-muted)">...</span>
-        <span style="color:#1a7a40; font-weight:700">ID 8821: "생" → 85.2% ✅</span>
-        <span style="color:var(--text-muted)">ID 8822: "선" → 2.1%</span>
-      </div>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:10px">
-      <div class="algo-example" style="margin-bottom:0; border-color:var(--tag-special-border); background:var(--tag-special)">
-        <div class="algo-ex-title" style="color:#1a7a40">✅ 맞혔을 때</div>
-        <div style="font-size:12.5px; color:#1a3a80; margin-top:6px; line-height:1.7">
-          예측 8821("생") = 정답 8821("생") → Loss 낮음<br>
-          100% 확률이 아니므로 약간의 가중치 조정 → 다음엔 더 확신 있게 예측
+      <div class="algo-example" style="margin-bottom:12px">
+        <div class="algo-ex-title">① 원본 문장 → 토크나이저 변환</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; margin:8px 0 10px">"고양이가 생선을 먹어요"</div>
+        <div class="info-note" style="margin-bottom:10px; background:var(--tag-unk); border-color:var(--tag-unk-border); color:#a07010; font-size:12px">
+          ⚠️ <span>아래는 "생선을", "먹어요"가 vocab에 <strong>미등록된 상황</strong>을 가정한 예시입니다.<br>
+          실제로 충분히 학습된 BERT 토크나이저라면 이 단어들이 단어 단위로 vocab에 포함될 수 있습니다.</span>
+        </div>
+        <div class="tokens-wrap">
+          <span class="token root">고양이가</span>
+          <span class="token char">생</span>
+          <span class="token cont">##선</span>
+          <span class="token cont">##을</span>
+          <span class="token char">먹</span>
+          <span class="token cont">##어</span>
+          <span class="token cont">##요</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent2); margin-top:8px">
+          Token IDs: [1523, 8821, 4532, 221, 9012, 334, 219]
         </div>
       </div>
 
-      <div class="algo-example" style="margin-bottom:0; border-color:#f0b0b0; background:#fff0f0">
-        <div class="algo-ex-title" style="color:#b04040">❌ 틀렸을 때</div>
-        <div style="font-size:12.5px; color:#b04040; margin-top:6px; line-height:1.7">
-          예측 4532("선") ≠ 정답 8821("생") → Loss 높음<br>
-          역전파로 가중치 크게 업데이트 → "고양이가 다음엔 '선'보다 '생'이 올 확률이 높다" 학습!
+      <div class="algo-example" style="border-color:var(--tag-unk-border); background:var(--tag-unk)">
+        <div class="algo-ex-title" style="color:#a07010">② 랜덤 15% 마스킹 → "생"(ID: 8821) 토큰을 [MASK]로 대체</div>
+        <div class="tokens-wrap" style="margin-top:10px">
+          <span class="token root">고양이가</span>
+          <span class="token special">[MASK]</span>
+          <span class="token cont">##선</span>
+          <span class="token cont">##을</span>
+          <span class="token char">먹</span>
+          <span class="token cont">##어</span>
+          <span class="token cont">##요</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; margin-top:10px; display:flex; flex-direction:column; gap:4px">
+          <div>입력 IDs : [1523, <span style="color:#b04040; font-weight:700">4</span>, 4532, 221, 9012, 334, 219]</div>
+          <div>정답 label : [<span style="color:var(--text-muted)">-100</span>, <span style="color:#1a7a40; font-weight:700">8821</span>, <span style="color:var(--text-muted)">-100, -100, -100, -100, -100</span>]</div>
+          <div style="color:var(--text-muted); font-size:11px">→ -100 : 손실 계산 제외 / 8821 : "생"의 vocab ID</div>
         </div>
       </div>
     </div>
 
-    <div class="info-note" style="margin-top:14px">
-      🚀 <span>이 과정을 수백만 번 반복하면 → 감정 분석, 질의응답, 문장 분류 등 다양한 NLP 태스크에 활용 가능한 모델이 완성돼요!</span>
-    </div>
-  </div>
-    </div><!-- /tab3 -->
+    <!-- 예측 & 업데이트 -->
+    <div class="card">
+      <div class="card-title">📈 BERT 예측 & 가중치 업데이트</div>
 
-</div>
+      <div class="algo-example" style="margin-bottom:12px; border-color:var(--tag-special-border); background:var(--tag-special)">
+        <div class="algo-ex-title" style="color:#1a7a40">BERT가 문제 풀기</div>
+        <div style="font-size:12.5px; color:#1a3a80; margin-top:8px; line-height:1.8">
+          📥 입력 : [고양이가] [MASK] [##선] [##을] [먹] [##어] [##요]<br>
+          🧠 "고양이가" 다음 + "##선"과 함께 등장 + "먹어요"와 연관<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;→ vocab 30,000개 각각에 대해 확률 계산 (softmax)
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:10px; background:white; border-radius:6px; padding:10px; display:flex; flex-direction:column; gap:3px">
+          <span style="color:var(--text-muted)">ID 1 : "고" → 0.001%</span>
+          <span style="color:var(--text-muted)">ID 2 : "양" → 0.003%</span>
+          <span style="color:var(--text-muted)">…</span>
+          <span style="color:#1a7a40; font-weight:700">ID 8821 : "생" → 85.2% ✅</span>
+          <span style="color:var(--text-muted)">ID 8822 : "선" → 2.1%</span>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <div class="algo-example" style="border-color:var(--tag-special-border); background:var(--tag-special)">
+          <div class="algo-ex-title" style="color:#1a7a40">✅ 맞혔을 때</div>
+          <div style="font-size:12.5px; color:#1a3a80; margin-top:6px; line-height:1.7">
+            예측 8821("생") = 정답 8821("생") → Loss 낮음<br>
+            → 100% 확률이 아니므로 약간의 가중치 조정 / 다음엔 더 확신 있게 예측
+          </div>
+        </div>
+
+        <div class="algo-example" style="border-color:#f0b0b0; background:#fff0f0">
+          <div class="algo-ex-title" style="color:#b04040">❌ 틀렸을 때</div>
+          <div style="font-size:12.5px; color:#b04040; margin-top:6px; line-height:1.7">
+            예측 4532("선") ≠ 정답 8821("생") → Loss 높음<br>
+            → 역전파로 가중치 크게 업데이트<br>
+            → "고양이가 다음 + ##선과 함께 등장 시 '생'이 올 확률 높다" 학습
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note" style="margin-top:14px">
+        🚀 <span>이 과정을 수백만 번 반복 → 감정 분석, 질의응답, 문장 분류 등 다양한 NLP 태스크에 파인튜닝 가능한 모델 완성</span>
+      </div>
+    </div>
+
+  </div><!-- /tab3 -->
+
+</div><!-- /container -->
 
 <script>
 function switchTab(idx) {
@@ -1056,10 +863,10 @@ function switchTab(idx) {
   document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
 }
 
-function updateParam(rangeId, displayId) {
-  const val = parseInt(document.getElementById(rangeId).value);
-  document.getElementById(displayId).textContent = val.toLocaleString();
-}
+window.onload = function() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+};
 </script>
 </body>
 </html>
