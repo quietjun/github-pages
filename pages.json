@@ -8,6 +8,10 @@
           {
             "label": "CLIP 개념 개요",
             "path": "ai/cnn/clip.html"
+          },
+          {
+            "label": "CNN — 합성곱 신경망",
+            "path": "ai/cnn/cnn.html"
           }
         ]
       },
