@@ -674,5 +674,11 @@ function updSpd(val){
 
 buildAll();
 </script>
+  <script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>  
 </body>
 </html>
