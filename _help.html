@@ -4,210 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Docs Viewer — 도움말</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/content.css">
+<script src="js/content.js"></script>
 <style>
-  :root {
-    --bg:      #f4f5f9;
-    --surface: #ffffff;
-    --border:  #e2e5f0;
-    --s2:      #eef0f8;
-    --text:    #1a2540;
-    --sub:     #5a6a8a;
-    --muted:   #8e97a8;
-    --shadow:  0 2px 16px rgba(26,37,64,0.08);
-    --accent:  #4a7cf7;
-    --accent-l:#dce8ff;
-    --accent-d:#2d63f5;
-    --ok:      #059669;
-    --ok-l:    #d1fae5;
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 36px 24px 60px;
-    max-width: 1024px;
-    margin: 0 auto;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  /* ── 헤더 ── */
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-    padding: 36px 28px;
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, var(--accent), var(--ok));
-  }
-  header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
-  header p  { color: var(--sub); font-size: 0.9rem; }
-
-  /* ── 섹션 구분선 ── */
-  .sec { display: flex; align-items: center; gap: 12px; margin: 32px 0 16px; }
-  .sec .ln { height: 1px; flex: 1; background: var(--border); }
-  .sec span {
-    font-size: 0.75rem; font-weight: 700; letter-spacing: 1.4px;
-    color: var(--sub); text-transform: uppercase; white-space: nowrap;
-    background: var(--s2); border: 1px solid var(--border);
-    border-radius: 99px; padding: 5px 14px;
-  }
-
-  /* ── 개조식 목록 ── */
-  .bullet-list {
-    list-style: none; padding: 0;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .bullet-list li {
-    display: flex; align-items: flex-start; gap: 8px;
-    font-size: 0.875rem; color: var(--sub); line-height: 1.7;
-  }
-  .bullet-list li::before {
-    content: '·'; font-weight: 700; color: var(--muted); flex-shrink: 0;
-  }
-
-  /* ── 카드 ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 24px;
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-  .card-title {
-    font-size: 0.88rem;
-    font-weight: 700;
-    margin-bottom: 14px;
-    color: var(--text);
-  }
-
-  /* ── 설정 테이블 ── */
-  .config-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.84rem;
-  }
-  .config-table th {
-    padding: 8px 14px;
-    background: var(--s2);
-    font-weight: 700;
-    color: var(--sub);
-    font-size: 0.72rem;
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  .config-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--s2);
-    vertical-align: top;
-    line-height: 1.65;
-  }
+  /* Page specific adjustments */
+  body { padding: 40px 24px; }
+  .bullet-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .bullet-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--sub); line-height: 1.7; }
+  .bullet-list li::before { content: '·'; font-weight: 700; color: var(--border); flex-shrink: 0; }
+  
+  .config-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .config-table th { padding: 10px 14px; background: var(--s2); font-weight: 700; color: var(--sub); font-size: 11px; letter-spacing: .6px; text-transform: uppercase; text-align: left; border-bottom: 1px solid var(--border); }
+  .config-table td { padding: 12px 14px; border-bottom: 1px solid var(--s2); vertical-align: top; line-height: 1.6; }
   .config-table tr:last-child td { border-bottom: none; }
-  .config-table tr:hover td { background: #fafbff; }
-
-  .config-table td:first-child {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-  .config-table td:nth-child(2) {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--sub);
-  }
-  .config-table td:nth-child(3) {
-    color: var(--sub);
-    font-size: 0.83rem;
-  }
-
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-    border: 1px solid;
-  }
-  .tag-str  { background: var(--ok-l);    border-color: var(--ok);    color: var(--ok); }
-  .tag-set  { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
-  .tag-char { background: #fef3c7;         border-color: #f59e0b;       color: #b45309; }
-
-  /* ── 코드 블록 + 복사 버튼 ── */
-  .code-wrap {
-    position: relative;
-    background: var(--s2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .code-wrap pre {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    line-height: 1.75;
-    padding: 18px 20px;
-    overflow-x: auto;
-    color: var(--text);
-    white-space: pre;
-  }
-  .code-wrap .code-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 14px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: .6px;
-    text-transform: uppercase;
-  }
-  .copy-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--sub);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .copy-btn:hover { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
-  .copy-btn.copied { background: var(--ok-l); border-color: var(--ok); color: var(--ok); }
-
-  /* 구문 강조 */
-  .c-key   { color: var(--accent); font-weight: 700; }
-  .c-val   { color: #059669; }
-  .c-str   { color: #d97706; }
-  .c-set   { color: #7c3aed; }
-  .c-cmt   { color: var(--muted); font-style: italic; }
+  .config-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ct); white-space: nowrap; }
 </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>도움말 가이드</h1>
+    <p class="subtitle">pages.json 자동 생성 스크립트 설정 안내 및 임베드 코드 사용법</p>
+  </header>
 </head>
 <body>
 
@@ -279,7 +98,7 @@
   <div class="code-wrap">
     <div class="code-header">
       <span>Python — generate_pages.py</span>
-      <button class="copy-btn" onclick="copyCode('config-code', this)">
+      <button class="copy-btn" onclick="copyCode(this)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2"/>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -322,7 +141,7 @@
   <div class="code-wrap">
     <div class="code-header">
       <span>HTML — 티스토리 붙여넣기용</span>
-      <button class="copy-btn" onclick="copyCode('embed-code', this)">
+      <button class="copy-btn" onclick="copyCode(this)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2"/>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -340,30 +159,14 @@
   });
 &lt;/script&gt;
 &lt;/p&gt;</pre>
+
   </div>
 </div>
 
 <script>
-function copyCode(id, btn) {
-  const el = document.getElementById(id);
-  // 태그 제거 후 순수 텍스트만 추출
-  const text = el.innerText || el.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.classList.add('copied');
-    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 복사됨`;
-    setTimeout(() => {
-      btn.classList.remove('copied');
-      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 복사`;
-    }, 2000);
-  });
-}
+  // Add any page-specific JS here if needed
 </script>
-
-<script>
-  window.onload = function() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  };
-</script>
+</div>
 </body>
 </html>
+
