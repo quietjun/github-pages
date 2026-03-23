@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNN — 합성곱 신경망</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f5f7fa;color:#1e2a3a;line-height:1.6;overflow-x:hidden;}
+.wrap{max-width:1024px;margin:0 auto;padding:0 20px 60px;}
+.mono{font-family:'JetBrains Mono',monospace;}
+
+.hero{background:linear-gradient(135deg,#f0f4ff,#e8eeff 50%,#f0f9ff);border-bottom:1px solid #e2e8f0;padding:48px 24px 40px;text-align:center;}
+.hero-badge{display:inline-block;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.22);color:#1d4ed8;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;padding:4px 14px;border-radius:2px;margin-bottom:16px;}
+.hero h1{font-size:clamp(28px,6vw,50px);font-weight:700;color:#1e2a3a;letter-spacing:-1px;}
+.hero h1 span{color:#2563eb;}
+.hero-sub{margin-top:10px;font-size:14px;color:#64748b;}
+
+.sec{margin-top:40px;}
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:#94a3b8;background:#eef1f6;padding:2px 9px;border-radius:2px;}
+.sec-title{font-size:18px;font-weight:700;color:#1e2a3a;}
+.sec-div{height:1px;background:#e2e8f0;margin-bottom:20px;}
+
+.card-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:600px){.card-3{grid-template-columns:1fr;}}
+.intro-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px 16px;}
+.intro-icon{font-size:22px;margin-bottom:8px;}
+.intro-card h3{font-size:14px;font-weight:700;margin-bottom:6px;}
+.intro-card p{font-size:12px;color:#64748b;line-height:1.8;}
+
+.hbox{border-radius:8px;padding:14px 18px;margin-bottom:20px;border-left:4px solid;display:flex;gap:12px;align-items:flex-start;}
+.hbox.blue{background:#eff6ff;border-color:#2563eb;}
+.hbox.green{background:#f0fdf4;border-color:#16a34a;}
+.hbox.orange{background:#fff7ed;border-color:#ea580c;}
+.hbox-icon{font-size:16px;flex-shrink:0;margin-top:2px;}
+.hbox-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.hbox.blue .hbox-title{color:#2563eb;}
+.hbox.green .hbox-title{color:#16a34a;}
+.hbox.orange .hbox-title{color:#ea580c;}
+.hbox-text{font-size:12px;color:#64748b;line-height:1.8;}
+.hbox-text strong{color:#1e2a3a;}
+
+.block{background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;overflow:hidden;}
+.block-hd{padding:16px 20px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.bnum{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:3px;}
+.bapi{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;}
+.bname{font-size:15px;font-weight:700;color:#1e2a3a;margin-top:2px;}
+.block-body{padding:18px 20px;}
+.bdesc{font-size:12px;color:#64748b;line-height:1.9;margin-bottom:14px;}
+.bdesc strong{color:#1e2a3a;}
+
+.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px;}
+.param{background:#eef1f6;border-radius:6px;padding:9px 12px;}
+.param-k{font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;margin-bottom:2px;}
+.param-v{font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e2a3a;font-weight:600;}
+
+.sim{background:#eef1f6;border:1px solid #e2e8f0;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;}
+.sim-top{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;}
+.sim-ctrl{display:flex;flex-direction:column;flex:1;min-width:190px;gap:12px;}
+.ctrl-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;}
+.btn-grp{display:flex;gap:5px;flex-wrap:wrap;}
+.kbtn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;}
+.kbtn:hover{border-color:#2563eb;color:#2563eb;}
+.kbtn.active{background:#2563eb;border-color:#2563eb;color:#fff;}
+.sim-play{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 12px;border:none;border-radius:4px;background:#2563eb;color:#fff;cursor:pointer;}
+.sim-play:hover{opacity:.85;}
+.sim-step{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 10px;border:1.5px solid #2563eb;border-radius:4px;background:#fff;color:#2563eb;cursor:pointer;}
+.sim-step:hover{background:#eff6ff;}
+.sim-reset{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;color:#64748b;cursor:pointer;}
+.sim-reset:hover{background:#eef1f6;}
+
+.kern-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.kern-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;}
+.kern-name{font-family:'JetBrains Mono',monospace;font-size:9px;color:#ea580c;margin-top:2px;text-align:center;}
+
+.fbox{background:#fff;border:1px solid #e2e8f0;border-left:3px solid #2563eb;border-radius:6px;padding:12px 14px;min-width:160px;}
+.fbox-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
+.fbox-expr{font-family:'JetBrains Mono',monospace;font-size:10px;color:#1e2a3a;line-height:1.8;}
+.fbox-result{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#2563eb;margin-top:4px;}
+
+.sim-grids{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.gw{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.glabel{font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;}
+.glabel span{color:#1e2a3a;font-weight:600;}
+.sgrid{display:grid;gap:2px;}
+.cell{width:40px;height:40px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#1e2a3a;transition:background .2s,border-color .2s;}
+.cell.hi{background:#eff6ff;border-color:#2563eb;}
+.cell.kact{background:#fff7ed;border-color:#ea580c;}
+.cell.done{background:#f0fdf4;border-color:#16a34a;color:#16a34a;}
+.cell.cur{background:#2563eb;border-color:#2563eb;color:#fff;animation:pop .3s ease;}
+.cell.pad{background:#f0f7ff;border:1.5px dashed #93c5fd;color:#93c5fd;font-size:9px;}
+.cell.pad.hi{background:#eff6ff;border-color:#2563eb;border-style:dashed;color:#2563eb;}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+.cbox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;}
+.cbox-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
+#simCalc{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;color:#1e2a3a;}
+#simCalcR{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#2563eb;margin-top:4px;min-height:18px;}
+
+.dots-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:320px;}
+.dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0;transition:background .2s,transform .2s;}
+.dot.done{background:#16a34a;}
+.dot.cur{background:#2563eb;transform:scale(1.4);}
+#simSteps{font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;}
+
+.dw{background:#eef1f6;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-top:14px;overflow-x:auto;}
+
+.pipe-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;overflow-x:auto;margin-bottom:20px;}
+.pipe-flow{display:flex;align-items:center;gap:6px;min-width:700px;}
+.pblock{border:1.5px solid;border-radius:8px;padding:10px 12px;text-align:center;min-width:84px;flex-shrink:0;}
+.pblock:hover{opacity:.85;}
+.picon{font-size:18px;margin-bottom:4px;}
+.pname{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:#1e2a3a;}
+.psize{font-family:'JetBrains Mono',monospace;font-size:8px;color:#94a3b8;margin-top:2px;}
+.parr{font-size:16px;color:#cbd5e1;flex-shrink:0;}
+.pipe-note{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;line-height:1.7;}
+
+.hier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:600px){.hier-grid{grid-template-columns:1fr;}}
+.hcard{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px 16px;text-align:center;}
+.hlevel{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
+.htitle{font-size:15px;font-weight:700;margin-bottom:6px;}
+.hdesc{font-size:12px;color:#64748b;line-height:1.7;}
+.htags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px;}
+.htag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;border-radius:99px;font-weight:500;}
+
+input[type=range]{width:80px;accent-color:#2563eb;}
+
+footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;border-top:1px solid #e2e8f0;margin-top:40px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">DEEP LEARNING · IMAGE RECOGNITION</div>
+  <h1><span>CNN</span></h1>
+  <p class="hero-sub">합성곱 신경망 — 이미지를 이해하는 방법<br>Conv · Pooling · FC 세 가지 핵심 블록의 구조와 역할</p>
+</div>
+
+<div class="wrap">
+
+<!-- ── SEC 01 ── -->
+<div class="sec">
+  <div class="sec-hd"><span class="sec-num">01</span><h2 class="sec-title">CNN이란? — 이미지를 이해하는 신경망</h2></div>
+  <div class="sec-div"></div>
+
+  <div class="card-3">
+    <div class="intro-card">
+      <div class="intro-icon">🖼️</div>
+      <h3>이미지는 숫자 행렬</h3>
+      <p>픽셀값(0~255)으로 이루어진 숫자 배열로 인식<br>컬러 이미지 → R·G·B 3채널</p>
+    </div>
+    <div class="intro-card">
+      <div class="intro-icon">🔍</div>
+      <h3>지역적 패턴 학습</h3>
+      <p>작은 필터(커널)를 슬라이딩하며 적용<br>엣지·곡선·텍스처 등 지역 특징 자동 추출</p>
+    </div>
+    <div class="intro-card">
+      <div class="intro-icon">📐</div>
+      <h3>위치 불변성</h3>
+      <p>동일 필터를 이미지 전체에 공유 적용<br>객체가 어디에 있어도 동일 특징으로 인식</p>
+    </div>
+  </div>
+
+  <div class="hbox blue">
+    <div class="hbox-icon">💡</div>
+    <div>
+      <div class="hbox-title">MLP와의 결정적 차이</div>
+      <div class="hbox-text">
+        MLP → 이미지를 1D 벡터로 펼쳐 처리 : <strong>공간적 구조(위치 관계) 손실</strong><br>
+        CNN → 2D 구조 유지 + <strong>인접 픽셀 간 관계</strong>를 필터로 학습<br>
+        파라미터 공유(weight sharing) → 학습 파라미터 수 대폭 절감
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SEC 02 ── -->
+<div class="sec">
+  <div class="sec-hd"><span class="sec-num">02</span><h2 class="sec-title">Conv · Pooling · FC — 3가지 빌딩 블록</h2></div>
+  <div class="sec-div"></div>
+
+  <!-- 01 Conv -->
+  <div class="block">
+    <div class="block-hd" style="background:#eff6ff;">
+      <div>
+        <div class="bapi" style="color:#2563eb;">nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0)</div>
+        <div class="bname"><span class="bnum" style="background:#2563eb;">01</span> &nbsp;Convolutional Layer · 합성곱 레이어</div>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="bdesc">
+        입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 내적(dot product) + bias를 계산해 <strong>Feature Map</strong> 생성<br>
+        → 필터 하나 = 하나의 특징 감지 / 여러 필터를 쌓아 다양한 특징 동시 추출<br>
+        → 실제 연산: <span class="mono" style="font-size:11px;color:#1d4ed8;">output = Σ(input × weight) + bias</span>
+      </div>
+
+      <div class="sim">
+        <div class="sim-top">
+          <div class="sim-ctrl">
+            <div>
+              <div class="ctrl-label">필터(Kernel) 선택</div>
+              <div class="btn-grp">
+                <button class="kbtn active" onclick="selK('edge_v',this)">수직 엣지</button>
+                <button class="kbtn" onclick="selK('edge_h',this)">수평 엣지</button>
+                <button class="kbtn" onclick="selK('sharpen',this)">샤프닝</button>
+                <button class="kbtn" onclick="selK('blur',this)">블러</button>
+              </div>
+            </div>
+            <div>
+              <div class="ctrl-label">Stride</div>
+              <div class="btn-grp">
+                <button class="kbtn stride-btn active" onclick="selS(1,this)">S=1</button>
+                <button class="kbtn stride-btn" onclick="selS(2,this)">S=2</button>
+                <button class="kbtn stride-btn" onclick="selS(3,this)">S=3</button>
+              </div>
+            </div>
+            <div>
+              <div class="ctrl-label">Padding</div>
+              <div class="btn-grp">
+                <button class="kbtn pad-btn active" onclick="selP(0,this)">없음</button>
+                <button class="kbtn pad-btn" onclick="selP(1,this)">Zero (P=1)</button>
+              </div>
+            </div>
+            <div>
+              <div class="ctrl-label" style="margin-bottom:2px;">재생 속도</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="range" id="spd" min="1" max="3" value="2" step="1" oninput="updSpd(this.value)">
+                <span id="spdLbl" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;">보통</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              <button class="sim-play" id="playBtn" onclick="toggleSim()">▶ 시작</button>
+              <button class="sim-step" onclick="stepSim()">→ 다음</button>
+              <button class="sim-reset" onclick="resetSim()">↺ 초기화</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="kern-wrap">
+              <div class="kern-label">현재 Kernel <span style="color:#1e2a3a;font-weight:600;">(3×3)</span></div>
+              <div class="sgrid" style="grid-template-columns:repeat(3,40px);" id="simKern"></div>
+              <div class="kern-name" id="simKernName"></div>
+            </div>
+            <div class="fbox">
+              <div class="fbox-label">출력 크기 공식</div>
+              <div class="fbox-expr" id="fExpr"></div>
+              <div class="fbox-result" id="fRes"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-grids">
+          <div class="gw">
+            <div class="glabel" id="inLbl">Input <span>(5×5)</span></div>
+            <div class="sgrid" id="simIn"></div>
+          </div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;line-height:1.6;">내적<br><span style="font-size:18px;color:#cbd5e1;">→</span></div>
+          <div class="gw">
+            <div class="glabel" id="outLbl">Feature Map</div>
+            <div class="sgrid" id="simOut"></div>
+          </div>
+        </div>
+
+        <div class="cbox">
+          <div class="cbox-title">계산 과정</div>
+          <div id="simCalc">▶ 시작 버튼을 눌러 합성곱 과정을 확인하세요.</div>
+          <div id="simCalcR"></div>
+        </div>
+
+        <div class="dots-wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;">Step Progress</div>
+          <div class="dots" id="simDots"></div>
+          <div id="simSteps"></div>
+        </div>
+      </div>
+
+      <div class="params">
+        <div class="param"><div class="param-k">Kernel Size (K)</div><div class="param-v">3×3 (일반적)</div></div>
+        <div class="param"><div class="param-k">Stride (S)</div><div class="param-v">커널 이동 칸 수</div></div>
+        <div class="param"><div class="param-k">Padding (P)</div><div class="param-v">입력 경계에 0 추가</div></div>
+        <div class="param"><div class="param-k">출력 크기</div><div class="param-v">⌊(N+2P−K)/S⌋ + 1</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Pooling -->
+  <div class="block">
+    <div class="block-hd" style="background:#f0fdf4;">
+      <div>
+        <div class="bapi" style="color:#16a34a;">nn.MaxPool2d(kernel_size=2, stride=2)</div>
+        <div class="bname"><span class="bnum" style="background:#16a34a;">02</span> &nbsp;Pooling Layer · 풀링 레이어</div>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="bdesc">
+        Feature Map 크기를 줄여 <strong>계산량 절감</strong> + 위치 변화에 강인한 표현 생성<br>
+        → 2×2 영역의 최댓값만 선택 : <strong>Max Pooling</strong> (가장 널리 사용)<br>
+        → 학습 파라미터 없음 — 단순 선택/집계 연산 (역전파 시 최댓값 위치만 추적)
+      </div>
+
+      <div class="dw">
+        <svg viewBox="0 0 420 155" width="100%" style="max-width:420px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <text x="10" y="14" font-size="10" fill="#64748b" font-family="JetBrains Mono,monospace">Input (4×4)</text>
+          <rect x="10" y="20" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="24" y="38" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">1</text>
+          <rect x="38" y="20" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="52" y="38" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">6</text>
+          <rect x="10" y="48" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="24" y="66" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">3</text>
+          <rect x="38" y="48" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="52" y="66" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">2</text>
+          <rect x="66" y="20" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="38" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">5</text>
+          <rect x="94" y="20" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="38" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">3</text>
+          <rect x="66" y="48" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="80" y="66" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">8</text>
+          <rect x="94" y="48" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="66" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">4</text>
+          <rect x="10" y="76" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="24" y="94" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">5</text>
+          <rect x="38" y="76" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="52" y="94" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">2</text>
+          <rect x="10" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="24" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">1</text>
+          <rect x="38" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="52" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">3</text>
+          <rect x="66" y="76" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="94" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">2</text>
+          <rect x="94" y="76" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="108" y="94" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">9</text>
+          <rect x="66" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">4</text>
+          <rect x="94" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">1</text>
+          <line x1="10" y1="76" x2="122" y2="76" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,2"/>
+          <line x1="66" y1="20" x2="66" y2="132" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,2"/>
+          <text x="136" y="78" font-size="16" fill="#cbd5e1">→</text>
+          <text x="126" y="92" font-size="9" fill="#16a34a" font-family="JetBrains Mono,monospace">2×2 MaxPool</text>
+          <text x="172" y="14" font-size="10" fill="#64748b" font-family="JetBrains Mono,monospace">Output (2×2)</text>
+          <rect x="172" y="20" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="194" y="46" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">6</text>
+          <rect x="216" y="20" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="238" y="46" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">8</text>
+          <rect x="172" y="64" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="194" y="90" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">5</text>
+          <rect x="216" y="64" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="238" y="90" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">9</text>
+          <text x="194" y="124" text-anchor="middle" font-size="9" fill="#16a34a" font-family="JetBrains Mono,monospace">각 구역의 최댓값 선택</text>
+          <text x="300" y="38" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↓ 해상도 ½ 감소</text>
+          <text x="300" y="55" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↓ 파라미터 수 절감</text>
+          <text x="300" y="72" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↑ 위치 불변성 강화</text>
+          <rect x="290" y="25" width="118" height="60" fill="none" stroke="#e2e8f0" rx="4"/>
+        </svg>
+      </div>
+
+      <div class="params">
+        <div class="param"><div class="param-k">Max Pooling</div><div class="param-v">영역 내 최댓값 선택</div></div>
+        <div class="param"><div class="param-k">Avg Pooling</div><div class="param-v">영역 내 평균값 계산</div></div>
+        <div class="param"><div class="param-k">학습 파라미터</div><div class="param-v">없음 (0개)</div></div>
+        <div class="param"><div class="param-k">출력 크기</div><div class="param-v">⌊(N−K)/S⌋ + 1</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 FC -->
+  <div class="block" style="margin-bottom:20px;">
+    <div class="block-hd" style="background:#f5f3ff;">
+      <div>
+        <div class="bapi" style="color:#7c3aed;">nn.Linear(in_features, out_features)</div>
+        <div class="bname"><span class="bnum" style="background:#7c3aed;">03</span> &nbsp;Fully Connected Layer · 완전연결 레이어</div>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="bdesc">
+        Conv/Pooling으로 추출된 특징을 <strong>1D 벡터로 펼쳐(Flatten)</strong> 최종 분류 수행<br>
+        → 모든 입력 뉴런이 모든 출력 뉴런에 연결 (완전 연결)<br>
+        → <strong>분류 문제</strong>의 출력층에는 Softmax로 확률 계산 / 회귀 문제엔 Softmax 불필요
+      </div>
+
+      <div class="dw">
+        <svg viewBox="0 0 420 130" width="100%" style="max-width:420px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="22" width="34" height="34" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
+          <rect x="16" y="28" width="34" height="34" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
+          <rect x="22" y="34" width="34" height="34" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
+          <text x="39" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Feature Maps</text>
+          <text x="68" y="56" font-size="14" fill="#cbd5e1">→</text>
+          <text x="62" y="70" font-size="9" fill="#7c3aed" font-family="JetBrains Mono,monospace">Flatten</text>
+          <rect x="90" y="16" width="14" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="2"/>
+          <text x="97" y="40" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
+          <text x="97" y="52" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
+          <text x="97" y="64" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
+          <text x="97" y="76" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
+          <text x="97" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">1D Vector</text>
+          <line x1="105" y1="30" x2="130" y2="38" stroke="#e0d5f0" stroke-width="0.9"/>
+          <line x1="105" y1="45" x2="130" y2="58" stroke="#e0d5f0" stroke-width="0.9"/>
+          <line x1="105" y1="60" x2="130" y2="78" stroke="#e0d5f0" stroke-width="0.9"/>
+          <line x1="105" y1="75" x2="130" y2="58" stroke="#e0d5f0" stroke-width="0.9"/>
+          <line x1="105" y1="30" x2="130" y2="78" stroke="#e0d5f0" stroke-width="0.9"/>
+          <circle cx="134" cy="38" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <circle cx="134" cy="58" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <circle cx="134" cy="78" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="134" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Hidden</text>
+          <text x="152" y="61" font-size="14" fill="#cbd5e1">→</text>
+          <rect x="168" y="28" width="70" height="16" rx="3" fill="#7c3aed"/>
+          <text x="203" y="39" text-anchor="middle" font-size="9" fill="white" font-family="JetBrains Mono,monospace">고양이 85%</text>
+          <rect x="168" y="48" width="42" height="16" rx="3" fill="#a78bfa"/>
+          <text x="189" y="59" text-anchor="middle" font-size="9" fill="white" font-family="JetBrains Mono,monospace">개 12%</text>
+          <rect x="168" y="68" width="22" height="16" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+          <text x="179" y="79" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="JetBrains Mono,monospace">기타</text>
+          <text x="203" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Softmax 출력 (분류)</text>
+        </svg>
+      </div>
+
+      <div class="params">
+        <div class="param"><div class="param-k">Flatten</div><div class="param-v">3D → 1D 벡터 변환</div></div>
+        <div class="param"><div class="param-k">Dense</div><div class="param-v">완전연결 행렬 곱</div></div>
+        <div class="param"><div class="param-k">Activation</div><div class="param-v">ReLU (중간 레이어)</div></div>
+        <div class="param"><div class="param-k">출력 (분류)</div><div class="param-v">Softmax 확률 분포</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hbox orange">
+    <div class="hbox-icon">⚠️</div>
+    <div>
+      <div class="hbox-title">출력 활성화 함수 주의</div>
+      <div class="hbox-text">
+        <strong>다중 분류</strong>: Softmax → 클래스 확률 합 = 1<br>
+        <strong>이진 분류</strong>: Sigmoid → 단일 뉴런 출력 (0~1)<br>
+        <strong>회귀</strong>: 활성화 함수 없음(None) 또는 linear — Softmax 사용하지 않음
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SEC 03 ── -->
+<div class="sec">
+  <div class="sec-hd"><span class="sec-num">03</span><h2 class="sec-title">CNN 전체 파이프라인</h2></div>
+  <div class="sec-div"></div>
+
+  <div class="pipe-wrap">
+    <div class="pipe-flow">
+      <div class="pblock" style="background:#eff6ff;border-color:#2563eb;"><div class="picon">🖼️</div><div class="pname">Input</div><div class="psize">H×W×3</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">저수준 특징</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">고수준 특징</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#f5f3ff;border-color:#7c3aed;"><div class="picon">📊</div><div class="pname">FC+Softmax</div><div class="psize">최종 분류</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#f8fafc;border-color:#334155;"><div class="picon">🏷️</div><div class="pname">Class</div><div class="psize">예측 결과</div></div>
+    </div>
+    <div class="pipe-note">레이어가 깊어질수록 : 저수준(엣지·색상) → 중간 수준(형태·패턴) → 고수준(눈·코·얼굴·객체)</div>
+  </div>
+</div>
+
+<!-- ── SEC 04 ── -->
+<div class="sec">
+  <div class="sec-hd"><span class="sec-num">04</span><h2 class="sec-title">레이어 깊이에 따른 특징 학습의 변화</h2></div>
+  <div class="sec-div"></div>
+
+  <div class="hier-grid">
+    <div class="hcard" style="border-top:3px solid #2563eb;">
+      <div class="hlevel">Low-Level · 앞부분 레이어</div>
+      <div class="htitle">저수준 특징</div>
+      <div class="hdesc">이미지의 기본 시각 요소 감지<br>단순하고 전역적으로 공유 가능</div>
+      <div class="htags">
+        <span class="htag" style="background:#eff6ff;color:#2563eb;">엣지 (Edge)</span>
+        <span class="htag" style="background:#eff6ff;color:#2563eb;">색상 (Color)</span>
+        <span class="htag" style="background:#eff6ff;color:#2563eb;">그라디언트</span>
+      </div>
+    </div>
+    <div class="hcard" style="border-top:3px solid #ea580c;">
+      <div class="hlevel">Mid-Level · 중간 레이어</div>
+      <div class="htitle">중간 수준 특징</div>
+      <div class="hdesc">저수준 특징이 조합되어 형성<br>형태·구조 정보 표현</div>
+      <div class="htags">
+        <span class="htag" style="background:#fff7ed;color:#ea580c;">곡선 (Curve)</span>
+        <span class="htag" style="background:#fff7ed;color:#ea580c;">텍스처</span>
+        <span class="htag" style="background:#fff7ed;color:#ea580c;">기하학 패턴</span>
+      </div>
+    </div>
+    <div class="hcard" style="border-top:3px solid #7c3aed;">
+      <div class="hlevel">High-Level · 뒷부분 레이어</div>
+      <div class="htitle">고수준 특징</div>
+      <div class="hdesc">의미 있는 추상적 표현<br>클래스 구분에 직접 활용</div>
+      <div class="htags">
+        <span class="htag" style="background:#f5f3ff;color:#7c3aed;">눈·코·입</span>
+        <span class="htag" style="background:#f5f3ff;color:#7c3aed;">얼굴 구조</span>
+        <span class="htag" style="background:#f5f3ff;color:#7c3aed;">객체 전체</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>CNN · Convolutional Neural Network · 기초 개념 자료 &nbsp;·&nbsp; Deep Learning</footer>
+
+<script>
+const BASE_INPUT=[[3,0,1,2,7],[1,5,8,9,3],[2,7,2,5,1],[0,1,3,1,7],[4,2,1,0,6]];
+const KERNELS={
+  edge_v:{name:'수직 엣지 감지 (Sobel)',w:[[1,0,-1],[2,0,-2],[1,0,-1]]},
+  edge_h:{name:'수평 엣지 감지 (Sobel)',w:[[1,2,1],[0,0,0],[-1,-2,-1]]},
+  sharpen:{name:'샤프닝 (윤곽 강조)',w:[[0,-1,0],[-1,5,-1],[0,-1,0]]},
+  blur:{name:'블러 — 1/9 정규화',w:[[1,1,1],[1,1,1],[1,1,1]]}
+};
+let curK='edge_v',curS=1,curP=0,simStep=-1,simTimer=null,isPlay=false,spdMs=900;
+let positions=[],padded=[];
+
+function outSz(N,K,P,S){return Math.floor((N+2*P-K)/S)+1;}
+
+function buildPad(){
+  const N=5,P=curP,sz=N+2*P;
+  const m=Array.from({length:sz},()=>Array(sz).fill(0));
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)m[r+P][c+P]=BASE_INPUT[r][c];
+  padded=m;return sz;
+}
+
+function buildPos(){
+  const K=3,S=curS,P=curP,out=outSz(5,K,P,S);
+  positions=[];
+  for(let r=0;r<out;r++)for(let c=0;c<out;c++)positions.push({pr:r*S,pc:c*S,or:r,oc:c});
+}
+
+function updFormula(){
+  const N=5,K=3,P=curP,S=curS,out=outSz(N,K,P,S);
+  document.getElementById('fExpr').innerHTML=`⌊(N+2P−K)/S⌋+1<br>⌊(${N}+${2*P}−${K})/${S}⌋+1<br>= ⌊${N+2*P-K}/${S}⌋+1`;
+  document.getElementById('fRes').textContent=`= ${out} × ${out}`;
+}
+
+function buildInputGrid(){
+  const P=curP,sz=buildPad();
+  const inp=document.getElementById('simIn');
+  inp.style.gridTemplateColumns=`repeat(${sz},40px)`;
+  inp.innerHTML='';
+  for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){
+    const isPad=P>0&&(r<P||r>=P+5||c<P||c>=P+5);
+    const d=document.createElement('div');
+    d.className='cell'+(isPad?' pad':'');
+    d.id=`ic_${r}_${c}`;
+    d.textContent=isPad?'0':BASE_INPUT[r-P][c-P];
+    inp.appendChild(d);
+  }
+  document.getElementById('inLbl').innerHTML=P>0?`Padded Input <span>(${sz}×${sz})</span>`:`Input <span>(5×5)</span>`;
+}
+
+function buildKernGrid(){
+  const kd=KERNELS[curK],kg=document.getElementById('simKern');
+  kg.innerHTML='';
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+    const d=document.createElement('div');
+    d.className='cell kact';
+    d.textContent=kd.w[r][c];
+    kg.appendChild(d);
+  }
+  document.getElementById('simKernName').textContent=kd.name;
+}
+
+function buildOutGrid(){
+  const out=outSz(5,3,curP,curS),og=document.getElementById('simOut');
+  og.style.gridTemplateColumns=`repeat(${out},40px)`;
+  og.innerHTML='';
+  for(let i=0;i<out*out;i++){
+    const d=document.createElement('div');
+    d.className='cell';d.id=`oc_${i}`;og.appendChild(d);
+  }
+  document.getElementById('outLbl').innerHTML=`Feature Map <span>(${out}×${out})</span>`;
+}
+
+function buildDots(){
+  const dots=document.getElementById('simDots');
+  dots.innerHTML='';
+  for(let i=0;i<positions.length;i++){
+    const d=document.createElement('div');
+    d.className='dot';d.id=`dot_${i}`;dots.appendChild(d);
+  }
+  document.getElementById('simSteps').textContent='';
+}
+
+function buildAll(){
+  buildPos();buildInputGrid();buildKernGrid();buildOutGrid();buildDots();updFormula();
+  document.getElementById('simCalc').textContent='▶ 시작 버튼을 눌러 합성곱 과정을 확인하세요.';
+  document.getElementById('simCalcR').textContent='';
+}
+
+function clearHi(){
+  const sz=5+2*curP;
+  for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){
+    const el=document.getElementById(`ic_${r}_${c}`);
+    if(el)el.classList.remove('hi');
+  }
+  for(let i=0;i<positions.length;i++){
+    const oc=document.getElementById(`oc_${i}`);
+    if(oc)oc.classList.remove('cur');
+  }
+}
+
+function execStep(step){
+  if(step>=positions.length){finishSim();return;}
+  clearHi();
+  const {pr,pc,or,oc}=positions[step],kd=KERNELS[curK];
+  for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++)
+    document.getElementById(`ic_${pr+dr}_${pc+dc}`).classList.add('hi');
+  let sum=0;const terms=[];
+  for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++){
+    const iv=padded[pr+dr][pc+dc],kv=kd.w[dr][dc];
+    sum+=iv*kv;if(kv!==0)terms.push(`${iv}×${kv}`);
+  }
+  const ocel=document.getElementById(`oc_${step}`);
+  ocel.textContent=sum;ocel.classList.add('cur');
+  for(let i=0;i<step;i++){
+    document.getElementById(`oc_${i}`).classList.remove('cur');
+    document.getElementById(`oc_${i}`).classList.add('done');
+    document.getElementById(`dot_${i}`).className='dot done';
+  }
+  document.getElementById(`dot_${step}`).className='dot cur';
+  document.getElementById('simCalc').innerHTML=
+    `위치 출력(${or},${oc}) — 패치 시작(${pr},${pc})<br>`+
+    `<span style="color:#2563eb">${terms.join(' + ')}</span>`;
+  document.getElementById('simCalcR').textContent=`= ${sum}  (bias 제외 단순화)`;
+  document.getElementById('simSteps').textContent=`${step+1} / ${positions.length}`;
+}
+
+function finishSim(){
+  isPlay=false;clearInterval(simTimer);simTimer=null;clearHi();
+  for(let i=0;i<positions.length;i++){
+    document.getElementById(`oc_${i}`).classList.add('done');
+    document.getElementById(`dot_${i}`).className='dot done';
+  }
+  document.getElementById('playBtn').textContent='▶ 다시 재생';
+  const out=outSz(5,3,curP,curS);
+  document.getElementById('simCalc').textContent=`✓ 완료! ${out}×${out} Feature Map 생성됨`;
+  document.getElementById('simCalcR').textContent='';
+  document.getElementById('simSteps').textContent=`${positions.length} / ${positions.length} 완료`;
+  simStep=positions.length;
+}
+
+function toggleSim(){
+  if(simStep>=positions.length){resetSim();return;}
+  if(isPlay){
+    isPlay=false;clearInterval(simTimer);simTimer=null;
+    document.getElementById('playBtn').textContent='▶ 계속';
+  }else{
+    isPlay=true;document.getElementById('playBtn').textContent='⏸ 일시정지';
+    if(simStep<0)simStep=0;
+    execStep(simStep);
+    simTimer=setInterval(()=>{simStep++;if(simStep>=positions.length){finishSim();return;}execStep(simStep);},spdMs);
+  }
+}
+
+function stepSim(){
+  if(isPlay)toggleSim();
+  if(simStep<0)simStep=0;else simStep++;
+  if(simStep>=positions.length){finishSim();return;}
+  execStep(simStep);
+}
+
+function resetSim(){
+  isPlay=false;clearInterval(simTimer);simTimer=null;simStep=-1;
+  document.getElementById('playBtn').textContent='▶ 시작';
+  buildAll();
+}
+
+function selK(key,btn){
+  curK=key;
+  document.querySelectorAll('.kbtn:not(.stride-btn):not(.pad-btn)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');resetSim();
+}
+function selS(s,btn){
+  curS=s;
+  document.querySelectorAll('.stride-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');resetSim();
+}
+function selP(p,btn){
+  curP=p;
+  document.querySelectorAll('.pad-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');resetSim();
+}
+function updSpd(val){
+  const delays=[1400,900,400],labels=['느리게','보통','빠르게'];
+  spdMs=delays[val-1];
+  document.getElementById('spdLbl').textContent=labels[val-1];
+  if(isPlay){clearInterval(simTimer);simTimer=setInterval(()=>{simStep++;if(simStep>=positions.length){finishSim();return;}execStep(simStep);},spdMs);}
+}
+
+buildAll();
+</script>
+</body>
+</html>
