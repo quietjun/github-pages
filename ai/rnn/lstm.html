@@ -532,8 +532,8 @@
   <div class="gl-item"><div class="gl-dot" style="background:var(--cell-l);border-color:var(--cell);"></div>Cell State (장기 기억)</div>
   <div class="gl-item"><div class="gl-dot" style="background:var(--forget-l);border-color:var(--forget);"></div>Forget Gate (망각)</div>
   <div class="gl-item"><div class="gl-dot" style="background:var(--input-l);border-color:var(--input);"></div>Input Gate (입력)</div>
-  <div class="gl-item"><div class="gl-dot" style="background:var(--cand-l);border-color:var(--cand);"></div>Candidate (후보값)</div>
   <div class="gl-item"><div class="gl-dot" style="background:var(--output-l);border-color:var(--output);"></div>Output Gate (출력)</div>
+  <div class="gl-item"><div class="gl-dot" style="background:var(--cand-l);border-color:var(--cand);"></div>Candidate (후보값)</div>
 </div>
 
 <div class="candidate-note">
@@ -652,7 +652,7 @@
 </div>
 
 <div class="sim-wrap">
-<svg id="sim" viewBox="0 0 960 306" font-family="Noto Sans KR, sans-serif">
+<svg id="sim" viewBox="0 0 960 360" font-family="Noto Sans KR, sans-serif">
   <defs>
     <marker id="sa-o" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#f7774a"/></marker>
     <marker id="sa-r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#ef4444"/></marker>
@@ -662,105 +662,129 @@
     <marker id="sa-s" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5 z" fill="#94a3b8"/></marker>
   </defs>
 
-  <!-- 베이스 요소 -->
-  <rect x="14" y="14" width="932" height="58" rx="12" fill="#fff0e8" stroke="#ffd5c5" stroke-width="1.2" opacity="0.5"/>
+  <!-- 상세 배경 레이어 (Sec 2 기반) -->
+  <text x="480" y="13" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="0.5">장기 기억 통로 (Cell State) — 정보 소실 없이 전달</text>
+  <rect x="14" y="18" width="932" height="68" rx="14" fill="#fff0e8" stroke="#ffd5c5" stroke-width="1.8"/>
+  
   <g id="b-cprev" opacity="0.22">
-    <rect x="20" y="20" width="82" height="46" rx="11" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-    <text x="61" y="39" font-size="10.5" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-    <text x="61" y="55" font-size="9.5" fill="#f7774a" text-anchor="middle">(이전)</text>
-  </g>
-  <g id="b-xf" opacity="0.22">
-    <circle cx="196" cy="43" r="16" fill="white" stroke="#ef4444" stroke-width="2.2"/>
-    <text x="196" y="50" font-size="15" font-weight="700" fill="#ef4444" text-anchor="middle">×</text>
-  </g>
-  <g id="b-pi" opacity="0.22">
-    <circle cx="430" cy="43" r="16" fill="white" stroke="#4a7cf7" stroke-width="2.2"/>
-    <text x="430" y="51" font-size="18" font-weight="700" fill="#4a7cf7" text-anchor="middle">+</text>
-  </g>
-  <g opacity="0.22">
-    <circle cx="694" cy="43" r="4" fill="#f7774a"/>
-    <line x1="694" y1="57" x2="694" y2="80" stroke="#f7774a" stroke-width="1.5" stroke-dasharray="3,2"/>
-    <rect x="666" y="80" width="56" height="26" rx="7" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.2"/>
-    <text x="694" y="97" font-size="10" font-weight="600" fill="#f7774a" text-anchor="middle" font-family="JetBrains Mono, monospace">tanh</text>
-    <line x1="694" y1="106" x2="694" y2="122" stroke="#f7774a" stroke-width="1.5" stroke-dasharray="3,2"/>
-  </g>
-  <g id="b-xo" opacity="0.22">
-    <circle cx="694" cy="138" r="15" fill="white" stroke="#9c4af7" stroke-width="2.2"/>
-    <text x="694" y="144" font-size="14" font-weight="700" fill="#9c4af7" text-anchor="middle">×</text>
-  </g>
-  <g id="b-ct" opacity="0.22">
-    <rect x="858" y="20" width="82" height="46" rx="11" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-    <text x="899" y="39" font-size="10.5" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-    <text x="899" y="55" font-size="9.5" fill="#f7774a" text-anchor="middle">(현재)</text>
-  </g>
-  <g id="b-fg" opacity="0.22">
-    <rect x="148" y="108" width="96" height="58" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
-    <text x="196" y="133" font-size="11.5" font-weight="700" fill="#ef4444" text-anchor="middle">Forget Gate</text>
-    <text x="196" y="152" font-size="10.5" fill="#ef4444" text-anchor="middle">뭘 잊을까?</text>
-  </g>
-  <g id="b-ig" opacity="0.22">
-    <rect x="262" y="108" width="92" height="58" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text x="308" y="133" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">Input Gate</text>
-    <text x="308" y="152" font-size="10.5" fill="#4a7cf7" text-anchor="middle">뭘 기억할까?</text>
-  </g>
-  <g id="b-cg" opacity="0.22">
-    <rect x="372" y="108" width="92" height="58" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
-    <text x="418" y="133" font-size="11.5" font-weight="700" fill="#059669" text-anchor="middle">Candidate</text>
-    <text x="418" y="152" font-size="10.5" fill="#059669" text-anchor="middle">새 정보 생성</text>
-  </g>
-  <g id="b-og" opacity="0.22">
-    <rect x="516" y="108" width="96" height="58" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text x="564" y="133" font-size="11.5" font-weight="700" fill="#9c4af7" text-anchor="middle">Output Gate</text>
-    <text x="564" y="152" font-size="10.5" fill="#9c4af7" text-anchor="middle">뭘 출력할까?</text>
-  </g>
-  <rect x="14" y="200" width="628" height="34" rx="10" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1" opacity="0.4"/>
-  <g id="b-hp" opacity="0.22">
-    <rect x="18" y="248" width="88" height="32" rx="9" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text x="62" y="268" font-size="10.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">이전 출력(h)</text>
-  </g>
-  <g id="b-xt" opacity="0.22">
-    <rect x="114" y="248" width="88" height="32" rx="9" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
-    <text x="158" y="268" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">현재 토큰(x)</text>
-  </g>
-  <g id="b-ht" opacity="0.22">
-    <rect x="650" y="248" width="88" height="32" rx="9" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text x="694" y="268" font-size="10.5" font-weight="700" fill="#9c4af7" text-anchor="middle">현재 출력(h)</text>
+    <rect x="20" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
+    <text x="61" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
+    <text x="61" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(이전)</text>
   </g>
 
-  <!-- 애니메이션 요소 -->
-  <rect  id="a0-box"  x="822" y="80"  width="124" height="46" rx="11" fill="#f0f5ff" stroke="#4a7cf7" stroke-width="2"   opacity="0"/>
-  <text  id="a0-t1"   x="884" y="99"  font-size="10"  font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">이전 셀 처리 완료</text>
-  <text  id="a0-t2"   x="884" y="115" font-size="9.5" fill="#64748b"  text-anchor="middle" opacity="0">토큰: "밥을"</text>
-  <line  id="a0-c"    x1="822" y1="92"  x2="102" y2="43"  stroke="#f7774a" stroke-width="2.4" stroke-dasharray="7,3" marker-end="url(#sa-o)" opacity="0"/>
-  <rect  id="a0-ctag" x="382" y="18"  width="130" height="20" rx="6"  fill="#ffe8dc" stroke="#f7774a" stroke-width="1.2" opacity="0"/>
-  <text  id="a0-ctxt" x="447" y="32"  font-size="10"  font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기기억(c) 전달 →</text>
-  <line  id="a0-h"    x1="822" y1="118" x2="106" y2="262" stroke="#4a7cf7" stroke-width="2"   stroke-dasharray="7,3" marker-end="url(#sa-b)" opacity="0"/>
-  <rect  id="a0-htag" x="382" y="236" width="130" height="20" rx="6"  fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2" opacity="0"/>
-  <text  id="a0-htxt" x="447" y="250" font-size="10"  font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">단기기억(h) 전달 →</text>
-  <line  id="a1-hp"   x1="106" y1="264" x2="170" y2="220" stroke="#4a7cf7" stroke-width="2"   stroke-dasharray="5,3" marker-end="url(#sa-b)" opacity="0"/>
-  <line  id="a1-xt"   x1="202" y1="264" x2="250" y2="220" stroke="#059669" stroke-width="2"   stroke-dasharray="5,3" marker-end="url(#sa-g)" opacity="0"/>
-  <line  id="a2-up"   x1="196" y1="108" x2="196" y2="62"  stroke="#ef4444" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-r)" opacity="0"/>
-  <line  id="a2-cell" x1="102" y1="43"  x2="178" y2="43"  stroke="#f7774a" stroke-width="3.2" marker-end="url(#sa-o)" opacity="0"/>
-  <rect  id="a2-tag"  x="100" y="52"  width="110" height="22" rx="7"  fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" opacity="0"/>
-  <text  id="a2-txt"  x="155" y="67"  font-size="10.5" font-weight="700" fill="#ef4444" text-anchor="middle" opacity="0">시제 정보 망각</text>
-  <line  id="a3-ig"   x1="308" y1="108" x2="308" y2="94"  stroke="#4a7cf7" stroke-width="2"   stroke-dasharray="4,2" marker-end="url(#sa-b)" opacity="0"/>
-  <line  id="a3-cg"   x1="418" y1="108" x2="418" y2="94"  stroke="#059669" stroke-width="2"   stroke-dasharray="4,2" marker-end="url(#sa-g)" opacity="0"/>
-  <circle id="a3-xc"  cx="363" cy="83" r="12"    fill="white" stroke="#94a3b8" stroke-width="2" opacity="0"/>
-  <text   id="a3-xt"  x="363" y="88"  font-size="13" font-weight="700" fill="#64748b" text-anchor="middle" opacity="0">×</text>
-  <line  id="a3-l1"   x1="308" y1="94"  x2="351" y2="83"  stroke="#4a7cf7" stroke-width="1.8" marker-end="url(#sa-b)" opacity="0"/>
-  <line  id="a3-l3"   x1="418" y1="94"  x2="375" y2="83"  stroke="#059669" stroke-width="1.8" marker-end="url(#sa-g)" opacity="0"/>
-  <line  id="a3-l2"   x1="363" y1="71"  x2="428" y2="61"  stroke="#94a3b8" stroke-width="2"   marker-end="url(#sa-s)" opacity="0"/>
-  <rect  id="a3-tag"  x="356" y="94"  width="116" height="22" rx="7"  fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
-  <text  id="a3-txt"  x="414" y="109" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle" opacity="0">동사·과거형 기억</text>
-  <line  id="a4-l1"   x1="212" y1="43"  x2="412" y2="43"  stroke="#f7774a" stroke-width="3.2" marker-end="url(#sa-o)" opacity="0"/>
-  <line  id="a4-l2"   x1="446" y1="43"  x2="856" y2="43"  stroke="#f7774a" stroke-width="3.2" marker-end="url(#sa-o)" opacity="0"/>
-  <rect  id="a4-tag"  x="500" y="52"  width="144" height="22" rx="7"  fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
-  <text  id="a4-txt"  x="572" y="67"  font-size="10.5" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기 기억 업데이트!</text>
-  <line  id="a5-og"   x1="612" y1="137" x2="679" y2="138" stroke="#9c4af7" stroke-width="2"   stroke-dasharray="5,3" marker-end="url(#sa-p)" opacity="0"/>
-  <line  id="a5-op"   x1="694" y1="49"  x2="694" y2="123" stroke="#f7774a" stroke-width="2"   stroke-dasharray="4,3" marker-end="url(#sa-o)" opacity="0"/>
-  <line  id="a5-out"  x1="694" y1="153" x2="694" y2="246" stroke="#9c4af7" stroke-width="2"   stroke-dasharray="5,3" marker-end="url(#sa-p)" opacity="0"/>
-  <line  id="a5-ht"   x1="738" y1="264" x2="752" y2="264" stroke="#9c4af7" stroke-width="2"   marker-end="url(#sa-p)" opacity="0"/>
+  <g id="b-xf" opacity="0.22">
+    <circle cx="196" cy="52" r="18" fill="white" stroke="#ef4444" stroke-width="2.5"/>
+    <text x="196" y="59" font-size="17" font-weight="700" fill="#ef4444" text-anchor="middle">×</text>
+  </g>
+
+  <g id="b-pi" opacity="0.22">
+    <circle cx="430" cy="52" r="18" fill="white" stroke="#4a7cf7" stroke-width="2.5"/>
+    <text x="430" y="60" font-size="20" font-weight="700" fill="#4a7cf7" text-anchor="middle">+</text>
+  </g>
+
+  <g id="b-ct" opacity="0.22">
+    <rect x="858" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
+    <text x="899" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
+    <text x="899" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(현재)</text>
+  </g>
+
+  <!-- 가이드 라인들 -->
+  <line x1="694" y1="70" x2="694" y2="96" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
+  <rect x="666" y="96" width="56" height="30" rx="9" fill="#ffe8dc" stroke="#f7774a" stroke-width="2" opacity="0.3"/>
+  <text x="694" y="116" font-size="11" font-weight="600" fill="#f7774a" text-anchor="middle" font-family="JetBrains Mono" opacity="0.3">tanh</text>
+  <line x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
+  <g id="b-xo" opacity="0.22">
+    <circle cx="694" cy="166" r="17" fill="white" stroke="#9c4af7" stroke-width="2.5"/>
+    <text x="694" y="173" font-size="16" font-weight="700" fill="#9c4af7" text-anchor="middle">×</text>
+  </g>
+
+  <!-- 게이트 박스 (ID 할당) -->
+  <g id="b-fg" opacity="0.22">
+    <rect x="156" y="128" width="80" height="62" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="2.2"/>
+    <text x="196" y="152" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">Forget Gate</text>
+    <text x="196" y="183" font-size="10" fill="#ef4444" text-anchor="middle">뭘 잊을까?</text>
+  </g>
+
+  <g id="b-ig" opacity="0.22">
+    <rect x="268" y="128" width="80" height="62" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
+    <text x="308" y="152" font-size="12" font-weight="700" fill="#4a7cf7" text-anchor="middle">Input Gate</text>
+    <text x="308" y="183" font-size="10" fill="#4a7cf7" text-anchor="middle">뭘 기억할까?</text>
+  </g>
+
+  <g id="b-cg" opacity="0.22">
+    <rect x="378" y="128" width="80" height="62" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
+    <text x="418" y="150" font-size="12" font-weight="700" fill="#059669" text-anchor="middle">Candidate</text>
+    <text x="418" y="183" font-size="10" fill="#059669" text-anchor="middle">새 정보 생성</text>
+  </g>
+
+  <g id="b-og" opacity="0.22">
+    <rect x="516" y="128" width="80" height="62" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
+    <text x="556" y="152" font-size="12" font-weight="700" fill="#9c4af7" text-anchor="middle">Output Gate</text>
+    <text x="556" y="183" font-size="10" fill="#9c4af7" text-anchor="middle">뭘 출력할까?</text>
+  </g>
+
+  <rect x="14" y="226" width="628" height="38" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1.8"/>
+  <text x="328" y="250" font-size="11" font-weight="600" fill="#4a7cf7" text-anchor="middle">모든 게이트 공통 입력 → 이전 출력(h) + 현재 토큰(x)</text>
+  
+  <g id="b-hp" opacity="0.22">
+    <rect x="18" y="282" width="88" height="52" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
+    <text x="62" y="303" font-size="11" font-weight="700" fill="#4a7cf7" text-anchor="middle">이전 출력</text>
+    <text x="62" y="320" font-size="10" fill="#4a7cf7" text-anchor="middle">(h, 단기기억)</text>
+  </g>
+
+  <g id="b-xt" opacity="0.22">
+    <rect x="124" y="282" width="80" height="52" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
+    <text x="164" y="303" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">현재 토큰</text>
+    <text x="164" y="320" font-size="10" fill="#059669" text-anchor="middle">(x)</text>
+  </g>
+
+  <g id="b-ht" opacity="0.22">
+    <rect x="650" y="282" width="88" height="52" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
+    <text x="694" y="303" font-size="11" font-weight="700" fill="#9c4af7" text-anchor="middle">현재 출력</text>
+    <text x="694" y="320" font-size="10" fill="#9c4af7" text-anchor="middle">(h, 단기기억)</text>
+  </g>
+
+  <!-- 애니메이션 요소 (좌측으로 이동 및 너비 조절) -->
+  <rect  id="a0-box"  x="8" y="132" width="120" height="52" rx="13" fill="#f0f5ff" stroke="#4a7cf7" stroke-width="2.2"  opacity="0"/>
+  <text  id="a0-t1"   x="68" y="154" font-size="10.5" font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">이전 셀 처리 완료</text>
+  <text  id="a0-t2"   x="68" y="172" font-size="10" fill="#64748b" text-anchor="middle" opacity="0">토큰: "밥을"</text>
+  
+  <line id="a0-c" x1="68" y1="132" x2="61" y2="78" stroke="#f7774a" stroke-width="2.8" stroke-dasharray="8,4" marker-end="url(#sa-o)" opacity="0"/>
+  <rect id="a0-ctag" x="800" y="86" width="130" height="22" rx="11" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
+  <text id="a0-ctxt" x="865" y="101" font-size="10" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기기억(c) 전달 →</text>
+
+  <line id="a0-h" x1="68" y1="184" x2="62" y2="282" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="8,4" marker-end="url(#sa-b)" opacity="0"/>
+  <rect id="a0-htag" x="500" y="264" width="130" height="22" rx="11" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.8" opacity="0"/>
+  <text id="a0-htxt" x="565" y="279" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">단기기억(h) 전달 →</text>
+
+  <line id="a1-hp" x1="106" y1="308" x2="168" y2="264" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-b)" opacity="0"/>
+  <line id="a1-xt" x1="204" y1="308" x2="256" y2="264" stroke="#059669" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-g)" opacity="0"/>
+  
+  <line  id="a2-up"   x1="196" y1="128" x2="196" y2="70"  stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-r)" opacity="0"/>
+  <line  id="a2-cell" x1="102" y1="52"  x2="176" y2="52"  stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+  <rect  id="a2-tag"  x="110" y="86"  width="120" height="24" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="1.8" opacity="0"/>
+  <text  id="a2-txt"  x="170" y="102"  font-size="11.5" font-weight="700" fill="#ef4444" text-anchor="middle" opacity="0">시제 정보 망각</text>
+
+  <line  id="a3-ig"   x1="308" y1="128" x2="308" y2="114" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-b)" opacity="0"/>
+  <line  id="a3-cg"   x1="418" y1="128" x2="418" y2="114" stroke="#059669" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-g)" opacity="0"/>
+  <circle id="a3-xc"  cx="363" cy="100" r="12"    fill="white" stroke="#94a3b8" stroke-width="2" opacity="0"/>
+  <text   id="a3-xt"  x="363" y="105" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle" opacity="0">×</text>
+  <line  id="a3-l1"   x1="308" y1="114" x2="351" y2="100" stroke="#4a7cf7" stroke-width="2" marker-end="url(#sa-b)" opacity="0"/>
+  <line  id="a3-l3"   x1="418" y1="114" x2="375" y2="100" stroke="#059669" stroke-width="2" marker-end="url(#sa-g)" opacity="0"/>
+  <line  id="a3-l2"   x1="363" y1="88"  x2="430" y2="70"  stroke="#94a3b8" stroke-width="2.5" marker-end="url(#sa-s)" opacity="0"/>
+  <rect  id="a3-tag"  x="360" y="110" width="124" height="24" rx="12" fill="#d1fae5" stroke="#059669" stroke-width="1.8" opacity="0"/>
+  <text  id="a3-txt"  x="422" y="126" font-size="11.5" font-weight="700" fill="#059669" text-anchor="middle" opacity="0">동사·과거형 기억</text>
+
+  <line id="a4-l1" x1="214" y1="52" x2="410" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+  <line id="a4-l2" x1="448" y1="52" x2="856" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+  <rect id="a4-tag" x="520" y="65" width="154" height="24" rx="12" fill="#fff5f0" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
+  <text id="a4-txt" x="597" y="81" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기 기억 업데이트!</text>
+
+  <line id="a5-og"  x1="596" y1="159" x2="677" y2="166" stroke="#9c4af7" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
+  <line id="a5-op"  x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-o)" opacity="0"/>
+  <line id="a5-out" x1="694" y1="183" x2="694" y2="280" stroke="#9c4af7" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
 </svg>
+</div>
 </div>
 
 <!-- 정보 패널 -->
