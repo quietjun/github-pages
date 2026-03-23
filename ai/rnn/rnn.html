@@ -285,14 +285,14 @@
 ══════════════════════════════════════════════ -->
 <div class="sec"><div class="ln"></div><span>① RNN 셀 — 언롤링 개념</span><div class="ln"></div></div>
 
-<ul class="body-list">
-  <li>RNN은 <strong>하나의 셀</strong>을 토큰 수만큼 반복 실행하는 구조</li>
-  <li>각 타임스텝마다 이전 은닉 상태 <strong>h</strong>를 입력으로 받아 순차 처리</li>
-  <li>이를 시간 축으로 펼쳐서 표현한 방식 → <em>언롤링(unrolling)</em></li>
-</ul>
-
 <div class="diagram-wrap">
   <div class="card-label">RNN 셀 언롤링 (Unrolling)</div>
+  <ul style="list-style:none; padding:0; margin:0 0 20px 0; font-size:0.95rem; line-height:1.75; color:var(--text); letter-spacing:-0.01em;">
+    <li style="margin-bottom:8px; display:flex; gap:10px;"><span style="color:var(--ct); font-weight:900;">•</span> RNN은 <strong>하나의 셀</strong>을 토큰 수만큼 반복 실행하는 구조입니다.</li>
+    <li style="margin-bottom:8px; display:flex; gap:10px;"><span style="color:var(--ct); font-weight:900;">•</span> 각 타임스텝마다 이전 은닉 상태 <strong>h</strong>를 입력으로 받아 순차적으로 처리합니다.</li>
+    <li style="margin-bottom:8px; display:flex; gap:10px;"><span style="color:var(--ct); font-weight:900;">•</span> 이를 시간 축으로 펼쳐서 표현한 방식이 <em>언롤링(unrolling)</em>입니다.</li>
+  </ul>
+  
   <svg viewBox="0 0 920 285" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <marker id="cu-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
