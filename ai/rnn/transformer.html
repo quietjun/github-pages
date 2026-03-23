@@ -332,10 +332,10 @@
   <div class="callout orange">
     <span class="ni">📌</span>
     <div>
-      <strong>Positional Encoding — Transformer만의 필수 설계</strong><br>
+      <strong>Positional Embedding — Transformer만의 필수 설계</strong><br>
       · LSTM: 순차 처리 → 처리 순서 자체가 위치 정보<br>
       · Transformer: 병렬 처리 → 위치 정보가 사라짐<br>
-      → <strong>sin/cos 기반 위치 패턴을 임베딩에 명시적으로 추가</strong><br>
+      → <strong>위치 정보 패턴을 임베딩에 명시적으로 추가</strong><br>
       <em>병렬 처리라는 구조적 선택이 만들어낸 필연적 요소</em>
     </div>
   </div>
@@ -385,9 +385,8 @@
       원래 Transformer는 <strong>Encoder + Decoder</strong> 두 블록으로 구성된다 (번역 등에 사용).<br>
       · <strong>Encoder</strong>: 입력 문장 전체를 양방향으로 이해<br>
       · <strong>Decoder</strong>: Encoder 출력을 참조해 출력 문장을 순서대로 생성<br><br>
-      GPT는 <strong>Decoder만</strong> 사용하는 구조이다. Encoder가 없으므로 Cross-Attention도 없다.<br>
+      GPT는 <strong>Decoder만</strong> 사용하는 구조이다.<br>
       · 입력과 출력을 구분하지 않고 <strong>하나의 토큰 시퀀스</strong>로 처리<br>
-      · Causal Masking으로 미래 토큰을 차단 → 왼쪽에서 오른쪽으로 순서대로 생성<br>
       · <em>이 자료는 이 Decoder-only 구조를 기준으로 설명한다</em>
     </div>
   </div>
@@ -481,7 +480,7 @@
         </div>
         <div class="callout blue" style="margin-top:12px;">
           <span class="ni">📌</span>
-          <div>Positional Encoding: <strong>sin/cos 패턴을 임베딩에 추가</strong> — Transformer는 순서 정보가 없으므로 필수</div>
+          <div>Positional Embedding: <strong>위치 정보 패턴을 임베딩에 추가</strong> — Transformer는 순서 정보가 없으므로 필수</div>
         </div>
       </div>
 
@@ -524,7 +523,7 @@
               </div>
             </div>
             <div style="margin-top:10px;padding:10px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);font-size:.82rem;color:var(--sub);line-height:1.8;">
-              💬 <strong style="color:var(--text);">"밥을"</strong>이 문장을 둘러보며 <span style="color:var(--q);">'나를 이해하려면 어떤 단어가 필요하지?'라고 묻고(Q)</span>, 각 단어가 <span style="color:var(--k);">'나는 이런 정보야'라고 답하고(K)</span>, 관련 높은 단어의 <span style="color:var(--v);">의미를 실제로 흡수한다(V)</span><br>처음엔 그냥 음식이었던 "밥을"이, <strong style="color:var(--text);">"나는"의 정보를 흡수해 비로소 "내가 먹은 음식"이 된다</strong>
+              💬 <strong style="color:var(--text);">"밥을"</strong>이 문장을 둘러보며 <span style="color:var(--q);">'나를 이해하려면 어떤 단어가 필요하지?'라고 묻고(Q)</span>, 각 단어가 <span style="color:var(--k);">'나는 이런 정보야'라고 답하고(K)</span>, 관련 높은 단어에서 <span style="color:var(--v);">검색 결과로 얻을 실제 내용(V)</span><br>처음엔 그냥 음식이었던 "밥을"이, <strong style="color:var(--text);">"나는"의 정보를 흡수해 비로소 "내가 먹은 음식"이 된다</strong>
             </div>
           </div>
         </div>
@@ -532,8 +531,8 @@
           <span class="ni">💡</span>
           <div>W_Q, W_K, W_V: <strong>사전 학습으로 확정된 가중치 행렬</strong><br>
           · 이 행렬 한 세트(= <strong>Single Head</strong>)가 <strong>한 가지 관계 패턴</strong>을 포착하도록 학습된다<br>
-          · Single Head만으로는 문장의 다양한 관계를 동시에 포착하기 어렵다 → <strong>Multi-Head Attention</strong>의 필요성<br>
-          · 예) 어떤 세트는 "주어-동사 관계"를, 다른 세트는 "시제-동사 관계"를 주로 포착
+          · 예) 주어-동사 관계 세트, 시제-동사 관계 세트, 대명사-지시대상 관계 세트 등<br>
+          · Single Head만으로는 문장의 다양한 관계를 동시에 포착하기 어렵다 → <strong>Multi-Head Attention</strong> 필요
           </div>
         </div>
       </div>
@@ -583,8 +582,9 @@
           <div style="display:flex;flex-direction:column;background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border);">
             <div style="font-size:.78rem;font-weight:700;color:var(--sub);margin-bottom:10px;">왜 √d_k로 나누는가</div>
             <div style="font-size:.82rem;color:var(--sub);line-height:2;">
-              · d_k가 크면 내적값이 <strong style="color:var(--text);">지수적으로 커짐</strong><br>
-              · 나누지 않으면 softmax 후 <strong style="color:var(--mask);">한 값만 1에 가까워져 다양성 소실</strong>
+              · <strong>d_k: Key 벡터의 길이 (차원 수)</strong><br>
+              · 벡터가 길수록 내적값(숫자의 합)이 <strong style="color:var(--text);">비정상적으로 커짐</strong><br>
+              · 너무 큰 값은 확률 분산을 왜곡함 → <strong style="color:var(--mask);">적절히 줄여서 관계를 골고루 보려는 장치</strong>
             </div>
           </div>
         </div>
@@ -595,19 +595,17 @@
         <div class="qkv-step-hdr">
           <div class="qkv-num">④</div>
           <div>
-            <div class="qkv-step-title">Masking → Softmax</div>
+            <div class="qkv-step-title">(Casual)Masking → Softmax</div>
             <div class="qkv-step-sub">미래 토큰을 차단한 뒤, Score를 확률 분포로 변환한다</div>
           </div>
         </div>
 
-        <!-- 왜 순서가 중요한가 -->
         <div class="callout red" style="margin-bottom:18px;">
           <span class="ni">🔒</span>
           <div>
-            <strong>Causal Masking — 미래 토큰을 보지 못하게 막는 장치</strong><br>
-            · GPT는 왼쪽→오른쪽으로 단어를 순서대로 생성한다. 이때 현재 토큰이 아직 생성되지 않은 미래 토큰을 미리 참조하면 정답을 훔쳐보는 것과 같다<br>
-            · 이를 막기 위해 미래 위치의 Score에 <strong>−∞를 더해</strong> Softmax 후 자동으로 0이 되게 한다<br>
-            · 결과적으로 각 토큰은 <strong>자신과 앞에 위치한 토큰만</strong> 참조할 수 있다
+            · 아직 생성되지 않은 미래 토큰을 참조하여 '답안지를 미리 보는 것'을 방지<br>
+            · 원리: 미래 위치 스코어에 <strong>−∞를 더해</strong> Softmax 결과가 0이 되도록 강제 차단<br>
+            · 결과적으로 <strong>자신과 앞에 위치한 토큰만</strong> 참조할 수 있게 된다
           </div>
         </div>
 
@@ -628,8 +626,8 @@
               <thead><tr><th></th><th style="color:var(--k);">나는</th><th style="color:var(--k);">밥을</th><th style="color:var(--k);">먹었다</th></tr></thead>
               <tbody>
                 <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">나는</td><td class="hi">3.2</td><td class="lo">0.8</td><td class="mid">2.1</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">0.4</td><td class="mid">2.4</td><td class="hi">3.8</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">3.1</td><td class="hi">3.5</td></tr>
+                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="hi">3.8</td></tr>
+                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.15</td></tr>
               </tbody>
             </table>
           </div>
@@ -647,8 +645,8 @@
               <thead><tr><th></th><th style="color:var(--k);">나는</th><th style="color:var(--k);">밥을</th><th style="color:var(--k);">먹었다</th></tr></thead>
               <tbody>
                 <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">나는</td><td class="hi">3.2</td><td class="masked">−∞</td><td class="masked">−∞</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">0.4</td><td class="mid">2.4</td><td class="masked">−∞</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">3.1</td><td class="hi">3.5</td></tr>
+                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="masked">−∞</td></tr>
+                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.15</td></tr>
               </tbody>
             </table>
           </div>
@@ -697,7 +695,7 @@
             <div class="qkv-step-sub">Attention Weight × V 벡터를 가중합해 각 토큰의 임베딩에 더한다</div>
           </div>
         </div>
-        <div class="formula-box final" style="display:block;margin-bottom:12px;">가중합(Attention Output) = Attention Weight × V &nbsp;→&nbsp; 기존 임베딩에 문맥을 쌓아 갱신</div>
+        <div class="formula-box final" style="display:block;margin-bottom:12px;">가중합(Attention Output) = Attention Weight × V &nbsp;→&nbsp; 기존 임베딩에 <strong>이 문맥 정보를 더해</strong> 새로운 의미로 갱신</div>
 
         <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border);">
           <div style="font-size:.76rem;font-weight:700;color:var(--sub);margin-bottom:10px;">Output 계산 예시 — "밥을" 토큰 (Causal Masking 적용, Attention Weight: 나는 27%, 밥을 73%, 먹었다 0%)</div>
