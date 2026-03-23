@@ -1,0 +1,217 @@
+/* 
+  AI Docs Common Concept Style Sheet
+  Theme: Premium App-like (Inspired by LLM Sampling Style)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Colors - Core Palette */
+  --bg:      #f4f5f9;
+  --surface: #ffffff;
+  --border:  #e2e5f0;
+  --s2:      #eef0f8;
+  --text:    #1a2540;
+  --sub:     #5a6a8a;
+  --muted:   #8e97a8;
+  --shadow:  0 2px 16px rgba(26,37,64,0.08);
+
+  /* Vivid Accents (from LLM Sampling) */
+  --ct:  #ef4444; --ctl: #fee2e2; --ctd: #b91c1c; /* Red / Temp */
+  --ck:  #7c3aed; --ckl: #ede9fe; --ckd: #5b21b6; /* Purple / Top-k */
+  --cp:  #0891b2; --cpl: #cffafe; --cpd: #0e7490; /* Cyan / Top-p */
+  --ok:  #059669; --okl: #d1fae5;                 /* Green / Success */
+  --no:  #94a3b8;                                 /* Gray / Inactive */
+
+  /* Compatibility & Legacy Mapping */
+  --accent:  var(--ct);
+  --accent2: var(--cp);
+  --accent3: var(--ok);
+  --tag-root: var(--ctl);
+  --tag-root-border: var(--ct);
+  --tag-cont: var(--cpl);
+  --tag-cont-border: var(--cp);
+  --tag-special: var(--okl);
+  --tag-special-border: var(--ok);
+  --tag-unk: #fff8ee;
+  --tag-unk-border: #f0c882;
+
+  /* Utils */
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 36px 24px 60px;
+  max-width: 1024px;
+  margin: 0 auto;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-x: hidden;
+}
+
+ul { list-style: none; }
+
+.container { width: 100%; max-width: 1024px; margin: 0 auto; }
+
+/* ── Header (App Style) ── */
+header {
+  text-align: center;
+  margin-bottom: 36px;
+  padding: 36px 28px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--ct), var(--ck), var(--cp), var(--ok));
+}
+
+h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -.3px; }
+.subtitle { color: var(--sub); font-size: 0.9rem; }
+
+/* ── Section Dividers ── */
+.sec {
+  display: flex; align-items: center; gap: 12px;
+  margin: 36px 0 18px;
+}
+.sec .ln { height: 1px; flex: 1; background: var(--border); }
+.sec span, .section-label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 1.4px;
+  color: var(--sub); text-transform: uppercase; white-space: nowrap;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 5px 14px;
+}
+
+/* ── Common Cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--border); /* Default accent top */
+}
+.card.accent-red   { border-top-color: var(--ct); }
+.card.accent-purple{ border-top-color: var(--ck); }
+.card.accent-cyan  { border-top-color: var(--cp); }
+.card.accent-green { border-top-color: var(--ok); }
+
+.card-title {
+  font-size: 0.9rem; font-weight: 700; margin-bottom: 12px;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+
+.divider { height: 1px; background: var(--border); margin: 20px 0; width: 100%; }
+
+.info-note {
+  margin-top: 20px; padding: 14px 18px;
+  background: var(--s2); border-radius: 12px;
+  border-left: 4px solid var(--border);
+  font-size: 0.85rem; color: var(--sub);
+}
+
+/* ── Lists (Bullet Pattern) ── */
+.bullet-list, .param-sub {
+  list-style: none; padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bullet-list li, .param-sub li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 0.875rem; color: var(--sub); line-height: 1.65;
+}
+.bullet-list li::before, .param-sub li::before {
+  content: '·'; font-weight: 900; color: var(--sub);
+  flex-shrink: 0; margin-top: 0px; font-size: 1.2rem; line-height: 1;
+}
+
+/* ── Tab Layout (Shared Pattern) ── */
+.tab-nav {
+  display: flex; gap: 4px; margin: 24px 0 20px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+}
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem; font-weight: 700;
+  padding: 10px 20px;
+  border: none; border-bottom: 3px solid transparent;
+  background: transparent; color: var(--sub);
+  cursor: pointer; transition: all 0.2s;
+  margin-bottom: -2px; border-radius: 10px 10px 0 0;
+}
+.tab-btn:hover { color: var(--cp); background: var(--cpl); }
+.tab-btn.active { color: var(--cp); border-bottom-color: var(--cp); background: var(--cpl); }
+.tab-panel { display: none; margin-top: 20px; }
+.tab-panel.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+/* ── Detailed Lists & Items (App Pattern) ── */
+.param-desc-list, .tok-item-list { display: flex; flex-direction: column; gap: 12px; }
+
+.param-desc-item, .tok-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+}
+.tok-item.tok-active { border-color: var(--cp); border-width: 2px; }
+
+.param-desc-header, .tok-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.param-default, .tok-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; font-weight: 700;
+  background: var(--s2); color: var(--sub);
+  padding: 2px 7px; border-radius: 4px;
+}
+
+.tok-name { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; }
+.tok-model { font-size: 0.75rem; color: var(--cp); font-weight: 600; }
+.param-desc-body, .tok-desc { font-size: 0.85rem; color: var(--sub); line-height: 1.7; }
+
+/* ── Visualization Elements ── */
+.tokens-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.token {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; font-weight: 700;
+  padding: 4px 10px; border-radius: 10px; border: 2px solid;
+}
+.token.root     { background: var(--ctl); border-color: var(--ct); color: var(--ctd); }
+.token.cont     { background: var(--cpl); border-color: var(--cp); color: var(--cpd); }
+.token.char     { background: var(--s2);  border-color: var(--border); color: var(--sub); }
+.token.unk      { background: #fff8ee;     border-color: #f0c882; color: #a07010; }
+.token.special  { background: var(--okl); border-color: var(--ok); color: #085041; }
+
+/* In-line Code */
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  background: var(--s2); color: var(--ckd);
+  padding: 2px 6px; border-radius: 5px; font-weight: 600;
+}
+
+/* ── Utils ── */
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.text-ct { color: var(--ct); }
+.text-ck { color: var(--ck); }
+.text-cp { color: var(--cp); }
+.text-ok { color: var(--ok); }
+.text-muted { color: var(--muted); }
+
+/* Animation Utils */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }

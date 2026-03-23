@@ -4,87 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LLM 샘플링 파라미터</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-  :root {
-    --bg:      #f4f5f9;
-    --surface: #ffffff;
-    --border:  #e2e5f0;
-    --s2:      #eef0f8;
-    --text:    #1a2540;
-    --sub:     #5a6a8a;
-    --shadow:  0 2px 16px rgba(26,37,64,0.08);
-
-    --ct:  #ef4444; --ctl: #fee2e2; --ctd: #b91c1c;
-    --ck:  #7c3aed; --ckl: #ede9fe; --ckd: #5b21b6;
-    --cp:  #0891b2; --cpl: #cffafe; --cpd: #0e7490;
-    --ok:  #059669; --okl: #d1fae5;
-    --no:  #94a3b8;
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 36px 24px 60px;
-    max-width: 1024px;
-    margin: 0 auto;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  /* ── 헤더 ── */
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-    padding: 36px 28px;
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, var(--ct), var(--ck), var(--cp), var(--ok));
-  }
-  header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -.3px; }
-  header p { color: var(--sub); font-size: 0.9rem; }
-
-  /* ── 섹션 구분선 ── */
-  .sec {
-    display: flex; align-items: center; gap: 12px;
-    margin: 36px 0 18px;
-  }
-  .sec .ln { height: 1px; flex: 1; background: var(--border); }
-  .sec span {
-    font-size: 0.75rem; font-weight: 700; letter-spacing: 1.4px;
-    color: var(--sub); text-transform: uppercase; white-space: nowrap;
-    background: var(--s2); border: 1px solid var(--border);
-    border-radius: 99px; padding: 5px 14px;
-  }
-
-  /* ── 개조식 목록 ── */
-  .bullet-list {
-    list-style: none; padding: 0;
-    display: flex; flex-direction: column; gap: 5px;
-  }
-  .bullet-list li {
-    display: flex; align-items: flex-start; gap: 8px;
-    font-size: 0.875rem; color: var(--sub); line-height: 1.65;
-  }
-  .bullet-list li::before {
-    content: '·'; font-weight: 700; color: var(--sub);
-    flex-shrink: 0; margin-top: 0px;
-  }
-
+  /* ── Page Specific Visualization Styles ── */
+  
   /* ══════════════════════════════════
      ① 파이프라인
   ══════════════════════════════════ */
@@ -132,6 +56,7 @@
     border-left: 4px solid var(--border);
   }
   .order-note ul { margin-top: 6px; }
+
 
   /* ══════════════════════════════════
      ② 파라미터 카드

@@ -4,85 +4,41 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Transformer & Self-Attention 시각화</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-:root {
-  --bg:#f4f6fb; --surface:#fff; --surface2:#f0f4fa;
-  --border:#e2e8f0; --text:#1a2540; --sub:#5a6a85;
-  --shadow:0 2px 12px rgba(30,50,100,.07);
-  --radius:16px;
-  --q:#4a7cf7;  --q-l:#dce8ff;
-  --k:#059669;  --k-l:#d1fae5;
-  --v:#9c4af7;  --v-l:#ecdcff;
-  --a:#f7774a;  --a-l:#ffe8dc;
-  --mask:#ef4444; --mask-l:#fee2e2;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:"Noto Sans KR",sans-serif;
-  background:var(--bg);color:var(--text);
-  line-height:1.6;max-width:1040px;
-  margin:0 auto;padding:28px 20px 56px;
-  overflow-x:hidden;
-}
+  /* ── Page Specific Visualization Styles ── */
+  :root {
+    --q:#4a7cf7;  --q-l:#dce8ff;
+    --k:#059669;  --k-l:#d1fae5;
+    --v:#9c4af7;  --v-l:#ecdcff;
+    --a:#f7774a;  --a-l:#ffe8dc;
+    --mask:#ef4444; --mask-l:#fee2e2;
+  }
 
-/* ── Header ── */
-.page-header{text-align:center;margin-bottom:28px;}
-.eyebrow{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:1.5px;
-  text-transform:uppercase;color:var(--q);background:var(--q-l);border-radius:99px;
-  padding:4px 14px;margin-bottom:12px;}
-.page-title{font-size:clamp(1.5rem,4vw,2.1rem);font-weight:800;letter-spacing:-.02em;
-  line-height:1.2;margin-bottom:8px;}
-.page-sub{font-size:.9rem;color:var(--sub);max-width:600px;margin:0 auto;}
-.grad-bar{height:4px;border-radius:99px;
-  background:linear-gradient(90deg,var(--mask),var(--q),var(--k),var(--v));
-  margin:16px auto 0;max-width:180px;}
+  /* ── Callout ── */
+  .callout { border-radius: 12px; padding: 13px 16px; font-size: .875rem; color: var(--sub); line-height: 1.8; margin-bottom: 18px; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
+  .callout.blue  { background: var(--q-l); border: 1px solid #b6d0ff; border-left: 4px solid var(--q); }
+  .callout.green { background: var(--k-l); border: 1px solid #a7f3d0; border-left: 4px solid var(--k); }
+  .callout.purple{ background: var(--v-l); border: 1px solid #d8b4fe; border-left: 4px solid var(--v); }
+  .callout.orange{ background: var(--a-l); border: 1px solid #fcd9b6; border-left: 4px solid var(--a); }
+  .callout.red   { background: var(--mask-l); border: 1px solid #fca5a5; border-left: 4px solid var(--mask); }
+  .callout strong{ color: var(--text); } .callout .ni{ font-size: 1.1rem; flex-shrink: 0; margin-top: 3px; }
 
-/* ── Tab nav ── */
-.tab-nav{display:flex;gap:6px;padding:6px;background:var(--surface);
-  border-radius:14px;border:1px solid var(--border);
-  box-shadow:var(--shadow);margin-bottom:24px;}
-.tab-btn{flex:1;padding:10px 12px;border:none;background:transparent;
-  border-radius:10px;font-family:"Noto Sans KR",sans-serif;
-  font-size:.88rem;font-weight:700;color:var(--sub);cursor:pointer;
-  transition:all .2s;white-space:nowrap;}
-.tab-btn:hover{background:var(--surface2);color:var(--text);}
-.tab-btn.active{background:var(--q);color:#fff;
-  box-shadow:0 2px 10px rgba(74,124,247,.35);}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;animation:fadeIn .25s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  /* ── Compare ── */
+  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 8px; }
+  @media(max-width:600px){ .cmp-grid { grid-template-columns: 1fr; } }
+  .ccard { background: var(--surface); border-radius: var(--radius); padding: 18px; border: 2px solid var(--border); box-shadow: var(--shadow); }
+  .ccard.bad { border-color: #fca5a5; background: #fff8f8; }
+  .ccard.good { border-color: #93c5fd; background: #f8fbff; }
+  .cbadge { display: inline-block; font-size: .76rem; font-weight: 700; border-radius: 99px; padding: 3px 11px; margin-bottom: 9px; }
+  .ccard.bad .cbadge { background: #fee2e2; color: #ef4444; }
+  .ccard.good .cbadge { background: var(--q-l); color: var(--q); }
+  .ctitle { font-size: .97rem; font-weight: 700; margin-bottom: 10px; }
+  .pts { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .pts li { display: flex; align-items: flex-start; gap: 7px; font-size: .845rem; color: var(--sub); }
+  .pts em { color: var(--text); font-style: normal; font-weight: 600; }
 
-/* ── Section divider ── */
-.sec-div{display:flex;align-items:center;gap:12px;margin:28px 0 16px;}
-.sec-div .ln{flex:1;height:1px;background:var(--border);}
-.sec-div .lbl{font-size:.78rem;font-weight:700;color:var(--sub);white-space:nowrap;letter-spacing:.5px;}
-
-/* ── Callout ── */
-.callout{border-radius:12px;padding:13px 16px;font-size:.875rem;color:var(--sub);
-  line-height:1.8;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;}
-.callout.blue  {background:var(--q-l);border:1px solid #b6d0ff;border-left:4px solid var(--q);}
-.callout.green {background:var(--k-l);border:1px solid #a7f3d0;border-left:4px solid var(--k);}
-.callout.purple{background:var(--v-l);border:1px solid #d8b4fe;border-left:4px solid var(--v);}
-.callout.orange{background:var(--a-l);border:1px solid #fcd9b6;border-left:4px solid var(--a);}
-.callout.red   {background:var(--mask-l);border:1px solid #fca5a5;border-left:4px solid var(--mask);}
-.callout strong{color:var(--text);} .callout .ni{font-size:1.1rem;flex-shrink:0;margin-top:3px;}
-
-/* ── Compare ── */
-.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
-@media(max-width:600px){.cmp-grid{grid-template-columns:1fr;}}
-.ccard{background:var(--surface);border-radius:var(--radius);padding:18px;
-  border:2px solid var(--border);box-shadow:var(--shadow);}
-.ccard.bad{border-color:#fca5a5;background:#fff8f8;}
-.ccard.good{border-color:#93c5fd;background:#f8fbff;}
-.cbadge{display:inline-block;font-size:.76rem;font-weight:700;border-radius:99px;
-  padding:3px 11px;margin-bottom:9px;}
-.ccard.bad .cbadge{background:#fee2e2;color:#ef4444;}
-.ccard.good .cbadge{background:var(--q-l);color:var(--q);}
-.ctitle{font-size:.97rem;font-weight:700;margin-bottom:10px;}
-.pts{list-style:none;display:flex;flex-direction:column;gap:7px;}
-.pts li{display:flex;align-items:flex-start;gap:7px;font-size:.845rem;color:var(--sub);}
-.pts em{color:var(--text);font-style:normal;font-weight:600;}
 
 /* ── Legend ── */
 .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:12px;
@@ -285,11 +241,13 @@ body{
 <body>
 
 <!-- ═══ HEADER ═══ -->
-<div class="page-header">
-  <h1 class="page-title">Transformer &amp; Self-Attention</h1>
-  <p class="page-sub">학습된 Transformer가 텍스트를 입력받아 다음 단어를 예측하는 추론 과정</p>
-  <div class="grad-bar"></div>
-</div>
+<div class="container">
+
+<header>
+  <h1>Transformer & Self-Attention</h1>
+  <p class="subtitle">학습된 Transformer가 텍스트를 입력받아 다음 단어를 예측하는 추론 과정</p>
+</header>
+
 
 <!-- ═══ TAB NAV ═══ -->
 <div class="tab-nav">
@@ -298,13 +256,14 @@ body{
   <button class="tab-btn" onclick="switchTab(2)">③ 실습 — 시뮬레이션 · Multi-Head · 전체 흐름</button>
 </div>
 
+
 <!-- ════════════════════════════════════
   TAB 0 : 도입
 ════════════════════════════════════ -->
 <div class="tab-panel active" id="tab-0">
 
   <!-- LSTM vs Transformer -->
-  <div class="sec-div"><div class="ln"></div><div class="lbl">LSTM이 Transformer에 밀린 이유</div><div class="ln"></div></div>
+  <div class="sec"><div class="ln"></div><span>LSTM이 Transformer에 밀린 이유</span><div class="ln"></div></div>
   <div class="cmp-grid">
     <div class="ccard bad">
       <div class="cbadge">⏳ LSTM</div>
@@ -377,7 +336,7 @@ body{
   </div>
 
   <!-- Attention 직관 -->
-  <div class="sec-div"><div class="ln"></div><div class="lbl">Attention의 핵심 직관 — 임베딩을 문맥으로 업데이트한다</div><div class="ln"></div></div>
+  <div class="sec"><div class="ln"></div><span>Attention의 핵심 직관</span><div class="ln"></div></div>
   <div class="callout orange">
     <span class="ni">🟠</span>
     <div>
@@ -412,7 +371,7 @@ body{
     <div class="ctx-note">처음 임베딩은 세 "배" 모두 동일 — Attention 이후에야 의미가 분리된다.</div>
   </div>
 
-  <div class="sec-div"><div class="ln"></div><div class="lbl">Decoder-Only Transformer</div><div class="ln"></div></div>
+  <div class="sec"><div class="ln"></div><span>Decoder-Only Transformer</span><div class="ln"></div></div>
 
   <div class="callout blue">
     <span class="ni">📐</span>
@@ -1023,11 +982,7 @@ body{
 
 
 <script>
-/* ── Tab switching ── */
-function switchTab(idx) {
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
-  document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
-}
+
 
 /* ── Q·K·V 스텝 위저드 ── */
 let qkvCurrent = 0;
@@ -1157,9 +1112,7 @@ function selectToken(idx) {
   document.getElementById("attn-body").innerHTML=html;
 }
 
-window.onload=function(){
-  window.parent.postMessage({height:document.body.scrollHeight},"*");
-};
+
 </script>
 </body>
 </html>

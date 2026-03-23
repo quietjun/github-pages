@@ -4,140 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BertWordPiece Tokenizer</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #f7f5f0;
-    --surface: #ffffff;
-    --surface2: #f0ede8;
-    --border: #e0dbd2;
-    --text: #1a1714;
-    --text-muted: #7a736a;
-    --accent: #d4622a;
-    --accent2: #2a7dd4;
-    --accent3: #2aaa6a;
-    --tag-root: #fff3ee;
-    --tag-root-border: #f0a882;
-    --tag-cont: #eef3ff;
-    --tag-cont-border: #88a8f0;
-    --tag-special: #f0fff4;
-    --tag-special-border: #6abf88;
-    --tag-unk: #fff8ee;
-    --tag-unk-border: #f0c882;
-    --shadow: 0 2px 12px rgba(0,0,0,0.07);
-  }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 40px 20px;
-    max-width: 1024px;
-    margin: 0 auto;
-    overflow-x: hidden;
-    line-height: 1.6;
-  }
-
-  .container { max-width: 1024px; margin: 0 auto; overflow-x: hidden; }
-
-  header { margin-bottom: 32px; }
-
-  .title-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--accent); background: var(--tag-root);
-    border: 1px solid var(--tag-root-border);
-    padding: 4px 10px; border-radius: 4px; margin-bottom: 12px;
-  }
-
-  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .subtitle { color: var(--text-muted); font-size: 14px; line-height: 1.7; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px 24px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-
-  .card-title {
-    font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-muted); margin-bottom: 16px;
-  }
-
-  /* ── 토크나이저 카드 ── */
-  .tok-item {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    background: var(--surface2);
-  }
-  .tok-item.tok-active {
-    border-color: var(--tag-root-border);
-    background: var(--tag-root);
-  }
-  .tok-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-  .tok-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
-  .tok-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px; font-weight: 700;
-    padding: 2px 8px; border-radius: 4px; border: 1.5px solid;
-  }
-  .tok-model { font-size: 11.5px; color: var(--accent2); font-weight: 500; margin-bottom: 5px; }
-  .tok-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; }
-
-  /* ── 파라미터 카드 ── */
-  .param-desc-list { display: flex; flex-direction: column; gap: 10px; }
-  .param-desc-item {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    background: var(--surface2);
-  }
-  .param-desc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-  .param-default {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-muted);
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 2px 7px; border-radius: 4px;
-  }
-  .param-desc-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
-  .param-sub {
-    margin-top: 8px; padding-left: 14px;
-    display: flex; flex-direction: column; gap: 5px;
-    font-size: 12.5px; list-style: none;
-  }
-  .param-sub li::before { content: "→ "; color: var(--accent); font-weight: 700; }
-
-  /* ── 탭 ── */
-  .tab-nav {
-    display: flex; gap: 6px; margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .tab-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px; font-weight: 700;
-    padding: 9px 18px;
-    border: none; border-bottom: 3px solid transparent;
-    background: transparent; color: var(--text-muted);
-    cursor: pointer; transition: all 0.2s;
-    margin-bottom: -2px; border-radius: 6px 6px 0 0;
-  }
-  .tab-btn:hover { color: var(--accent); background: var(--tag-root); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--tag-root); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* ── 알고리즘 블록 ── */
+  /* ── Page Specific Visualization Styles ── */
   .algo-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
   .algo-example {
     background: var(--surface2); border: 1.5px solid var(--border);
@@ -157,20 +27,6 @@
   }
   .algo-step-content { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 6px; flex-direction: column; }
 
-  /* ── 토큰 ── */
-  .tokens-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
-  .token {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px; font-weight: 600;
-    padding: 3px 9px; border-radius: 5px; border: 1.5px solid;
-  }
-  .token.root    { background: var(--tag-root);    border-color: var(--tag-root-border);    color: #c04010; }
-  .token.cont    { background: var(--tag-cont);    border-color: var(--tag-cont-border);    color: #1a4db0; }
-  .token.char    { background: var(--surface2);    border-color: var(--border);             color: var(--text-muted); }
-  .token.unk     { background: var(--tag-unk);     border-color: var(--tag-unk-border);     color: #a07010; }
-  .token.special { background: var(--tag-special); border-color: var(--tag-special-border); color: #1a7a40; }
-
-  /* ── 빈도 바 ── */
   .algo-freq-pair {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px; font-weight: 700;
@@ -189,7 +45,6 @@
   .freq-bar { height: 100%; background: var(--accent3); border-radius: 4px; }
   .freq-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1a7a40; }
 
-  /* ── 병합 스텝 ── */
   .merge-step-num {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; font-weight: 700;
@@ -211,15 +66,6 @@
   .merge-plus { font-size: 13px; color: var(--text-muted); }
   .merge-arrow { font-size: 14px; color: var(--text-muted); margin: 0 2px; }
 
-  /* ── 인포 노트 ── */
-  .info-note {
-    display: flex; align-items: flex-start; gap: 8px;
-    background: var(--tag-cont); border: 1px solid var(--tag-cont-border);
-    border-radius: 8px; padding: 10px 14px; font-size: 12.5px;
-    color: #1a3a80; line-height: 1.6;
-  }
-
-  /* ── 스페셜 토큰 ── */
   .sp-token {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px; font-weight: 600;
@@ -228,16 +74,6 @@
     background: var(--tag-special); color: #1a7a40;
   }
 
-  /* ── 코드 인라인 ── */
-  code {
-    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
-    background: rgba(212,98,42,0.1); color: var(--accent);
-    padding: 1px 5px; border-radius: 3px;
-  }
-
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-
-  /* ── 최종 흐름 ── */
   .flow-box {
     border-radius: 8px; padding: 10px 16px;
     font-size: 13px; font-weight: 700;
@@ -245,8 +81,6 @@
   }
   .flow-arrow { font-size: 20px; color: var(--text-muted); }
 
-  /* ── 스크롤 힌트 방지 ── */
-  * { word-break: keep-all; }
   pre, .font-mono { word-break: break-all; }
 </style>
 </head>
@@ -392,7 +226,7 @@
       </div>
 
       <div class="algo-desc">
-        WordPiece 학습은 아래 4단계를 거쳐 vocab을 구성<br>
+        WordPiece 학습은 아래 5단계를 거쳐 vocab을 구성<br>
         <code>vocab_size</code>에 도달할 때까지 쌍 병합 반복
       </div>
 
@@ -507,6 +341,58 @@
                 <span class="merge-arrow">→</span>
                 <span class="token root" style="font-size:12px; padding:2px 9px">고양이가</span>
                 <span class="algo-result-label pass">2회 ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Step 5 -->
+        <div class="algo-step-row">
+          <div class="algo-step-label">⑤ 형태소적<br>특성 고려</div>
+          <div class="algo-step-content" style="width:100%">
+            <div style="font-size:13px; line-height:1.7; color:var(--text-muted); margin-bottom:12px">
+              단순 단어 병합보다 언어의 <strong>형태소적 특징</strong>을 반영하여 <b>토큰 활용도</b>를 높이는 것이 핵심
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:12px; width:100%">
+              <div style="display:flex; gap:12px; flex-wrap:wrap">
+                <!-- Case 1 -->
+                <div style="flex:1; min-width:380px; background:#fff0f0; border:1px solid #f0b0b0; border-radius:10px; padding:14px 18px">
+                  <div style="font-size:11px; font-weight:800; color:#b04040; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em">❌ Holistic (통합 토큰화)</div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+                    <div class="tokens-wrap"><span class="token root" style="background:white; border-color:#f0b0b0; color:#b04040">학교에</span></div>
+                    <div class="tokens-wrap"><span class="token root" style="background:white; border-color:#f0b0b0; color:#b04040">학교로</span></div>
+                    <div class="tokens-wrap"><span class="token root" style="background:white; border-color:#f0b0b0; color:#b04040">학교는</span></div>
+                  </div>
+                  <div style="font-size:12px; color:#b04040; line-height:1.6">
+                    모든 조사 결합형을 <b>개별 토큰</b>으로 확보해야 함<br>
+                    → Vocab 크기 폭발 및 학습 데이터 부족(Sparsity) 문제에 불리함
+                  </div>
+                </div>
+                
+                <!-- Case 2 -->
+                <div style="flex:1; min-width:380px; background:var(--tag-cont); border:1px solid var(--tag-cont-border); border-radius:10px; padding:14px 18px">
+                  <div style="font-size:11px; font-weight:800; color:#1a3a80; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em">✅ Morphological (분리 토큰화)</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+                    <div class="tokens-wrap" style="background:white; padding:4px 8px; border-radius:6px; border:1px dashed var(--tag-cont-border)">
+                      <span class="token root">학교</span><span class="token root">집</span>
+                    </div>
+                    <span style="font-size:14px; font-weight:700; color:var(--accent)">+</span>
+                    <div class="tokens-wrap" style="background:white; padding:4px 8px; border-radius:6px; border:1px dashed var(--tag-cont-border)">
+                      <span class="token cont">##에</span>
+                    </div>
+                  </div>
+                  <div style="font-size:12px; color:#1a3a80; line-height:1.6">
+                    어근과 조사를 분리하여 <b>토큰 재사용성 극대화</b><br>
+                    → '학교/집 + ##에' 등 적은 토큰으로 무수한 문장 변이 대응에 유리
+                  </div>
+                </div>
+              </div>
+              
+              <div class="info-note" style="background:var(--surface); border-style:dashed; padding:12px 20px">
+                💡 <b>결론:</b> 조사가 발달한 한국어는 적절한 형태소 분리가 모델의 <b>일반화 성능(Generalization)</b>에 결정적인 영향을 미침
               </div>
             </div>
           </div>
@@ -857,16 +743,6 @@
 
 </div><!-- /container -->
 
-<script>
-function switchTab(idx) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
-  document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
-}
 
-window.onload = function() {
-  const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "*");
-};
-</script>
 </body>
 </html>

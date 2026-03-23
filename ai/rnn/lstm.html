@@ -4,21 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LSTM (Long Short-Term Memory)</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
+  /* ── Page Specific Visualization Styles ── */
   :root {
-    --bg:       #f4f6fb;
-    --surface:  #ffffff;
-    --surface2: #eef1f8;
-    --border:   #dde2f0;
-    --text:     #1a2540;
-    --sub:      #5a6a85;
-    --muted:    #8a9ab5;
-    --shadow:   0 2px 16px rgba(26,37,64,0.07);
-    --shadow-md:0 4px 28px rgba(26,37,64,0.11);
-
     --forget:   #ef4444; --forget-l: #fee2e2; --forget-ll:#fff5f5;
     --input:    #4a7cf7; --input-l:  #dce8ff; --input-ll: #f0f5ff;
     --cand:     #059669; --cand-l:   #d1fae5; --cand-ll:  #f0fdf6;
@@ -29,74 +19,87 @@
     --radius-sm:10px;
   }
 
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    max-width: 1024px;
-    margin: 0 auto;
-    padding: 48px 32px 64px;
-    line-height: 1.6;
-    overflow-x: hidden;
+  /* ── 비교 카드 ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 8px;
   }
-
-  /* ── 헤더 ── */
-  .page-header {
-    text-align: center;
-    margin-bottom: 52px;
-    padding: 40px 32px;
+  @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+  .ccard {
     background: var(--surface);
-    border-radius: 24px;
-    box-shadow: var(--shadow-md);
     border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
   }
-  .page-header::before {
+  .ccard::after {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, var(--forget), var(--input), var(--cand), var(--output));
+    border-radius: var(--radius) var(--radius) 0 0;
   }
-  .page-header h1 {
-    font-size: 2rem;
+  .ccard.bad::after  { background: var(--forget); }
+  .ccard.good::after { background: var(--input); }
+
+  .ccard-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 14px;
   }
-  .page-header p {
-    color: var(--sub);
-    font-size: 0.95rem;
-    line-height: 1.7;
-    max-width: 560px;
-    margin: 0 auto;
+  .ccard.bad  .ccard-badge { background: var(--forget-l); color: var(--forget); }
+  .ccard.good .ccard-badge { background: var(--input-l);  color: var(--input);  }
+  .ccard-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
   }
 
-  /* ── 섹션 구분선 ── */
-  .sec-divider {
+  /* 페이드 행 */
+  .fade-row {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin: 44px 0 24px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 4px;
   }
-  .sec-divider .line { height: 1px; flex: 1; background: var(--border); }
-  .sec-divider .label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 1.4px;
-    color: var(--sub);
-    text-transform: uppercase;
-    white-space: nowrap;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    padding: 5px 16px;
+  .fade-token { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .fade-box {
+    width: 64px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; font-weight: 700;
+    border: 2px solid;
   }
+  .fade-lbl { font-size: 0.68rem; color: var(--sub); text-align: center; font-weight: 500; }
+  .fade-arrow { color: #c8d3e8; font-size: 1.1rem; margin-bottom: 20px; flex-shrink: 0; }
+
+  /* ── Point List ── */
+  .point-list {
+    list-style: none; padding-left: 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .point-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 0.875rem; color: var(--sub);
+    padding: 8px 0; border-bottom: 1px solid var(--s2);
+    line-height: 1.65;
+  }
+  .point-list li:last-child { border-bottom: none; }
+  .point-list li .ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
 
   /* ── 비교 카드 ── */
   .compare-grid {
@@ -442,21 +445,16 @@
   .pulse-o{ animation:glow-o 1.2s ease-in-out infinite; opacity:1 !important; }
 </style>
 </head>
-<body>
+<div class="container">
 
-<!-- ══ 헤더 ══ -->
-<header class="page-header">
-  <h1>🔄 LSTM <span style="font-size:1.3rem;font-weight:400;color:var(--sub);">(Long Short-Term Memory)</span></h1>
-  <p>기본 RNN 한계 → LSTM 해결 구조<br>게이트별 동작 흐름 단계별 정리</p>
+<header>
+  <h1>🔄 LSTM (Long Short-Term Memory)</h1>
+  <p class="subtitle">기본 RNN 한계 해결 구조 · 게이트별 동작 흐름 단계별 정리</p>
 </header>
 
 
 <!-- ══ ① 기본 RNN의 한계 ══ -->
-<div class="sec-divider">
-  <div class="line"></div>
-  <div class="label">① 기본 RNN의 한계</div>
-  <div class="line"></div>
-</div>
+<div class="sec"><div class="ln"></div><span>① 기본 RNN의 한계</span><div class="ln"></div></div>
 
 <div class="compare-grid">
 
@@ -528,11 +526,7 @@
 
 
 <!-- ══ ② LSTM 셀 구조 ══ -->
-<div class="sec-divider">
-  <div class="line"></div>
-  <div class="label">② Cell State(c) + Hidden State(h) — 두 상태</div>
-  <div class="line"></div>
-</div>
+<div class="sec"><div class="ln"></div><span>② Cell State(c) + Hidden State(h) — 두 상태</span><div class="ln"></div></div>
 
 <div class="gate-legend">
   <div class="gl-item"><div class="gl-dot" style="background:var(--cell-l);border-color:var(--cell);"></div>Cell State (장기 기억)</div>
@@ -648,11 +642,7 @@
 
 
 <!-- ══ ③ 게이트 동작 시뮬레이션 ══ -->
-<div class="sec-divider">
-  <div class="line"></div>
-  <div class="label">③ 게이트 동작 — 단계별 흐름</div>
-  <div class="line"></div>
-</div>
+<div class="sec"><div class="ln"></div><span>③ 게이트 동작 — 단계별 흐름</span><div class="ln"></div></div>
 
 <div class="sim-intro">
   <ul class="step-list" style="font-size:0.9rem;">
@@ -810,7 +800,7 @@
 <script>
 const STEPS = [
   {
-    title: "① 이전 토큰 '밥을' 처리 완료 — h, c 전달",
+    title: "이전 토큰 '밥을' 처리 완료 — h, c 전달",
     color: "#f7774a",
     pulse: ["b-cprev","b-hp"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt"],
@@ -821,7 +811,7 @@ const STEPS = [
             </ul>`
   },
   {
-    title: "② 입력 도착 — '먹었다' 처리 시작",
+    title: "입력 도착 — '먹었다' 처리 시작",
     color: "#4a7cf7",
     pulse: ["b-hp","b-xt"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt"],
@@ -831,7 +821,7 @@ const STEPS = [
             </ul>`
   },
   {
-    title: "③ Forget Gate — 불필요한 정보 제거",
+    title: "Forget Gate — 불필요한 정보 제거",
     color: "#ef4444",
     pulse: ["b-fg","b-xf","b-cprev"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt"],
@@ -842,7 +832,7 @@ const STEPS = [
             </ul>`
   },
   {
-    title: "④ Input Gate + Candidate — 새 정보 추출",
+    title: "Input Gate + Candidate — 새 정보 추출",
     color: "#059669",
     pulse: ["b-ig","b-cg","b-pi"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt"],
@@ -853,7 +843,7 @@ const STEPS = [
             </ul>`
   },
   {
-    title: "⑤ Cell State 업데이트 — 장기 기억 갱신",
+    title: "Cell State 업데이트 — 장기 기억 갱신",
     color: "#f7774a",
     pulse: ["b-ct","b-pi"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt"],
@@ -863,7 +853,7 @@ const STEPS = [
             </ul>`
   },
   {
-    title: "⑥ Output Gate — 다음 셀에 h, c 전달",
+    title: "Output Gate — 다음 셀에 h, c 전달",
     color: "#9c4af7",
     pulse: ["b-og","b-xo","b-ht"],
     show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt","a5-og","a5-op","a5-out","a5-ht"],
@@ -983,11 +973,6 @@ function reset() { current = -1; render(-1); }
 render(-1);
 </script>
 
-<script>
-  window.onload = function() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  };
-</script>
+
 </body>
 </html>

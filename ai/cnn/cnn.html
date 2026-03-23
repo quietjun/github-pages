@@ -4,24 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CNN — 합성곱 신경망</title>
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f5f7fa;color:#1e2a3a;line-height:1.6;overflow-x:hidden;}
-.wrap{max-width:1024px;margin:0 auto;padding:0 20px 60px;}
-.mono{font-family:'JetBrains Mono',monospace;}
+  /* ── Page Specific Visualization Styles ── */
+  .intro-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 16px; box-shadow: var(--shadow); }
+  .intro-icon { font-size: 22px; margin-bottom: 8px; }
+  .intro-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .intro-card p { font-size: 12px; color: var(--sub); line-height: 1.8; }
 
-.hero{background:linear-gradient(135deg,#f0f4ff,#e8eeff 50%,#f0f9ff);border-bottom:1px solid #e2e8f0;padding:48px 24px 40px;text-align:center;}
-.hero-badge{display:inline-block;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.22);color:#1d4ed8;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;padding:4px 14px;border-radius:2px;margin-bottom:16px;}
-.hero h1{font-size:clamp(28px,6vw,50px);font-weight:700;color:#1e2a3a;letter-spacing:-1px;}
-.hero h1 span{color:#2563eb;}
-.hero-sub{margin-top:10px;font-size:14px;color:#64748b;}
+  .hbox { border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; border-left: 4px solid; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
+  .hbox.blue { background: #eff6ff; border-color: #2563eb; }
+  .hbox.green { background: #f0fdf4; border-color: #16a34a; }
+  .hbox.orange { background: #fff7ed; border-color: #ea580c; }
+  .hbox-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .hbox-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .hbox.blue .hbox-title { color: #2563eb; }
+  .hbox.green .hbox-title { color: #16a34a; }
+  .hbox.orange .hbox-title { color: #ea580c; }
+  .hbox-text { font-size: 12px; color: var(--sub); line-height: 1.8; }
+  .hbox-text strong { color: var(--text); }
 
-.sec{margin-top:40px;}
-.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.sec-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:#94a3b8;background:#eef1f6;padding:2px 9px;border-radius:2px;}
-.sec-title{font-size:18px;font-weight:700;color:#1e2a3a;}
-.sec-div{height:1px;background:#e2e8f0;margin-bottom:20px;}
 
 .card-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
 @media(max-width:600px){.card-3{grid-template-columns:1fr;}}
@@ -134,18 +137,18 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-badge">DEEP LEARNING · IMAGE RECOGNITION</div>
-  <h1><span>CNN</span></h1>
-  <p class="hero-sub">합성곱 신경망 — 이미지를 이해하는 방법<br>Conv · Pooling · FC 세 가지 핵심 블록의 구조와 역할</p>
-</div>
+<div class="container">
+
+<header>
+  <h1><span>CNN</span> (Convolutional Neural Network)</h1>
+  <p class="subtitle">합성곱 신경망 — 이미지를 이해하는 방법<br>Conv · Pooling · FC 세 가지 핵심 블록의 구조와 역할</p>
+</header>
+
 
 <div class="wrap">
 
 <!-- ── SEC 01 ── -->
-<div class="sec">
-  <div class="sec-hd"><span class="sec-num">01</span><h2 class="sec-title">CNN이란? — 이미지를 이해하는 신경망</h2></div>
-  <div class="sec-div"></div>
+<div class="sec"><div class="ln"></div><span>① CNN이란? (이미지 이해)</span><div class="ln"></div></div>
 
   <div class="card-3">
     <div class="intro-card">
@@ -179,9 +182,7 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 </div>
 
 <!-- ── SEC 02 ── -->
-<div class="sec">
-  <div class="sec-hd"><span class="sec-num">02</span><h2 class="sec-title">Conv · Pooling · FC — 3가지 빌딩 블록</h2></div>
-  <div class="sec-div"></div>
+<div class="sec"><div class="ln"></div><span>② Conv · Pooling · FC — 3가지 빌딩 블록</span><div class="ln"></div></div>
 
   <!-- 01 Conv -->
   <div class="block">
@@ -418,9 +419,7 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 </div>
 
 <!-- ── SEC 03 ── -->
-<div class="sec">
-  <div class="sec-hd"><span class="sec-num">03</span><h2 class="sec-title">CNN 전체 파이프라인</h2></div>
-  <div class="sec-div"></div>
+<div class="sec"><div class="ln"></div><span>③ CNN 전체 파이프라인</span><div class="ln"></div></div>
 
   <div class="pipe-wrap">
     <div class="pipe-flow">
@@ -443,9 +442,7 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 </div>
 
 <!-- ── SEC 04 ── -->
-<div class="sec">
-  <div class="sec-hd"><span class="sec-num">04</span><h2 class="sec-title">레이어 깊이에 따른 특징 학습의 변화</h2></div>
-  <div class="sec-div"></div>
+<div class="sec"><div class="ln"></div><span>④ 레이어 깊이에 따른 특징 학습</span><div class="ln"></div></div>
 
   <div class="hier-grid">
     <div class="hcard" style="border-top:3px solid #2563eb;">
@@ -674,11 +671,8 @@ function updSpd(val){
 
 buildAll();
 </script>
-  <script>
-  window.onload = function() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  };
-</script>  
+
+</div>
 </body>
 </html>
+

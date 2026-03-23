@@ -4,31 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CLIP 개념 개요</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: #f5f4f0;
-  color: #1a1a1a;
-  padding: 40px 24px 60px;
-  line-height: 1.6;
-}
-.container {
-  max-width: 1024px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 16px;
-  padding: 40px 40px 48px;
-  border: 0.5px solid #e0dfd8;
-}
-h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
-.subtitle { font-size: 13px; color: #777; margin-bottom: 32px; }
-.section-label {
-  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
-  text-transform: uppercase; color: #999; margin-bottom: 12px;
-}
-
+/* ── Page Specific Styles ── */
 .tldr {
   background: #f0fdf7;
   border-left: 3px solid #1d9e75;
@@ -138,14 +117,16 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
 <body>
 <div class="container">
 
-<h1>CLIP이란 무엇인가?</h1>
-<p class="subtitle">OpenAI · 2021 — 이미지와 언어를 함께 이해하는 AI</p>
+<header>
+  <h1>CLIP이란 무엇인가?</h1>
+  <p class="subtitle">OpenAI · 2021 — 이미지와 언어를 함께 이해하는 AI</p>
+</header>
 
 <div class="tldr">
   <strong>한 줄 요약 :</strong> 사람처럼 이미지와 텍스트를 동시에 이해해, <strong>"이 사진은 고양이야"</strong> 같은 연결을 스스로 학습한 모델
 </div>
 
-<div class="section-label">기존 문제 → CLIP의 해결</div>
+<div class="sec"><div class="ln"></div><span>기존 문제 → CLIP의 해결</span><div class="ln"></div></div>
 <div class="problem-row">
   <div class="prob-card">
     <div class="card-head">❌ 기존 방식의 한계</div>
@@ -161,7 +142,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
 </div>
 
 <div class="diagram-wrap">
-  <div class="section-label">핵심 아이디어 — 같은 공간에 매핑</div>
+  <div class="sec"><div class="ln"></div><span>핵심 아이디어 — 같은 공간에 매핑</span><div class="ln"></div></div>
   <svg width="100%" viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -266,7 +247,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
 </div>
 
 <div class="zeroshot-wrap">
-  <div class="section-label">Zero-shot 분류 예시</div>
+  <div class="sec"><div class="ln"></div><span>Zero-shot 분류 예시</span><div class="ln"></div></div>
   <div class="zs-row">
     <div class="zs-img-box">🐶</div>
     <div class="zs-arrow">→</div>
@@ -293,7 +274,7 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
   <p class="zs-note">→ 각 텍스트를 벡터로 변환 후 이미지 벡터와 유사도 계산 · 가장 높은 것 선택<br>→ 후보 목록만 바꾸면 어떤 분류도 즉시 가능 (재학습 불필요)</p>
 </div>
 
-<div class="section-label">왜 중요한가</div>
+<div class="sec"><div class="ln"></div><span>왜 CLIP이 중요한가?</span><div class="ln"></div></div>
 <div class="why-grid">
   <div class="why-card">
     <div class="emoji">🔓</div>
@@ -319,10 +300,5 @@ h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
 
 </div>
 </body>
-  <script>
-  window.onload = function() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  };
-</script>
+
 </html>

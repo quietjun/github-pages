@@ -4,319 +4,198 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Spring AI — MCP 완전 가이드</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  /* ── Page Specific Visualization Styles ── */
+  :root {
+    --spring:#6db33f;
+    --spring-dark:#4a7c2a;
+    --spring-bg:#f0f7e9;
+    --spring-border:#c3e6a0;
 
-:root{
-  --bg:#f5f6f8;
-  --surface:#ffffff;
-  --surface2:#f9fafb;
-  --border:#e4e7ec;
-  --border2:#d0d5dd;
-  --text-1:#0f1117;
-  --text-2:#3d4451;
-  --text-3:#6b7280;
-  --text-4:#9ca3af;
+    --mcp:#0ea5e9;
+    --mcp-dark:#0369a1;
+    --mcp-bg:#e0f2fe;
+    --mcp-border:#7dd3fc;
 
-  --spring:#6db33f;
-  --spring-dark:#4a7c2a;
-  --spring-bg:#f0f7e9;
-  --spring-border:#c3e6a0;
+    --tool:#f59e0b;
+    --tool-dark:#b45309;
+    --tool-bg:#fef9ee;
+    --tool-border:#fcd34d;
 
-  --mcp:#0ea5e9;
-  --mcp-dark:#0369a1;
-  --mcp-bg:#e0f2fe;
-  --mcp-border:#7dd3fc;
+    --red:#ef4444;
+    --red-bg:#fef2f2;
+    --green:#22c55e;
+    --green-bg:#f0fdf4;
 
-  --tool:#f59e0b;
-  --tool-dark:#b45309;
-  --tool-bg:#fef9ee;
-  --tool-border:#fcd34d;
+    --code-bg:#1e2433;
+    --code-text:#e2e8f0;
+    --code-keyword:#7dd3fc;
+    --code-annotation:#86efac;
+    --code-string:#fca5a5;
+    --code-comment:#64748b;
+    --code-type:#c4b5fd;
+  }
 
-  --red:#ef4444;
-  --red-bg:#fef2f2;
-  --green:#22c55e;
-  --green-bg:#f0fdf4;
+  /* ── 탭 네비 (Local Override for MCP Specific Scroll) ── */
+  .tab-nav {
+    display: flex; gap: 0; background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    overflow-x: auto; scrollbar-width: none;
+    margin-bottom: 0;
+  }
+  .tab-nav::-webkit-scrollbar { display: none }
+  .tab-btn {
+    flex: 1; min-width: 120px; padding: 14px 16px;
+    background: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--sub); border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all .18s; white-space: nowrap; border-radius: 0;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--s2); }
+  .tab-btn.active { color: var(--mcp); border-bottom-color: var(--mcp); font-weight: 600; background: transparent; box-shadow: none; }
 
-  --code-bg:#1e2433;
-  --code-text:#e2e8f0;
-  --code-keyword:#7dd3fc;
-  --code-annotation:#86efac;
-  --code-string:#fca5a5;
-  --code-comment:#64748b;
-  --code-type:#c4b5fd;
+  /* ── 섹션 ── */
+  .section { display: none; padding: 32px 32px 48px; animation: fadeIn .2s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
 
-  --radius:10px;
-  --radius-lg:14px;
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
-  --shadow-lg:0 4px 16px rgba(0,0,0,.1),0 8px 32px rgba(0,0,0,.08);
-}
+  /* ── 공통 컴포넌트 ── */
+  .section-title {
+    font-size: 18px; font-weight: 700; color: var(--text);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-sub { font-size: 13px; color: var(--sub); margin-bottom: 28px; line-height: 1.7; }
 
-html{font-size:14px;overflow-x:hidden}
-body{
-  font-family:'Noto Sans KR',sans-serif;
-  background:var(--bg);
-  color:var(--text-1);
-  line-height:1.7;
-  max-width:1024px;
-  margin:0 auto;
-  padding:0;
-  overflow-x:hidden;
-}
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .card+.card, .card+.grid, .grid+.card { margin-top: 16px; }
 
-/* ── 헤더 ── */
-.hero{
-  background:linear-gradient(135deg,#0f1b2d 0%,#1a2e4a 60%,#0d3a2e 100%);
-  padding:48px 40px 40px;
-  position:relative;
-  overflow:hidden;
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 60% 80% at 80% 20%,rgba(109,179,63,.15) 0%,transparent 60%),
-             radial-gradient(ellipse 40% 60% at 20% 80%,rgba(14,165,233,.12) 0%,transparent 60%);
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(109,179,63,.15);border:1px solid rgba(109,179,63,.3);
-  color:#86efac;font-size:11px;font-weight:600;letter-spacing:.06em;
-  padding:4px 10px;border-radius:99px;margin-bottom:16px;
-  font-family:'JetBrains Mono',monospace;
-  position:relative;
-}
-.hero h1{
-  font-size:28px;font-weight:700;color:#fff;
-  line-height:1.3;position:relative;margin-bottom:10px;
-}
-.hero h1 span{color:#6db33f;}
-.hero p{
-  font-size:14px;color:rgba(255,255,255,.6);
-  max-width:540px;position:relative;line-height:1.8;
-}
-.hero-tags{
-  display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;position:relative;
-}
-.hero-tag{
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.7);font-size:11.5px;padding:3px 10px;border-radius:6px;
-  font-family:'JetBrains Mono',monospace;
-}
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media(max-width: 680px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
-/* ── 탭 네비 ── */
-.tab-nav{
-  display:flex;gap:0;background:var(--surface);
-  border-bottom:2px solid var(--border);
-  position:sticky;top:0;z-index:50;
-  box-shadow:0 2px 8px rgba(0,0,0,.06);
-  overflow-x:auto;scrollbar-width:none;
-}
-.tab-nav::-webkit-scrollbar{display:none}
-.tab-btn{
-  flex:1;min-width:120px;padding:14px 16px;
-  background:none;border:none;cursor:pointer;
-  font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
-  color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-2px;
-  transition:all .18s;white-space:nowrap;
-}
-.tab-btn:hover{color:var(--text-1);background:var(--surface2);}
-.tab-btn.active{color:var(--mcp);border-bottom-color:var(--mcp);font-weight:600;}
+  /* ── 배지 ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    padding: 2px 8px; border-radius: 99px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-tool { background: var(--tool-bg); color: var(--tool-dark); border: 1px solid var(--tool-border); }
+  .badge-mcp { background: var(--mcp-bg); color: var(--mcp-dark); border: 1px solid var(--mcp-border); }
+  .badge-spring { background: var(--spring-bg); color: var(--spring-dark); border: 1px solid var(--spring-border); }
+  .badge-new { background: #fdf4ff; color: #7c3aed; border: 1px solid #ddd6fe; }
 
-/* ── 섹션 ── */
-.section{display:none;padding:32px 32px 48px;animation:fadeIn .2s ease;}
-.section.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  /* ── 비교 테이블 ── */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare-table th {
+    padding: 10px 14px; text-align: left; font-weight: 600; font-size: 11.5px;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--sub);
+    border-bottom: 2px solid var(--border); background: var(--s2);
+  }
+  .compare-table td {
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top; line-height: 1.6;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: var(--s2); }
+  .compare-table .col-feature { font-weight: 600; color: var(--text); width: 22%; }
+  .compare-table .col-tool { background: rgba(245,158,11,.04); }
+  .compare-table .col-mcp { background: rgba(14,165,233,.04); }
 
-/* ── 공통 컴포넌트 ── */
-.section-title{
-  font-size:18px;font-weight:700;color:var(--text-1);
-  margin-bottom:6px;display:flex;align-items:center;gap:8px;
-}
-.section-sub{font-size:13px;color:var(--text-3);margin-bottom:28px;line-height:1.7;}
+  /* ── 코드 블록 ── */
+  .code-block {
+    background: var(--code-bg); border-radius: var(--radius);
+    overflow: hidden; margin: 12px 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: rgba(255,255,255,.35); letter-spacing: .06em;
+  }
+  .code-title { font-size: 12px; color: rgba(255,255,255,.5); }
+  .code-body {
+    padding: 16px 20px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; line-height: 1.8; color: var(--code-text);
+    overflow-x: auto; white-space: pre;
+  }
+  .kw { color: var(--code-keyword); }
+  .an { color: var(--code-annotation); }
+  .st { color: var(--code-string); }
+  .cm { color: var(--code-comment); font-style: italic; }
+  .ty { color: var(--code-type); }
+  .nm { color: #fbbf24; }
 
-.card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:24px;
-  box-shadow:var(--shadow);
-}
-.card+.card,.card+.grid,.grid+.card{margin-top:16px;}
+  /* ── 특징 카드 ── */
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px;
+    box-shadow: var(--shadow); transition: box-shadow .18s, transform .18s;
+    cursor: default;
+  }
+  .feature-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .feature-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 12px;
+  }
+  .feature-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .feature-desc { font-size: 12.5px; color: var(--sub); line-height: 1.7; }
 
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  /* ── 아키텍처 다이어그램 ── */
+  .arch-diagram {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 28px;
+    box-shadow: var(--shadow);
+  }
 
-/* ── 배지 ── */
-.badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:11px;font-weight:600;letter-spacing:.04em;
-  padding:2px 8px;border-radius:99px;
-  font-family:'JetBrains Mono',monospace;
-}
-.badge-tool{background:var(--tool-bg);color:var(--tool-dark);border:1px solid var(--tool-border);}
-.badge-mcp{background:var(--mcp-bg);color:var(--mcp-dark);border:1px solid var(--mcp-border);}
-.badge-spring{background:var(--spring-bg);color:var(--spring-dark);border:1px solid var(--spring-border);}
-.badge-new{background:#fdf4ff;color:#7c3aed;border:1px solid #ddd6fe;}
+  /* ── 강조 박스 ── */
+  .callout {
+    display: flex; gap: 12px; padding: 14px 16px;
+    border-radius: var(--radius); border-left: 3px solid;
+    margin: 16px 0; font-size: 13px; line-height: 1.7;
+    box-shadow: var(--shadow);
+  }
+  .callout.info { background: var(--mcp-bg); border-color: var(--mcp); color: var(--mcp-dark); }
+  .callout.warn { background: var(--tool-bg); border-color: var(--tool); color: var(--tool-dark); }
+  .callout.good { background: var(--green-bg); border-color: var(--green); color: #166534; }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 
-/* ── 비교 테이블 ── */
-.compare-table{width:100%;border-collapse:collapse;font-size:13px;}
-.compare-table th{
-  padding:10px 14px;text-align:left;font-weight:600;font-size:11.5px;
-  letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);
-  border-bottom:2px solid var(--border);background:var(--surface2);
-}
-.compare-table th:first-child{border-radius:8px 0 0 0;}
-.compare-table th:last-child{border-radius:0 8px 0 0;}
-.compare-table td{
-  padding:11px 14px;border-bottom:1px solid var(--border);
-  vertical-align:top;line-height:1.6;
-}
-.compare-table tr:last-child td{border-bottom:none;}
-.compare-table tr:hover td{background:var(--surface2);}
-.compare-table .col-feature{font-weight:600;color:var(--text-2);width:22%;}
-.compare-table .col-tool{background:rgba(245,158,11,.04);}
-.compare-table .col-mcp{background:rgba(14,165,233,.04);}
-.ok{color:var(--green);font-weight:600;}
-.no{color:var(--red);}
-.partial{color:var(--tool-dark);}
+  /* ── Transport 탭 ── */
+  .sub-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .sub-tab {
+    padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--s2);
+    color: var(--sub); transition: all .15s;
+  }
+  .sub-tab.active { background: var(--mcp); color: #fff; border-color: var(--mcp); }
+  .sub-panel { display: none; }
+  .sub-panel.active { display: block; }
 
-/* ── 코드 블록 ── */
-.code-block{
-  background:var(--code-bg);border-radius:var(--radius);
-  overflow:hidden;margin:12px 0;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
-}
-.code-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px;background:rgba(255,255,255,.04);
-  border-bottom:1px solid rgba(255,255,255,.06);
-}
-.code-lang{
-  font-family:'JetBrains Mono',monospace;font-size:11px;
-  color:rgba(255,255,255,.35);letter-spacing:.06em;
-}
-.code-title{font-size:12px;color:rgba(255,255,255,.5);}
-.code-body{
-  padding:16px 20px;font-family:'JetBrains Mono',monospace;
-  font-size:12.5px;line-height:1.8;color:var(--code-text);
-  overflow-x:auto;white-space:pre;
-}
-.kw{color:var(--code-keyword);}
-.an{color:var(--code-annotation);}
-.st{color:var(--code-string);}
-.cm{color:var(--code-comment);font-style:italic;}
-.ty{color:var(--code-type);}
-.nm{color:#fbbf24;}
 
-/* ── 아키텍처 다이어그램 ── */
-.arch-diagram{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:28px;
-  box-shadow:var(--shadow);
-}
 
-/* ── 플로우 ── */
-.flow{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;}
-.flow-box{
-  flex-shrink:0;background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:10px 14px;font-size:12.5px;font-weight:500;
-  text-align:center;min-width:80px;
-}
-.flow-arrow{
-  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
-  padding:0 6px;color:var(--text-4);font-size:11px;
-}
-.flow-arrow .arr{font-size:16px;line-height:1;}
-.flow-arrow .lbl{font-size:10.5px;color:var(--text-4);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
-
-/* ── 특징 카드 ── */
-.feature-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:20px;
-  box-shadow:var(--shadow);transition:box-shadow .18s,transform .18s;
-  cursor:default;
-}
-.feature-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
-.feature-icon{
-  width:36px;height:36px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;margin-bottom:12px;
-}
-.feature-title{font-size:14px;font-weight:700;margin-bottom:6px;}
-.feature-desc{font-size:12.5px;color:var(--text-3);line-height:1.7;}
-
-/* ── 태그 목록 ── */
-.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.tag{
-  background:var(--surface2);border:1px solid var(--border);
-  color:var(--text-2);font-size:11.5px;padding:2px 8px;
-  border-radius:6px;font-family:'JetBrains Mono',monospace;
-}
-
-/* ── 섹션 구분선 ── */
-.divider{
-  height:1px;background:var(--border);margin:28px 0;
-}
-
-/* ── 강조 박스 ── */
-.callout{
-  display:flex;gap:12px;padding:14px 16px;
-  border-radius:var(--radius);border-left:3px solid;
-  margin:16px 0;font-size:13px;line-height:1.7;
-}
-.callout.info{background:var(--mcp-bg);border-color:var(--mcp);color:var(--mcp-dark);}
-.callout.warn{background:var(--tool-bg);border-color:var(--tool);color:var(--tool-dark);}
-.callout.good{background:var(--green-bg);border-color:var(--green);color:#166534;}
-.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
-
-/* ── 수직 타임라인 ── */
-.timeline{padding-left:24px;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:20px;}
-.tl-item{position:relative;}
-.tl-dot{
-  position:absolute;left:-31px;top:4px;
-  width:12px;height:12px;border-radius:50%;
-  border:2px solid var(--surface);
-}
-.tl-title{font-size:13.5px;font-weight:600;margin-bottom:4px;}
-.tl-body{font-size:12.5px;color:var(--text-3);line-height:1.7;}
-
-/* ── Transport 탭 ── */
-.sub-tabs{display:flex;gap:6px;margin-bottom:16px;}
-.sub-tab{
-  padding:6px 14px;border-radius:6px;font-size:12.5px;font-weight:500;
-  cursor:pointer;border:1px solid var(--border);background:var(--surface2);
-  color:var(--text-3);transition:all .15s;
-}
-.sub-tab.active{background:var(--mcp);color:#fff;border-color:var(--mcp);}
-.sub-panel{display:none;}
-.sub-panel.active{display:block;}
-
-/* ── 반응형 ── */
-@media(max-width:680px){
-  .hero{padding:32px 20px 28px;}
-  .hero h1{font-size:22px;}
-  .section{padding:20px 16px 40px;}
-  .grid-2,.grid-3{grid-template-columns:1fr;}
-  .tab-btn{min-width:90px;font-size:12px;padding:12px 10px;}
-}
 </style>
 </head>
 <body>
 
-<!-- ── 헤더 ── -->
-<div class="hero">
-  <div class="hero-badge">⚡ Spring AI 1.0</div>
-  <h1>Model Context Protocol<br><span>완전 가이드</span></h1>
-  <p>@Tool 방식과의 차이점부터 MCP 아키텍처, Transport, 클라이언트·서버 구성까지 Spring AI 기준으로 정리.</p>
-  <div class="hero-tags">
-    <span class="hero-tag">spring-ai-mcp</span>
-    <span class="hero-tag">McpClient</span>
-    <span class="hero-tag">McpServer</span>
-    <span class="hero-tag">STDIO</span>
-    <span class="hero-tag">SSE</span>
-    <span class="hero-tag">Tool / Resource / Prompt</span>
-  </div>
-</div>
+<div class="container">
+
+<header>
+  <h1>Model Context Protocol (MCP)</h1>
+  <p class="subtitle">Spring AI — @Tool 방식과의 차이점부터 MCP 아키텍처,<br>Transport, 클라이언트·서버 구성까지의 완전 가이드</p>
+</header>
 
 <!-- ── 탭 네비 ── -->
 <nav class="tab-nav">
@@ -1118,10 +997,9 @@ function showSubTab(id) {
   event.target.classList.add('active');
 }
 
-window.onload = function() {
-  const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "*");
-};
 </script>
+</div>
 </body>
 </html>
+
+

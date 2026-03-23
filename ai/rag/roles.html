@@ -4,197 +4,137 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LLM Role 정리</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
 <style>
-:root {
-  --bg:      #f4f5f9;
-  --surface: #ffffff;
-  --border:  #e2e5f0;
-  --s2:      #eef0f8;
-  --text:    #1a2540;
-  --sub:     #5a6a8a;
-  --shadow:  0 2px 16px rgba(26,37,64,0.08);
+  /* ── Page Specific Visualization Styles ── */
+  :root {
+    --cs: #7c3aed; --csl: #ede9fe; --csd: #5b21b6;
+    --cu: #0891b2; --cul: #cffafe; --cud: #0e7490;
+    --ca: #059669; --cal: #d1fae5; --cad: #047857;
+    --cw: #ef4444; --cwl: #fee2e2; --cwd: #b91c1c;
+  }
 
-  --cs: #7c3aed; --csl: #ede9fe; --csd: #5b21b6;
-  --cu: #0891b2; --cul: #cffafe; --cud: #0e7490;
-  --ca: #059669; --cal: #d1fae5; --cad: #047857;
-  --cw: #ef4444; --cwl: #fee2e2; --cwd: #b91c1c;
-}
+  /* ── Role 카드 ── */
+  .role-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .role-cards { grid-template-columns: 1fr; } }
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  .role-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 22px 18px;
+    box-shadow: var(--shadow); border-top: 4px solid;
+  }
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 99px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; font-weight: 700;
+    border: 2px solid; margin-bottom: 14px;
+  }
+  .role-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .role-props { list-style: none; }
+  .role-props li {
+    font-size: 0.82rem; color: var(--sub);
+    padding: 6px 0; border-bottom: 1px solid var(--s2);
+    line-height: 1.6; display: flex; gap: 7px; align-items: flex-start;
+  }
+  .role-props li:last-child { border-bottom: none; }
+  .role-props strong { color: var(--text); }
 
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 36px 24px 60px;
-  max-width: 1024px;
-  margin: 0 auto;
-  line-height: 1.6;
-  overflow-x: hidden;
-}
+  /* ── 대화 흐름 ── */
+  .conv-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 24px 22px; box-shadow: var(--shadow);
+  }
+  .conv-note {
+    font-size: 0.83rem; color: var(--sub); margin-bottom: 20px;
+    padding: 12px 16px; background: var(--s2);
+    border-radius: 10px; border-left: 4px solid var(--border);
+  }
 
-/* ── 헤더 ── */
-header {
-  text-align: center;
-  margin-bottom: 36px;
-  padding: 36px 28px;
-  background: var(--surface);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
-}
-header::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, var(--cs), var(--cu), var(--ca));
-}
-header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
-header p  { color: var(--sub); font-size: 0.9rem; }
+  /* ── 우선순위 ── */
+  .priority-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px 24px; box-shadow: var(--shadow);
+    display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .pyramid-area { flex-shrink: 0; }
+  .pyramid-area svg { display: block; width: 100%; }
+  .priority-desc { flex: 1; min-width: 220px; }
+  .priority-desc h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; }
+  .priority-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--s2);
+  }
+  .priority-item:last-child { border-bottom: none; }
+  .priority-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .priority-text { font-size: 0.83rem; color: var(--sub); line-height: 1.7; }
+  .priority-text strong { color: var(--text); display: block; margin-bottom: 2px; }
 
-/* ── 섹션 구분선 ── */
-.sec { display: flex; align-items: center; gap: 12px; margin: 36px 0 18px; }
-.sec .ln { height: 1px; flex: 1; background: var(--border); }
-.sec span {
-  font-size: 0.75rem; font-weight: 700; letter-spacing: 1.4px;
-  color: var(--sub); text-transform: uppercase; white-space: nowrap;
-  background: var(--s2); border: 1px solid var(--border);
-  border-radius: 99px; padding: 5px 14px;
-}
+  /* ── 충돌 시나리오 ── */
+  .conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .conflict-grid { grid-template-columns: 1fr; } }
 
-/* ── 개조식 목록 ── */
-.bullet-list {
-  list-style: none; padding: 0;
-  display: flex; flex-direction: column; gap: 5px;
-}
-.bullet-list li {
-  display: flex; align-items: flex-start; gap: 8px;
-  font-size: 0.875rem; color: var(--sub); line-height: 1.65;
-}
-.bullet-list li::before {
-  content: '·'; font-weight: 700; color: var(--sub); flex-shrink: 0;
-}
+  .conflict-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px 18px; box-shadow: var(--shadow);
+  }
+  .conflict-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .conflict-badge {
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 700; border: 1.5px solid;
+  }
+  .conflict-title { font-size: 0.93rem; font-weight: 700; }
+  .conflict-example { margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .ex-row { display: flex; gap: 8px; align-items: flex-start; font-size: 0.82rem; }
+  .ex-tag {
+    flex-shrink: 0; padding: 2px 9px; border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 700; border: 1.5px solid;
+    margin-top: 1px; white-space: nowrap;
+  }
+  .ex-text { color: var(--sub); line-height: 1.6; }
+  .conflict-result {
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 0.82rem; line-height: 1.65; border: 1.5px solid;
+  }
+  .conflict-result strong { display: block; margin-bottom: 4px; }
 
-/* ── Role 카드 ── */
-.role-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) { .role-cards { grid-template-columns: 1fr; } }
 
-.role-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 22px 18px;
-  box-shadow: var(--shadow); border-top: 4px solid;
-}
-.role-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 14px; border-radius: 99px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem; font-weight: 700;
-  border: 2px solid; margin-bottom: 14px;
-}
-.role-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-.role-props { list-style: none; }
-.role-props li {
-  font-size: 0.82rem; color: var(--sub);
-  padding: 6px 0; border-bottom: 1px solid var(--s2);
-  line-height: 1.6; display: flex; gap: 7px; align-items: flex-start;
-}
-.role-props li:last-child { border-bottom: none; }
-.role-props strong { color: var(--text); }
 
-/* ── 대화 흐름 ── */
-.conv-wrap {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 24px 22px; box-shadow: var(--shadow);
-}
-.conv-note {
-  font-size: 0.83rem; color: var(--sub); margin-bottom: 20px;
-  padding: 12px 16px; background: var(--s2);
-  border-radius: 10px; border-left: 4px solid var(--border);
-}
+  .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .tips-grid { grid-template-columns: 1fr; } }
 
-/* ── 우선순위 ── */
-.priority-wrap {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 28px 24px; box-shadow: var(--shadow);
-  display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;
-}
-.pyramid-area { flex-shrink: 0; }
-.pyramid-area svg { display: block; width: 100%; }
-.priority-desc { flex: 1; min-width: 220px; }
-.priority-desc h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; }
-.priority-item {
-  display: flex; gap: 12px; align-items: flex-start;
-  padding: 10px 0; border-bottom: 1px solid var(--s2);
-}
-.priority-item:last-child { border-bottom: none; }
-.priority-num {
-  width: 24px; height: 24px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
-}
-.priority-text { font-size: 0.83rem; color: var(--sub); line-height: 1.7; }
-.priority-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+  .tip-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 16px; box-shadow: var(--shadow);
+    border-top: 3px solid;
+  }
+  .tip-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; }
+  .tip-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--s2); padding: 1px 6px; border-radius: 4px;
+    font-size: 0.78rem;
+  }
 
-/* ── 충돌 시나리오 ── */
-.conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) { .conflict-grid { grid-template-columns: 1fr; } }
-
-.conflict-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 20px 18px; box-shadow: var(--shadow);
-}
-.conflict-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-.conflict-badge {
-  padding: 3px 10px; border-radius: 6px;
-  font-size: 0.7rem; font-weight: 700; border: 1.5px solid;
-}
-.conflict-title { font-size: 0.93rem; font-weight: 700; }
-.conflict-example { margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
-.ex-row { display: flex; gap: 8px; align-items: flex-start; font-size: 0.82rem; }
-.ex-tag {
-  flex-shrink: 0; padding: 2px 9px; border-radius: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem; font-weight: 700; border: 1.5px solid;
-  margin-top: 1px; white-space: nowrap;
-}
-.ex-text { color: var(--sub); line-height: 1.6; }
-.conflict-result {
-  padding: 10px 14px; border-radius: 10px;
-  font-size: 0.82rem; line-height: 1.65; border: 1.5px solid;
-}
-.conflict-result strong { display: block; margin-bottom: 4px; }
-
-/* ── 실전 팁 ── */
-.tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 640px) { .tips-grid { grid-template-columns: 1fr; } }
-
-.tip-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 18px 16px; box-shadow: var(--shadow);
-  border-top: 3px solid;
-}
-.tip-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; }
-.tip-card code {
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--s2); padding: 1px 6px; border-radius: 4px;
-  font-size: 0.78rem;
-}
-
-@media (max-width: 640px) { .priority-wrap { flex-direction: column; } }
+  @media (max-width: 640px) { .priority-wrap { flex-direction: column; } }
 </style>
+
 </head>
 <body>
 
 <!-- ══ 헤더 ══ -->
+<div class="container">
+
 <header>
   <h1>💬 LLM Role 정리</h1>
-  <p>System · User · Assistant — 세 역할의 구조와 충돌 시 동작 방식</p>
+  <p class="subtitle">System · User · Assistant — 세 역할의 구조와 충돌 시 동작 방식</p>
 </header>
+
 
 
 <!-- ══ ① 세 가지 Role ══ -->
@@ -463,11 +403,6 @@ header p  { color: var(--sub); font-size: 0.9rem; }
 </div>
 
 
-<script>
-  window.onload = function() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  };
-</script>
+
 </body>
 </html>
