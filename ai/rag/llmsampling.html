@@ -544,7 +544,7 @@
     </ul>
     <div class="usecase">
       <strong>✅ 용도:</strong> 코드 생성 / 수학 계산 / 사실 Q&A / 번역 / 요약<br>
-      <strong>⚙️ 권장:</strong> T=0.2, Top-p=0.9
+      <strong>⚙️ 권장:</strong> T=0.2 (Top-p 생략 가능)
     </div>
   </div>
 
@@ -558,7 +558,7 @@
     </ul>
     <div class="usecase">
       <strong>✅ 용도:</strong> 소설 / 시 / 브레인스토밍 / 광고 카피<br>
-      <strong>⚙️ 권장:</strong> T=1.0, Top-p=0.95, Top-k 비활성화
+      <strong>⚙️ 권장:</strong> T=1.2~1.5, Top-p=0.95, Top-k 비활성화
     </div>
   </div>
 
@@ -768,8 +768,7 @@ function update() {
     { label: "코드 생성 / 수학 / 사실 Q&A", min: 0,   max: 0.3 },
     { label: "번역 / 요약 / 구조화 출력",   min: 0.3, max: 0.7 },
     { label: "일반 대화 / 챗봇",            min: 0.7, max: 1.0 },
-    { label: "창의적 글쓰기 / 브레인스토밍",min: 1.0, max: 1.5 },
-    { label: "실험적·탐색적 생성",          min: 1.5, max: 2.01 },
+    { label: "창의적 글쓰기 / 브레인스토밍", min: 1.2, max: 1.5 },    { label: "실험적·탐색적 생성",          min: 1.5, max: 2.01 },
   ];
   const rows = TEMP_RANGES.map(r => {
     const active = T >= r.min && T < r.max;
