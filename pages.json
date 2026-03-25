@@ -19,6 +19,10 @@
         "label": "rag",
         "children": [
           {
+            "label": "LangGraph 시각화",
+            "path": "ai/rag/langgraph.html"
+          },
+          {
             "label": "LLM 샘플링 파라미터",
             "path": "ai/rag/llmsampling.html"
           },
