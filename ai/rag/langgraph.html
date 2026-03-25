@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangGraph 시각화</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F7F5;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: #E0DED6;
+    --text: #1A1917;
+    --text-muted: #6B6860;
+    --accent: #2563EB;
+    --accent-light: #DBEAFE;
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --orange: #EA580C;
+    --orange-light: #FFEDD5;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --yellow: #CA8A04;
+    --yellow-light: #FEF9C3;
+  }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 1024px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    padding: 0 0 64px 0;
+  }
+
+  /* HEADER */
+  .hero {
+    background: var(--text);
+    color: #fff;
+    padding: 52px 40px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border: 40px solid rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 120px; height: 120px;
+    border: 24px solid rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #93C5FD;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: #60A5FA; }
+  .hero-desc {
+    font-size: 15px;
+    color: #D1D5DB;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .hero-pill {
+    display: inline-block;
+    margin-top: 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #A5F3FC;
+  }
+
+  /* SECTIONS */
+  .section { padding: 40px 40px 0; }
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* COMPARE */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .compare-card.old { border-top: 3px solid var(--text-muted); }
+  .compare-card.new { border-top: 3px solid var(--accent); }
+  .compare-card h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .compare-card.old h3 { color: var(--text-muted); }
+  .compare-card.new h3 { color: var(--accent); }
+  .compare-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+
+  /* LOOP DIAGRAM EMBED */
+  .loop-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 16px 12px;
+  }
+  .loop-diagram svg { overflow: visible; }
+
+  .compare-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .compare-note span::before { content: "· "; }
+
+  /* COMPONENTS */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .comp-grid { grid-template-columns: 1fr; } }
+  .comp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .comp-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .comp-card.state::before { background: var(--orange); }
+  .comp-card.node::before { background: var(--green); }
+  .comp-card.edge::before { background: var(--purple); }
+  .comp-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+  .comp-card.state .comp-icon { background: var(--orange-light); }
+  .comp-card.node .comp-icon { background: var(--green-light); }
+  .comp-card.edge .comp-icon { background: var(--purple-light); }
+  .comp-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .comp-card .comp-sub {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .comp-card ul {
+    list-style: none;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .comp-card ul li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+
+  /* RAG FLOW */
+  .flow-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+  }
+  .flow-title {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .step-desc {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    min-height: 22px;
+    padding: 8px 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+  }
+
+  /* FEATURES */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .feat-grid { grid-template-columns: 1fr; } }
+  .feat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .feat-icon { font-size: 24px; margin-bottom: 12px; }
+  .feat-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .feat-card p { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+  /* WHEN TO USE */
+  .when-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) { .when-grid { grid-template-columns: 1fr; } }
+  .when-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .when-card.lcel { border-left: 4px solid var(--text-muted); }
+  .when-card.lg   { border-left: 4px solid var(--accent); }
+  .when-card h3 {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+  .when-card.lcel h3 { color: var(--text-muted); }
+  .when-card.lg h3   { color: var(--accent); }
+  .when-card ul { list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+  .when-card ul li { color: var(--text-muted); padding-left: 16px; position: relative; line-height: 1.55; }
+  .when-card ul li::before { content: "·"; position: absolute; left: 4px; font-weight: 900; font-size: 16px; line-height: 1.3; }
+  .when-card.lcel ul li::before { color: var(--text-muted); }
+  .when-card.lg   ul li::before { color: var(--accent); }
+
+  .conclusion {
+    margin-top: 16px;
+    background: var(--text);
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .conclusion-icon { font-size: 30px; }
+  .conclusion h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .conclusion p  { color: #9CA3AF; font-size: 13px; }
+
+  .divider { height: 1px; background: var(--border); margin: 40px 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- ① HERO -->
+<div class="hero">
+  <div class="hero-tag">LangChain Ecosystem · Graph-based Agent Framework</div>
+  <h1>Lang<span>Graph</span></h1>
+  <p class="hero-desc">LLM에게 '지도'와 '공유 메모장'을 쥐여주고,<br>복잡한 업무를 스스로 수행하게 만드는 <strong>에이전트 설계 프레임워크</strong></p>
+  <div class="hero-pill">State · Node · Edge → Agent</div>
+</div>
+
+<!-- ② LCEL vs LangGraph -->
+<div class="section">
+  <div class="section-label">
+    <span class="section-num">01</span>
+    <span class="section-title">LCEL vs LangGraph — 무엇이 다른가?</span>
+  </div>
+  <div class="compare-grid">
+
+    <!-- LCEL -->
+    <div class="compare-card old">
+      <h3>LCEL · 기존 방식</h3>
+      <p>일방통행 레시피<br>→ 순서대로만 실행, 되돌아가기 불가</p>
+      <div class="loop-diagram">
+        <svg width="100%" viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="a0" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#6B6860"/>
+            </marker>
+          </defs>
+          <rect x="0"   y="10" width="52" height="36" rx="9" fill="#E5E7EB"/>
+          <text x="26"  y="33" text-anchor="middle" fill="#374151" font-family="JetBrains Mono,monospace" font-size="15" font-weight="700">A</text>
+          <line x1="54" y1="28" x2="72" y2="28" stroke="#9CA3AF" stroke-width="2" marker-end="url(#a0)"/>
+          <rect x="74"  y="10" width="52" height="36" rx="9" fill="#E5E7EB"/>
+          <text x="100" y="33" text-anchor="middle" fill="#374151" font-family="JetBrains Mono,monospace" font-size="15" font-weight="700">B</text>
+          <line x1="128" y1="28" x2="146" y2="28" stroke="#9CA3AF" stroke-width="2" marker-end="url(#a0)"/>
+          <rect x="148" y="10" width="52" height="36" rx="9" fill="#E5E7EB"/>
+          <text x="174" y="33" text-anchor="middle" fill="#374151" font-family="JetBrains Mono,monospace" font-size="15" font-weight="700">C</text>
+          <line x1="202" y1="28" x2="220" y2="28" stroke="#9CA3AF" stroke-width="2" marker-end="url(#a0)"/>
+          <rect x="222" y="10" width="52" height="36" rx="9" fill="#374151"/>
+          <text x="248" y="33" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700">END</text>
+        </svg>
+      </div>
+      <div class="compare-note">
+        <span>직선 구조 / 유턴 불가</span>
+        <span>단순 파이프라인에 최적</span>
+        <span>조건 분기·반복 처리 어려움</span>
+      </div>
+    </div>
+
+    <!-- LangGraph -->
+    <div class="compare-card new">
+      <h3>LangGraph · 새로운 방식</h3>
+      <p>사거리·회전교차로가 있는 도로망<br>→ 조건 분기, 루프, 유턴 모두 가능</p>
+      <div class="loop-diagram">
+        <svg width="100%" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <defs>
+            <marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#374151"/>
+            </marker>
+            <marker id="a1g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#16A34A"/>
+            </marker>
+            <marker id="a1r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#DC2626"/>
+            </marker>
+          </defs>
+          <!-- A -->
+          <rect x="0" y="20" width="52" height="40" rx="10" fill="#2563EB"/>
+          <text x="26" y="46" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="18" font-weight="700">A</text>
+          <!-- A→B -->
+          <line x1="54" y1="40" x2="74" y2="40" stroke="#374151" stroke-width="2" marker-end="url(#a1)"/>
+          <!-- B -->
+          <rect x="76" y="20" width="52" height="40" rx="10" fill="#2563EB"/>
+          <text x="102" y="46" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="18" font-weight="700">B</text>
+          <!-- B→확인? -->
+          <line x1="130" y1="40" x2="154" y2="40" stroke="#374151" stroke-width="2" marker-end="url(#a1)"/>
+          <!-- 확인? 다이아몬드 -->
+          <polygon points="196,16 232,40 196,64 160,40" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+          <text x="196" y="37" text-anchor="middle" fill="#1D4ED8" font-family="Noto Sans KR,sans-serif" font-size="11" font-weight="700">확인?</text>
+          <text x="196" y="52" text-anchor="middle" fill="#3B82F6" font-family="Noto Sans KR,sans-serif" font-size="9">조건 분기</text>
+          <!-- YES → END -->
+          <line x1="234" y1="40" x2="258" y2="40" stroke="#16A34A" stroke-width="2" marker-end="url(#a1g)"/>
+          <rect x="240" y="24" width="32" height="16" rx="5" fill="#DCFCE7"/>
+          <text x="256" y="36" text-anchor="middle" fill="#15803D" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">YES</text>
+          <!-- END -->
+          <rect x="260" y="20" width="52" height="40" rx="10" fill="#111827"/>
+          <text x="286" y="46" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700">END</text>
+          <!-- NO 루프 -->
+          <path d="M196,64 L196,120 L102,120 L102,62" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#a1r)"/>
+          <!-- NO 라벨 -->
+          <rect x="170" y="66" width="36" height="18" rx="5" fill="#FEE2E2"/>
+          <text x="188" y="79" text-anchor="middle" fill="#B91C1C" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">NO</text>
+          <!-- 루프 설명 -->
+          <rect x="90" y="110" width="104" height="20" rx="5" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1"/>
+          <text x="142" y="124" text-anchor="middle" fill="#C2410C" font-family="Noto Sans KR,sans-serif" font-size="10" font-weight="600">B 로 돌아가 재실행</text>
+        </svg>
+      </div>
+      <div class="compare-note">
+        <span>사이클(Cycle) 구조 지원</span>
+        <span>조건부 엣지로 동적 분기</span>
+        <span>복잡한 에이전트 로직 구현 가능</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ③ 핵심 구성요소 -->
+<div class="section" style="padding-top:40px">
+  <div class="section-label">
+    <span class="section-num">02</span>
+    <span class="section-title">핵심 구성요소</span>
+  </div>
+  <div class="comp-grid">
+    <div class="comp-card state">
+      <div class="comp-icon">📋</div>
+      <h3>State</h3>
+      <div class="comp-sub">공유 메모장 · 공용 게시판</div>
+      <ul>
+        <li>모든 노드가 공유하는 데이터 저장소</li>
+        <li>이전 작업 기록 → 에러 복구 가능</li>
+        <li>TypedDict / Pydantic 기반 정의</li>
+        <li>중간 결과 누적 → 최종 판단 근거</li>
+      </ul>
+    </div>
+    <div class="comp-card node">
+      <div class="comp-icon">⚙️</div>
+      <h3>Node</h3>
+      <div class="comp-sub">전문가 팀원 · 담당자</div>
+      <ul>
+        <li>특정 업무만 수행하는 단위 함수</li>
+        <li>State 입력 → 처리 → State 업데이트</li>
+        <li>검색 / 요약 / 번역 / 평가 등 분리</li>
+        <li>Python 함수 또는 LLM 호출 단위</li>
+      </ul>
+    </div>
+    <div class="comp-card edge">
+      <div class="comp-icon">🔀</div>
+      <h3>Edge</h3>
+      <div class="comp-sub">업무 지시서 · 통로</div>
+      <ul>
+        <li>노드 간 연결 경로 정의</li>
+        <li>일반 엣지: 항상 동일 경로 이동</li>
+        <li>조건부 엣지: 상태에 따라 동적 분기</li>
+        <li>품질 낮음 → 재검색 / 완료 → END</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ④ 스마트 RAG 플로우 -->
+<div class="section" style="padding-top:40px">
+  <div class="section-label">
+    <span class="section-num">03</span>
+    <span class="section-title">스마트 RAG 플로우 — 실제 동작 시나리오</span>
+  </div>
+  <div class="flow-wrap">
+    <div class="flow-title">LangGraph 기반 Self-Correcting RAG Pipeline</div>
+    <svg width="100%" viewBox="0 0 860 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="mb" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="#374151"/>
+        </marker>
+        <marker id="mg" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="#16A34A"/>
+        </marker>
+        <marker id="mr" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="#DC2626"/>
+        </marker>
+        <filter id="sh">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.07"/>
+        </filter>
+      </defs>
+
+      <!-- START -->
+      <ellipse cx="60" cy="60" rx="48" ry="24" fill="#111827" filter="url(#sh)"/>
+      <text x="60" y="65" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700">START</text>
+
+      <!-- ① 질문분석 -->
+      <g filter="url(#sh)" id="rn1" style="cursor:pointer">
+        <rect x="148" y="36" width="126" height="48" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+        <text x="211" y="57" text-anchor="middle" fill="#1E40AF" font-family="Noto Sans KR,sans-serif" font-size="12" font-weight="700">① 질문 분석</text>
+        <text x="211" y="73" text-anchor="middle" fill="#3B82F6" font-family="Noto Sans KR,sans-serif" font-size="10">모호성 검사</text>
+      </g>
+
+      <!-- ② 문서검색 -->
+      <g filter="url(#sh)" id="rn2" style="cursor:pointer">
+        <rect x="400" y="36" width="126" height="48" rx="10" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+        <text x="463" y="57" text-anchor="middle" fill="#14532D" font-family="Noto Sans KR,sans-serif" font-size="12" font-weight="700">② 문서 검색</text>
+        <text x="463" y="73" text-anchor="middle" fill="#16A34A" font-family="Noto Sans KR,sans-serif" font-size="10">Vector DB 조회</text>
+      </g>
+
+      <!-- ③ 품질평가 -->
+      <g filter="url(#sh)" id="rn3" style="cursor:pointer">
+        <rect x="400" y="196" width="126" height="48" rx="10" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2"/>
+        <text x="463" y="217" text-anchor="middle" fill="#713F12" font-family="Noto Sans KR,sans-serif" font-size="12" font-weight="700">③ 품질 평가</text>
+        <text x="463" y="233" text-anchor="middle" fill="#CA8A04" font-family="Noto Sans KR,sans-serif" font-size="10">관련성 스코어 계산</text>
+      </g>
+
+      <!-- ④ 답변생성 -->
+      <g filter="url(#sh)" id="rn4" style="cursor:pointer">
+        <rect x="400" y="356" width="126" height="48" rx="10" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+        <text x="463" y="377" text-anchor="middle" fill="#4C1D95" font-family="Noto Sans KR,sans-serif" font-size="12" font-weight="700">④ 답변 생성</text>
+        <text x="463" y="393" text-anchor="middle" fill="#7C3AED" font-family="Noto Sans KR,sans-serif" font-size="10">LLM 호출</text>
+      </g>
+
+      <!-- ⑤ 환각검증 -->
+      <g filter="url(#sh)" id="rn5" style="cursor:pointer">
+        <rect x="400" y="448" width="126" height="48" rx="10" fill="#FFEDD5" stroke="#EA580C" stroke-width="2"/>
+        <text x="463" y="469" text-anchor="middle" fill="#7C2D12" font-family="Noto Sans KR,sans-serif" font-size="12" font-weight="700">⑤ 환각 검증</text>
+        <text x="463" y="485" text-anchor="middle" fill="#EA580C" font-family="Noto Sans KR,sans-serif" font-size="10">Hallucination 체크</text>
+      </g>
+
+      <!-- END -->
+      <ellipse cx="700" cy="472" rx="52" ry="24" fill="#111827" filter="url(#sh)"/>
+      <text x="700" y="477" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700">END</text>
+
+      <!-- 메인 화살표 -->
+      <line x1="110" y1="60" x2="144" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#mb)"/>
+      <line x1="276" y1="60" x2="396" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#mb)"/>
+      <line x1="463" y1="86" x2="463" y2="192" stroke="#374151" stroke-width="2" marker-end="url(#mb)"/>
+      <line x1="463" y1="246" x2="463" y2="352" stroke="#16A34A" stroke-width="2" marker-end="url(#mg)"/>
+      <line x1="463" y1="406" x2="463" y2="444" stroke="#374151" stroke-width="2" marker-end="url(#mb)"/>
+      <line x1="530" y1="472" x2="644" y2="472" stroke="#16A34A" stroke-width="2" marker-end="url(#mg)"/>
+
+      <!-- YES 라벨 (품질평가→답변생성) -->
+      <rect x="472" y="278" width="50" height="18" rx="5" fill="#DCFCE7"/>
+      <text x="497" y="291" text-anchor="middle" fill="#15803D" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">✓ 충분</text>
+
+      <!-- YES 라벨 (환각검증→END) -->
+      <rect x="560" y="456" width="60" height="18" rx="5" fill="#DCFCE7"/>
+      <text x="590" y="469" text-anchor="middle" fill="#15803D" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">✓ 완료</text>
+
+      <!-- LOOP 1: 질문 모호 → 재질문 -->
+      <path d="M211,36 Q211,-12 140,-12 Q60,-12 60,34" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#mr)"/>
+      <rect x="90" y="-20" width="90" height="18" rx="5" fill="#FEE2E2"/>
+      <text x="135" y="-7" text-anchor="middle" fill="#B91C1C" font-family="Noto Sans KR,sans-serif" font-size="10" font-weight="700">모호 → 재질문</text>
+
+      <!-- LOOP 2: 품질 낮음 → 재검색 -->
+      <path d="M400,220 Q344,220 344,130 Q344,60 396,60" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#mr)"/>
+      <rect x="290" y="140" width="68" height="36" rx="5" fill="#FEE2E2"/>
+      <text x="324" y="156" text-anchor="middle" fill="#B91C1C" font-family="Noto Sans KR,sans-serif" font-size="10" font-weight="700">품질 낮음</text>
+      <text x="324" y="170" text-anchor="middle" fill="#B91C1C" font-family="Noto Sans KR,sans-serif" font-size="10">→ 키워드 변경</text>
+
+      <!-- LOOP 3: 환각 → 재생성 -->
+      <path d="M400,472 Q364,472 364,385 Q364,364 396,380" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#mr)"/>
+      <rect x="290" y="428" width="68" height="36" rx="5" fill="#FEE2E2"/>
+      <text x="324" y="444" text-anchor="middle" fill="#B91C1C" font-family="Noto Sans KR,sans-serif" font-size="10" font-weight="700">환각 발견</text>
+      <text x="324" y="458" text-anchor="middle" fill="#B91C1C" font-family="Noto Sans KR,sans-serif" font-size="10">→ 재생성</text>
+
+      <!-- State 박스 -->
+      <rect x="108" y="170" width="210" height="140" rx="10" fill="#F7F7F5" stroke="#E0DED6" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <text x="213" y="193" text-anchor="middle" fill="#6B6860" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">📋 SHARED STATE</text>
+      <text x="122" y="213" fill="#9CA3AF" font-family="JetBrains Mono,monospace" font-size="10">question: str</text>
+      <text x="122" y="229" fill="#9CA3AF" font-family="JetBrains Mono,monospace" font-size="10">documents: list</text>
+      <text x="122" y="245" fill="#9CA3AF" font-family="JetBrains Mono,monospace" font-size="10">quality_score: float</text>
+      <text x="122" y="261" fill="#9CA3AF" font-family="JetBrains Mono,monospace" font-size="10">answer: str</text>
+      <text x="122" y="277" fill="#9CA3AF" font-family="JetBrains Mono,monospace" font-size="10">retry_count: int</text>
+
+      <!-- 범례 -->
+      <line x1="10"  y1="510" x2="36"  y2="510" stroke="#374151" stroke-width="2" marker-end="url(#mb)"/>
+      <text x="44"  y="515" fill="#6B7280" font-family="Noto Sans KR,sans-serif" font-size="11">일반 흐름</text>
+      <line x1="130" y1="510" x2="156" y2="510" stroke="#16A34A" stroke-width="2" marker-end="url(#mg)"/>
+      <text x="164" y="515" fill="#6B7280" font-family="Noto Sans KR,sans-serif" font-size="11">YES → 진행</text>
+      <line x1="260" y1="510" x2="286" y2="510" stroke="#DC2626" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+      <text x="294" y="515" fill="#6B7280" font-family="Noto Sans KR,sans-serif" font-size="11">NO → 루프 재실행</text>
+    </svg>
+    <div class="step-desc" id="stepDesc">💡 각 노드를 클릭하면 단계별 설명이 표시됩니다</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ⑤ 강력한 기능 -->
+<div class="section" style="padding-top:40px">
+  <div class="section-label">
+    <span class="section-num">04</span>
+    <span class="section-title">LangGraph만의 강력한 기능</span>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🔁</div>
+      <h3>사이클(Cycle) 허용</h3>
+      <p>정답을 찾을 때까지 반복 실행<br>→ 자기수정(Self-Correcting) AI 구현</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💾</div>
+      <h3>체크포인트</h3>
+      <p>작업 중간 상태 저장<br>→ 서버 장애 시 마지막 저장점부터 재개</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧑‍💼</div>
+      <h3>Human-in-the-loop</h3>
+      <p>중요 행동 전 실행 일시정지<br>→ 사람의 승인 후 다음 노드로 진행</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ⑥ 언제 쓸까? -->
+<div class="section" style="padding-top:40px">
+  <div class="section-label">
+    <span class="section-num">05</span>
+    <span class="section-title">언제 무엇을 써야 할까?</span>
+  </div>
+  <div class="when-grid">
+    <div class="when-card lcel">
+      <h3>LCEL 선택 시</h3>
+      <ul>
+        <li>단순 번역 / 요약 등 1회성 작업</li>
+        <li>입출력이 명확한 선형 파이프라인</li>
+        <li>빠른 프로토타이핑 필요 시</li>
+        <li>분기·반복 없는 단순 체인</li>
+      </ul>
+    </div>
+    <div class="when-card lg">
+      <h3>LangGraph 선택 시</h3>
+      <ul>
+        <li>논문 수십 편 읽고 비판적 분석 보고서</li>
+        <li>코드 작성 → 에러 수정 → 재실행 루프</li>
+        <li>다단계 검증이 필요한 RAG 파이프라인</li>
+        <li>사람 승인이 필요한 자동화 에이전트</li>
+      </ul>
+    </div>
+  </div>
+  <div class="conclusion">
+    <div class="conclusion-icon">🤖</div>
+    <div>
+      <h4>LangGraph = LLM을 진짜 '에이전트'로 격상시키는 도구</h4>
+      <p>단순 챗봇 → 스스로 사고하고 행동하는 자율 에이전트로 진화</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nodeInfo = {
+    rn1: "① 질문 분석 → 사용자 질문의 모호성 검사 · 불명확 시 루프로 재질문 요청",
+    rn2: "② 문서 검색 → Vector DB에서 관련 문서 조회 · 키워드 기반 탐색 수행",
+    rn3: "③ 품질 평가 → 검색 문서의 관련성 스코어 계산 · 낮으면 키워드 변경 후 재검색",
+    rn4: "④ 답변 생성 → LLM 호출로 최종 답변 초안 생성",
+    rn5: "⑤ 환각 검증 → 생성 답변의 Hallucination 여부 판단 · 발견 시 재생성 루프"
+  };
+  Object.keys(nodeInfo).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', () => {
+        document.getElementById('stepDesc').textContent = nodeInfo[id];
+      });
+    }
+  });
+
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+</body>
+</html>
