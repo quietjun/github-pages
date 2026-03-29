@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoRA — Low-Rank Adaptation 완전 이해</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #f7f8fa;
+  color: #1a1d2e;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 32px 24px 56px;
+  overflow-x: hidden;
+  line-height: 1.7;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #94a3b8;
+  margin: 40px 0 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 44px; }
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff; font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; padding: 4px 14px;
+  border-radius: 20px; margin-bottom: 14px; text-transform: uppercase;
+}
+.header h1 { font-size: 30px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.3; }
+.header h1 em { color: #2563eb; font-style: normal; }
+.header p { margin-top: 10px; font-size: 14px; color: #64748b; }
+
+/* ── CARD BASE ── */
+.card {
+  background: #fff; border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e8edf3;
+}
+.card + .card { margin-top: 14px; }
+
+/* ── PEFT DEFINITION ── */
+.peft-def-box {
+  background: #fff; border-radius: 16px;
+  padding: 22px 24px;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex; flex-direction: column; gap: 6px;
+  border-left: 5px solid #2563eb;
+}
+.peft-def-keyword {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700; color: #2563eb;
+  letter-spacing: 2px;
+}
+.peft-def-full {
+  font-size: 15px; font-weight: 800; color: #1a1d2e; line-height: 1.4;
+}
+.peft-def-desc {
+  font-size: 13.5px; color: #475569; line-height: 1.8; margin-top: 6px;
+}
+.peft-def-desc strong { color: #1a1d2e; }
+
+/* ── UNIFIED COMPARE TABLE ── */
+.compare-table-unified {
+  width: 100%; border-collapse: collapse; font-size: 13.5px;
+}
+.compare-table-unified thead tr { background: #1a1d2e; }
+.compare-table-unified thead th {
+  padding: 14px 18px; text-align: left; font-weight: 700;
+  font-size: 13px; line-height: 1.5;
+}
+.compare-table-unified thead th span {
+  display: block; font-size: 11px; font-weight: 500;
+  opacity: 0.6; margin-top: 2px; font-family: 'JetBrains Mono', monospace;
+}
+.compare-table-unified th.col-item { color: #94a3b8; width: 22%; }
+.compare-table-unified th.col-bad  { color: #fca5a5; }
+.compare-table-unified th.col-good { color: #86efac; }
+.compare-table-unified tbody tr { border-bottom: 1px solid #f1f5f9; }
+.compare-table-unified tbody tr:last-child { border-bottom: none; }
+.compare-table-unified td {
+  padding: 13px 18px; vertical-align: top; line-height: 1.65;
+}
+.compare-table-unified td small {
+  display: block; font-size: 11.5px; color: #94a3b8; margin-top: 2px;
+}
+.compare-table-unified td.row-label {
+  font-weight: 700; color: #1a1d2e; font-size: 13px; background: #f8fafc;
+}
+.compare-table-unified td.val-bad  { color: #dc2626; }
+.compare-table-unified td.val-good { color: #1d4ed8; }
+.compare-table-unified td.val-good strong { font-weight: 800; }
+
+.red  { color: #dc2626; font-weight: 600; }
+.blue { color: #2563eb; font-weight: 600; }
+/* keep .compare-table-mini for nothing now, just alias */
+.compare-table-mini { display: none; }
+
+/* ── RANK CONCEPT BOX (핵심 발견 아래) ── */
+.rank-concept-box {
+  background: #f5f3ff; border: 1.5px solid #ddd6fe;
+  border-radius: 12px; padding: 16px 20px;
+  margin: 16px 0 0;
+}
+.rcb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; font-weight: 700; color: #7c3aed;
+  letter-spacing: 1.5px; margin-bottom: 4px;
+}
+.rcb-title { font-size: 15px; font-weight: 800; color: #4c1d95; margin-bottom: 8px; }
+.rcb-desc  { font-size: 13px; color: #5b21b6; line-height: 1.75; }
+.rcb-desc strong { color: #4c1d95; }
+.rcb-desc em { font-style: normal; color: #6d28d9; font-weight: 600; }
+
+/* ── RANK BOTTLENECK NOTE ── */
+.rank-bottleneck {
+  background: #fefce8; border: 1.5px solid #fde047;
+  border-radius: 10px; padding: 11px 16px;
+  font-size: 12.5px; color: #713f12; margin-top: 4px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.rb-arrow { font-size: 18px; flex-shrink: 0; margin-top: -2px; }
+.lowrank-card { background:#fff; border-radius:16px; padding:28px 26px; box-shadow:0 1px 4px rgba(0,0,0,.06); border:1px solid #e8edf3; }
+.insight-box {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-left: 4px solid #3b82f6;
+  border-radius: 10px; padding: 16px 20px;
+  margin-bottom: 24px; font-size: 13.5px; color: #1e40af; line-height: 1.75;
+}
+.insight-box strong { font-weight: 800; }
+
+/* matrix decomp visual */
+.matrix-decomp {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap; margin: 24px 0;
+}
+.matrix-wrap { text-align: center; }
+.matrix-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700; margin-bottom: 8px;
+}
+.matrix {
+  display: inline-grid; gap: 3px; padding: 10px;
+  border-radius: 10px;
+}
+.cell {
+  width: 28px; height: 28px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; font-weight: 600; color: #fff;
+  transition: all 0.4s;
+}
+/* ΔW full 8×8 */
+.m-full { background: linear-gradient(135deg,#3b82f6,#6366f1); opacity: 0.85; }
+.m-full.dim { opacity: 0.2; }
+/* A 8×2 */
+.m-a { background: linear-gradient(135deg,#10b981,#34d399); }
+/* B 2×8 */
+.m-b { background: linear-gradient(135deg,#f59e0b,#fbbf24); }
+/* rank highlight */
+.m-rank { background: linear-gradient(135deg,#ef4444,#f87171); }
+
+.decomp-op {
+  font-size: 26px; color: #cbd5e1; font-weight: 300;
+  flex-shrink: 0; align-self: center;
+}
+.matrix-sub { font-size: 11.5px; color: #64748b; margin-top: 8px; }
+.matrix-sub span { font-weight: 700; }
+
+/* param count box */
+.param-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px;
+}
+.param-box {
+  border-radius: 12px; padding: 16px 18px; text-align: center;
+}
+.param-box.full { background: #fef2f2; border: 1.5px solid #fecaca; }
+.param-box.low  { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+.param-box-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 700; line-height: 1;
+  margin-bottom: 4px;
+}
+.param-box.full .param-box-num { color: #dc2626; }
+.param-box.low  .param-box-num { color: #16a34a; }
+.param-box-label { font-size: 12px; color: #64748b; }
+.param-box-desc  { font-size: 12px; font-weight: 700; margin-top: 8px; }
+.param-box.full .param-box-desc { color: #dc2626; }
+.param-box.low  .param-box-desc { color: #16a34a; }
+
+/* rank explanation */
+.rank-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  margin-top: 22px;
+}
+.rank-step {
+  background: #f8fafc; border-radius: 12px; padding: 16px 14px;
+  border: 1.5px solid #e2e8f0;
+}
+.rank-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700; color: #94a3b8;
+  margin-bottom: 6px;
+}
+.rank-step-title { font-size: 13px; font-weight: 800; color: #1a1d2e; margin-bottom: 8px; }
+.rank-step-desc  { font-size: 12px; color: #64748b; line-height: 1.65; }
+
+/* ── FORWARD / BACKWARD UNIFIED DIAGRAM ── */
+.fbdiag-wrap {
+  background: #fff; border-radius: 16px; padding: 22px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06); border: 1px solid #e8edf3;
+}
+.fbdiag-legend {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  margin-bottom: 18px; padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.fwd-dot    { background: #3b82f6; }
+.bwd-dot    { background: #f59e0b; }
+.frozen-dot { background: #93c5fd; }
+.learn-dot  { background: #4ade80; }
+
+.fbdiag-body {
+  display: grid;
+  grid-template-columns: 90px 1fr 140px;
+  gap: 0 12px;
+  align-items: start;
+}
+.fbdiag-labels { display: flex; flex-direction: column; padding-top: 4px; }
+.fbd-lrow { display: flex; align-items: center; }
+.fbl {
+  font-size: 11px; font-weight: 700; line-height: 1.3;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+}
+.fwd-lbl  { color: #1d4ed8; background: #eff6ff; }
+.bwd-lbl  { color: #b45309; background: #fffbeb; }
+.skip-lbl { color: #dc2626; background: #fef2f2; }
+
+.fbdiag-svg-wrap { min-height: 460px; }
+
+.fbdiag-notes { display: flex; flex-direction: column; padding-top: 4px; }
+.fbn-item { display: flex; flex-direction: column; gap: 3px; }
+.fbn-item p { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+.fbn-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 5px; width: fit-content;
+  letter-spacing: 0.5px;
+}
+.fwd-badge     { background: #dbeafe; color: #1e40af; }
+.bwd-badge     { background: #fef3c7; color: #92400e; }
+.frozen-badge2 { background: #dbeafe; color: #1e40af; }
+.learn-badge2  { background: #dcfce7; color: #166534; }
+.skip-badge2   { background: #fee2e2; color: #dc2626; }
+
+@media (max-width: 640px) {
+  .fbdiag-body { grid-template-columns: 1fr; }
+  .fbdiag-labels, .fbdiag-notes { display: none; }
+}
+
+/* ── TRANSFORMER TARGET ── */
+.attn-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+.attn-block {
+  background: #fff; border-radius: 14px; padding: 20px; border: 1.5px solid #e2e8f0;
+}
+.attn-block-title {
+  font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 14px;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.proj-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px; margin-bottom: 6px;
+  font-size: 12.5px;
+}
+.proj-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700; min-width: 70px;
+}
+.proj-row.active { background: #eff6ff; }
+.proj-row.muted  { background: #f8fafc; color: #94a3b8; }
+.proj-row.active .proj-name { color: #2563eb; }
+.proj-row.muted  .proj-name { color: #cbd5e1; }
+.lora-chip {
+  margin-left: auto;
+  background: #2563eb; color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.opt-chip {
+  margin-left: auto;
+  background: #f1f5f9; color: #94a3b8;
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 5px;
+}
+.tip-box {
+  background: #fffbeb; border: 1.5px solid #fde68a;
+  border-radius: 10px; padding: 12px 16px;
+  font-size: 12.5px; color: #92400e; margin-top: 14px;
+  grid-column: 1 / -1;
+}
+
+/* ── ADAPTER USAGE ── */
+.adapter-diagram {
+  background: #fff; border-radius: 16px; padding: 26px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06); border: 1px solid #e8edf3;
+}
+.base-model-box {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  color: #fff; border-radius: 14px; padding: 18px 22px;
+  text-align: center; margin-bottom: 20px;
+}
+.base-model-box .bm-label { font-size: 11px; color: #a5b4fc; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.base-model-box .bm-name  { font-size: 18px; font-weight: 800; }
+.base-model-box .bm-sub   { font-size: 12px; color: #c7d2fe; margin-top: 4px; }
+.adapter-cards {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin-bottom: 20px;
+}
+.adapter-card {
+  border-radius: 12px; padding: 14px 12px; text-align: center;
+  border: 1.5px solid #e2e8f0; background: #f8fafc;
+  font-size: 12px;
+}
+.adapter-card .ac-icon  { font-size: 22px; margin-bottom: 6px; }
+.adapter-card .ac-title { font-weight: 700; color: #1a1d2e; font-size: 12.5px; margin-bottom: 4px; }
+.adapter-card .ac-size  {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: #2563eb; background: #dbeafe;
+  padding: 1px 7px; border-radius: 5px; display: inline-block;
+}
+.adapter-card .ac-desc  { font-size: 11px; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
+.merge-row {
+  display: flex; align-items: center; gap: 12px;
+  background: #f0fdf4; border: 1.5px solid #86efac;
+  border-radius: 12px; padding: 14px 18px; flex-wrap: wrap;
+}
+.merge-item { font-size: 13px; font-weight: 700; }
+.merge-item.base { color: #1e40af; }
+.merge-item.adapter { color: #16a34a; }
+.merge-plus { color: #94a3b8; font-size: 18px; }
+.merge-result {
+  margin-left: auto; background: #16a34a; color: #fff;
+  padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 700;
+}
+
+/* ── MERGE vs SEPARATE ── */
+.infer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.infer-card {
+  background: #fff; border-radius: 14px; padding: 22px;
+  border: 1.5px solid #e2e8f0;
+}
+.infer-card-title { font-size: 14px; font-weight: 800; margin-bottom: 14px; }
+.infer-card.sep .infer-card-title { color: #2563eb; }
+.infer-card.mrg .infer-card-title { color: #059669; }
+.infer-flow {
+  background: #f8fafc; border-radius: 10px; padding: 14px;
+  margin-bottom: 14px; font-size: 12.5px; line-height: 2;
+  font-family: 'JetBrains Mono', monospace;
+}
+.infer-flow .eq { color: #2563eb; font-weight: 700; }
+.infer-flow .note { font-family: 'Noto Sans KR', sans-serif; color: #94a3b8; font-size: 11px; }
+.pro-con { font-size: 12px; color: #64748b; }
+.pro-con li { list-style: none; padding: 3px 0 3px 16px; position: relative; }
+.pro-con li::before { position: absolute; left: 0; }
+.pro-con li.pro::before { content: '✔'; color: #16a34a; }
+.pro-con li.con::before { content: '✖'; color: #dc2626; }
+
+/* ── CODE ── */
+.code-block {
+  background: #1a1d2e; border-radius: 14px; padding: 22px 24px; overflow-x: auto;
+}
+.code-block pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; line-height: 1.8; color: #e2e8f0; white-space: pre;
+}
+.c-comment { color: #64748b; }
+.c-keyword  { color: #c4b5fd; }
+.c-string   { color: #86efac; }
+.c-func     { color: #60a5fa; }
+.c-num      { color: #fbbf24; }
+.c-import   { color: #f9a8d4; }
+.c-var      { color: #94e2d5; }
+.c-ann      { color: #fb923c; }
+
+/* ── SUMMARY ── */
+.summary-box {
+  background: linear-gradient(135deg, #1e3a5f, #1e40af);
+  border-radius: 16px; padding: 24px 28px; color: #fff;
+}
+.summary-box .sum-title {
+  font-size: 13px; font-weight: 700; color: #93c5fd;
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
+}
+.sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.sum-item { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; }
+.sum-item .si-key {
+  font-size: 11px; color: #93c5fd; margin-bottom: 4px; font-weight: 700; letter-spacing: 1px;
+}
+.sum-item .si-val { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.4; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .peft-grid, .fb-grid, .attn-grid, .infer-grid { grid-template-columns: 1fr; }
+  .adapter-cards { grid-template-columns: 1fr 1fr; }
+  .rank-steps { grid-template-columns: 1fr; }
+  .param-compare { grid-template-columns: 1fr; }
+  .sum-grid { grid-template-columns: 1fr; }
+  .matrix-decomp { gap: 8px; }
+  .cell { width: 22px; height: 22px; font-size: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <div class="badge">PEFT Series 01</div>
+  <h1>LoRA — <em>Low-Rank Adaptation</em></h1>
+  <p>파인튜닝 기법의 핵심 원리 · Low-Rank 개념 · 동작 방식 · 코드 사용법</p>
+</div>
+
+
+<!-- ═══ 01. PEFT란? ═══ -->
+<div class="section-label">01 · PEFT 란?</div>
+
+<!-- PEFT 정의 -->
+<div class="peft-def-box">
+  <div class="peft-def-keyword">PEFT</div>
+  <div class="peft-def-full">Parameter Efficient Fine-Tuning &nbsp;·&nbsp; 파라미터 효율적 미세조정</div>
+  <p class="peft-def-desc">
+    사전학습된 대규모 언어 모델(LLM)을 특정 태스크에 맞게 적응시키는 기법.<br>
+    전체 파라미터를 재학습하는 대신, <strong>소수의 파라미터만 학습</strong>하여 시간·메모리·저장 공간을 대폭 절약.<br>
+    대표 기법 → <strong>LoRA</strong> (Low-Rank Adaptation) · Prefix Tuning · Adapter Tuning 등.
+  </p>
+</div>
+
+<!-- 통합 비교표 -->
+<div class="card" style="margin-top:14px; padding: 0; overflow:hidden;">
+  <table class="compare-table-unified">
+    <thead>
+      <tr>
+        <th class="col-item">구분</th>
+        <th class="col-bad">✖ 전체 파인튜닝<br><span>Full Fine-Tuning</span></th>
+        <th class="col-good">✔ PEFT · LoRA<br><span>Parameter Efficient</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-label">학습 대상</td>
+        <td class="val-bad">모든 파라미터 업데이트<br><small>→ 수십억 개 전부 학습</small></td>
+        <td class="val-good">원본 가중치 동결<br><small>→ 소수 Adapter 파라미터만 학습</small></td>
+      </tr>
+      <tr>
+        <td class="row-label">메모리 사용량</td>
+        <td class="val-bad">매우 높음<br><small>수백 GB VRAM 요구</small></td>
+        <td class="val-good">낮음 — 전체 대비 <strong>1/10</strong><br><small>일반 소비자 GPU로 가능</small></td>
+      </tr>
+      <tr>
+        <td class="row-label">저장 공간</td>
+        <td class="val-bad">~50 GB / 모델</td>
+        <td class="val-good">~10 MB / Adapter<br><small>→ 모델 공유, Adapter만 교체</small></td>
+      </tr>
+      <tr>
+        <td class="row-label">학습 파라미터</td>
+        <td class="val-bad">100%</td>
+        <td class="val-good">0.1 ~ 1%<br><small>→ 학습 속도 2~3배 향상</small></td>
+      </tr>
+      <tr>
+        <td class="row-label">학습 시간</td>
+        <td class="val-bad">며칠 ~ 수 주</td>
+        <td class="val-good">단일 GPU, 몇 시간 내</td>
+      </tr>
+      <tr>
+        <td class="row-label">다중 태스크</td>
+        <td class="val-bad">어려움<br><small>→ 태스크마다 모델 복제 필요</small></td>
+        <td class="val-good">쉬움<br><small>→ Adapter 교체만으로 즉시 전환</small></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ═══ 02. LOW-RANK란? ═══ -->
+<div class="section-label">02 · Low-Rank 란?</div>
+<div class="lowrank-card">
+
+  <div class="insight-box">
+    💡 <strong>핵심 발견</strong>: 사전학습된 LLM을 파인튜닝할 때, 가중치 변화(ΔW)는 <strong>낮은 내재 차원(low intrinsic dimension)</strong>을 가진다.<br>
+    → 실제 중요한 변화는 전체 차원이 아닌 <strong>훨씬 작은 부분공간</strong>에서만 일어남.<br>
+    → ΔW 전체를 학습할 필요 없이, <strong>rank가 작은 두 행렬 B × A</strong>로 근사해도 충분하다.
+  </div>
+
+  <!-- Rank 개념 — 핵심 발견 바로 아래 -->
+  <div class="rank-concept-box">
+    <div class="rcb-label">RANK 개념</div>
+    <div class="rcb-title">Rank(계수)란?</div>
+    <p class="rcb-desc">
+      행렬이 실제로 표현할 수 있는 <strong>선형 독립적인 방향의 수</strong>.<br>
+      8×8 행렬의 full rank = 8이지만, 파인튜닝 시 ΔW의 실질적 변화는 <strong>rank=2 정도의 낮은 차원</strong>만으로도 충분히 근사 가능하다는 것이 실험적으로 밝혀짐.<br>
+      → LoRA는 이 원리를 활용해 <em>큰 행렬 ΔW를 두 개의 작은 행렬 B × A로 분해</em>하여 학습.
+    </p>
+  </div>
+
+  <!-- 행렬 분해 시각화 -->
+  <div style="font-size:12px;font-weight:700;color:#64748b;margin:20px 0 12px;letter-spacing:1px;">▶ 행렬 분해 시각화 — ΔW (8×8) ≈ B (8×2) × A (2×8)</div>
+  <div class="matrix-decomp">
+
+    <!-- ΔW: 8×8 — 전체 64개, 모두 동일 색상 (근사 대상 전체 행렬) -->
+    <div class="matrix-wrap">
+      <div class="matrix-title" style="color:#6366f1">ΔW &nbsp;(8 × 8)</div>
+      <div class="matrix" id="mat-dw" style="grid-template-columns:repeat(8,28px)"></div>
+      <div class="matrix-sub">직접 학습 시 필요한 행렬<br><span style="color:#6366f1">64개 파라미터 전부</span></div>
+    </div>
+
+    <div class="decomp-op">≈</div>
+
+    <!-- B: 8×2 -->
+    <div class="matrix-wrap">
+      <div class="matrix-title" style="color:#f59e0b">B &nbsp;(8 × 2)</div>
+      <div class="matrix" id="mat-b" style="grid-template-columns:repeat(2,28px)"></div>
+      <div class="matrix-sub">출력 투영 행렬<br><span style="color:#f59e0b">16개 파라미터</span></div>
+    </div>
+
+    <div class="decomp-op">×</div>
+
+    <!-- A: 2×8 -->
+    <div class="matrix-wrap">
+      <div class="matrix-title" style="color:#10b981">A &nbsp;(2 × 8)</div>
+      <div class="matrix" id="mat-a" style="grid-template-columns:repeat(8,28px)"></div>
+      <div class="matrix-sub">입력 투영 행렬<br><span style="color:#10b981">16개 파라미터</span></div>
+    </div>
+
+  </div>
+
+  <!-- 핵심 포인트: 좁은 차원(rank)이 병목 -->
+  <div class="rank-bottleneck">
+    <span class="rb-arrow">↑</span>
+    두 행렬이 공유하는 <strong>좁은 차원 = rank (여기선 2)</strong> 가 병목 → 이 숫자가 작을수록 파라미터 절감 효과 ↑
+  </div>
+
+  <!-- 파라미터 비교 -->
+  <div class="param-compare">
+    <div class="param-box full">
+      <div class="param-box-num">64</div>
+      <div class="param-box-label">ΔW 직접 학습 시 파라미터 수</div>
+      <div class="param-box-desc">8 × 8 = 64개</div>
+    </div>
+    <div class="param-box low">
+      <div class="param-box-num">32</div>
+      <div class="param-box-label">LoRA (rank=2) 파라미터 수</div>
+      <div class="param-box-desc">(8×2) + (2×8) = 32개 → <strong>50% 절약</strong></div>
+    </div>
+  </div>
+
+  <!-- 실제 스케일 설명 (2칸) -->
+  <div class="rank-steps" style="grid-template-columns:1fr 1fr; margin-top:16px;">
+    <div class="rank-step">
+      <div class="rank-step-num">LOW-RANK 근사</div>
+      <div class="rank-step-title">왜 작아도 되나?</div>
+      <div class="rank-step-desc">
+        특정 태스크 적응에 필요한 정보는 소수 방향에 집중됨.<br>
+        → 전체 차원 대신 <strong>중요 방향만 학습</strong>해도 성능 유지.
+      </div>
+    </div>
+    <div class="rank-step">
+      <div class="rank-step-num">실제 절감 효과</div>
+      <div class="rank-step-title">대형 모델 스케일</div>
+      <div class="rank-step-desc">
+        d=4096, rank=8 기준:<br>
+        · ΔW: 4096² = <strong>16.7M</strong><br>
+        · LoRA: 4096×8 × 2 = <strong>65K (99% 절약)</strong>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══ 03. 순전파 / 역전파 ═══ -->
+<div class="section-label">03 · 순전파 & 역전파 동작 방식</div>
+
+<div class="fbdiag-wrap">
+
+  <!-- 범례 -->
+  <div class="fbdiag-legend">
+    <span class="leg-item"><span class="leg-dot fwd-dot"></span>순전파 (Forward)</span>
+    <span class="leg-item"><span class="leg-dot bwd-dot"></span>역전파 (Backward)</span>
+    <span class="leg-item"><span class="leg-dot frozen-dot"></span>동결 (학습 안 함)</span>
+    <span class="leg-item"><span class="leg-dot learn-dot"></span>학습 대상</span>
+  </div>
+
+  <div class="fbdiag-body">
+
+    <!-- 왼쪽 레이블 컬럼 -->
+    <div class="fbdiag-labels">
+      <div class="fbd-lrow" style="height:56px"><span class="fbl fwd-lbl">① 입력</span></div>
+      <div class="fbd-lrow" style="height:16px"></div>
+      <div class="fbd-lrow" style="height:90px"><span class="fbl fwd-lbl">② 병렬 계산</span></div>
+      <div class="fbd-lrow" style="height:16px"></div>
+      <div class="fbd-lrow" style="height:56px"><span class="fbl fwd-lbl">③ 합산 → 출력</span></div>
+      <div class="fbd-lrow" style="height:16px"></div>
+      <div class="fbd-lrow" style="height:56px"><span class="fbl bwd-lbl">④ 오차 계산</span></div>
+      <div class="fbd-lrow" style="height:16px"></div>
+      <div class="fbd-lrow" style="height:80px"><span class="fbl bwd-lbl">⑤ 동시에<br>두 갈래 분기</span></div>
+    </div>
+
+    <!-- 가운데 SVG 다이어그램 -->
+    <div class="fbdiag-svg-wrap">
+      <svg width="100%" viewBox="0 0 480 530" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR', sans-serif">
+        <defs>
+          <marker id="arr-fwd" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/>
+          </marker>
+          <marker id="arr-bwd" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+          </marker>
+          <marker id="arr-bwd-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f87171"/>
+          </marker>
+        </defs>
+
+        <!-- ① 입력 x -->
+        <rect x="165" y="10" width="150" height="44" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="240" y="29" text-anchor="middle" font-size="12" fill="#64748b" font-weight="700">입력</text>
+        <text x="240" y="46" text-anchor="middle" font-size="13" fill="#1a1d2e" font-weight="700" font-family="'JetBrains Mono',monospace">x</text>
+
+        <!-- ① → ②  분기 화살표 (순전파) -->
+        <line x1="200" y1="54" x2="120" y2="76" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arr-fwd)"/>
+        <line x1="280" y1="54" x2="360" y2="76" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arr-fwd)"/>
+
+        <!-- ②-L  W₀ 박스 (FROZEN) -->
+        <rect x="30" y="76" width="170" height="56" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+        <text x="64" y="97" font-size="10" fill="#1d4ed8" font-weight="800" letter-spacing="1">❄ FROZEN</text>
+        <text x="115" y="114" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700" font-family="'JetBrains Mono',monospace">W₀ · x</text>
+        <text x="115" y="127" text-anchor="middle" font-size="10" fill="#60a5fa">원본 가중치 (동결)</text>
+
+        <!-- ②-R  B·A 박스 (LEARN) -->
+        <rect x="280" y="76" width="170" height="56" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+        <text x="313" y="97" font-size="10" fill="#166534" font-weight="800" letter-spacing="1">🔥 LEARN</text>
+        <text x="365" y="114" text-anchor="middle" font-size="13" fill="#15803d" font-weight="700" font-family="'JetBrains Mono',monospace">B · A · x</text>
+        <text x="365" y="127" text-anchor="middle" font-size="10" fill="#4ade80">저순위 Adapter</text>
+
+        <!-- ② → ③  합산 화살표 -->
+        <line x1="115" y1="132" x2="210" y2="172" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arr-fwd)"/>
+        <line x1="365" y1="132" x2="270" y2="172" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arr-fwd)"/>
+        <text x="240" y="162" text-anchor="middle" font-size="20" fill="#94a3b8" font-weight="300">+</text>
+
+        <!-- ③  출력 박스 -->
+        <rect x="140" y="172" width="200" height="48" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+        <text x="240" y="191" text-anchor="middle" font-size="10" fill="#1d4ed8" font-weight="700">출력 (순전파 완료)</text>
+        <text x="240" y="210" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700" font-family="'JetBrains Mono',monospace">(W₀ + B·A) · x</text>
+
+        <!-- ③ → ④  화살표 -->
+        <line x1="240" y1="220" x2="240" y2="244" stroke="#3b82f6" stroke-width="1.8" marker-end="url(#arr-fwd)"/>
+
+        <!-- ④  Loss 박스 -->
+        <rect x="140" y="244" width="200" height="50" rx="10" fill="#faf5ff" stroke="#d8b4fe" stroke-width="2"/>
+        <text x="240" y="265" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">정답과 비교 → 오차 계산</text>
+        <text x="240" y="284" text-anchor="middle" font-size="14" fill="#6d28d9" font-weight="700" font-family="'JetBrains Mono',monospace">Loss</text>
+
+        <!-- ④ → ⑤  Loss에서 두 갈래로 분기 (역전파) -->
+        <!-- 왼쪽 → NO UPDATE -->
+        <line x1="185" y1="294" x2="115" y2="348" stroke="#f87171" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-bwd-red)"/>
+        <!-- 오른쪽 → UPDATE -->
+        <line x1="295" y1="294" x2="365" y2="348" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-bwd)"/>
+
+        <!-- ⑤-L  NO UPDATE 박스 (왼쪽) -->
+        <rect x="20" y="348" width="185" height="62" rx="10" fill="#fef2f2" stroke="#fca5a5" stroke-width="2"/>
+        <text x="54" y="369" font-size="10" fill="#dc2626" font-weight="800" letter-spacing="1">✖ NO UPDATE</text>
+        <text x="112" y="387" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700" font-family="'JetBrains Mono',monospace">∂L/∂W₀</text>
+        <text x="112" y="402" text-anchor="middle" font-size="10" fill="#f87171">계산만 함, 적용 안 함</text>
+
+        <!-- ⑤-R  UPDATE 박스 (오른쪽) -->
+        <rect x="275" y="348" width="185" height="62" rx="10" fill="#f0fdf4" stroke="#4ade80" stroke-width="2"/>
+        <text x="309" y="369" font-size="10" fill="#166534" font-weight="800" letter-spacing="1">✅ UPDATE</text>
+        <text x="367" y="387" text-anchor="middle" font-size="13" fill="#15803d" font-weight="700" font-family="'JetBrains Mono',monospace">∂L/∂B, ∂L/∂A</text>
+        <text x="367" y="402" text-anchor="middle" font-size="10" fill="#4ade80">A와 B 파라미터만 수정</text>
+
+        <!-- 결과 박스들 -->
+        <!-- W₀ 보존 -->
+        <rect x="20" y="432" width="185" height="36" rx="9" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+        <text x="112" y="455" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">→ 원본 W₀ 보존 ✔</text>
+
+        <!-- B, A 업데이트 완료 -->
+        <rect x="275" y="432" width="185" height="36" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+        <text x="367" y="455" text-anchor="middle" font-size="12" fill="#166534" font-weight="700">→ 태스크 적응 완료 ✔</text>
+
+        <!-- 결과 화살표 -->
+        <line x1="112" y1="410" x2="112" y2="430" stroke="#fca5a5" stroke-width="1.5" marker-end="url(#arr-bwd-red)"/>
+        <line x1="367" y1="410" x2="367" y2="430" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arr-fwd)"/>
+
+      </svg>
+    </div>
+
+    <!-- 오른쪽 설명 컬럼 -->
+    <div class="fbdiag-notes">
+      <div class="fbn-item" style="margin-top:6px">
+        <div class="fbn-badge fwd-badge">순전파</div>
+        <p>x가 두 경로로 동시에 흘러 각각 계산 후 합산</p>
+      </div>
+      <div class="fbn-item" style="margin-top:56px">
+        <div class="fbn-badge frozen-badge2">동결</div>
+        <p>W₀는 사전학습 지식 보존을 위해 건드리지 않음</p>
+      </div>
+      <div class="fbn-item" style="margin-top:16px">
+        <div class="fbn-badge learn-badge2">학습</div>
+        <p>B·A만 파라미터 업데이트 대상</p>
+      </div>
+      <div class="fbn-item" style="margin-top:44px">
+        <div class="fbn-badge fwd-badge">출력</div>
+        <p>두 경로 합산 = 최종 예측값</p>
+      </div>
+      <div class="fbn-item" style="margin-top:18px">
+        <div class="fbn-badge bwd-badge">역전파</div>
+        <p>오차 → Loss에서 <strong>두 갈래로 동시에</strong> 흐름</p>
+      </div>
+      <div class="fbn-item" style="margin-top:58px">
+        <div class="fbn-badge skip-badge2">NO UPDATE</div>
+        <p>W₀: gradient 계산하지만 파라미터 변경 없음 → 보존</p>
+      </div>
+      <div class="fbn-item" style="margin-top:4px">
+        <div class="fbn-badge learn-badge2">UPDATE</div>
+        <p>B, A: gradient 적용 → 태스크에 맞게 수정됨</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══ 04. LoRA 적용 위치 ═══ -->
+<div class="section-label">04 · 트랜스포머 내 LoRA 적용 위치</div>
+<div class="attn-grid">
+
+  <div class="attn-block">
+    <div class="attn-block-title">🎯 Self-Attention Layer</div>
+    <div class="proj-row active">
+      <span class="proj-name">q_proj</span>
+      <span style="font-size:12px;color:#475569">Query 투영</span>
+      <span class="lora-chip">LoRA ✔</span>
+    </div>
+    <div class="proj-row muted">
+      <span class="proj-name">k_proj</span>
+      <span style="font-size:12px">Key 투영</span>
+      <span class="opt-chip">선택적</span>
+    </div>
+    <div class="proj-row active">
+      <span class="proj-name">v_proj</span>
+      <span style="font-size:12px;color:#475569">Value 투영</span>
+      <span class="lora-chip">LoRA ✔</span>
+    </div>
+    <div class="proj-row muted">
+      <span class="proj-name">o_proj</span>
+      <span style="font-size:12px">Output 투영</span>
+      <span class="opt-chip">선택적</span>
+    </div>
+  </div>
+
+  <div class="attn-block">
+    <div class="attn-block-title">⚙️ MLP (Feed-Forward) Layer</div>
+    <div class="proj-row muted">
+      <span class="proj-name">gate_proj</span>
+      <span style="font-size:12px">Gate 투영</span>
+      <span class="opt-chip">선택적</span>
+    </div>
+    <div class="proj-row muted">
+      <span class="proj-name">up_proj</span>
+      <span style="font-size:12px">Up 투영</span>
+      <span class="opt-chip">선택적</span>
+    </div>
+    <div class="proj-row muted">
+      <span class="proj-name">down_proj</span>
+      <span style="font-size:12px">Down 투영</span>
+      <span class="opt-chip">선택적</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    💡 <strong>일반적으로 q_proj + v_proj에만 적용해도 충분한 성능 달성</strong> — 메모리 절감과 성능 간 균형이 가장 좋은 조합.
+    더 높은 성능이 필요하면 k_proj, o_proj까지 확장.
+  </div>
+
+</div>
+
+
+<!-- ═══ 05. ADAPTER 활용 ═══ -->
+<div class="section-label">05 · LoRA Adapter 활용 방식</div>
+<div class="adapter-diagram">
+
+  <div class="base-model-box">
+    <div class="bm-label">Base Model — 고정 & 재사용</div>
+    <div class="bm-name">🤖 Llama-3 8B (예시)</div>
+    <div class="bm-sub">사전학습된 대규모 언어 모델 · 가중치 절대 수정하지 않음</div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px;letter-spacing:1px;">태스크별 LoRA Adapter (독립 학습)</div>
+  <div class="adapter-cards">
+    <div class="adapter-card">
+      <div class="ac-icon">📝</div>
+      <div class="ac-title">회의록 요약</div>
+      <div class="ac-size">~10 MB</div>
+      <div class="ac-desc">회의 내용 정리 특화 Adapter</div>
+    </div>
+    <div class="adapter-card">
+      <div class="ac-icon">🧮</div>
+      <div class="ac-title">수학 풀이</div>
+      <div class="ac-size">~10 MB</div>
+      <div class="ac-desc">수식·논리 계산 최적화</div>
+    </div>
+    <div class="adapter-card">
+      <div class="ac-icon">💻</div>
+      <div class="ac-title">코드 생성</div>
+      <div class="ac-size">~10 MB</div>
+      <div class="ac-desc">다양한 언어 코드 작성</div>
+    </div>
+    <div class="adapter-card">
+      <div class="ac-icon">🇰🇷</div>
+      <div class="ac-title">한국어 챗봇</div>
+      <div class="ac-size">~10 MB</div>
+      <div class="ac-desc">자연스러운 한국어 대화</div>
+    </div>
+  </div>
+
+  <div class="merge-row">
+    <div class="merge-item base">🤖 Base Model (8 GB)</div>
+    <div class="merge-plus">+</div>
+    <div class="merge-item adapter">📎 LoRA Adapter (10 MB)</div>
+    <div class="merge-result">🎯 전문화된 모델 완성</div>
+  </div>
+
+  <div style="font-size:12.5px;color:#64748b;margin-top:14px;padding:12px 16px;background:#f8fafc;border-radius:10px;line-height:1.8;">
+    <strong style="color:#1a1d2e">실전 시나리오:</strong> &nbsp;
+    오전 → <em>회의록 어댑터</em>로 회의 정리 &nbsp;/&nbsp;
+    오후 → <em>코드 생성 어댑터</em>로 개발 작업 &nbsp;/&nbsp;
+    저녁 → <em>챗봇 어댑터</em>로 고객 상담<br>
+    → Base 모델(8 GB)은 그대로, <strong>어댑터(10 MB)만 교체</strong>
+  </div>
+
+</div>
+
+
+<!-- ═══ 06. 추론 방식 비교 ═══ -->
+<div class="section-label">06 · 추론 방식 — 분리 vs 병합</div>
+<div class="infer-grid">
+
+  <div class="infer-card sep">
+    <div class="infer-card-title">🔗 분리 방식 (일반)</div>
+    <div class="infer-flow">
+      출력 = <span class="eq">W₀·x + B·A·x</span><br>
+      <span class="note">→ 두 번 계산 후 합산</span>
+    </div>
+    <ul class="pro-con">
+      <li class="pro">LoRA Adapter 교체 가능</li>
+      <li class="pro">원본 W₀ 항상 보존</li>
+      <li class="pro">여러 태스크 즉시 전환</li>
+      <li class="con">계산 두 번 → 약간 느림</li>
+    </ul>
+  </div>
+
+  <div class="infer-card mrg">
+    <div class="infer-card-title">⚡ 병합 방식 (최적화)</div>
+    <div class="infer-flow">
+      W' = <span class="eq">W₀ + B·A</span> &nbsp;<span class="note">(사전 합산)</span><br>
+      출력 = <span class="eq">W'·x</span><br>
+      <span class="note">→ 한 번 계산으로 끝</span>
+    </div>
+    <ul class="pro-con">
+      <li class="pro">추론 속도 빠름 (오버헤드 없음)</li>
+      <li class="pro">원본과 동일 구조 유지</li>
+      <li class="con">병합 후 Adapter 교체 불가</li>
+      <li class="con">단일 태스크 배포에만 적합</li>
+    </ul>
+  </div>
+
+</div>
+
+
+<!-- ═══ 07. 코드 사용법 ═══ -->
+<div class="section-label">07 · LoRA 코드 사용법</div>
+<div class="code-block"><pre><span class="c-import">from</span> transformers <span class="c-import">import</span> AutoModelForCausalLM, AutoTokenizer
+<span class="c-import">from</span> peft <span class="c-import">import</span> LoraConfig, get_peft_model, TaskType
+<span class="c-import">import</span> torch
+
+<span class="c-comment"># ── 1. Base Model 로드 (가중치 동결 상태로 로드됨) ──────────────────────────</span>
+<span class="c-var">model</span> = AutoModelForCausalLM.from_pretrained(
+    <span class="c-string">"meta-llama/Llama-2-7b-hf"</span>,
+    torch_dtype=torch.float16,
+    device_map=<span class="c-string">"auto"</span>
+)
+<span class="c-var">tokenizer</span> = AutoTokenizer.from_pretrained(<span class="c-string">"meta-llama/Llama-2-7b-hf"</span>)
+
+<span class="c-comment"># ── 2. LoRA Config 설정 ──────────────────────────────────────────────────────</span>
+<span class="c-var">lora_config</span> = LoraConfig(
+    r=<span class="c-num">16</span>,                              <span class="c-comment"># rank: Low-Rank 행렬 크기 (작을수록 파라미터 ↓)</span>
+    lora_alpha=<span class="c-num">32</span>,                    <span class="c-comment"># scaling = alpha / r → 실제 학습 배율</span>
+    target_modules=[<span class="c-string">"q_proj"</span>, <span class="c-string">"v_proj"</span>],  <span class="c-comment"># LoRA 적용 레이어 (q + v 기본 권장)</span>
+    lora_dropout=<span class="c-num">0.05</span>,               <span class="c-comment"># Dropout: 과적합 방지</span>
+    bias=<span class="c-string">"none"</span>,                      <span class="c-comment"># bias 파라미터는 학습 안 함</span>
+    task_type=TaskType.CAUSAL_LM       <span class="c-comment"># 태스크 타입: 인과 언어모델</span>
+)
+
+<span class="c-comment"># ── 3. PEFT 모델 생성 → A, B 행렬만 학습 가능 상태로 전환 ─────────────────</span>
+<span class="c-var">model</span> = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+<span class="c-comment"># 출력 예: trainable params: 4,194,304 / all params: 6,742,609,920 (0.06%)</span>
+
+<span class="c-comment"># ── 4. Adapter 저장 & 로드 ─────────────────────────────────────────────────</span>
+model.save_pretrained(<span class="c-string">"./lora-adapter"</span>)     <span class="c-comment"># ~10MB Adapter만 저장</span>
+
+<span class="c-comment"># ── 5. (선택) 추론용 병합 방식 ─────────────────────────────────────────────</span>
+<span class="c-var">merged_model</span> = model.merge_and_unload()   <span class="c-comment"># W' = W₀ + B·A → 단일 모델로 병합</span>
+merged_model.save_pretrained(<span class="c-string">"./merged-model"</span>)</pre></div>
+
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="section-label" style="margin-top:40px">요약</div>
+<div class="summary-box">
+  <div class="sum-title">LoRA 핵심 정리</div>
+  <div class="sum-grid">
+    <div class="sum-item">
+      <div class="si-key">LOW-RANK 원리</div>
+      <div class="si-val">ΔW = B × A<br>큰 행렬 → 두 작은 행렬 곱으로 근사</div>
+    </div>
+    <div class="sum-item">
+      <div class="si-key">파라미터 절감</div>
+      <div class="si-val">rank=8 기준<br>전체 대비 <strong>99% 이상 절약</strong></div>
+    </div>
+    <div class="sum-item">
+      <div class="si-key">원본 보존</div>
+      <div class="si-val">W₀ 완전 동결<br>Adapter 교체로 다중 태스크 지원</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+  /* ─ 행렬 생성 ─ */
+  function makeMatrix(id, rows, cols, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        // rank 열 강조
+        if (type === 'dw') {
+          cell.classList.add('m-full');   // 64개 전부 동일 색상 — 근사 대상 전체 행렬
+        } else if (type === 'b') {
+          cell.classList.add('m-b');
+        } else if (type === 'a') {
+          cell.classList.add('m-a');
+        }
+        el.appendChild(cell);
+      }
+    }
+  }
+  makeMatrix('mat-dw', 8, 8, 'dw');
+  makeMatrix('mat-b',  8, 2, 'b');
+  makeMatrix('mat-a',  2, 8, 'a');
+
+  /* ─ postMessage ─ */
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+</body>
+</html>
