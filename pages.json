@@ -16,6 +16,15 @@
         ]
       },
       {
+        "label": "peft",
+        "children": [
+          {
+            "label": "LoRA — Low-Rank Adaptation 완전 이해",
+            "path": "ai/peft/lora.html"
+          }
+        ]
+      },
+      {
         "label": "rag",
         "children": [
           {
