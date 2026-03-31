@@ -294,7 +294,12 @@ body {
 .proj-row.muted  { background: #f8fafc; color: #94a3b8; }
 .proj-row.active .proj-name { color: #2563eb; }
 .proj-row.muted  .proj-name { color: #cbd5e1; }
-.lora-chip {
+.proj-role {
+  font-size: 11px; color: #94a3b8; font-weight: 600;
+  background: #f1f5f9; border-radius: 5px;
+  padding: 1px 7px; margin-left: 2px;
+}
+.proj-row.muted .proj-role { color: #94a3b8; }
   margin-left: auto;
   background: #2563eb; color: #fff;
   font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
@@ -379,6 +384,16 @@ body {
 .pro-con li.con::before { content: '✖'; color: #dc2626; }
 
 /* ── CODE ── */
+.code-tabs  { display:flex; gap:8px; margin-bottom:12px; }
+.code-tab {
+  padding:7px 18px; border-radius:8px; font-size:13px; font-weight:700;
+  cursor:pointer; border:2px solid transparent; transition:all .2s;
+  font-family:'JetBrains Mono',monospace;
+}
+.code-tab.lora-tab { background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe; }
+.code-tab.lora-tab.active { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+.code-pane { display:none; }
+.code-pane.active { display:block; }
 .code-block {
   background: #1a1d2e; border-radius: 14px; padding: 22px 24px; overflow-x: auto;
 }
@@ -531,7 +546,7 @@ body {
     <div class="matrix-wrap">
       <div class="matrix-title" style="color:#f59e0b">B &nbsp;(8 × 2)</div>
       <div class="matrix" id="mat-b" style="grid-template-columns:repeat(2,28px)"></div>
-      <div class="matrix-sub">입력 투영 행렬(압축)<br><span style="color:#f59e0b">16개 파라미터</span></div>
+      <div class="matrix-sub">출력 투영 행렬<br><span style="color:#f59e0b">16개 파라미터</span></div>
     </div>
 
     <div class="decomp-op">×</div>
@@ -540,7 +555,7 @@ body {
     <div class="matrix-wrap">
       <div class="matrix-title" style="color:#10b981">A &nbsp;(2 × 8)</div>
       <div class="matrix" id="mat-a" style="grid-template-columns:repeat(8,28px)"></div>
-      <div class="matrix-sub">출력 투영 행렬(복원)<br><span style="color:#10b981">16개 파라미터</span></div>
+      <div class="matrix-sub">입력 투영 행렬<br><span style="color:#10b981">16개 파라미터</span></div>
     </div>
 
   </div>
@@ -773,18 +788,20 @@ body {
     <div class="attn-block-title">⚙️ MLP (Feed-Forward) Layer</div>
     <div class="proj-row muted">
       <span class="proj-name">up_proj</span>
-      <span style="font-size:12px">Up 투영(증폭)</span>
+      <span style="font-size:12px">Up 투영</span>
+      <span class="proj-role">증폭</span>
       <span class="opt-chip">선택적</span>
     </div>
     <div class="proj-row muted">
       <span class="proj-name">gate_proj</span>
-      <span style="font-size:12px">Gate 투영(검증)</span>
+      <span style="font-size:12px">Gate 투영</span>
+      <span class="proj-role">검증(제어/필터링)</span>
       <span class="opt-chip">선택적</span>
     </div>
-
     <div class="proj-row muted">
       <span class="proj-name">down_proj</span>
-      <span style="font-size:12px">Down 투영(안정화)</span>
+      <span style="font-size:12px">Down 투영</span>
+      <span class="proj-role">압축</span>
       <span class="opt-chip">선택적</span>
     </div>
   </div>
@@ -804,7 +821,7 @@ body {
   <div class="base-model-box">
     <div class="bm-label">Base Model — 고정 & 재사용</div>
     <div class="bm-name">🤖 Llama-3 8B (예시)</div>
-    <div class="bm-sub">사전학습된 대규모 언어 모델 · 가중치 절대 수정하지 않음</div>
+    <div class="bm-sub">사전학습된 대규모 언어 모델 · 가중치 절대 수정하지 않음 · FP16 기준 ~16 GB</div>
   </div>
 
   <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px;letter-spacing:1px;">태스크별 LoRA Adapter (독립 학습)</div>
@@ -836,7 +853,7 @@ body {
   </div>
 
   <div class="merge-row">
-    <div class="merge-item base">🤖 Base Model (16 GB)</div>
+    <div class="merge-item base">🤖 Base Model (~16 GB · FP16)</div>
     <div class="merge-plus">+</div>
     <div class="merge-item adapter">📎 LoRA Adapter (10 MB)</div>
     <div class="merge-result">🎯 전문화된 모델 완성</div>
@@ -847,7 +864,7 @@ body {
     오전 → <em>회의록 어댑터</em>로 회의 정리 &nbsp;/&nbsp;
     오후 → <em>코드 생성 어댑터</em>로 개발 작업 &nbsp;/&nbsp;
     저녁 → <em>챗봇 어댑터</em>로 고객 상담<br>
-    → Base 모델(16 GB)은 그대로, <strong>어댑터(10 MB)만 교체</strong>
+    → Base 모델(~16 GB)은 그대로, <strong>어댑터(10 MB)만 교체</strong>
   </div>
 
 </div>
@@ -891,39 +908,104 @@ body {
 
 <!-- ═══ 07. 코드 사용법 ═══ -->
 <div class="section-label">07 · LoRA 코드 사용법</div>
-<div class="code-block"><pre><span class="c-import">from</span> transformers <span class="c-import">import</span> AutoModelForCausalLM, AutoTokenizer
-<span class="c-import">from</span> peft <span class="c-import">import</span> LoraConfig, get_peft_model, TaskType
-<span class="c-import">import</span> torch
+<div class="code-tabs">
+  <button class="code-tab lora-tab active" onclick="switchTab('train')">① 학습</button>
+  <button class="code-tab lora-tab" onclick="switchTab('load')">② Adapter 로드 & 추론</button>
+  <button class="code-tab lora-tab" onclick="switchTab('merge')">③ 병합 추론</button>
+</div>
 
-<span class="c-comment"># ── 1. Base Model 로드 (가중치 동결 상태로 로드됨) ──────────────────────────</span>
-<span class="c-var">model</span> = AutoModelForCausalLM.from_pretrained(
-    <span class="c-string">"meta-llama/Llama-2-7b-hf"</span>,
-    torch_dtype=torch.float16,
-    device_map=<span class="c-string">"auto"</span>
-)
-<span class="c-var">tokenizer</span> = AutoTokenizer.from_pretrained(<span class="c-string">"meta-llama/Llama-2-7b-hf"</span>)
+<div class="code-pane active" id="pane-train">
+<div class="code-block"><pre><span class="c-import">from</span> unsloth <span class="c-import">import</span> FastLanguageModel
 
-<span class="c-comment"># ── 2. LoRA Config 설정 ──────────────────────────────────────────────────────</span>
-<span class="c-var">lora_config</span> = LoraConfig(
-    r=<span class="c-num">16</span>,                              <span class="c-comment"># rank: Low-Rank 행렬 크기 (작을수록 파라미터 ↓)</span>
-    lora_alpha=<span class="c-num">32</span>,                    <span class="c-comment"># scaling = alpha / r → 실제 학습 배율</span>
-    target_modules=[<span class="c-string">"q_proj"</span>, <span class="c-string">"v_proj"</span>],  <span class="c-comment"># LoRA 적용 레이어 (q + v 기본 권장)</span>
-    lora_dropout=<span class="c-num">0.05</span>,               <span class="c-comment"># Dropout: 과적합 방지</span>
-    bias=<span class="c-string">"none"</span>,                      <span class="c-comment"># bias 파라미터는 학습 안 함</span>
-    task_type=TaskType.CAUSAL_LM       <span class="c-comment"># 태스크 타입: 인과 언어모델</span>
+<span class="c-comment"># ── 1. Base Model 로드 + LoRA 설정 (한 번에) ────────────────────────────────</span>
+<span class="c-var">model</span>, <span class="c-var">tokenizer</span> = FastLanguageModel.from_pretrained(
+    model_name=<span class="c-string">"meta-llama/Llama-2-7b-hf"</span>,
+    max_seq_length=<span class="c-num">2048</span>,
+    dtype=<span class="c-keyword">None</span>,                <span class="c-comment"># None → 자동 감지 (BF16/FP16)</span>
+    load_in_4bit=<span class="c-keyword">True</span>,         <span class="c-comment"># QLoRA: 4-bit 양자화 로드</span>
 )
 
-<span class="c-comment"># ── 3. PEFT 모델 생성 → A, B 행렬만 학습 가능 상태로 전환 ─────────────────</span>
-<span class="c-var">model</span> = get_peft_model(model, lora_config)
+<span class="c-comment"># ── 2. LoRA Adapter 설정 ─────────────────────────────────────────────────────</span>
+<span class="c-var">model</span> = FastLanguageModel.get_peft_model(
+    model,
+    r=<span class="c-num">16</span>,                       <span class="c-comment"># rank: Low-Rank 행렬 크기</span>
+    lora_alpha=<span class="c-num">32</span>,              <span class="c-comment"># scaling = alpha / r</span>
+    target_modules=[<span class="c-string">"q_proj"</span>, <span class="c-string">"v_proj"</span>],  <span class="c-comment"># q + v 기본 권장</span>
+    lora_dropout=<span class="c-num">0.05</span>,
+    bias=<span class="c-string">"none"</span>,
+    use_gradient_checkpointing=<span class="c-string">"unsloth"</span>,  <span class="c-comment"># 메모리 추가 절감</span>
+    use_rslora=<span class="c-keyword">False</span>,
+)
 model.print_trainable_parameters()
 <span class="c-comment"># 출력 예: trainable params: 4,194,304 / all params: 6,742,609,920 (0.06%)</span>
 
-<span class="c-comment"># ── 4. Adapter 저장 & 로드 ─────────────────────────────────────────────────</span>
-model.save_pretrained(<span class="c-string">"./lora-adapter"</span>)     <span class="c-comment"># ~10MB Adapter만 저장</span>
+<span class="c-comment"># ── 3. 학습 후 Adapter 저장 (~10MB) ─────────────────────────────────────────</span>
+model.save_pretrained(<span class="c-string">"./lora-adapter"</span>)
+tokenizer.save_pretrained(<span class="c-string">"./lora-adapter"</span>)</pre></div>
+</div>
 
-<span class="c-comment"># ── 5. (선택) 추론용 병합 방식 ─────────────────────────────────────────────</span>
-<span class="c-var">merged_model</span> = model.merge_and_unload()   <span class="c-comment"># W' = W₀ + B·A → 단일 모델로 병합</span>
-merged_model.save_pretrained(<span class="c-string">"./merged-model"</span>)</pre></div>
+<div class="code-pane" id="pane-load">
+<div class="code-block"><pre><span class="c-import">from</span> unsloth <span class="c-import">import</span> FastLanguageModel
+
+<span class="c-comment"># ── 1. 저장된 Adapter 로드 ───────────────────────────────────────────────────</span>
+<span class="c-var">model</span>, <span class="c-var">tokenizer</span> = FastLanguageModel.from_pretrained(
+    model_name=<span class="c-string">"./lora-adapter"</span>,  <span class="c-comment"># 저장해둔 Adapter 경로</span>
+    max_seq_length=<span class="c-num">2048</span>,
+    dtype=<span class="c-keyword">None</span>,
+    load_in_4bit=<span class="c-keyword">True</span>,
+)
+
+<span class="c-comment"># ── 2. 추론 모드 전환 (속도 최적화 커널 활성화) ─────────────────────────────</span>
+FastLanguageModel.for_inference(model)
+
+<span class="c-comment"># ── 3. 추론 ─────────────────────────────────────────────────────────────────</span>
+<span class="c-var">inputs</span> = tokenizer(<span class="c-string">"회의록을 요약해줘: ..."</span>, return_tensors=<span class="c-string">"pt"</span>).to(<span class="c-string">"cuda"</span>)
+
+<span class="c-var">outputs</span> = model.generate(
+    **inputs,
+    max_new_tokens=<span class="c-num">256</span>,
+    temperature=<span class="c-num">0.7</span>,
+    do_sample=<span class="c-keyword">True</span>
+)
+print(tokenizer.decode(outputs[<span class="c-num">0</span>], skip_special_tokens=<span class="c-keyword">True</span>))
+
+<span class="c-comment"># ── 4. 다른 Adapter로 교체 (동일 Base 재사용) ───────────────────────────────</span>
+<span class="c-var">model2</span>, <span class="c-var">tokenizer2</span> = FastLanguageModel.from_pretrained(
+    model_name=<span class="c-string">"./lora-adapter-code"</span>,
+    max_seq_length=<span class="c-num">2048</span>, dtype=<span class="c-keyword">None</span>, load_in_4bit=<span class="c-keyword">True</span>,
+)
+<span class="c-comment"># → Base Model(~16GB)은 그대로, Adapter(10MB)만 교체</span></pre></div>
+</div>
+
+<div class="code-pane" id="pane-merge">
+<div class="code-block"><pre><span class="c-import">from</span> unsloth <span class="c-import">import</span> FastLanguageModel
+
+<span class="c-comment"># ── 1. Adapter 로드 ──────────────────────────────────────────────────────────</span>
+<span class="c-var">model</span>, <span class="c-var">tokenizer</span> = FastLanguageModel.from_pretrained(
+    model_name=<span class="c-string">"./lora-adapter"</span>,
+    max_seq_length=<span class="c-num">2048</span>,
+    dtype=<span class="c-keyword">None</span>,
+    load_in_4bit=<span class="c-keyword">True</span>,
+)
+
+<span class="c-comment"># ── 2. Adapter 병합 → W' = W₀ + B·A ────────────────────────────────────────</span>
+<span class="c-var">merged_model</span> = model.merge_and_unload()
+<span class="c-comment"># → 일반 모델과 동일한 구조 · 추론 오버헤드 없음
+# → 단, 병합 후 Adapter 교체 불가</span>
+
+<span class="c-comment"># ── 3. 병합 모델 저장 (FP16으로 변환 후 저장) ───────────────────────────────</span>
+merged_model.save_pretrained_merged(
+    <span class="c-string">"./merged-model"</span>,
+    tokenizer,
+    save_method=<span class="c-string">"merged_16bit"</span>,    <span class="c-comment"># "merged_4bit" · "lora" 옵션도 가능</span>
+)
+
+<span class="c-comment"># ── 4. 병합 모델 추론 ────────────────────────────────────────────────────────</span>
+FastLanguageModel.for_inference(merged_model)
+<span class="c-var">inputs</span> = tokenizer(<span class="c-string">"회의록을 요약해줘: ..."</span>, return_tensors=<span class="c-string">"pt"</span>).to(<span class="c-string">"cuda"</span>)
+<span class="c-var">outputs</span> = merged_model.generate(**inputs, max_new_tokens=<span class="c-num">256</span>)
+print(tokenizer.decode(outputs[<span class="c-num">0</span>], skip_special_tokens=<span class="c-keyword">True</span>))</pre></div>
+</div>
 
 
 <!-- ═══ SUMMARY ═══ -->
@@ -974,7 +1056,13 @@ merged_model.save_pretrained(<span class="c-string">"./merged-model"</span>)</pr
   makeMatrix('mat-b',  8, 2, 'b');
   makeMatrix('mat-a',  2, 8, 'a');
 
-  /* ─ postMessage ─ */
+  /* ─ 코드 탭 전환 ─ */
+  function switchTab(type) {
+    document.querySelectorAll('.code-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + type).classList.add('active');
+    event.target.classList.add('active');
+  }
   window.onload = function() {
     const height = document.body.scrollHeight;
     window.parent.postMessage({ height: height }, "*");
