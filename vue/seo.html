@@ -1,0 +1,333 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',sans-serif;background:transparent;overflow-x:hidden;max-width:1024px;margin:0 auto;padding:20px 16px 32px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  .section-title{font-size:13px;font-weight:700;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+  .badge-blue{background:#dbeafe;color:#1e40af}
+  .badge-green{background:#dcfce7;color:#166534}
+  .badge-red{background:#fee2e2;color:#991b1b}
+  .badge-amber{background:#fef3c7;color:#92400e}
+  .badge-gray{background:#f3f4f6;color:#374151}
+
+  /* Timeline stepper */
+  .timeline{position:relative;margin-top:8px}
+  .step{display:flex;gap:14px;align-items:flex-start;margin-bottom:0;cursor:pointer}
+  .step-connector{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+  .step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;transition:all .25s;border:2px solid transparent}
+  .step-line{width:2px;flex:1;min-height:20px;background:#e5e7eb;margin:4px 0}
+  .step-body{padding-bottom:24px;flex:1}
+  .step-label{font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;line-height:1.5}
+  .step-desc{font-size:12.5px;color:#6b7280;line-height:1.6}
+  .step-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-top:8px;color:#334155;line-height:1.7;white-space:pre}
+
+  /* Active step */
+  .step.active .step-dot{background:#3b82f6;color:#fff;border-color:#2563eb;box-shadow:0 0 0 4px #dbeafe}
+  .step.active .step-label{color:#1e40af;font-weight:700}
+  .step.done .step-dot{background:#dcfce7;color:#166534;border-color:#86efac}
+  .step.done .step-label{color:#374151}
+  .step.idle .step-dot{background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb}
+
+  /* Comparison panel */
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .compare-box{border-radius:10px;padding:16px;border:1px solid}
+  .compare-box h4{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .compare-box .code-block{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+  .user-box{background:#f0fdf4;border-color:#bbf7d0}
+  .user-box h4{color:#166534}
+  .crawler-box{background:#fff1f2;border-color:#fecdd3}
+  .crawler-box h4{color:#be123c}
+
+  /* Problem cards */
+  .problem-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .problem-item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:8px;background:#fff;border:1px solid #e5e7eb}
+  .problem-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+  .problem-text h5{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px}
+  .problem-text p{font-size:12px;color:#6b7280;line-height:1.6}
+
+  /* Timeline nav */
+  .nav-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .nav-btn{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer;transition:all .18s}
+  .nav-btn.active{background:#3b82f6;color:#fff;border-color:#2563eb}
+  .nav-btn:hover:not(.active){background:#f3f4f6}
+
+  /* Solution hint */
+  .solution-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .sol-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#f0f9ff;border:1px solid #bae6fd;font-size:12px;font-weight:500;color:#0369a1}
+
+  /* Diagram SVG wrapper */
+  .diagram-wrap{border-radius:10px;overflow:hidden;margin-top:8px}
+
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;margin-right:4px}
+
+  @media(max-width:600px){.compare-grid{grid-template-columns:1fr}}
+</style>
+
+<h2 class="sr-only">CSR에서 SEO 문제가 발생하는 이유 시각화</h2>
+
+<!-- Tab Nav -->
+<div class="nav-bar" id="navBar">
+  <button class="nav-btn active" onclick="showTab(0)">① CSR 렌더링 흐름</button>
+  <button class="nav-btn" onclick="showTab(1)">② 크롤러 vs 사용자</button>
+  <button class="nav-btn" onclick="showTab(2)">③ SEO 문제 원인</button>
+  <button class="nav-btn" onclick="showTab(3)">④ 해결 전략</button>
+</div>
+
+<!-- TAB 0: CSR Flow -->
+<div id="tab0">
+  <p class="section-title">CSR 렌더링 흐름</p>
+  <div class="card">
+    <div style="margin-bottom:14px;font-size:13px;color:#6b7280;line-height:1.6">
+      → 브라우저가 JS를 실행해 DOM을 동적으로 구성<br>
+      → 초기 HTML은 빈 껍데기(shell)만 존재
+    </div>
+    <div class="diagram-wrap">
+      <svg width="100%" viewBox="0 0 680 320" role="img">
+        <title>CSR 렌더링 흐름 다이어그램</title>
+        <desc>서버에서 빈 HTML을 받고, JS를 다운로드·실행한 후 콘텐츠가 렌더링되는 과정</desc>
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- Server -->
+        <rect x="20" y="130" width="100" height="50" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1"/>
+        <text x="70" y="151" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="#0c4a6e">서버</text>
+        <text x="70" y="168" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#0369a1">index.html 반환</text>
+
+        <!-- Arrow 1 -->
+        <line x1="122" y1="155" x2="162" y2="155" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)" fill="none"/>
+        <text x="142" y="146" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10" fill="#94a3b8">HTML</text>
+
+        <!-- Step 1: Empty HTML -->
+        <rect x="164" y="100" width="110" height="110" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+        <text x="219" y="122" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#92400e">① 빈 HTML 수신</text>
+        <rect x="176" y="132" width="86" height="68" rx="4" fill="#fff" stroke="#e5e7eb" stroke-width="0.8"/>
+        <text x="184" y="148" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">&lt;html&gt;</text>
+        <text x="184" y="161" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">  &lt;body&gt;</text>
+        <text x="184" y="174" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#ef4444">  &lt;div id="app"&gt;</text>
+        <text x="184" y="187" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#ef4444">  &lt;/div&gt;</text>
+
+        <!-- Arrow 2 -->
+        <line x1="276" y1="155" x2="316" y2="155" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)" fill="none"/>
+        <text x="296" y="146" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10" fill="#94a3b8">JS 로드</text>
+
+        <!-- Step 2: JS Download & Execute -->
+        <rect x="318" y="100" width="120" height="110" rx="8" fill="#fef9c3" stroke="#fde68a" stroke-width="1"/>
+        <text x="378" y="122" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#713f12">② JS 다운로드·실행</text>
+        <text x="378" y="140" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10.5" fill="#92400e">bundle.js 파싱</text>
+        <rect x="330" y="150" width="96" height="50" rx="4" fill="#fff" stroke="#e5e7eb" stroke-width="0.8"/>
+        <text x="378" y="167" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">React.render()</text>
+        <text x="378" y="181" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">fetch(API)</text>
+        <text x="378" y="195" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">setState(...)</text>
+
+        <!-- Arrow 3 -->
+        <line x1="440" y1="155" x2="480" y2="155" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)" fill="none"/>
+        <text x="460" y="146" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10" fill="#94a3b8">DOM 생성</text>
+
+        <!-- Step 3: Rendered -->
+        <rect x="482" y="100" width="120" height="110" rx="8" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+        <text x="542" y="122" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#166534">③ 콘텐츠 렌더링</text>
+        <rect x="494" y="132" width="96" height="68" rx="4" fill="#fff" stroke="#e5e7eb" stroke-width="0.8"/>
+        <text x="502" y="148" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">&lt;div id="app"&gt;</text>
+        <text x="502" y="161" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#166534">  &lt;h1&gt;제목&lt;/h1&gt;</text>
+        <text x="502" y="174" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#166534">  &lt;p&gt;본문...&lt;/p&gt;</text>
+        <text x="502" y="187" font-family="'JetBrains Mono',monospace" font-size="9.5" fill="#6b7280">&lt;/div&gt;</text>
+
+        <!-- Timeline bar -->
+        <rect x="164" y="236" width="438" height="28" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="0.8"/>
+        <rect x="164" y="236" width="110" height="28" rx="6" fill="#fef3c7" stroke-width="0"/>
+        <rect x="318" y="236" width="120" height="28" rx="6" fill="#fde68a" stroke-width="0"/>
+        <rect x="482" y="236" width="120" height="28" rx="6" fill="#bbf7d0" stroke-width="0"/>
+        <text x="219" y="254" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10.5" fill="#92400e">~0ms</text>
+        <text x="378" y="254" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10.5" fill="#713f12">수백~수천 ms</text>
+        <text x="542" y="254" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="10.5" fill="#166534">렌더 완료</text>
+
+        <!-- label -->
+        <text x="164" y="280" font-family="'Noto Sans KR',sans-serif" font-size="10.5" fill="#94a3b8">← 크롤러가 HTML 수집하는 시점: 콘텐츠 없음 →</text>
+
+        <!-- Crawler tooltip -->
+        <rect x="20" y="40" width="280" height="44" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+        <text x="32" y="59" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#991b1b">🔍 크롤러 수집 시점</text>
+        <text x="32" y="76" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#b91c1c">→ JS 실행 전 HTML = 빈 &lt;div&gt;만 존재</text>
+        <line x1="210" y1="84" x2="219" y2="99" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 1: Crawler vs User -->
+<div id="tab1" style="display:none">
+  <p class="section-title">크롤러가 보는 것 vs 사용자가 보는 것</p>
+  <div class="card">
+    <div style="margin-bottom:14px;font-size:13px;color:#6b7280;line-height:1.6">
+      → 동일한 URL이지만 수집 시점에 따라 완전히 다른 콘텐츠<br>
+      → 크롤러는 JS 실행 없이 초기 HTML만 파싱
+    </div>
+    <div class="compare-grid">
+      <div class="compare-box user-box">
+        <h4><span class="badge badge-green">브라우저 (사용자)</span></h4>
+        <div style="font-size:12px;color:#166534;line-height:1.7;margin-bottom:10px">
+          ✅ JS 실행 후 완성된 DOM 확인<br>
+          ✅ 메타 태그 · 제목 · 본문 · 링크 모두 존재<br>
+          ✅ Open Graph / JSON-LD 로드됨
+        </div>
+        <div class="code-block" style="color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;font-size:10.5px">
+&lt;head&gt;
+  &lt;title&gt;상품 상세 페이지&lt;/title&gt;
+  &lt;meta name="description"
+    content="최고의 제품..."/&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;상품명&lt;/h1&gt;
+  &lt;p&gt;상품 설명이 여기에...&lt;/p&gt;
+  &lt;a href="/related"&gt;관련 상품&lt;/a&gt;
+&lt;/body&gt;</div>
+      </div>
+      <div class="compare-box crawler-box">
+        <h4><span class="badge badge-red">검색 크롤러 (Googlebot 등)</span></h4>
+        <div style="font-size:12px;color:#be123c;line-height:1.7;margin-bottom:10px">
+          ❌ JS 미실행 → 빈 div만 인식<br>
+          ❌ 메타 정보 없음 → 인덱싱 불가<br>
+          ❌ 링크 없음 → 크롤링 경로 단절
+        </div>
+        <div class="code-block" style="color:#be123c;background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;padding:10px;font-size:10.5px">
+&lt;head&gt;
+  &lt;title&gt;&lt;/title&gt;
+  &lt;!-- meta 없음 --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="root"&gt;
+    &lt;!-- JS가 채워줘야 함 --&gt;
+  &lt;/div&gt;
+  &lt;script src="bundle.js"&gt;
+  &lt;/script&gt;
+&lt;/body&gt;</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:12px 14px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
+      <p style="font-size:12.5px;color:#374151;line-height:1.7">
+        <strong>💡 Googlebot의 JS 실행?</strong><br>
+        → Google은 2단계 인덱싱 적용: ① HTML 즉시 수집 → ② 이후 JS 렌더링 (수일~수주 지연)<br>
+        → 지연 기간 동안 색인 누락 · 순위 저하 발생 가능<br>
+        → 다른 크롤러(Naver, Bing 등)는 JS 실행 미지원인 경우 많음
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: SEO Problems -->
+<div id="tab2" style="display:none">
+  <p class="section-title">CSR로 인한 SEO 문제 원인</p>
+  <div class="problem-list">
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#fee2e2">📄</div>
+      <div class="problem-text">
+        <h5>빈 &lt;title&gt; · &lt;meta description&gt;</h5>
+        <p>초기 HTML에 메타 정보 없음 → 검색 결과 미노출 / 제목·설명 자동생성(부정확)</p>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#fff7ed">🔗</div>
+      <div class="problem-text">
+        <h5>내부 링크 크롤링 단절</h5>
+        <p>JS 실행 전 &lt;a href&gt; 없음 → 크롤러가 사이트 구조 파악 불가 · PageRank 전달 차단</p>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#fef9c3">⏱</div>
+      <div class="problem-text">
+        <h5>렌더링 지연 → TTI / LCP 악화</h5>
+        <p>JS 다운로드·파싱·실행 완료 전까지 콘텐츠 없음 → Core Web Vitals 점수 저하 → 순위 영향</p>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#f0fdf4">🗺</div>
+      <div class="problem-text">
+        <h5>동적 라우팅 인식 불가</h5>
+        <p>React Router 등으로 관리되는 URL → HTML 단에서 경로 정보 없음 → 개별 페이지 인덱싱 어려움</p>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#f0f9ff">📊</div>
+      <div class="problem-text">
+        <h5>구조화 데이터(JSON-LD) 지연 로드</h5>
+        <p>JS로 주입되는 Schema.org 마크업 → 크롤러 수집 시 부재 → 리치 스니펫 표시 안 됨</p>
+      </div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-icon" style="background:#fdf4ff">🤖</div>
+      <div class="problem-text">
+        <h5>크롤 예산(Crawl Budget) 낭비</h5>
+        <p>빈 페이지 반복 크롤 → 유의미한 콘텐츠 미수집 → 대규모 사이트에서 인덱싱 효율 저하</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: Solutions -->
+<div id="tab3" style="display:none">
+  <p class="section-title">해결 전략</p>
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:#1e40af;margin-bottom:12px">🏆 권장 접근법 (SEO 영향도 순)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:12px 14px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="badge badge-green">최우선</span>
+          <strong style="font-size:13px;color:#166534">SSR (Server-Side Rendering)</strong>
+        </div>
+        <p style="font-size:12px;color:#374151;line-height:1.7">→ 서버가 완성된 HTML 반환 → 크롤러 즉시 수집 가능<br>→ Next.js <span class="mono" style="background:#dcfce7;padding:1px 5px;border-radius:3px;font-size:11px">getServerSideProps</span> / Nuxt.js 활용</p>
+      </div>
+      <div style="padding:12px 14px;border-radius:8px;background:#f0f9ff;border:1px solid #bae6fd">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="badge badge-blue">권장</span>
+          <strong style="font-size:13px;color:#1e40af">SSG (Static Site Generation)</strong>
+        </div>
+        <p style="font-size:12px;color:#374151;line-height:1.7">→ 빌드 타임에 HTML 생성 → 정적 콘텐츠에 최적<br>→ Next.js <span class="mono" style="background:#dbeafe;padding:1px 5px;border-radius:3px;font-size:11px">getStaticProps</span> / Gatsby / Astro</p>
+      </div>
+      <div style="padding:12px 14px;border-radius:8px;background:#fef9c3;border:1px solid #fde68a">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="badge badge-amber">보조 수단</span>
+          <strong style="font-size:13px;color:#713f12">Pre-rendering / Dynamic Rendering</strong>
+        </div>
+        <p style="font-size:12px;color:#374151;line-height:1.7">→ 크롤러 감지 후 미리 렌더된 HTML 제공<br>→ Rendertron · Prerender.io 활용 (임시방편)</p>
+      </div>
+      <div style="padding:12px 14px;border-radius:8px;background:#f5f3ff;border:1px solid #ddd6fe">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="badge" style="background:#ede9fe;color:#5b21b6">필수 병행</span>
+          <strong style="font-size:13px;color:#5b21b6">React Helmet / next/head</strong>
+        </div>
+        <p style="font-size:12px;color:#374151;line-height:1.7">→ SSR·SSG와 함께 메타 태그 서버 주입 필수<br>→ title · description · OG · canonical 모두 포함</p>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="background:#f8fafc">
+    <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px">📌 CSR 유지 시 최소한의 SEO 조치</div>
+    <div class="solution-strip">
+      <div class="sol-chip">🔍 sitemap.xml 제출</div>
+      <div class="sol-chip">📜 robots.txt 최적화</div>
+      <div class="sol-chip">🏷 정적 메타 태그 삽입</div>
+      <div class="sol-chip">⚡ 번들 크기 최소화</div>
+      <div class="sol-chip">🗂 구조화 데이터 SSR 주입</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(n) {
+    [0,1,2,3].forEach(i => {
+      document.getElementById('tab'+i).style.display = i===n ? 'block' : 'none';
+      document.querySelectorAll('.nav-btn')[i].classList.toggle('active', i===n);
+    });
+    window.parent.postMessage({ height: document.body.scrollHeight }, "*");
+  }
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
