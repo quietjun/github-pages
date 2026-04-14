@@ -85,5 +85,14 @@
         "path": "git/cicd.html"
       }
     ]
+  },
+  {
+    "label": "vue",
+    "children": [
+      {
+        "label": "seo",
+        "path": "vue/seo.html"
+      }
+    ]
   }
 ]
