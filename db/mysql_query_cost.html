@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL Query Cost 비교</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f7f8fa;
+    color: #1a1a2e;
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+  }
+  .page-sub {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* SQL Box */
+  .sql-box {
+    background: #1e1e2e;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    color: #cdd6f4;
+    border-left: 4px solid #89b4fa;
+  }
+  .sql-keyword { color: #89b4fa; }
+  .sql-value    { color: #a6e3a1; }
+
+  /* Compare grid */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .plan-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .plan-header {
+    padding: 12px 18px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .plan-header.secondary { background: #fff7ed; color: #c2410c; border-bottom: 1.5px solid #fed7aa; }
+  .plan-header.primary   { background: #eff6ff; color: #1d4ed8; border-bottom: 1.5px solid #bfdbfe; }
+
+  .plan-header .cost-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+  .plan-header.secondary .cost-badge { background: #c2410c; color: #fff; }
+  .plan-header.primary   .cost-badge { background: #1d4ed8; color: #fff; }
+
+  .plan-body { padding: 16px 18px; }
+
+  .exec-node {
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+  }
+  .exec-node.orange { background: #1f2937; color: #fb923c; border: 1.5px solid #fb923c33; }
+  .exec-node.blue   { background: #1f2937; color: #60a5fa; border: 1.5px solid #60a5fa33; }
+
+  .node-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.83rem;
+    margin-bottom: 4px;
+  }
+  .node-meta {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 4px 0;
+    border-top: 1px dashed #e5e7eb;
+    margin-top: 8px;
+    color: #374151;
+  }
+  .cost-row .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  /* Breakdown section */
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #6366f1;
+    border-radius: 2px;
+  }
+
+  /* Cost model table */
+  .cost-model {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .cost-model-header {
+    background: #f3f4f6;
+    padding: 10px 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: 8px;
+  }
+  .cost-model-row {
+    padding: 10px 20px;
+    font-size: 0.82rem;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid #f3f4f6;
+  }
+  .cost-model-row:nth-child(even) { background: #fafafa; }
+  .cost-model-row .param {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: #4f46e5;
+  }
+  .cost-model-row .default {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #059669;
+  }
+  .cost-model-row .desc { color: #6b7280; font-size: 0.78rem; }
+
+  /* Breakdown cards */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 600px) { .breakdown-grid { grid-template-columns: 1fr; } }
+
+  .breakdown-card {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .breakdown-card-header {
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .breakdown-card-header.sec { background: #fff7ed; color: #c2410c; border-bottom: 1.5px solid #fed7aa; }
+  .breakdown-card-header.pri { background: #eff6ff; color: #1d4ed8; border-bottom: 1.5px solid #bfdbfe; }
+
+  .breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 16px;
+    font-size: 0.82rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .breakdown-item:last-child { border-bottom: none; }
+  .breakdown-item .label { color: #374151; }
+  .breakdown-item .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: #6366f1;
+  }
+  .breakdown-item .amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #111827;
+  }
+  .breakdown-total {
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-top: 2px solid #e5e7eb;
+  }
+  .breakdown-total.sec .t-val { color: #c2410c; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
+  .breakdown-total.pri .t-val { color: #1d4ed8; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
+
+  /* Flow diagram */
+  .flow-section {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+
+  .flow-diagram {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: start;
+    margin-top: 12px;
+  }
+  .flow-col { display: flex; flex-direction: column; gap: 6px; }
+  .flow-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 28px;
+    color: #9ca3af;
+    font-size: 1.4rem;
+  }
+
+  .flow-step {
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.79rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .flow-step .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+  .flow-step.sec-step { background: #fff7ed; color: #92400e; }
+  .flow-step.sec-step .num { background: #f97316; color: #fff; }
+  .flow-step.pri-step { background: #eff6ff; color: #1e40af; }
+  .flow-step.pri-step .num { background: #3b82f6; color: #fff; }
+
+  .flow-cost-tag {
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .flow-step.sec-step .flow-cost-tag { background: #f97316; color: #fff; }
+  .flow-step.pri-step .flow-cost-tag { background: #3b82f6; color: #fff; }
+
+  /* Key insight */
+  .insight-box {
+    background: linear-gradient(135deg, #fef9c3, #fef08a);
+    border: 1.5px solid #fde047;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .insight-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #713f12;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .insight-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .insight-list li {
+    font-size: 0.82rem;
+    color: #78350f;
+    padding-left: 16px;
+    position: relative;
+  }
+  .insight-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+
+  .note-box {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.82rem;
+    color: #14532d;
+  }
+  .note-box strong { color: #15803d; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag.mem { background: #dcfce7; color: #166534; }
+  .tag.io  { background: #fee2e2; color: #991b1b; }
+
+  .arrow-down {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 1rem;
+    line-height: 1;
+    margin: 2px 0;
+  }
+</style>
+</head>
+<body>
+
+<p class="page-title">MySQL Query Cost 분석: Secondary vs Clustered Index</p>
+<p class="page-sub">select * from emp where emp_no = 100000;</p>
+
+<!-- SQL -->
+<div class="sql-box">
+  <span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> emp_secondary_idx
+  <span class="sql-keyword">WHERE</span> emp_no = <span class="sql-value">100000</span>;
+</div>
+
+<!-- Two plan cards -->
+<div class="compare-grid">
+  <div class="plan-card">
+    <div class="plan-header secondary">
+      Secondary Index
+      <span class="cost-badge">0.35</span>
+    </div>
+    <div class="plan-body">
+      <div class="exec-node orange">
+        <div class="node-title">Non-Unique Key Lookup</div>
+        <div class="node-meta">idx: emp_secondary_idx</div>
+      </div>
+      <div class="cost-row"><span>Node cost</span><span class="val">0.35</span></div>
+      <div class="cost-row"><span>Query cost</span><span class="val">0.35</span></div>
+      <div class="cost-row"><span>Rows estimated</span><span class="val">1 row</span></div>
+    </div>
+  </div>
+
+  <div class="plan-card">
+    <div class="plan-header primary">
+      Clustered Index (PRIMARY)
+      <span class="cost-badge">1.00</span>
+    </div>
+    <div class="plan-body">
+      <div class="exec-node blue">
+        <div class="node-title">Single Row (constant)</div>
+        <div class="node-meta">idx: emp_cluster_idx → PRIMARY</div>
+      </div>
+      <div class="cost-row"><span>Node cost</span><span class="val">0.10</span></div>
+      <div class="cost-row"><span>Query cost</span><span class="val">1.00</span></div>
+      <div class="cost-row"><span>Rows estimated</span><span class="val">1 row</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 핵심 설명 -->
+<div class="section-title">MySQL 비용 모델 (mysql.engine_cost / mysql.server_cost)</div>
+
+<div class="cost-model">
+  <div class="cost-model-header">
+    <span>파라미터</span>
+    <span>기본값</span>
+    <span>설명</span>
+  </div>
+  <div class="cost-model-row">
+    <span class="param">memory_block_read_cost</span>
+    <span class="default">0.25</span>
+    <span class="desc">버퍼 풀(메모리) 블록 읽기</span>
+  </div>
+  <div class="cost-model-row">
+    <span class="param">io_block_read_cost</span>
+    <span class="default">1.00</span>
+    <span class="desc">디스크 I/O 블록 읽기</span>
+  </div>
+  <div class="cost-model-row">
+    <span class="param">row_evaluate_cost</span>
+    <span class="default">0.10</span>
+    <span class="desc">서버 레벨 행 평가 (WHERE 등)</span>
+  </div>
+  <div class="cost-model-row">
+    <span class="param">key_compare_cost</span>
+    <span class="default">0.05</span>
+    <span class="desc">인덱스 키 비교</span>
+  </div>
+</div>
+
+<!-- Cost breakdown -->
+<div class="section-title">비용 분해</div>
+<div class="breakdown-grid">
+
+  <div class="breakdown-card">
+    <div class="breakdown-card-header sec">
+      Secondary Index → 0.35
+    </div>
+    <div class="breakdown-item">
+      <span class="label">인덱스 블록 읽기 <span class="tag mem">MEM</span></span>
+      <div style="text-align:right">
+        <div class="formula">0.25 × 1</div>
+        <div class="amount">0.25</div>
+      </div>
+    </div>
+    <div class="breakdown-item">
+      <span class="label">행 평가 비용</span>
+      <div style="text-align:right">
+        <div class="formula">0.10 × 1</div>
+        <div class="amount">0.10</div>
+      </div>
+    </div>
+    <div class="breakdown-total sec">
+      <span>Total Query Cost</span>
+      <span class="t-val">0.35</span>
+    </div>
+  </div>
+
+  <div class="breakdown-card">
+    <div class="breakdown-card-header pri">
+      Clustered Index → 1.00
+    </div>
+    <div class="breakdown-item">
+      <span class="label">행 평가 비용 <small>(노드 표시)</small></span>
+      <div style="text-align:right">
+        <div class="formula">0.10 × 1</div>
+        <div class="amount">0.10</div>
+      </div>
+    </div>
+    <div class="breakdown-item">
+      <span class="label">데이터 페이지 읽기 <span class="tag io">I/O</span></span>
+      <div style="text-align:right">
+        <div class="formula">1.00 × 1</div>
+        <div class="amount">1.00</div>
+      </div>
+    </div>
+    <div class="breakdown-total pri">
+      <span>Total Query Cost</span>
+      <span class="t-val">~1.00</span>
+    </div>
+  </div>
+</div>
+
+<!-- 왜 이런 차이가? -->
+<div class="section-title">왜 Clustered가 더 비싸게 추정될까?</div>
+<div class="flow-section">
+  <div class="flow-diagram">
+    <div class="flow-col">
+      <div style="font-size:0.78rem; font-weight:700; color:#c2410c; margin-bottom:4px;">Secondary Index 접근</div>
+      <div class="flow-step sec-step">
+        <span class="num">1</span>
+        <div>
+          세컨더리 인덱스 스캔<br>
+          <span style="font-size:0.74rem; opacity:0.8">emp_no → hidden PK 획득</span>
+        </div>
+        <span class="flow-cost-tag">0.25</span>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="flow-step sec-step">
+        <span class="num">2</span>
+        <div>
+          행 평가 (WHERE 적용)<br>
+          <span style="font-size:0.74rem; opacity:0.8">row_evaluate_cost</span>
+        </div>
+        <span class="flow-cost-tag">0.10</span>
+      </div>
+      <div style="font-size:0.75rem; color:#c2410c; font-family:'JetBrains Mono',monospace; margin-top:6px; padding:6px 10px; background:#fff7ed; border-radius:6px; text-align:center;">
+        합계 → <strong>0.35</strong><br>
+        <span class="tag mem">MEM</span> 읽기 가정
+      </div>
+    </div>
+
+    <div class="flow-divider">vs</div>
+
+    <div class="flow-col">
+      <div style="font-size:0.78rem; font-weight:700; color:#1d4ed8; margin-bottom:4px;">Clustered Index 접근</div>
+      <div class="flow-step pri-step">
+        <span class="num">1</span>
+        <div>
+          Single Row (constant) 처리<br>
+          <span style="font-size:0.74rem; opacity:0.8">최적화 단계 상수 치환</span>
+        </div>
+        <span class="flow-cost-tag">0.10</span>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="flow-step pri-step">
+        <span class="num">2</span>
+        <div>
+          클러스터 데이터 페이지 읽기<br>
+          <span style="font-size:0.74rem; opacity:0.8">테이블 크기↑ → I/O 가정</span>
+        </div>
+        <span class="flow-cost-tag">1.00</span>
+      </div>
+      <div style="font-size:0.75rem; color:#1d4ed8; font-family:'JetBrains Mono',monospace; margin-top:6px; padding:6px 10px; background:#eff6ff; border-radius:6px; text-align:center;">
+        합계 → <strong>1.00</strong><br>
+        <span class="tag io">I/O</span> 읽기 가정
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Insight -->
+<div class="insight-box">
+  <div class="insight-title">⚠️ 핵심 포인트</div>
+  <ul class="insight-list">
+    <li>비용 차이의 본질: <strong>메모리 읽기(0.25) vs 디스크 I/O(1.00)</strong> 단가 차이</li>
+    <li>옵티마이저는 테이블 크기 기반으로 버퍼 풀 캐시 여부를 추정 → 큰 테이블 = I/O 가정</li>
+    <li>Secondary 인덱스 테이블이 더 작거나 캐시 친화적이라고 추정된 결과</li>
+    <li>Node cost(0.1) ≠ Query cost(1.00): 노드는 서버 레벨 비용만, 쿼리 전체는 엔진(I/O) 비용 포함</li>
+    <li>비용 = 옵티마이저의 <em>추정값</em>: 실제 실행 시간과 반드시 일치하지 않음</li>
+  </ul>
+</div>
+
+<div class="note-box">
+  💡 <strong>실무 팁</strong>: <code>EXPLAIN ANALYZE</code>로 추정 비용(cost)과 실제 실행 시간(actual time)을 함께 확인하면
+  옵티마이저의 통계 정확도를 검증할 수 있음. 비용이 높아도 실제론 빠를 수 있음.
+</div>
+
+<script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+</body>
+</html>
