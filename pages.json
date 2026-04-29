@@ -78,6 +78,15 @@
     ]
   },
   {
+    "label": "db",
+    "children": [
+      {
+        "label": "MySQL Query Cost 비교",
+        "path": "db/mysql_query_cost.html"
+      }
+    ]
+  },
+  {
     "label": "git",
     "children": [
       {
