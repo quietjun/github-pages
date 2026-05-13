@@ -96,6 +96,15 @@
     ]
   },
   {
+    "label": "spring_batch",
+    "children": [
+      {
+        "label": "Spring Batch Restart 시각화",
+        "path": "spring_batch/batch_process.html"
+      }
+    ]
+  },
+  {
     "label": "vue",
     "children": [
       {
