@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction 완벽 가이드</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+      line-height: 1.7;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 1024px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #1a1a1a;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 15px;
+    }
+    
+    .subtitle {
+      font-size: 0.95em;
+      color: #666666;
+      margin-bottom: 35px;
+      font-style: italic;
+    }
+    
+    h2 {
+      font-size: 1.6em;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-top: 35px;
+      margin-bottom: 15px;
+      padding-left: 15px;
+      border-left: 4px solid #2563eb;
+    }
+    
+    h3 {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      padding-left: 10px;
+      border-left: 3px solid #60a5fa;
+    }
+    
+    .content-box {
+      background-color: #f8fafc;
+      border-left: 4px solid #2563eb;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    .content-box p {
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+    
+    .definition {
+      background-color: #eff6ff;
+      border-left: 4px solid #0284c7;
+      padding: 18px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    .definition strong {
+      color: #0284c7;
+    }
+    
+    ul {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+    
+    li {
+      margin-bottom: 10px;
+      padding-left: 25px;
+      position: relative;
+      font-size: 0.95em;
+    }
+    
+    li:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #2563eb;
+      font-weight: bold;
+    }
+    
+    .concept-item {
+      background-color: #f1f5f9;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border-left: 3px solid #0ea5e9;
+    }
+    
+    .concept-item .label {
+      font-weight: 600;
+      color: #0c4a6e;
+      display: inline-block;
+      margin-right: 10px;
+      min-width: 80px;
+    }
+    
+    .concept-item .desc {
+      color: #475569;
+    }
+    
+    .example-box {
+      background-color: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 18px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    
+    .example-box .title {
+      font-weight: 600;
+      color: #166534;
+      margin-bottom: 8px;
+    }
+    
+    .example-box p {
+      margin-bottom: 6px;
+      font-size: 0.9em;
+      color: #365314;
+    }
+    
+    .flow-diagram {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+    
+    .flow-step {
+      background-color: #dbeafe;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-weight: 500;
+      color: #0c4a6e;
+      white-space: nowrap;
+    }
+    
+    .flow-arrow {
+      color: #2563eb;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.9em;
+    }
+    
+    th {
+      background-color: #1e40af;
+      color: #ffffff;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+    
+    .acid-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    @media (max-width: 640px) {
+      .acid-box {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .acid-item {
+      background-color: #f0f9ff;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #0284c7;
+    }
+    
+    .acid-item .letter {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #0c4a6e;
+      margin-bottom: 5px;
+    }
+    
+    .acid-item .name {
+      font-weight: 600;
+      color: #1e40af;
+      font-size: 0.95em;
+      margin-bottom: 8px;
+    }
+    
+    .acid-item .content {
+      font-size: 0.85em;
+      color: #334155;
+      line-height: 1.5;
+    }
+    
+    .lock-type {
+      background-color: #f5f3ff;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      border-left: 4px solid #9333ea;
+    }
+    
+    .lock-type .type-name {
+      font-weight: 600;
+      color: #6b21a8;
+      font-size: 0.95em;
+      margin-bottom: 8px;
+    }
+    
+    .lock-type .details {
+      font-size: 0.85em;
+      color: #581c87;
+    }
+    
+    .highlight {
+      background-color: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+    
+    .note {
+      background-color: #fecaca;
+      border-left: 4px solid #dc2626;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #7f1d1d;
+    }
+    
+    .step-section {
+      margin: 25px 0;
+    }
+    
+    .step-num {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 600;
+      margin-right: 10px;
+      font-size: 0.9em;
+    }
+    
+    .code-block {
+      background-color: #1f2937;
+      color: #e5e7eb;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      overflow-x: auto;
+    }
+    
+    .divider {
+      border-top: 2px solid #e2e8f0;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Transaction 완벽 가이드</h1>
+    <p class="subtitle">데이터베이스 트랜잭션의 개념과 동작 원리 정리</p>
+    
+    <!-- ===== Transaction의 정의 ===== -->
+    <h2>1. Transaction 정의</h2>
+    
+    <div class="definition">
+      <strong>Transaction이란?</strong><br/>
+      개별 쿼리 단위가 아닌 <strong>사용자의 액션(업무) 단위</strong>로 묶어서 제어하는 데이터 처리의 한 단위
+    </div>
+    
+    <h3>목적</h3>
+    <p style="margin-bottom: 15px;">데이터베이스 내 데이터의 완전성(integrity) 유지</p>
+    
+    <h3>실제 예시: 계좌이체</h3>
+    <div class="example-box">
+      <div class="title">A 계좌 100원 → B 계좌로 이체</div>
+      <p><span class="highlight">UPDATE 1:</span> A 계좌에서 100원 출금</p>
+      <p><span class="highlight">UPDATE 2:</span> B 계좌에 100원 입금</p>
+      <p style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #86efac;">
+        → 이 2개의 SQL을 하나로 묶은 것이 <strong>"이체"라는 업무</strong>
+      </p>
+    </div>
+    
+    <div class="note">
+      ⚠️ A 계좌 출금 성공 후 B 계좌 입금 실패 시?<br/>
+      → 출금을 반드시 취소(Rollback)해야 함
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== Commit과 Rollback ===== -->
+    <h2>2. Commit과 Rollback</h2>
+    
+    <h3>동작 원리</h3>
+    <div class="content-box">
+      <p><span class="highlight">핵심 원칙:</span> 트랜잭션 종료 전 모든 변경사항은 임시 데이터</p>
+      <p style="margin-top: 10px;">변경 전 데이터는 <strong>UNDO Tablespace</strong>에 보관되어 언제든 복구 가능</p>
+    </div>
+    
+    <h3>처리 과정</h3>
+    <div class="flow-diagram">
+      <div class="flow-step">UPDATE 실행</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">UNDO에 기존값 저장</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">테이블에 임시값 저장</div>
+    </div>
+    
+    <h3 style="margin-top: 20px;">Commit</h3>
+    <ul>
+      <li>임시 데이터를 <strong>확정</strong></li>
+      <li>UNDO의 값 삭제 가능 (정책에 따라 다름)</li>
+      <li>업무 완전 성공</li>
+    </ul>
+    
+    <h3>Rollback</h3>
+    <ul>
+      <li>UNDO의 데이터로 테이블 <strong>덮어쓰기</strong></li>
+      <li>변경사항 모두 취소</li>
+      <li>업무 실패로 원래 상태 복원</li>
+    </ul>
+    
+    <div class="highlight" style="padding: 15px; margin-top: 15px; background-color: #fef3c7; display: block;">
+      <strong>All or Nothing 원칙:</strong> 트랜잭션은 완전히 성공하거나 완전히 실패해야 함
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== Transaction 단계 ===== -->
+    <h2>3. Transaction의 단계</h2>
+    
+    <div class="step-section">
+      <h3><span class="step-num">1</span>트랜잭션 시작</h3>
+      <div class="code-block">START TRANSACTION;</div>
+      <p style="margin-top: 10px;">또는 DML 실행 시 자동 시작</p>
+    </div>
+    
+    <div class="step-section">
+      <h3><span class="step-num">2</span>종료 전 데이터 상태</h3>
+      <ul>
+        <li>모든 데이터: <strong>임시적</strong> 상태</li>
+        <li>변경 전 데이터로 언제든 복구 가능</li>
+        <li><strong>변경 TX:</strong> 해당 row에 lock 확보 → 조회/수정/삭제 자유</li>
+        <li><strong>다른 TX:</strong> 편집 불가 (읽기는 상황에 따라 다름)</li>
+      </ul>
+    </div>
+    
+    <div class="step-section">
+      <h3><span class="step-num">3</span>트랜잭션 종료</h3>
+      <ul>
+        <li><strong>COMMIT:</strong> 변경사항 확정</li>
+        <li><strong>ROLLBACK:</strong> 변경사항 취소</li>
+        <li><strong>자동 COMMIT:</strong> DDL(create, alter, drop) 또는 DCL(grant, revoke) 실행 시</li>
+        <li><strong>자동 ROLLBACK:</strong> SQL 도구 비정상 종료 시</li>
+      </ul>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== A.C.I.D ===== -->
+    <h2>4. A.C.I.D 원칙</h2>
+    
+    <p style="margin-bottom: 20px;">트랜잭션이 안전하게 처리되기 위해 보장되어야 하는 4가지 특성</p>
+    
+    <div class="acid-box">
+      <div class="acid-item">
+        <div class="letter">A</div>
+        <div class="name">Atomicity (원자성)</div>
+        <div class="content">
+          작업이 <strong>부분적으로 성공</strong>하면 안됨<br/>
+          → 하나로 움직여야 함<br/>
+          → <strong>All or Nothing</strong><br/>
+          <br/>
+          <strong style="color: #0284c7;">예:</strong> A 계좌 출금 성공<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;B 계좌 입금 실패<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;→ 출금도 취소 (ROLLBACK)
+        </div>
+      </div>
+      
+      <div class="acid-item">
+        <div class="letter">C</div>
+        <div class="name">Consistency (일관성)</div>
+        <div class="content">
+          데이터에 <strong>일관성</strong> 유지<br/>
+          → 이체 전후 금액 합 변화 없음<br/>
+          → 자료형 임의 변경 금지<br/>
+          <br/>
+          <strong style="color: #0284c7;">예:</strong> 이체 전: A 100원, B 200원<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;이체 후: A 0원, B 300원<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;→ 총합 300원 유지
+        </div>
+      </div>
+      
+      <div class="acid-item">
+        <div class="letter">I</div>
+        <div class="name">Isolation (독립성)</div>
+        <div class="content">
+          다른 TX에 <strong>간섭 없음</strong><br/>
+          → TX 중간 내용 침범 금지<br/>
+          → 다른 이체 개입 금지<br/>
+          <br/>
+          <strong style="color: #0284c7;">예:</strong> TX A 이체 중<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;TX B가 A 잔액 조회<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;→ 이체 완료 후 결과만 보임
+        </div>
+      </div>
+      
+      <div class="acid-item">
+        <div class="letter">D</div>
+        <div class="name">Durability (지속성)</div>
+        <div class="content">
+          완료된 TX는 <strong>영구적</strong><br/>
+          → 시스템 장애 후에도 복구<br/>
+          → 송금 결과 반영 유지<br/>
+          <br/>
+          <strong style="color: #0284c7;">예:</strong> 이체 COMMIT 후<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;시스템 장애 발생<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;→ 재부팅 시에도 이체 결과 유지
+        </div>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== Lock ===== -->
+    <h2>5. Lock의 개념</h2>
+    
+    <h3>필요성</h3>
+    <div class="content-box">
+      <p><strong>A.C.I.D 원칙 완벽 보장 방법:</strong> 한번에 하나의 TX만 동작</p>
+      <p style="margin-top: 10px;">⚠️ 문제: 동시성 저하 → 성능 심각 악화</p>
+      <p style="margin-top: 10px;"><strong>해결책:</strong> Lock을 통한 효율적 자원 제어</p>
+    </div>
+    
+    <h3 style="margin-top: 20px;">Lock의 역할</h3>
+    <p style="margin-bottom: 15px;">동시에 진행되는 여러 TX 중 특정 자원에 대한 <strong>접근 제어</strong></p>
+    <ul>
+      <li>대상 수정 TX: 그 권한 확보</li>
+      <li>다른 TX: 사용에 제약</li>
+      <li>순차성 보장 → 무결성 유지</li>
+    </ul>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== Lock 종류 ===== -->
+    <h2>6. Lock의 분류</h2>
+    
+    <h3>① 설정 범위별 분류</h3>
+    
+    <div class="concept-item">
+      <span class="label">테이블 Lock</span>
+      <span class="desc">테이블 전체에 걸리는 Lock → DDL 과정에서 발생 (ALTER 등)</span>
+    </div>
+    
+    <div class="concept-item">
+      <span class="label">Row Lock</span>
+      <span class="desc">하나의 행에 걸리는 Lock → DML의 Lock → 가장 일반적</span>
+    </div>
+    
+    <h3 style="margin-top: 20px;">② 동작 방식별 분류</h3>
+    
+    <div class="lock-type">
+      <div class="type-name">🔓 Shared Lock (공유 락, S Lock)</div>
+      <div class="details">
+        <p><strong>사용 시점:</strong> SELECT 조회 과정에서 부여</p>
+        <p><strong>특징:</strong> 여러 사용자가 동시에 같은 데이터 읽기 가능</p>
+        <p><strong>효과:</strong> Dirty Read, Non-Repeatable Read 방지</p>
+      </div>
+    </div>
+    
+    <div class="lock-type">
+      <div class="type-name">🔒 Exclusive Lock (배타 락, X Lock)</div>
+      <div class="details">
+        <p><strong>사용 시점:</strong> INSERT, UPDATE, DELETE 등 변경 작업 시</p>
+        <p><strong>특징:</strong> 해당 TX 완료까지 다른 세션 완전 차단</p>
+        <p><strong>효과:</strong> 변경 중 충돌 방지 → 데이터 무결성 유지</p>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== Lock 동작 예시 ===== -->
+    <h2>7. Lock 동작 시나리오</h2>
+    
+    <h3>① Shared Lock (S-Lock) 시나리오</h3>
+    <p style="margin-bottom: 15px; color: #666;">여러 TX가 동시에 같은 데이터를 <strong>읽기만</strong> 할 때의 동작</p>
+    
+    <div class="note" style="background-color: #fef3c7; border-left-color: #f59e0b; color: #92400e;">
+      ⚠️ <strong>주의:</strong> 아래 시나리오는 <span class="highlight" style="background-color: #fcd34d;">SERIALIZABLE Isolation Level</span>에서의 동작입니다.<br/>
+      <strong>일반적인 DB 기본값(READ COMMITTED)에서는</strong> S-Lock이 SELECT 직후 즉시 해제되어 <strong>TX B의 UPDATE가 바로 성공</strong>합니다.
+    </div>
+    
+    <table style="margin-top: 15px;">
+      <thead>
+        <tr>
+          <th>Transaction A</th>
+          <th>Transaction B</th>
+          <th>설명 (SERIALIZABLE)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>START TRANSACTION;</code><br/><code>SELECT * FROM account;</code></td>
+          <td>—</td>
+          <td>TX A: Shared Lock (S Lock) 획득 → <strong>COMMIT까지 유지</strong></td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>START TRANSACTION;</code><br/><code>SELECT * FROM account;</code></td>
+          <td>TX B: S Lock 획득 → 성공 (S Lock끼리 충돌 없음)</td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>UPDATE account SET amount=200</code><br/><code>WHERE no=1;</code></td>
+          <td>TX B: X Lock 시도 → <strong>대기</strong> (TX A의 S Lock 때문에)</td>
+        </tr>
+        <tr>
+          <td><code>COMMIT;</code></td>
+          <td>—</td>
+          <td>TX A: S Lock 반납 → TX B UPDATE 진행 가능</td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>UPDATE 성공</code><br/><code>COMMIT;</code></td>
+          <td>TX B: X Lock 획득 후 수정 완료</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="concept-item" style="margin-top: 15px; background-color: #f0fdf4; border-left-color: #16a34a;">
+      <span class="label" style="color: #166534;">S-Lock의 개념</span>
+      <span class="desc" style="color: #365314;">
+        여러 TX 동시 읽기 가능 ↑ 동시성 / Isolation Level에 따라 Lock 유지 기간 달라짐 → 실제 동작 상이
+      </span>
+    </div>
+    
+    <h3 style="margin-top: 30px;">② Exclusive Lock (X-Lock) 시나리오</h3>
+    <p style="margin-bottom: 15px; color: #666;">특정 행을 <strong>변경</strong>할 때의 동작 (다른 TX 완전 차단)</p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Transaction A</th>
+          <th>Transaction B</th>
+          <th>설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>START TRANSACTION;</code><br/><code>SELECT * FROM account;</code></td>
+          <td>—</td>
+          <td>TX A: 초기 상태</td>
+        </tr>
+        <tr>
+          <td><code>UPDATE account SET amount=200</code><br/><code>WHERE no=1;</code></td>
+          <td>—</td>
+          <td>TX A: Exclusive Lock (X Lock) 획득 → no=1 row 잠금</td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>START TRANSACTION;</code><br/><code>SELECT * FROM account;</code></td>
+          <td>TX B: 조회는 가능 (상황에 따라 다름)</td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>UPDATE account SET amount=200</code><br/><code>WHERE no=1;</code></td>
+          <td>TX B: X Lock 획득 시도 → <strong>대기</strong> (Lock timeout)</td>
+        </tr>
+        <tr>
+          <td><code>COMMIT;</code></td>
+          <td>—</td>
+          <td>TX A: Lock 반납 → TX B 진행 가능</td>
+        </tr>
+        <tr>
+          <td>—</td>
+          <td><code>UPDATE 성공</code><br/><code>SELECT * FROM account;</code></td>
+          <td>TX B: X Lock 획득 후 수정 완료</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="concept-item" style="margin-top: 15px; background-color: #fef2f2; border-left-color: #dc2626;">
+      <span class="label" style="color: #991b1b;">X-Lock 특성</span>
+      <span class="desc" style="color: #7f1d1d;">
+        다른 TX 완전 차단 ↓ 동시성 낮음 / 데이터 무결성 최우선 ↑ 안정성 높음
+      </span>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- ===== 주의사항 ===== -->
+    <h2>8. 핵심 포인트</h2>
+    
+    <div class="concept-item" style="background-color: #fef2f2; border-left-color: #dc2626;">
+      <span class="label" style="color: #991b1b;">독립성 문제</span>
+      <span class="desc" style="color: #7f1d1d;">
+        A.C.I.D 중 독립성 보장이 실제로 가장 어려움<br/>
+        → 무결성과 동시성의 균형 필요<br/>
+        → 이를 위해 <strong>Isolation Level</strong> 개념 등장
+      </span>
+    </div>
+    
+    <div class="concept-item" style="background-color: #f0fdf4; border-left-color: #16a34a;">
+      <span class="label" style="color: #166534;">성능과 안정성</span>
+      <span class="desc" style="color: #365314;">
+        너무 강한 Lock: 안정적이지만 성능 악화<br/>
+        → 동시성 저하, 대기 시간 증가<br/>
+        → 상황에 맞는 적절한 Lock 전략 필요
+      </span>
+    </div>
+    
+  </div>
+  
+  <script>
+    window.onload = function() {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ height: height }, "*");
+    };
+  </script>
+</body>
+</html>
