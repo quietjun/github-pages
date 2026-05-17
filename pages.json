@@ -87,6 +87,10 @@
       {
         "label": "Transaction 완벽 가이드",
         "path": "db/transaction1.html"
+      },
+      {
+        "label": "Transaction Isolation Level 완벽 가이드",
+        "path": "db/tx_isolationlevel.html"
       }
     ]
   },
