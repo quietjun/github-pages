@@ -83,6 +83,10 @@
       {
         "label": "MySQL Query Cost 비교",
         "path": "db/mysql_query_cost.html"
+      },
+      {
+        "label": "Transaction 완벽 가이드",
+        "path": "db/transaction1.html"
       }
     ]
   },
