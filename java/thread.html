@@ -3,798 +3,390 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java 멀티스레드: 기초부터 Virtual Thread까지</title>
+    <title>Java 멀티스레드 가이드</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #ffffff;
-            color: #2c3e50;
-            line-height: 1.8;
-            padding: 20px;
-            max-width: 1024px;
-            margin: 0 auto;
-            overflow-x: hidden;
-        }
-        h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            color: #1a4d6d;
-            border-bottom: 3px solid #3b82f6;
-            padding-bottom: 10px;
-        }
-        h2 {
-            font-size: 20px;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            color: #2c3e50;
-        }
-        h3 {
-            font-size: 16px;
-            margin-top: 16px;
-            margin-bottom: 8px;
-            color: #34495e;
-        }
-        .tab-container {
-            margin: 20px 0;
-        }
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ecf0f1;
-        }
-        .tab-button {
-            padding: 12px 16px;
-            background-color: #f8f9fa;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: #7f8c8d;
-            transition: all 0.3s ease;
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-        .tab-button:hover {
-            background-color: #ecf0f1;
-            color: #2c3e50;
-        }
-        .tab-button.active {
-            color: #3b82f6;
-            background-color: #e3f2fd;
-            border-bottom-color: #3b82f6;
-        }
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .content-section {
-            background-color: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 12px 0;
-            border-left: 4px solid #3b82f6;
-        }
-        .concept-list {
-            list-style: none;
-            padding: 0;
-        }
-        .concept-list li {
-            padding: 8px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        .concept-list li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: #3b82f6;
-            font-weight: bold;
-        }
-        .code-block {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 14px;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            overflow-x: auto;
-            margin: 12px 0;
-            white-space: pre-wrap;
-            word-break: break-word;
-            line-height: 1.5;
-        }
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0;
-            font-size: 14px;
-        }
-        .comparison-table th {
-            background-color: #3b82f6;
-            color: white;
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-        }
-        .comparison-table td {
-            padding: 10px;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        .comparison-table tr:nth-child(even) {
-            background-color: #f0f4f8;
-        }
-        .diagram {
-            margin: 16px 0;
-            text-align: center;
-        }
-        .highlight {
-            background-color: #fff3cd;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-weight: 500;
-        }
-        .practice-section {
-            background-color: #e8f5e9;
-            padding: 16px;
-            border-radius: 8px;
-            border-left: 4px solid #4caf50;
-            margin: 16px 0;
-        }
-        .practice-section h3 {
-            color: #2e7d32;
-        }
-        .warning-section {
-            background-color: #ffebee;
-            padding: 16px;
-            border-radius: 8px;
-            border-left: 4px solid #f44336;
-            margin: 12px 0;
-        }
-        .warning-section h3 {
-            color: #c62828;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin: 16px 0;
-        }
-        @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-        svg {
-            width: 100%;
-            height: auto;
-            max-width: 100%;
-        }
-        .footer-note {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 20px;
-            padding-top: 12px;
-            border-top: 1px solid #ecf0f1;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #ffffff; color: #2c3e50; line-height: 1.8; padding: 20px; max-width: 1024px; margin: 0 auto; overflow-x: hidden; }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #1a4d6d; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+        h2 { font-size: 20px; margin-top: 24px; margin-bottom: 12px; color: #2c3e50; }
+        h3 { font-size: 16px; margin-top: 16px; margin-bottom: 8px; color: #34495e; }
+        .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; }
+        .tab-button { padding: 12px 16px; background-color: #f8f9fa; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 14px; font-weight: 600; color: #7f8c8d; transition: all 0.3s ease; font-family: 'Noto Sans KR'; }
+        .tab-button:hover { background-color: #ecf0f1; color: #2c3e50; }
+        .tab-button.active { color: #3b82f6; background-color: #e3f2fd; border-bottom-color: #3b82f6; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .content-section { background-color: #f8f9fa; padding: 16px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #3b82f6; }
+        .concept-list { list-style: none; padding: 0; }
+        .concept-list li { padding: 8px 0; padding-left: 20px; position: relative; }
+        .concept-list li:before { content: "→"; position: absolute; left: 0; color: #3b82f6; font-weight: bold; }
+        .code-block { background-color: #2c3e50; color: #ecf0f1; padding: 14px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; overflow-x: auto; margin: 12px 0; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+        .comparison-table th { background-color: #3b82f6; color: white; padding: 10px; text-align: left; font-weight: 600; }
+        .comparison-table td { padding: 10px; border-bottom: 1px solid #ecf0f1; }
+        .comparison-table tr:nth-child(even) { background-color: #f0f4f8; }
+        .highlight { background-color: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 500; }
+        .warning-section { background-color: #ffebee; padding: 16px; border-radius: 8px; border-left: 4px solid #f44336; margin: 12px 0; }
+        .warning-section h3 { color: #c62828; }
+        .good-section { background-color: #e8f5e9; padding: 16px; border-radius: 8px; border-left: 4px solid #4caf50; margin: 12px 0; }
+        .good-section h3 { color: #2e7d32; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <h1>☕ Java 멀티스레드 완전 가이드</h1>
-    <p style="color: #7f8c8d; margin-bottom: 20px;">소개 → 기초 → 고급 → Virtual Thread까지 단계별 학습</p>
+    <p style="color: #7f8c8d; margin-bottom: 20px;">소개 → 기초 → 생명주기 → 동기화 → 스레드풀 → 모던 자바 → Virtual Thread</p>
 
-    <div class="tab-container">
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab(event, 'intro')">1. 개요</button>
-            <button class="tab-button" onclick="switchTab(event, 'basics')">2. 기초</button>
-            <button class="tab-button" onclick="switchTab(event, 'lifecycle')">3. 생명주기</button>
-            <button class="tab-button" onclick="switchTab(event, 'sync')">4. 동기화</button>
-            <button class="tab-button" onclick="switchTab(event, 'executor')">5. 스레드풀</button>
-            <button class="tab-button" onclick="switchTab(event, 'modern')">6. 모던 자바</button>
-            <button class="tab-button" onclick="switchTab(event, 'vthread')">7. Virtual Thread</button>
-            <button class="tab-button" onclick="switchTab(event, 'practice')">8. 실습</button>
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('intro')">1. 개요</button>
+        <button class="tab-button" onclick="switchTab('basics')">2. 기초</button>
+        <button class="tab-button" onclick="switchTab('lifecycle')">3. 생명주기</button>
+        <button class="tab-button" onclick="switchTab('sync')">4. 동기화</button>
+        <button class="tab-button" onclick="switchTab('executor')">5. 스레드풀</button>
+        <button class="tab-button" onclick="switchTab('modern')">6. 모던 자바</button>
+        <button class="tab-button" onclick="switchTab('vthread')">7. Virtual Thread</button>
+    </div>
+
+    <!-- 1. 개요 -->
+    <div id="intro" class="tab-content active">
+        <h2>1. Thread 개요</h2>
+        <h3>Thread vs Process</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li><span class="highlight">Process</span>: 독립적 메모리, 격리된 실행 환경</li>
+                <li><span class="highlight">Thread</span>: 같은 프로세스의 메모리 공유, 경량</li>
+                <li>Thread 100개 생성 = Process 1개 생성보다 빠름 & 가벼움</li>
+            </ul>
         </div>
 
-        <!-- 1. 개요 -->
-        <div id="intro" class="tab-content active">
-            <h2>1. Thread 개요</h2>
-            
-            <h3>Thread vs Process</h3>
+        <h3>Thread 생성 방식</h3>
+        <div class="grid-2">
             <div class="content-section">
-                <ul class="concept-list">
-                    <li><span class="highlight">Process</span>: 독립적 메모리, 격리된 실행 환경</li>
-                    <li><span class="highlight">Thread</span>: 같은 프로세스의 메모리 공유, 경량</li>
-                    <li>Thread 100개 생성 = Process 1개 생성보다 빠름 & 가벼움</li>
-                </ul>
-            </div>
-
-            <h3>멀티스레드의 필요성</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li><span class="highlight">응답성 향상</span>: UI 블록 방지 (네트워크 요청 중에도 UI 반응)</li>
-                    <li><span class="highlight">효율성</span>: 멀티코어 활용, 동시 작업 처리</li>
-                    <li><span class="highlight">아키텍처</span>: 웹 서버 (1 thread per client) 구현</li>
-                </ul>
-            </div>
-
-            <h3>Thread 생성 방식</h3>
-            <div class="grid-2">
-                <div class="content-section">
-                    <strong style="color: #2c3e50;">1️⃣ Thread 클래스 상속</strong>
-                    <div class="code-block">class MyThread extends Thread {
+                <strong>1️⃣ Thread 클래스 상속</strong>
+                <div class="code-block">class MyThread extends Thread {
   public void run() { ... }
 }
 new MyThread().start();</div>
-                </div>
-                <div class="content-section">
-                    <strong style="color: #2c3e50;">2️⃣ Runnable 구현 (권장)</strong>
-                    <div class="code-block">class MyTask implements Runnable {
+            </div>
+            <div class="content-section">
+                <strong>2️⃣ Runnable 구현 (권장)</strong>
+                <div class="code-block">class MyTask implements Runnable {
   public void run() { ... }
 }
 new Thread(new MyTask()).start();</div>
-                </div>
-            </div>
-
-            <div class="warning-section">
-                <h3>⚠️ start() vs run()</h3>
-                <ul class="concept-list">
-                    <li><span class="highlight">run()</span>: 호출 스레드에서 실행 (멀티스레드 X)</li>
-                    <li><span class="highlight">start()</span>: 새 스레드 생성 후 run() 실행 (멀티스레드 O)</li>
-                    <li>항상 start()를 호출하세요!</li>
-                </ul>
             </div>
         </div>
 
-        <!-- 2. 기초 -->
-        <div id="basics" class="tab-content">
-            <h2>2. Thread 기초 개념</h2>
+        <div class="warning-section">
+            <h3>⚠️ start() vs run()</h3>
+            <ul class="concept-list">
+                <li><span class="highlight">run()</span>: 호출 스레드에서 실행 (멀티스레드 X)</li>
+                <li><span class="highlight">start()</span>: 새 스레드 생성 후 run() 실행 (멀티스레드 O)</li>
+                <li>항상 start()를 호출하세요!</li>
+            </ul>
+        </div>
+    </div>
 
-            <h3>Main Thread</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>프로그램 시작 시 자동으로 생성</li>
-                    <li><span class="highlight">main()</span> 메서드 실행</li>
-                    <li>모든 자식 스레드가 종료되면 프로그램 종료</li>
-                    <li>Thread.currentThread() → main thread 정보</li>
-                </ul>
-            </div>
-
-            <h3>Thread 속성</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>속성</th>
-                    <th>설명</th>
-                    <th>기본값</th>
-                </tr>
-                <tr>
-                    <td><strong>ID</strong></td>
-                    <td>각 스레드의 고유 번호</td>
-                    <td>자동 할당</td>
-                </tr>
-                <tr>
-                    <td><strong>Name</strong></td>
-                    <td>디버깅용 이름</td>
-                    <td>Thread-N</td>
-                </tr>
-                <tr>
-                    <td><strong>Priority</strong></td>
-                    <td>스케줄 우선순위 (1~10)</td>
-                    <td>5 (NORM)</td>
-                </tr>
-                <tr>
-                    <td><strong>Daemon</strong></td>
-                    <td>백그라운드 실행 여부</td>
-                    <td>false</td>
-                </tr>
-            </table>
-
-            <h3>Daemon Thread</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>메인 스레드가 종료되면 즉시 종료</li>
-                    <li>보통 백그라운드 작업 (GC, 타이머)</li>
-                    <li>setDaemon(true) → start() 전에 호출</li>
-                    <li>⚠️ 중요한 데이터 저장에는 사용 금지</li>
-                </ul>
-            </div>
-
-            <h3>Thread Priority</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>MIN_PRIORITY (1) → 최저</li>
-                    <li>NORM_PRIORITY (5) → 기본 (대부분 사용)</li>
-                    <li>MAX_PRIORITY (10) → 최고</li>
-                    <li>setPriority()로 설정</li>
-                    <li>⚠️ OS 의존적, 보장 안 됨</li>
-                </ul>
-            </div>
-
-            <h3>Thread 정보 조회</h3>
-            <div class="code-block">Thread t = Thread.currentThread();
-System.out.println("ID: " + t.getId());
-System.out.println("Name: " + t.getName());
-System.out.println("Priority: " + t.getPriority());
-System.out.println("State: " + t.getState());
-System.out.println("Alive: " + t.isAlive());</div>
+    <!-- 2. 기초 -->
+    <div id="basics" class="tab-content">
+        <h2>2. Thread 기초</h2>
+        <h3>Main Thread</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>프로그램 시작 시 자동으로 생성</li>
+                <li><span class="highlight">main()</span> 메서드 실행</li>
+                <li>모든 자식 스레드가 종료되면 프로그램 종료</li>
+            </ul>
         </div>
 
-        <!-- 3. 생명주기 -->
-        <div id="lifecycle" class="tab-content">
-            <h2>3. Thread 생명주기</h2>
+        <h3>Thread 속성</h3>
+        <table class="comparison-table">
+            <tr>
+                <th>속성</th>
+                <th>설명</th>
+                <th>기본값</th>
+            </tr>
+            <tr>
+                <td><strong>ID</strong></td>
+                <td>각 스레드의 고유 번호</td>
+                <td>자동 할당</td>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>디버깅용 이름</td>
+                <td>Thread-N</td>
+            </tr>
+            <tr>
+                <td><strong>Priority</strong></td>
+                <td>스케줄 우선순위 (1~10)</td>
+                <td>5 (NORM)</td>
+            </tr>
+            <tr>
+                <td><strong>Daemon</strong></td>
+                <td>백그라운드 실행 여부</td>
+                <td>false</td>
+            </tr>
+        </table>
 
-            <h3>Thread 상태 다이어그램</h3>
-            <div class="diagram">
-                <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
-                    <!-- 상태 박스들 -->
-                    <rect x="50" y="50" width="120" height="60" fill="#fff3cd" stroke="#ff9800" stroke-width="2" rx="5"/>
-                    <text x="110" y="85" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">NEW</text>
-                    
-                    <rect x="250" y="50" width="120" height="60" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" rx="5"/>
-                    <text x="310" y="85" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">RUNNABLE</text>
-                    
-                    <rect x="450" y="50" width="120" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" rx="5"/>
-                    <text x="510" y="85" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">RUNNING</text>
-                    
-                    <rect x="650" y="50" width="120" height="60" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="5"/>
-                    <text x="710" y="85" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">TERMINATED</text>
+        <h3>Daemon Thread</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>메인 스레드가 종료되면 즉시 종료</li>
+                <li>보통 백그라운드 작업 (GC, 타이머)</li>
+                <li>setDaemon(true) → start() 전에 호출</li>
+            </ul>
+        </div>
+    </div>
 
-                    <rect x="250" y="170" width="120" height="60" fill="#ffebee" stroke="#f44336" stroke-width="2" rx="5"/>
-                    <text x="310" y="200" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">WAITING</text>
-                    <text x="310" y="220" font-family="Noto Sans KR, sans-serif" font-size="12" text-anchor="middle">TIMED_WAITING</text>
-                    
-                    <rect x="450" y="170" width="120" height="60" fill="#fce4ec" stroke="#e91e63" stroke-width="2" rx="5"/>
-                    <text x="510" y="205" font-family="Noto Sans KR, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">BLOCKED</text>
+    <!-- 3. 생명주기 -->
+    <div id="lifecycle" class="tab-content">
+        <h2>3. Thread 생명주기</h2>
+        <h3>5가지 상태</h3>
+        <table class="comparison-table">
+            <tr>
+                <th>상태</th>
+                <th>설명</th>
+            </tr>
+            <tr>
+                <td><strong>NEW</strong></td>
+                <td>객체 생성, start() 호출 전</td>
+            </tr>
+            <tr>
+                <td><strong>RUNNABLE</strong></td>
+                <td>실행 대기 중 (CPU 시간 할당 기다리는 중)</td>
+            </tr>
+            <tr>
+                <td><strong>WAITING</strong></td>
+                <td>다른 스레드의 신호 대기 (무한정)</td>
+            </tr>
+            <tr>
+                <td><strong>TIMED_WAITING</strong></td>
+                <td>시간 제한이 있는 대기 (sleep, wait(ms))</td>
+            </tr>
+            <tr>
+                <td><strong>BLOCKED</strong></td>
+                <td>Lock 획득 대기 중</td>
+            </tr>
+            <tr>
+                <td><strong>TERMINATED</strong></td>
+                <td>실행 완료, 스레드 종료</td>
+            </tr>
+        </table>
 
-                    <!-- 화살표들 -->
-                    <defs>
-                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                            <polygon points="0 0, 10 3, 0 6" fill="#666"/>
-                        </marker>
-                    </defs>
-
-                    <path d="M 170 80 L 250 80" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="205" y="70" font-family="Noto Sans KR, sans-serif" font-size="11" text-anchor="middle">start()</text>
-
-                    <path d="M 370 80 L 450 80" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="405" y="70" font-family="Noto Sans KR, sans-serif" font-size="11" text-anchor="middle">scheduled</text>
-
-                    <path d="M 570 80 L 650 80" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="605" y="70" font-family="Noto Sans KR, sans-serif" font-size="11" text-anchor="middle">done</text>
-
-                    <path d="M 310 110 L 310 170" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="325" y="140" font-family="Noto Sans KR, sans-serif" font-size="11">wait/sleep</text>
-
-                    <path d="M 350 170 L 400 110" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="360" y="145" font-family="Noto Sans KR, sans-serif" font-size="11">notify()</text>
-
-                    <path d="M 450 200 L 370 200" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-                    <text x="405" y="215" font-family="Noto Sans KR, sans-serif" font-size="11">lock acquired</text>
-                </svg>
-            </div>
-
-            <h3>5가지 상태</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>상태</th>
-                    <th>설명</th>
-                </tr>
-                <tr>
-                    <td><strong>NEW</strong></td>
-                    <td>객체 생성, start() 호출 전</td>
-                </tr>
-                <tr>
-                    <td><strong>RUNNABLE</strong></td>
-                    <td>실행 대기 중 (CPU 시간 할당 기다리는 중)</td>
-                </tr>
-                <tr>
-                    <td><strong>RUNNING</strong></td>
-                    <td>CPU 할당받아 실행 중 (RUNNABLE에 포함)</td>
-                </tr>
-                <tr>
-                    <td><strong>WAITING</strong></td>
-                    <td>다른 스레드의 신호 대기 (무한정)</td>
-                </tr>
-                <tr>
-                    <td><strong>TIMED_WAITING</strong></td>
-                    <td>시간 제한이 있는 대기 (sleep, wait(ms))</td>
-                </tr>
-                <tr>
-                    <td><strong>BLOCKED</strong></td>
-                    <td>Lock 획득 대기 중</td>
-                </tr>
-                <tr>
-                    <td><strong>TERMINATED</strong></td>
-                    <td>실행 완료, 스레드 종료</td>
-                </tr>
-            </table>
-
-            <h3>상태 전이 핵심 메서드</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li><span class="highlight">start()</span>: NEW → RUNNABLE</li>
-                    <li><span class="highlight">sleep(ms)</span>: RUNNABLE → TIMED_WAITING → RUNNABLE</li>
-                    <li><span class="highlight">wait()</span>: RUNNABLE → WAITING (lock 해제)</li>
-                    <li><span class="highlight">notify() / notifyAll()</span>: WAITING → RUNNABLE</li>
-                    <li><span class="highlight">join()</span>: 다른 스레드 완료 대기</li>
-                    <li><span class="highlight">interrupt()</span>: 중단 신호 (대기 깨우기)</li>
-                </ul>
-            </div>
-
-            <h3>⚠️ Thread 중단 메커니즘 (Graceful Shutdown)</h3>
-            <div class="warning-section">
-                <h3>핵심: 강제 중단 불가능</h3>
-                <ul class="concept-list">
-                    <li><span class="highlight">stop() 안 됨</span>: deprecated (데이터 오염 위험)</li>
-                    <li><span class="highlight">suspend() 안 됨</span>: deprecated (데드락 위험)</li>
-                    <li><span class="highlight">Running 중인 스레드</span>: 외부에서 강제 중단 불가</li>
-                    <li><span class="highlight">해결책</span>: 스레드가 자신의 interrupt 상태를 확인</li>
-                </ul>
-            </div>
-
-            <h3>두 가지 중단 방식</h3>
-            <div class="grid-2">
-                <div class="content-section">
-                    <strong>1️⃣ interrupt() 사용 (표준)</strong>
-                    <div class="code-block">Thread t = new Thread(() -> {
-  while (!Thread.currentThread()
-      .isInterrupted()) {
-    doWork();
-  }
-});
-
-t.start();
-t.interrupt();  // 중단 신호</div>
-                    <ul class="concept-list">
-                        <li>wait/sleep 중: 즉시 깨어남</li>
-                        <li>Running 중: isInterrupted() 확인 필수</li>
-                        <li>표준 Java 방식</li>
-                    </ul>
-                </div>
-                <div class="content-section">
-                    <strong>2️⃣ volatile 플래그 (명시적)</strong>
-                    <div class="code-block">volatile boolean shouldStop = false;
-
-Thread t = new Thread(() -> {
-  while (!shouldStop) {
-    doWork();
-  }
-});
-
-t.start();
-shouldStop = true;  // 중단 신호</div>
-                    <ul class="concept-list">
-                        <li>응답성 제어 가능</li>
-                        <li>명확한 의도</li>
-                        <li>메모리 가시성 보장</li>
-                    </ul>
-                </div>
-            </div>
-
-            <h3>Running 중 interrupt 처리</h3>
-            <div class="code-block">// ❌ interrupt()만으로는 부족
-Thread t = new Thread(() -> {
-  while (true) {
-    heavyComputation();  // 1초 소요
-    // interrupt 신호를 확인 안 함!
-  }
-});
-
-// ✅ 주기적으로 확인 필요
-Thread t = new Thread(() -> {
-  while (!Thread.currentThread()
-      .isInterrupted()) {
-    for (long i = 0; i < 1_000_000_000L; i++) {
-      if (i % 10_000_000 == 0 && 
-          Thread.currentThread()
-          .isInterrupted()) {
-        return;  // 즉시 종료
-      }
-    }
-  }
-});
-
-            <h3>Thread.sleep() vs wait()</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>구분</th>
-                    <th>sleep()</th>
-                    <th>wait()</th>
-                </tr>
-                <tr>
-                    <td>Lock 해제</td>
-                    <td>❌ 유지</td>
-                    <td>✅ 해제</td>
-                </tr>
-                <tr>
-                    <td>호출 위치</td>
-                    <td>어디든 가능</td>
-                    <td>synchronized 블록</td>
-                </tr>
-                <tr>
-                    <td>깨우는 방법</td>
-                    <td>시간 경과 자동</td>
-                    <td>notify() 필요</td>
-                </tr>
-            </table>
+        <h3>상태 전이 핵심 메서드</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li><span class="highlight">start()</span>: NEW → RUNNABLE</li>
+                <li><span class="highlight">sleep(ms)</span>: RUNNABLE → TIMED_WAITING → RUNNABLE</li>
+                <li><span class="highlight">wait()</span>: RUNNABLE → WAITING (lock 해제)</li>
+                <li><span class="highlight">notify()</span>: WAITING → RUNNABLE</li>
+                <li><span class="highlight">join()</span>: 다른 스레드 완료 대기</li>
+                <li><span class="highlight">interrupt()</span>: 중단 신호</li>
+            </ul>
         </div>
 
-        <!-- 4. 동기화 -->
-        <div id="sync" class="tab-content">
-            <h2>4. Thread 동기화</h2>
+        <h3>⚠️ Thread 중단 (Graceful Shutdown)</h3>
+        <div class="warning-section">
+            <h3>강제 중단 불가능</h3>
+            <ul class="concept-list">
+                <li><span class="highlight">stop() 안 됨</span>: deprecated (데이터 오염)</li>
+                <li><span class="highlight">Running 중</span>: 외부에서 강제 중단 불가</li>
+                <li><span class="highlight">해결책</span>: 스레드가 interrupt 상태를 주기적으로 확인</li>
+            </ul>
+        </div>
 
-            <h3>Race Condition</h3>
-            <div class="warning-section">
-                <h3>⚠️ 동기화가 필요한 이유</h3>
-                <div class="code-block">int count = 0;
+        <h3>두 가지 중단 방식</h3>
+        <div class="grid-2">
+            <div class="content-section">
+                <strong>1️⃣ interrupt() (표준)</strong>
+                <div class="code-block">while (!Thread.currentThread()
+    .isInterrupted()) {
+  try {
+    Thread.sleep(1000);
+  } catch (InterruptedException e) {
+    break;
+  }
+}</div>
+            </div>
+            <div class="content-section">
+                <strong>2️⃣ volatile 플래그</strong>
+                <div class="code-block">volatile boolean shouldStop = false;
+
+while (!shouldStop) {
+  try {
+    Thread.sleep(1000);
+  } catch (InterruptedException e) {
+    break;
+  }
+}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 동기화 -->
+    <div id="sync" class="tab-content">
+        <h2>4. Thread 동기화</h2>
+        <h3>Race Condition</h3>
+        <div class="warning-section">
+            <h3>⚠️ 동기화가 필요한 이유</h3>
+            <div class="code-block">int count = 0;
 thread1: count++ // Read 10, Write 11
 thread2: count++ // Read 10, Write 11
 // Expected: 12, Actual: 11</div>
-                <ul class="concept-list">
-                    <li>count++ 는 원자적(atomic) 연산이 아님</li>
-                    <li>Read → Modify → Write 3단계로 분해</li>
-                    <li>여러 스레드가 동시에 접근 시 예측 불가</li>
-                </ul>
-            </div>
+            <ul class="concept-list">
+                <li>count++ 는 원자적(atomic) 연산이 아님</li>
+                <li>Read → Modify → Write 3단계로 분해</li>
+                <li>여러 스레드가 동시에 접근 시 예측 불가</li>
+            </ul>
+        </div>
 
-            <h3>synchronized 키워드</h3>
-            <div class="grid-2">
-                <div class="content-section">
-                    <strong>메서드 동기화</strong>
-                    <div class="code-block">synchronized void increment() {
-  count++;
-}</div>
-                    <ul class="concept-list">
-                        <li>객체의 lock 자동 취득</li>
-                        <li>메서드 진입 시 lock</li>
-                        <li>메서드 종료 시 lock 해제</li>
-                    </ul>
-                </div>
-                <div class="content-section">
-                    <strong>블록 동기화</strong>
-                    <div class="code-block">synchronized (this) {
-  count++;
-}</div>
-                    <ul class="concept-list">
-                        <li>더 세밀한 제어</li>
-                        <li>lock 범위 최소화</li>
-                        <li>성능 최적화</li>
-                    </ul>
-                </div>
-            </div>
-
-            <h3>Lock과 Monitor</h3>
+        <h3>synchronized 키워드</h3>
+        <div class="grid-2">
             <div class="content-section">
-                <ul class="concept-list">
-                    <li>모든 Java 객체 = Monitor 보유</li>
-                    <li>한 번에 한 스레드만 lock 획득</li>
-                    <li>Intrinsic Lock (암묵적 lock)</li>
-                    <li>Mutual Exclusion (상호 배제) 보장</li>
-                </ul>
-            </div>
-
-            <h3>java.util.concurrent.locks</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>종류</th>
-                    <th>특징</th>
-                </tr>
-                <tr>
-                    <td><strong>ReentrantLock</strong></td>
-                    <td>재진입 가능, 명시적 lock/unlock, 공정성 옵션</td>
-                </tr>
-                <tr>
-                    <td><strong>ReadWriteLock</strong></td>
-                    <td>읽기는 동시, 쓰기는 배타적</td>
-                </tr>
-                <tr>
-                    <td><strong>StampedLock</strong></td>
-                    <td>낙관적 읽기 (stamp), 초고성능</td>
-                </tr>
-            </table>
-
-            <h3>ReentrantLock 예제</h3>
-            <div class="code-block">ReentrantLock lock = new ReentrantLock();
-
-lock.lock();
-try {
+                <strong>메서드 동기화</strong>
+                <div class="code-block">synchronized void increment() {
   count++;
-} finally {
-  lock.unlock();
 }</div>
-
-            <h3>Volatile 키워드</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>변수의 가시성 보장</li>
-                    <li>메인 메모리에서 항상 읽음</li>
-                    <li>원자성은 보장 ❌ (count++ 여전히 위험)</li>
-                    <li>신호 변수, 플래그에 적합</li>
-                </ul>
             </div>
+            <div class="content-section">
+                <strong>블록 동기화</strong>
+                <div class="code-block">synchronized (this) {
+  count++;
+}</div>
+            </div>
+        </div>
 
-            <h3>AtomicInteger / AtomicLong</h3>
-            <div class="code-block">AtomicInteger count = new AtomicInteger(0);
+        <h3>java.util.concurrent.locks</h3>
+        <table class="comparison-table">
+            <tr>
+                <th>종류</th>
+                <th>특징</th>
+            </tr>
+            <tr>
+                <td><strong>ReentrantLock</strong></td>
+                <td>재진입 가능, 명시적 lock/unlock</td>
+            </tr>
+            <tr>
+                <td><strong>ReadWriteLock</strong></td>
+                <td>읽기는 동시, 쓰기는 배타적</td>
+            </tr>
+            <tr>
+                <td><strong>StampedLock</strong></td>
+                <td>낙관적 읽기, 초고성능</td>
+            </tr>
+        </table>
+
+        <h3>Volatile 키워드</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>변수의 가시성 보장</li>
+                <li>메인 메모리에서 항상 읽음</li>
+                <li>원자성은 보장 ❌ (count++ 여전히 위험)</li>
+                <li>신호 변수, 플래그에 적합</li>
+            </ul>
+        </div>
+
+        <h3>AtomicInteger / AtomicLong</h3>
+        <div class="code-block">AtomicInteger count = new AtomicInteger(0);
 count.incrementAndGet();  // 원자적 연산
 count.getAndAdd(5);
 count.compareAndSet(10, 20);</div>
+    </div>
+
+    <!-- 5. 스레드풀 -->
+    <div id="executor" class="tab-content">
+        <h2>5. ExecutorService & 스레드풀</h2>
+        <h3>왜 스레드풀인가?</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>❌ 태스크마다 new Thread(): 생성 비용 높음</li>
+                <li>✅ 미리 생성된 스레드 재사용: 빠름 & 저비용</li>
+                <li>스레드 개수 제한 → 시스템 안정성</li>
+            </ul>
         </div>
 
-        <!-- 5. 스레드풀 -->
-        <div id="executor" class="tab-content">
-            <h2>5. ExecutorService & 스레드풀</h2>
+        <h3>Executors 팩토리</h3>
+        <table class="comparison-table">
+            <tr>
+                <th>유형</th>
+                <th>생성 방식</th>
+                <th>용도</th>
+            </tr>
+            <tr>
+                <td><strong>newFixedThreadPool(n)</strong></td>
+                <td>n개 스레드 고정</td>
+                <td>I/O 작업, 일반 비동기</td>
+            </tr>
+            <tr>
+                <td><strong>newCachedThreadPool()</strong></td>
+                <td>필요하면 생성, 유휴면 재사용</td>
+                <td>짧은 비동기 작업</td>
+            </tr>
+            <tr>
+                <td><strong>newSingleThreadExecutor()</strong></td>
+                <td>1개 스레드만</td>
+                <td>순서 보장 필요시</td>
+            </tr>
+        </table>
 
-            <h3>왜 스레드풀인가?</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>❌ 태스크마다 new Thread(): 생성 비용 높음</li>
-                    <li>✅ 미리 생성된 스레드 재사용: 빠름 & 저비용</li>
-                    <li>스레드 개수 제한 → 시스템 안정성</li>
-                    <li>웹 서버, 비동기 작업 표준</li>
-                </ul>
-            </div>
-
-            <h3>Executors 팩토리</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>유형</th>
-                    <th>생성 방식</th>
-                    <th>용도</th>
-                </tr>
-                <tr>
-                    <td><strong>newFixedThreadPool(n)</strong></td>
-                    <td>n개 스레드 고정</td>
-                    <td>I/O 작업, 일반 비동기</td>
-                </tr>
-                <tr>
-                    <td><strong>newCachedThreadPool()</strong></td>
-                    <td>필요하면 생성, 유휴면 재사용</td>
-                    <td>짧은 비동기 작업</td>
-                </tr>
-                <tr>
-                    <td><strong>newSingleThreadExecutor()</strong></td>
-                    <td>1개 스레드만</td>
-                    <td>순서 보장 필요시</td>
-                </tr>
-                <tr>
-                    <td><strong>newScheduledThreadPool(n)</strong></td>
-                    <td>일정 시간 후 실행</td>
-                    <td>스케줄링, 타이머</td>
-                </tr>
-            </table>
-
-            <h3>ExecutorService 기본 사용법</h3>
-            <div class="code-block">ExecutorService executor = 
+        <h3>ExecutorService 기본 사용법</h3>
+        <div class="code-block">ExecutorService executor = 
   Executors.newFixedThreadPool(4);
 
-// 1. submit(Runnable)
+// submit(Runnable)
 executor.submit(() -> {
   System.out.println("Task 1");
 });
 
-// 2. submit(Callable<T>)
-Future<Integer> future = executor.submit(() -> {
-  return 42;
-});
-
-// 3. 결과 조회
+// submit(Callable<T>)
+Future<Integer> future = executor.submit(() -> 42);
 Integer result = future.get(); // 블로킹
 
-// 4. shutdown
+// shutdown
 executor.shutdown();</div>
 
-            <h3>Future & Callback</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li><span class="highlight">future.get()</span>: 결과 대기 (블로킹)</li>
-                    <li><span class="highlight">future.isDone()</span>: 완료 여부 확인</li>
-                    <li><span class="highlight">future.cancel()</span>: 실행 취소</li>
-                    <li><span class="highlight">future.get(timeout, unit)</span>: 제한시간 대기</li>
-                </ul>
-            </div>
+        <h3>Future & Callback</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li><span class="highlight">future.get()</span>: 결과 대기 (블로킹)</li>
+                <li><span class="highlight">future.isDone()</span>: 완료 여부 확인</li>
+                <li><span class="highlight">future.cancel()</span>: 실행 취소</li>
+            </ul>
+        </div>
+    </div>
 
-            <h3>invokeAll / invokeAny</h3>
-            <div class="code-block">// invokeAll: 모든 작업 완료 대기
-List<Future<String>> futures = 
-  executor.invokeAll(tasks);
-
-// invokeAny: 가장 먼저 완료된 것 반환
-String result = executor.invokeAny(tasks);</div>
-
-            <h3>ThreadPoolExecutor 세부 설정</h3>
-            <div class="code-block">ThreadPoolExecutor pool = 
-  new ThreadPoolExecutor(
-    2,           // corePoolSize
-    5,           // maxPoolSize
-    60, TimeUnit.SECONDS,  // keepAliveTime
-    new LinkedBlockingQueue<>()  // queue
-  );</div>
-
-            <h3>스레드풀 사이즈 가이드</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li><span class="highlight">CPU 집약적</span>: corePoolSize = CPU 코어 수</li>
-                    <li><span class="highlight">I/O 집약적</span>: corePoolSize = 2 ~ 3 × 코어 수</li>
-                    <li>처음부터 완벽한 값 → 성능 테스트 후 조정</li>
-                </ul>
-            </div>
+    <!-- 6. 모던 자바 -->
+    <div id="modern" class="tab-content">
+        <h2>6. 모던 자바 (Java 8+)</h2>
+        <h3>CompletableFuture</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>Future의 한계 극복 (get() 블로킹 강제)</li>
+                <li>콜백 기반 비동기 처리</li>
+                <li>여러 async 작업 조합 가능</li>
+            </ul>
         </div>
 
-        <!-- 6. 모던 자바 -->
-        <div id="modern" class="tab-content">
-            <h2>6. 모던 자바 (Java 8+)</h2>
-
-            <h3>CompletableFuture</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>Future의 한계 극복 (get() 블로킹 강제)</li>
-                    <li>콜백 기반 비동기 처리</li>
-                    <li>여러 async 작업 조합 가능</li>
-                    <li>예외 처리 용이</li>
-                </ul>
-            </div>
-
-            <h3>CompletableFuture 기본</h3>
-            <div class="code-block">// 1. 비동기 실행
+        <h3>CompletableFuture 기본</h3>
+        <div class="code-block">// 1. 비동기 실행
 CompletableFuture<Integer> future = 
-  CompletableFuture.supplyAsync(() -> {
-    return 42;
-  });
+  CompletableFuture.supplyAsync(() -> 42);
 
 // 2. 콜백 등록
 future.thenAccept(result -> 
   System.out.println(result));
 
 // 3. 체이닝
-future
-  .thenApply(x -> x * 2)
+future.thenApply(x -> x * 2)
   .thenAccept(System.out::println);</div>
 
-            <h3>비동기 조합</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>메서드</th>
-                    <th>설명</th>
-                </tr>
-                <tr>
-                    <td><strong>thenApply(f)</strong></td>
-                    <td>결과 변환</td>
-                </tr>
-                <tr>
-                    <td><strong>thenAccept(f)</strong></td>
-                    <td>결과 소비 (반환 없음)</td>
-                </tr>
-                <tr>
-                    <td><strong>thenRun(r)</strong></td>
-                    <td>입력 무시하고 실행</td>
-                </tr>
-                <tr>
-                    <td><strong>thenCompose(f)</strong></td>
-                    <td>비동기 함수 체이닝 (flatMap)</td>
-                </tr>
-                <tr>
-                    <td><strong>thenCombine(f)</strong></td>
-                    <td>두 결과 조합</td>
-                </tr>
-            </table>
-
-            <h3>여러 작업 병렬 처리</h3>
-            <div class="code-block">CompletableFuture<String> f1 = 
+        <h3>여러 작업 병렬 처리</h3>
+        <div class="code-block">CompletableFuture<String> f1 = 
   CompletableFuture.supplyAsync(() -> "A");
 CompletableFuture<String> f2 = 
   CompletableFuture.supplyAsync(() -> "B");
@@ -807,108 +399,71 @@ CompletableFuture.allOf(f1, f2)
 CompletableFuture.anyOf(f1, f2)
   .thenAccept(System.out::println);</div>
 
-            <h3>예외 처리</h3>
-            <div class="code-block">CompletableFuture.supplyAsync(() -> 42)
-  .thenApply(x -> x / 0)  // ArithmeticException
-  .exceptionally(ex -> {
-    System.err.println("Error: " + ex);
-    return -1;
-  })
-  .thenAccept(System.out::println);</div>
-
-            <h3>Parallel Stream</h3>
-            <div class="code-block">// 순차 처리 (느림)
+        <h3>Parallel Stream</h3>
+        <div class="code-block">// 순차 처리
 list.stream()
   .map(item -> heavyComputation(item))
   .collect(Collectors.toList());
 
-// 병렬 처리 (빠름)
+// 병렬 처리
 list.parallelStream()
   .map(item -> heavyComputation(item))
   .collect(Collectors.toList());</div>
+    </div>
 
-            <h3>⚠️ parallelStream 주의</h3>
-            <div class="warning-section">
-                <ul class="concept-list">
-                    <li>ForkJoinPool 사용 (공유 스레드풀)</li>
-                    <li>CPU 집약적 작업에만 유리</li>
-                    <li>I/O 대기 작업 부적합 (블로킹 발생)</li>
-                    <li>상태 공유 금지 (synchronized 비용 높음)</li>
-                </ul>
-            </div>
-
-            <h3>Reactive Stream</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>Project Reactor, RxJava: reactive 라이브러리</li>
-                    <li>BackPressure 지원 (생산자-소비자 속도 조절)</li>
-                    <li>구독자(Subscriber) 기반 이벤트 처리</li>
-                    <li>Spring WebFlux 기반</li>
-                </ul>
-            </div>
+    <!-- 7. Virtual Thread -->
+    <div id="vthread" class="tab-content">
+        <h2>7. Virtual Thread (Java 21+)</h2>
+        <h3>문제: Platform Thread의 한계</h3>
+        <div class="warning-section">
+            <ul class="concept-list">
+                <li>OS Thread 1:1 매핑 → 생성 비용 높음</li>
+                <li>메모리: 1 platform thread ≈ 2MB</li>
+                <li>10,000 스레드 = 20GB 메모리! 💾</li>
+            </ul>
         </div>
 
-        <!-- 7. Virtual Thread -->
-        <div id="vthread" class="tab-content">
-            <h2>7. Virtual Thread (Java 21+)</h2>
+        <h3>해결책: Virtual Thread</h3>
+        <div class="content-section">
+            <ul class="concept-list">
+                <li>JVM 관리하는 경량 스레드</li>
+                <li>메모리: 1 virtual thread ≈ 100~200bytes</li>
+                <li>100만 개 virtual thread = 200MB 메모리! 🚀</li>
+                <li>I/O 블로킹 작업에 최적화</li>
+            </ul>
+        </div>
 
-            <h3>문제: Platform Thread의 한계</h3>
-            <div class="warning-section">
-                <ul class="concept-list">
-                    <li>OS Thread 1:1 매핑 → 생성 비용 높음</li>
-                    <li>메모리: 1 platform thread ≈ 2MB</li>
-                    <li>10,000 스레드 = 20GB 메모리! 💾</li>
-                    <li>Context switching 비용 증가</li>
-                </ul>
-            </div>
+        <h3>Virtual Thread vs Platform Thread</h3>
+        <table class="comparison-table">
+            <tr>
+                <th>구분</th>
+                <th>Platform Thread</th>
+                <th>Virtual Thread</th>
+            </tr>
+            <tr>
+                <td><strong>메모리</strong></td>
+                <td>2MB</td>
+                <td>100~200bytes</td>
+            </tr>
+            <tr>
+                <td><strong>생성 비용</strong></td>
+                <td>비쌈</td>
+                <td>매우 저렴</td>
+            </tr>
+            <tr>
+                <td><strong>생성 한계</strong></td>
+                <td>수천 개</td>
+                <td>백만 개 이상</td>
+            </tr>
+            <tr>
+                <td><strong>I/O 블로킹</strong></td>
+                <td>스레드 블록</td>
+                <td>자동 스케줄링</td>
+            </tr>
+        </table>
 
-            <h3>해결책: Virtual Thread</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>JVM 관리하는 경량 스레드</li>
-                    <li>메모리: 1 virtual thread ≈ 100~200bytes</li>
-                    <li>100만 개 virtual thread = 200MB 메모리! 🚀</li>
-                    <li>OS Thread 수는 적음 (CPU 코어 수 정도)</li>
-                    <li>JVM이 scheduling 담당 (자동 load balancing)</li>
-                </ul>
-            </div>
-
-            <h3>Virtual Thread vs Platform Thread</h3>
-            <table class="comparison-table">
-                <tr>
-                    <th>구분</th>
-                    <th>Platform Thread</th>
-                    <th>Virtual Thread</th>
-                </tr>
-                <tr>
-                    <td><strong>메모리</strong></td>
-                    <td>2MB</td>
-                    <td>100~200bytes</td>
-                </tr>
-                <tr>
-                    <td><strong>생성 비용</strong></td>
-                    <td>비쌈</td>
-                    <td>매우 저렴</td>
-                </tr>
-                <tr>
-                    <td><strong>생성 한계</strong></td>
-                    <td>수천 개</td>
-                    <td>백만 개 이상 가능</td>
-                </tr>
-                <tr>
-                    <td><strong>Context Switching</strong></td>
-                    <td>OS 레벨</td>
-                    <td>JVM 레벨</td>
-                </tr>
-                <tr>
-                    <td><strong>I/O 블로킹</strong></td>
-                    <td>스레드 블록</td>
-                    <td>자동 스케줄링 (Carrier thread 전환)</td>
-                </tr>
-            </table>
-
-            <h3>Virtual Thread 생성</h3>
-            <div class="code-block">// Java 21+
+        <h3>Virtual Thread 생성</h3>
+        <div class="code-block">// Java 21+
 
 // 1. Thread.ofVirtual()
 Thread vthread = Thread.ofVirtual()
@@ -918,358 +473,29 @@ Thread vthread = Thread.ofVirtual()
   });
 
 // 2. 간편 방법
-Thread vthread2 = Thread.startVirtualThread(() -> {
-  System.out.println("Virtual thread");
-});
+Thread vthread2 = 
+  Thread.startVirtualThread(() -> {
+    System.out.println("Virtual thread");
+  });
 
-// 3. ExecutorService로 관리
+// 3. ExecutorService
 ExecutorService executor = 
-  Executors.newVirtualThreadPerTaskExecutor();</div>
-
-            <h3>Virtual Thread 특성</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>항상 daemon thread ❌ (제어 가능)</li>
-                    <li>Priority 무시 (모두 NORM_PRIORITY)</li>
-                    <li>ThreadGroup 지원</li>
-                    <li>Thread local (대비: 메모리 누수 위험 증가)</li>
-                </ul>
-            </div>
-
-            <h3>Virtual Thread는 만능인가?</h3>
-            <div class="warning-section">
-                <h3>⚠️ Virtual Thread 부적합한 경우</h3>
-                <ul class="concept-list">
-                    <li>CPU 집약적 작업 (장시간 계산)</li>
-                    <li>synchronized 블록 (Carrier thread 고착)</li>
-                    <li>ReentrantLock 등 명시적 lock (권장: java.util.concurrent.locks 피함)</li>
-                </ul>
-            </div>
-
-            <h3>Structured Concurrency (Preview)</h3>
-            <div class="code-block">try (var scope = new StructuredTaskScope<String>()) {
-  var future1 = scope.fork(() -> task1());
-  var future2 = scope.fork(() -> task2());
-  
-  scope.joinUntil(Instant.now().plus(Duration.ofSeconds(5)));
-  
-  return future1.resultNow() + " " + future2.resultNow();
-}</div>
-
-            <h3>Virtual Thread 도입 가이드</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>✅ 기존 코드 그대로 사용 (ThreadPool → newVirtualThreadPerTaskExecutor)</li>
-                    <li>✅ I/O 블로킹 작업: 즉시 도입</li>
-                    <li>⚠️ 고성능 튜닝 필요: 마이그레이션 후 재측정</li>
-                    <li>❌ synchronized 로직 많으면: 리팩토링 필수</li>
-                </ul>
-            </div>
+  Executors.newVirtualThreadPerTaskExecutor();            </div>
         </div>
-
-        <!-- 8. 실습 -->
-        <div id="practice" class="tab-content">
-            <h2>8. 실습 예제</h2>
-
-            <h3>1️⃣ 기본 Thread 생성</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>3개 스레드에서 각각 1~5를 순서대로 출력하세요.</p>
-                <div class="code-block">public class BasicThread {
-  public static void main(String[] args) 
-      throws InterruptedException {
-    Thread t1 = new Thread(() -> {
-      for (int i = 1; i <= 5; i++) {
-        System.out.println("T1: " + i);
-      }
-    });
-    
-    Thread t2 = new Thread(() -> {
-      for (int i = 1; i <= 5; i++) {
-        System.out.println("T2: " + i);
-      }
-    });
-    
-    t1.start();
-    t2.start();
-    
-    t1.join();  // T1 완료 대기
-    t2.join();  // T2 완료 대기
-    System.out.println("Main 종료");
-  }
-}</div>
-            </div>
-
-            <h3>2️⃣ Synchronized - Race Condition 해결</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>2개 스레드에서 count++를 1000번씩 실행. 최종값이 2000이 되도록 하세요.</p>
-                <div class="code-block">public class CounterSync {
-  static int count = 0;
-  
-  synchronized static void increment() {
-    count++;
-  }
-  
-  public static void main(String[] args) 
-      throws InterruptedException {
-    Thread t1 = new Thread(() -> {
-      for (int i = 0; i < 1000; i++) {
-        increment();
-      }
-    });
-    
-    Thread t2 = new Thread(() -> {
-      for (int i = 0; i < 1000; i++) {
-        increment();
-      }
-    });
-    
-    t1.start();
-    t2.start();
-    t1.join();
-    t2.join();
-    
-    System.out.println("count = " + count);  // 2000
-  }
-}</div>
-            </div>
-
-            <h3>3️⃣ Producer-Consumer 패턴</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>Producer가 1~10을 큐에 넣고, Consumer가 꺼낸다. 동기화 필요.</p>
-                <div class="code-block">public class ProducerConsumer {
-  static class Queue {
-    private int[] buffer = new int[1];
-    private int count = 0;
-    
-    synchronized void produce(int value) 
-        throws InterruptedException {
-      while (count == 1) {
-        wait();  // 버퍼 가득차면 대기
-      }
-      buffer[0] = value;
-      count++;
-      System.out.println("Produce: " + value);
-      notifyAll();  // Consumer 깨우기
-    }
-    
-    synchronized int consume() 
-        throws InterruptedException {
-      while (count == 0) {
-        wait();  // 버퍼 비어있으면 대기
-      }
-      int value = buffer[0];
-      count--;
-      System.out.println("Consume: " + value);
-      notifyAll();  // Producer 깨우기
-      return value;
-    }
-  }
-  
-  public static void main(String[] args) {
-    Queue queue = new Queue();
-    
-    Thread producer = new Thread(() -> {
-      try {
-        for (int i = 1; i <= 10; i++) {
-          queue.produce(i);
-          Thread.sleep(100);
-        }
-      } catch (InterruptedException e) {}
-    });
-    
-    Thread consumer = new Thread(() -> {
-      try {
-        for (int i = 0; i < 10; i++) {
-          queue.consume();
-          Thread.sleep(200);
-        }
-      } catch (InterruptedException e) {}
-    });
-    
-    producer.start();
-    consumer.start();
-  }
-}</div>
-            </div>
-
-            <h3>4️⃣ ExecutorService 활용</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>10개 작업을 4개 스레드로 처리하고, 모든 작업 완료 대기.</p>
-                <div class="code-block">public class ExecutorExample {
-  public static void main(String[] args) 
-      throws InterruptedException {
-    ExecutorService executor = 
-      Executors.newFixedThreadPool(4);
-    
-    List<Future<Integer>> futures = new ArrayList<>();
-    
-    for (int i = 1; i <= 10; i++) {
-      final int taskId = i;
-      Future<Integer> future = 
-        executor.submit(() -> {
-          System.out.println(
-            "Task " + taskId + " on " + 
-            Thread.currentThread().getName());
-          return taskId * 2;
-        });
-      futures.add(future);
-    }
-    
-    // 모든 작업 완료 대기
-    for (Future<Integer> future : futures) {
-      Integer result = future.get();
-      System.out.println("Result: " + result);
-    }
-    
-    executor.shutdown();
-    System.out.println("모든 작업 완료");
-  }
-}</div>
-            </div>
-
-            <h3>5️⃣ CompletableFuture 비동기 조합</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>2개의 비동기 작업을 병렬 실행 후 결과 조합.</p>
-                <div class="code-block">public class CompletableFutureExample {
-  static int fetchUserData(int userId) 
-      throws InterruptedException {
-    Thread.sleep(1000);
-    return userId * 100;
-  }
-  
-  static int fetchOrderData(int userId) 
-      throws InterruptedException {
-    Thread.sleep(1000);
-    return userId * 10;
-  }
-  
-  public static void main(String[] args) 
-      throws Exception {
-    long start = System.currentTimeMillis();
-    
-    CompletableFuture<Integer> user = 
-      CompletableFuture.supplyAsync(
-        () -> {
-          try {
-            return fetchUserData(1);
-          } catch (InterruptedException e) {
-            return 0;
-          }
-        }
-      );
-    
-    CompletableFuture<Integer> order = 
-      CompletableFuture.supplyAsync(
-        () -> {
-          try {
-            return fetchOrderData(1);
-          } catch (InterruptedException e) {
-            return 0;
-          }
-        }
-      );
-    
-    user.thenCombine(order, (u, o) -> {
-      System.out.println(
-        "User: " + u + ", Order: " + o);
-      return u + o;
-    }).thenAccept(total -> 
-      System.out.println("Total: " + total)
-    ).join();
-    
-    long elapsed = 
-      System.currentTimeMillis() - start;
-    System.out.println(
-      "소요시간: " + elapsed + "ms");  // ~1000ms
-  }
-}</div>
-            </div>
-
-            <h3>6️⃣ Virtual Thread 활용 (Java 21+)</h3>
-            <div class="practice-section">
-                <h3>문제</h3>
-                <p>100,000개 가상 스레드에서 HTTP 요청 시뮬레이션.</p>
-                <div class="code-block">public class VirtualThreadExample {
-  static void simulateHttpRequest(int id) 
-      throws InterruptedException {
-    System.out.println("Request " + id + " on " + 
-      Thread.currentThread());
-    Thread.sleep(100);  // I/O 시뮬레이션
-  }
-  
-  public static void main(String[] args) 
-      throws Exception {
-    long start = System.currentTimeMillis();
-    
-    // Virtual thread per task
-    ExecutorService executor = 
-      Executors.newVirtualThreadPerTaskExecutor();
-    
-    List<Future<?>> futures = new ArrayList<>();
-    
-    for (int i = 1; i <= 100_000; i++) {
-      final int id = i;
-      futures.add(executor.submit(() -> {
-        try {
-          simulateHttpRequest(id);
-        } catch (InterruptedException e) {}
-      }));
-    }
-    
-    // 모든 요청 완료 대기
-    executor.shutdown();
-    executor.awaitTermination(
-      10, TimeUnit.SECONDS);
-    
-    long elapsed = 
-      System.currentTimeMillis() - start;
-    System.out.println(
-      "완료: " + elapsed + "ms");
-  }
-}</div>
-            </div>
-
-            <h3>학습 팁</h3>
-            <div class="content-section">
-                <ul class="concept-list">
-                    <li>1~3번: Platform thread 기초 숙달</li>
-                    <li>4~5번: 프로덕션 패턴 (현재 실무)</li>
-                    <li>6번: 미래 (Java 21+)</li>
-                    <li>각 코드를 IDE에서 실행하며 출력 결과 관찰</li>
-                    <li>jconsole로 thread 상태 실시간 모니터링</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-note">
-        <strong>학습 로드맵</strong><br>
-        Week 1: 개요 → 기초 → 생명주기<br>
-        Week 2: 동기화 → 스레드풀<br>
-        Week 3: 모던 자바 (CompletableFuture)<br>
-        Week 4: Virtual Thread + 실습 프로젝트
     </div>
 
     <script>
-        function switchTab(event, tabName) {
-            // 모든 탭 내용 숨기기
+        function switchTab(tabName) {
             const contents = document.getElementsByClassName('tab-content');
             for (let content of contents) {
                 content.classList.remove('active');
             }
             
-            // 모든 탭 버튼 비활성화
             const buttons = document.getElementsByClassName('tab-button');
             for (let button of buttons) {
                 button.classList.remove('active');
             }
             
-            // 선택된 탭 활성화
             document.getElementById(tabName).classList.add('active');
             event.currentTarget.classList.add('active');
         }
