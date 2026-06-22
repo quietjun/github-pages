@@ -113,6 +113,15 @@
     ]
   },
   {
+    "label": "java",
+    "children": [
+      {
+        "label": "Java 멀티스레드: 기초부터 Virtual Thread까지",
+        "path": "java/thread.html"
+      }
+    ]
+  },
+  {
     "label": "jtw",
     "children": [
       {
