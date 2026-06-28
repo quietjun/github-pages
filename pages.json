@@ -98,6 +98,10 @@
     "label": "devops",
     "children": [
       {
+        "label": "GCP 3-tier 아키텍처 개념",
+        "path": "devops/3tierarchitecture.html"
+      },
+      {
         "label": "Kubernetes 아키텍처",
         "path": "devops/kubearchitecture.html"
       }
