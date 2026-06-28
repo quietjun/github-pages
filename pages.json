@@ -102,6 +102,10 @@
         "path": "devops/3tierarchitecture.html"
       },
       {
+        "label": "GCP 3-tier 완전 실습 가이드",
+        "path": "devops/gcp_3tier_guide.html"
+      },
+      {
         "label": "Kubernetes 아키텍처",
         "path": "devops/kubearchitecture.html"
       }
