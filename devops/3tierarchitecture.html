@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP 3-tier 아키텍처 개념</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f8f9fa;
+            color: #202124;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 32px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+            border-left: 4px solid #1a73e8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1a73e8;
+        }
+        
+        .architecture-diagram {
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            padding: 0;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        
+        .tier-explanation {
+            background: #e8f0fe;
+            border-left: 4px solid #1a73e8;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+        
+        .tier-explanation strong {
+            color: #0d47a1;
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .tier-box {
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid #4285f4;
+        }
+        
+        .tier-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-bottom: 8px;
+        }
+        
+        .tier-content {
+            font-size: 13px;
+            color: #5f6368;
+            line-height: 1.8;
+        }
+        
+        .why-section {
+            background: #f1f8e9;
+            border-left: 4px solid #34a853;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 12px 0;
+            font-size: 13px;
+        }
+        
+        .why-section strong {
+            color: #2e7d32;
+        }
+        
+        .flow-diagram {
+            background: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: auto;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 12px;
+        }
+        
+        .comparison-table th {
+            background: #f1f3f4;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dadce0;
+        }
+        
+        .comparison-table td {
+            padding: 10px;
+            border-bottom: 1px solid #dadce0;
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .good {
+            color: #34a853;
+            font-weight: 600;
+        }
+        
+        .bad {
+            color: #d33327;
+            font-weight: 600;
+        }
+        
+        .concept {
+            background: #fff3e0;
+            border-left: 4px solid #f57c00;
+            padding: 14px;
+            border-radius: 4px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: #e65100;
+        }
+        
+        .concept strong {
+            color: #e65100;
+        }
+        
+        .code-example {
+            background: #f5f5f5;
+            border-left: 3px solid #1a73e8;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            margin: 12px 0;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+        
+        .highlight {
+            background: #fff9c4;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #202124;
+            margin: 20px 0 12px 0;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GCP 3-tier 아키텍처 개념 설명</h1>
+        <p class="subtitle">각 단계가 왜 필요한지, 어떻게 동작하는지 이해하기</p>
+        
+        <!-- 전체 아키텍처 -->
+        <div class="section">
+            <h2>1. 전체 아키텍처 구조</h2>
+            
+            <div class="architecture-diagram">
+                <svg viewBox="0 0 900 650" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow-down" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                            <polygon points="0 0, 10 5, 0 10" fill="#1a73e8" />
+                        </marker>
+                    </defs>
+                    
+                    <!-- 사용자 -->
+                    <rect x="200" y="20" width="500" height="50" fill="#e8f5e9" stroke="#34a853" stroke-width="2" rx="4"/>
+                    <text x="450" y="50" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">인터넷 사용자 (외부 IP로 접근)</text>
+                    
+                    <!-- 화살표 -->
+                    <path d="M 450 70 L 450 110" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-down)"/>
+                    <text x="460" y="95" font-size="11" fill="#1a73e8">HTTP (포트 80/443)</text>
+                    
+                    <!-- 1-tier Nginx -->
+                    <rect x="150" y="110" width="600" height="130" fill="#bbdefb" stroke="#1a73e8" stroke-width="2" rx="4"/>
+                    <rect x="150" y="110" width="600" height="28" fill="#1a73e8" rx="4"/>
+                    <text x="450" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1-tier: Nginx VM (e2-micro, 항상 무료)</text>
+                    
+                    <text x="170" y="160" font-size="11" fill="#333">• 정적 파일 제공 (Vue.js dist)</text>
+                    <text x="170" y="177" font-size="11" fill="#333">• 리버스 프록시</text>
+                    <text x="170" y="194" font-size="11" fill="#333">• 로드밸런싱</text>
+                    <text x="170" y="211" font-size="11" fill="#333">• 외부 IP 보유</text>
+                    
+                    <!-- 화살표 -->
+                    <path d="M 450 240 L 450 280" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-down)"/>
+                    <text x="460" y="265" font-size="10" fill="#666">내부 IP (10.x.x.0/24)</text>
+                    
+                    <!-- 분기 -->
+                    <path d="M 450 280 L 280 320" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-down)"/>
+                    <path d="M 450 280 L 620 320" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-down)"/>
+                    
+                    <!-- 2-tier Boot VM-1 -->
+                    <rect x="80" y="320" width="400" height="160" fill="#c8e6c9" stroke="#4caf50" stroke-width="2" rx="4"/>
+                    <rect x="80" y="320" width="400" height="28" fill="#4caf50" rx="4"/>
+                    <text x="280" y="342" text-anchor="middle" font-size="11" font-weight="bold" fill="white">2-tier: Boot VM-1 (e2-micro)</text>
+                    
+                    <text x="100" y="370" font-size="10" fill="#333">• API 서버 (포트 8080)</text>
+                    <text x="100" y="385" font-size="10" fill="#333">• 비즈니스 로직</text>
+                    <text x="100" y="400" font-size="10" fill="#333">• Controller</text>
+                    <text x="100" y="420" font-size="10" fill="#333" font-weight="bold">3-tier: H2 메모리 (독립)</text>
+                    <text x="100" y="435" font-size="10" fill="#666">• 각 VM이 독립적 메모리</text>
+                    <text x="100" y="450" font-size="10" fill="#666">• 데이터 공유 X</text>
+                    
+                    <!-- 2-tier Boot VM-2 -->
+                    <rect x="520" y="320" width="400" height="160" fill="#c8e6c9" stroke="#4caf50" stroke-width="2" rx="4"/>
+                    <rect x="520" y="320" width="400" height="28" fill="#4caf50" rx="4"/>
+                    <text x="720" y="342" text-anchor="middle" font-size="11" font-weight="bold" fill="white">2-tier: Boot VM-2 (e2-micro)</text>
+                    
+                    <text x="540" y="370" font-size="10" fill="#333">• API 서버 (포트 8080)</text>
+                    <text x="540" y="385" font-size="10" fill="#333">• 비즈니스 로직</text>
+                    <text x="540" y="400" font-size="10" fill="#333">• Controller</text>
+                    <text x="540" y="420" font-size="10" fill="#333" font-weight="bold">3-tier: H2 메모리 (독립)</text>
+                    <text x="540" y="435" font-size="10" fill="#666">• 각 VM이 독립적 메모리</text>
+                    <text x="540" y="450" font-size="10" fill="#666">• 데이터 공유 X</text>
+                    
+                    <!-- 비용 -->
+                    <rect x="150" y="510" width="600" height="45" fill="#e8f5e9" stroke="#34a853" stroke-width="2" rx="4"/>
+                    <text x="450" y="540" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">💰 월 비용: $0 (항상 무료)</text>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- 1-tier 상세 설명 -->
+        <div class="section">
+            <h2>2. 1-tier: Nginx (Frontend 계층)</h2>
+            
+            <h3>역할</h3>
+            <div class="tier-explanation">
+                <strong>🌐 정적 콘텐츠 서빙 + 동적 요청 라우팅</strong>
+                사용자의 HTTP 요청을 받아서, 정적 파일(Vue.js)은 직접 제공하고, API 요청은 Spring Boot로 전달합니다.
+            </div>
+            
+            <h3>왜 필요한가?</h3>
+            <div class="why-section">
+                <strong>✓ 성능 분리</strong><br>
+                정적 파일 서빙은 가볍고 빠르기 때문에 Nginx 같은 웹 서버가 최적화. Spring Boot는 비즈니스 로직에 집중.
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ 로드밸런싱</strong><br>
+                여러 Spring Boot 인스턴스 중 하나를 자동으로 선택. 한 서버가 느려도 다른 서버로 분산.
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ 단일 진입점 (Entry Point)</strong><br>
+                사용자는 Nginx IP 하나만 알면 됨. 뒤에 여러 Spring Boot 서버가 있어도 투명하게 동작.
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ 보안</strong><br>
+                Spring Boot를 외부에 노출하지 않음. Nginx가 방화벽 역할.
+            </div>
+            
+            <h3>데이터 흐름</h3>
+            <div class="flow-diagram">
+사용자 브라우저
+    ↓ GET / (Vue.js HTML)
+Nginx
+    ↓ /var/www/html/index.html 읽음
+    ↓ HTML 응답
+
+사용자 브라우저
+    ↓ GET /api/users (JavaScript 요청)
+Nginx
+    ↓ /api/* → upstream spring_boot
+    ↓ Spring Boot VM-1 또는 VM-2로 전달
+    ↓ JSON 응답
+            </div>
+        </div>
+        
+        <!-- 2-tier 상세 설명 -->
+        <div class="section">
+            <h2>3. 2-tier: Spring Boot (Application 계층)</h2>
+            
+            <h3>역할</h3>
+            <div class="tier-explanation">
+                <strong>⚙️ 비즈니스 로직 + 데이터 처리</strong>
+                사용자 요청을 받아서 데이터를 조회/생성/수정하고, JSON으로 응답합니다.
+            </div>
+            
+            <h3>멀티 인스턴스 구성 (VM-1, VM-2)</h3>
+            <div class="concept">
+                <strong>📊 로드밸런싱 테스트 목적</strong><br>
+                같은 애플리케이션을 여러 VM에서 실행하여, 부하 분산과 확장성을 학습합니다.
+            </div>
+            
+            <h3>각 인스턴스의 특성</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>항목</th>
+                    <th>Boot VM-1</th>
+                    <th>Boot VM-2</th>
+                </tr>
+                <tr>
+                    <td><strong>내부 IP</strong></td>
+                    <td>10.x.x.y</td>
+                    <td>10.x.x.z</td>
+                </tr>
+                <tr>
+                    <td><strong>포트</strong></td>
+                    <td>8080</td>
+                    <td>8080</td>
+                </tr>
+                <tr>
+                    <td><strong>H2 DB</strong></td>
+                    <td>독립 메모리</td>
+                    <td>독립 메모리</td>
+                </tr>
+                <tr>
+                    <td><strong>데이터 공유</strong></td>
+                    <td class="bad">✗ 없음</td>
+                    <td class="bad">✗ 없음</td>
+                </tr>
+            </table>
+            
+            <h3>데이터 흐름</h3>
+            <div class="flow-diagram">
+Nginx (라운드로빈)
+    ↓ 요청 1번째
+Boot VM-1
+    ↓ H2 메모리 DB (VM-1 독립)
+    ↓ 데이터 저장/조회
+    
+Nginx (라운드로빈)
+    ↓ 요청 2번째
+Boot VM-2
+    ↓ H2 메모리 DB (VM-2 독립)
+    ↓ 다른 데이터 상태
+            </div>
+            
+            <h3>⚠️ 주의: 데이터 격리</h3>
+            <div class="concept">
+                <strong>각 Spring Boot 인스턴스가 독립적 메모리 DB 사용</strong><br>
+                <br>
+                VM-1: User 테이블에 Alice, Bob<br>
+                VM-2: User 테이블에는 아무 데이터 없음<br>
+                <br>
+                → 이는 "학습 목적"이기 때문에 의도된 동작<br>
+                → 실제 서비스는 데이터 공유 필수 (Firestore 전환 필요)
+            </div>
+        </div>
+        
+        <!-- 3-tier 상세 설명 -->
+        <div class="section">
+            <h2>4. 3-tier: H2 메모리 DB (Data 계층)</h2>
+            
+            <h3>위치 & 저장소</h3>
+            <div class="tier-explanation">
+                <strong>💾 Spring Boot 애플리케이션 내부 메모리</strong>
+                별도의 DB 서버가 아니라, 각 Spring Boot 프로세스의 RAM에 직접 저장됩니다.
+            </div>
+            
+            <h3>H2 메모리 DB vs 다른 방식</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>방식</th>
+                    <th>저장 위치</th>
+                    <th>재시작 후</th>
+                    <th>멀티 인스턴스</th>
+                    <th>비용</th>
+                </tr>
+                <tr>
+                    <td><strong>H2 메모리</strong></td>
+                    <td>RAM</td>
+                    <td class="bad">데이터 소실</td>
+                    <td class="bad">공유 불가</td>
+                    <td class="good">$0</td>
+                </tr>
+                <tr>
+                    <td><strong>H2 파일</strong></td>
+                    <td>디스크</td>
+                    <td class="good">유지</td>
+                    <td class="bad">같은 VM만</td>
+                    <td class="good">$0</td>
+                </tr>
+                <tr>
+                    <td><strong>Cloud SQL</strong></td>
+                    <td>관리형 DB</td>
+                    <td class="good">유지</td>
+                    <td class="good">모두 공유</td>
+                    <td class="bad">$6.50+</td>
+                </tr>
+                <tr>
+                    <td><strong>Firestore</strong></td>
+                    <td>관리형 DB</td>
+                    <td class="good">유지</td>
+                    <td class="good">모두 공유</td>
+                    <td class="good">$0</td>
+                </tr>
+            </table>
+            
+            <h3>메모리 특성 이해하기</h3>
+            <div class="concept">
+                <strong>🧠 RAM = 매우 빠르지만 휘발성</strong><br>
+                <br>
+                • 속도: 디스크보다 수천 배 빠름<br>
+                • 용량: 보통 1-2GB 정도만 사용 가능<br>
+                • 휘발성: 전원 끄면 사라짐 (앱 재시작도 포함)<br>
+                <br>
+                → 학습/테스트에는 최적<br>
+                → 실제 서비스는 불가능
+            </div>
+            
+            <h3>생명 사이클</h3>
+            <div class="flow-diagram">
+Spring Boot 시작
+    ↓
+H2 메모리 DB 초기화
+    ↓ (spring.jpa.hibernate.ddl-auto=create-drop)
+테이블 자동 생성
+    ↓
+데이터 저장/조회/수정/삭제
+    ↓
+Spring Boot 중지
+    ↓
+모든 데이터 사라짐 (RAM이므로)
+    ↓
+다시 시작
+    ↓
+빈 DB부터 시작
+            </div>
+        </div>
+        
+        <!-- VPC 네트워크 설명 -->
+        <div class="section">
+            <h2>5. VPC 네트워크: VM 간 통신</h2>
+            
+            <h3>왜 VPC가 필요한가?</h3>
+            <div class="why-section">
+                <strong>✓ 프라이빗 네트워크</strong><br>
+                Nginx ↔ Spring Boot 간 통신이 내부 네트워크(10.x.x.x)를 통해 이루어지므로, 외부에 노출되지 않음.
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ 빠른 통신</strong><br>
+                같은 VPC 내 VM들 간의 통신은 지연이 적고 비용도 없음.
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ 보안 그룹 (방화벽)</strong><br>
+                어떤 포트만 허용할지 세밀하게 제어 가능.
+            </div>
+            
+            <h3>네트워크 구성 다이어그램</h3>
+            <div class="architecture-diagram">
+                <svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+                    <!-- VPC 경계 -->
+                    <rect x="50" y="30" width="800" height="420" fill="#f0f4f9" stroke="#1a73e8" stroke-width="3" stroke-dasharray="10,5" rx="4"/>
+                    <text x="70" y="55" font-size="12" font-weight="bold" fill="#1a73e8">VPC: 3tier-network (10.0.0.0/24 대역)</text>
+                    
+                    <!-- 방화벽 규칙 -->
+                    <rect x="70" y="75" width="760" height="100" fill="white" stroke="#f57c00" stroke-width="2" rx="4"/>
+                    <text x="90" y="100" font-size="11" font-weight="bold" fill="#e65100">방화벽 규칙</text>
+                    <text x="100" y="120" font-size="10" fill="#333">• 외부 → Nginx:80 ◯ (허용)</text>
+                    <text x="100" y="136" font-size="10" fill="#333">• 외부 → Boot:8080 ✗ (거부)</text>
+                    <text x="100" y="152" font-size="10" fill="#333">• Nginx → Boot:8080 ◯ (허용)</text>
+                    
+                    <!-- Nginx VM -->
+                    <rect x="80" y="210" width="280" height="100" fill="#bbdefb" stroke="#1a73e8" stroke-width="2" rx="4"/>
+                    <text x="220" y="240" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d47a1">Nginx VM</text>
+                    <text x="100" y="265" font-size="10" fill="#333">IP: 10.0.0.10</text>
+                    <text x="100" y="280" font-size="10" fill="#333">외부 IP: 있음</text>
+                    <text x="100" y="295" font-size="10" fill="#333">포트: 80 (HTTP)</text>
+                    
+                    <!-- Boot VM-1 -->
+                    <rect x="400" y="210" width="180" height="100" fill="#c8e6c9" stroke="#4caf50" stroke-width="2" rx="4"/>
+                    <text x="490" y="240" text-anchor="middle" font-size="11" font-weight="bold" fill="#2e7d32">Boot VM-1</text>
+                    <text x="420" y="265" font-size="10" fill="#333">IP: 10.0.0.20</text>
+                    <text x="420" y="280" font-size="10" fill="#333">외부 IP: 없음</text>
+                    <text x="420" y="295" font-size="10" fill="#333">포트: 8080</text>
+                    
+                    <!-- Boot VM-2 -->
+                    <rect x="640" y="210" width="180" height="100" fill="#c8e6c9" stroke="#4caf50" stroke-width="2" rx="4"/>
+                    <text x="730" y="240" text-anchor="middle" font-size="11" font-weight="bold" fill="#2e7d32">Boot VM-2</text>
+                    <text x="660" y="265" font-size="10" fill="#333">IP: 10.0.0.21</text>
+                    <text x="660" y="280" font-size="10" fill="#333">외부 IP: 없음</text>
+                    <text x="660" y="295" font-size="10" fill="#333">포트: 8080</text>
+                    
+                    <!-- 통신 화살표 -->
+                    <path d="M 360 260 L 400 260" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-right)"/>
+                    <path d="M 360 280 L 400 280" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-right)"/>
+                    <path d="M 600 260 L 640 260" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-right)"/>
+                    <path d="M 600 280 L 640 280" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-right)"/>
+                    
+                    <text x="375" y="250" font-size="9" fill="#1a73e8">내부 통신</text>
+                    <text x="615" y="250" font-size="9" fill="#1a73e8">내부 통신</text>
+                    
+                    <!-- 특징 -->
+                    <rect x="70" y="340" width="760" height="90" fill="#e8f5e9" stroke="#34a853" stroke-width="2" rx="4"/>
+                    <text x="90" y="365" font-size="11" font-weight="bold" fill="#2e7d32">VPC의 역할</text>
+                    <text x="100" y="385" font-size="10" fill="#558b2f">• 프라이빗 네트워크: Nginx ↔ Boot 간 통신이 외부에 노출되지 않음</text>
+                    <text x="100" y="402" font-size="10" fill="#558b2f">• 빠른 통신: 같은 VPC 내 통신은 지연 적고 비용 없음</text>
+                    <text x="100" y="419" font-size="10" fill="#558b2f">• 보안 제어: 포트별로 세밀한 접근 제어 가능</text>
+                    
+                    <defs>
+                        <marker id="arrow-right" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#1a73e8" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- 데이터 흐름 시각화 -->
+        <div class="section">
+            <h2>6. 전체 데이터 흐름</h2>
+            
+            <h3>시나리오: 사용자가 새로운 사용자를 추가하는 경우</h3>
+            <div class="flow-diagram">
+1. 사용자 브라우저
+   POST /api/users (JSON: {name:"Alice"})
+   
+2. Nginx (외부 IP)
+   ↓ 요청 받음
+   
+3. Nginx 리버스 프록시
+   upstream spring_boot 확인
+   → Boot VM-1 선택 (라운드로빈)
+   
+4. Boot VM-1 (내부 IP 10.0.0.20:8080)
+   UserController.create() 실행
+   ↓
+   
+5. Boot VM-1의 H2 메모리 DB
+   INSERT INTO users(name) VALUES('Alice')
+   ↓
+   
+6. Boot VM-1 응답
+   {id:1, name:"Alice", ...}
+   
+7. Nginx
+   응답 Nginx → 브라우저로 전달
+   
+8. 사용자 화면
+   새로운 사용자 표시
+            </div>
+            
+            <h3>다음 요청이 Boot VM-2로 간다면?</h3>
+            <div class="concept">
+                <strong>⚠️ Boot VM-2의 H2는 독립적</strong><br>
+                GET /api/users → Boot VM-2로 라우팅<br>
+                → VM-2의 H2 DB 조회<br>
+                → 아무 데이터도 없음 (Alice는 VM-1에만 있음)<br>
+                → 빈 배열 [] 응답
+            </div>
+        </div>
+        
+        <!-- 로드밸런싱 이해 -->
+        <div class="section">
+            <h2>7. Nginx 로드밸런싱: 왜 필요한가?</h2>
+            
+            <h3>로드밸런싱 없을 때</h3>
+            <div class="concept">
+                <strong>❌ 한 서버에만 모든 부하</strong><br>
+                <br>
+                Boot VM-1: CPU 100%, 느림<br>
+                Boot VM-2: 놀고 있음<br>
+                <br>
+                → 전체 시스템이 느려짐
+            </div>
+            
+            <h3>로드밸런싱 있을 때</h3>
+            <div class="concept">
+                <strong>✓ 부하 분산</strong><br>
+                <br>
+                요청 1번, 3번, 5번 → Boot VM-1<br>
+                요청 2번, 4번, 6번 → Boot VM-2<br>
+                <br>
+                → 두 서버가 균등하게 일함<br>
+                → 전체 응답 시간 단축
+            </div>
+            
+            <h3>Nginx 라운드로빈 방식</h3>
+            <div class="code-example">
+upstream spring_boot {
+    server 10.x.x.y:8080;  # Boot VM-1
+    server 10.x.x.z:8080;  # Boot VM-2
+}
+
+# 요청이 순서대로 분배됨
+요청 1번 → VM-1
+요청 2번 → VM-2
+요청 3번 → VM-1
+요청 4번 → VM-2
+...
+            </div>
+        </div>
+        
+        <!-- 학습 vs 실제 서비스 -->
+        <div class="section">
+            <h2>8. 학습 구성 vs 실제 서비스</h2>
+            
+            <table class="comparison-table">
+                <tr>
+                    <th>항목</th>
+                    <th>지금 당신의 구성 (학습)</th>
+                    <th>실제 서비스</th>
+                </tr>
+                <tr>
+                    <td><strong>Database</strong></td>
+                    <td>H2 메모리 (독립)</td>
+                    <td>Firestore 또는 Cloud SQL (공유)</td>
+                </tr>
+                <tr>
+                    <td><strong>데이터 지속성</strong></td>
+                    <td class="bad">✗ 재시작 시 소실</td>
+                    <td class="good">✓ 영구 저장</td>
+                </tr>
+                <tr>
+                    <td><strong>멀티 인스턴스</strong></td>
+                    <td class="bad">✗ DB 공유 불가</td>
+                    <td class="good">✓ 데이터 일관성</td>
+                </tr>
+                <tr>
+                    <td><strong>비용</strong></td>
+                    <td class="good">$0</td>
+                    <td>$6.50+ (Cloud SQL) 또는 $0 (Firestore)</td>
+                </tr>
+                <tr>
+                    <td><strong>목적</strong></td>
+                    <td class="good">개념 학습</td>
+                    <td class="good">실제 운영</td>
+                </tr>
+            </table>
+            
+            <h3>다음 단계로 나아가기</h3>
+            <div class="why-section">
+                <strong>✓ Phase 1 (지금): H2 메모리로 아키텍처 이해</strong><br>
+                Nginx, Spring Boot, 로드밸런싱 개념 습득
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ Phase 2: Firestore로 마이그레이션</strong><br>
+                데이터 지속성 + 멀티 인스턴스 공유 추가<br>
+                Spring Cloud GCP 통합
+            </div>
+            
+            <div class="why-section">
+                <strong>✓ Phase 3: Cloud SQL로 확대</strong><br>
+                진정한 MySQL 경험<br>
+                더 복잡한 쿼리 학습
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({ height: height }, "*");
+        };
+    </script>
+</body>
+</html>
