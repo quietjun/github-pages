@@ -85,6 +85,10 @@
         "path": "db/mysql_query_cost.html"
       },
       {
+        "label": "DB 저장 단위: File → Extent → Page → Row",
+        "path": "db/storage_hierachy.html"
+      },
+      {
         "label": "Transaction 완벽 가이드",
         "path": "db/transaction1.html"
       },
