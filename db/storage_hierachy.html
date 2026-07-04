@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB 저장 단위: File → Extent → Page → Row</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7FB;
+    --panel:#FFFFFF;
+    --ink:#1B2430;
+    --sub:#5B6472;
+    --line:#D7DEEA;
+
+    --db-fill:#EAEEF7;   --db-line:#B9C4D9;
+    --file-fill:#D6E0F2; --file-line:#8FA3C4;
+    --extent-fill:#AFC3E6; --extent-line:#5E78AC;
+    --page-fill:#F4A340;  --page-line:#B96F16;
+    --row-fill:#33415A;   --row-line:#1B2430;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; background:var(--bg);
+    overflow-x:hidden;
+    font-family:'Noto Sans KR',sans-serif;
+    color:var(--ink);
+  }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+
+  .wrap{
+    max-width:1024px;
+    margin:0 auto;
+    padding:36px 20px 56px;
+  }
+
+  header{ margin-bottom:28px; }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; font-weight:700; letter-spacing:.12em;
+    color:var(--file-line); text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:28px; font-weight:900; margin:0 0 8px;
+    line-height:1.35;
+  }
+  .desc{
+    font-size:14.5px; color:var(--sub); line-height:1.7;
+    max-width:640px;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px 20px 8px;
+    margin-bottom:20px;
+  }
+  .panel-title{
+    font-size:13px; font-weight:700; color:var(--sub);
+    letter-spacing:.02em; margin:0 0 4px;
+  }
+
+  svg{ width:100%; height:auto; display:block; }
+
+  /* summary table */
+  table{
+    width:100%; border-collapse:collapse;
+    font-size:14px; margin-top:6px;
+  }
+  th,td{
+    text-align:left; padding:12px 10px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  th{
+    font-size:12px; color:var(--sub); font-weight:700;
+    letter-spacing:.03em;
+  }
+  td.unit{ font-weight:700; white-space:nowrap; }
+  td .size{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px; color:var(--file-line); font-weight:700;
+  }
+  tr:last-child td{ border-bottom:none; }
+  .dot{
+    display:inline-block; width:10px; height:10px; border-radius:3px;
+    margin-right:8px; vertical-align:-1px;
+  }
+
+  .callout{
+    background:#FFF6E9;
+    border:1px solid #F0C57D;
+    border-radius:14px;
+    padding:18px 20px;
+    margin-bottom:8px;
+    font-size:14px; line-height:1.75;
+  }
+  .callout b{ color:#8A5A0F; }
+  .callout .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px; font-weight:700; color:#B96F16;
+    letter-spacing:.08em; text-transform:uppercase;
+    display:block; margin-bottom:6px;
+  }
+
+  footer{
+    margin-top:24px; font-size:12px; color:var(--sub);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">MySQL · InnoDB Storage Hierarchy</div>
+    <h1>DB 저장 단위 — File → Extent → Page → Row</h1>
+    <div class="desc">
+      논리 단위(Database, Table) ↓ 물리 단위(File, Extent, Page, Row)로 좁혀가는 구조.<br>
+      InnoDB 기준, 디스크 실제 배치 순서대로 정리.
+    </div>
+  </header>
+
+  <div class="panel">
+    <p class="panel-title">계층 구조 (Zoom-in)</p>
+    <svg viewBox="0 0 1000 1560" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- ============ 1. DATABASE ============ -->
+      <text x="40" y="34" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#5B6472">01 · DATABASE</text>
+      <rect x="40" y="46" width="920" height="140" rx="14" fill="var(--db-fill)" stroke="var(--db-line)" stroke-width="2"/>
+      <text x="60" y="76" font-family="Noto Sans KR" font-size="15" font-weight="700" fill="#1B2430">스키마 단위 (물리적으로는 디렉토리)</text>
+
+      <!-- 3 table/file icons inside database -->
+      <g>
+        <rect x="60" y="94" width="220" height="72" rx="10" fill="var(--file-fill)" stroke="var(--file-line)" stroke-width="1.5"/>
+        <text x="170" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" font-weight="700" fill="#2E4266">employees.ibd</text>
+        <text x="170" y="145" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#5B6472">table = tablespace</text>
+
+        <rect x="300" y="94" width="220" height="72" rx="10" fill="var(--file-fill)" stroke="var(--file-line)" stroke-width="2.5"/>
+        <text x="410" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" font-weight="700" fill="#2E4266">salaries.ibd</text>
+        <text x="410" y="145" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#5B6472">↓ 아래에서 확대</text>
+
+        <rect x="540" y="94" width="220" height="72" rx="10" fill="var(--file-fill)" stroke="var(--file-line)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="650" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="12.5" font-weight="700" fill="#8896AA">titles.ibd</text>
+        <text x="650" y="145" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#8896AA">기타 테이블…</text>
+      </g>
+
+      <!-- zoom connector 1 -->
+      <line x1="410" y1="166" x2="410" y2="196" stroke="#8FA3C4" stroke-width="2" stroke-dasharray="4 4"/>
+      <polygon points="410,204 402,190 418,190" fill="#8FA3C4"/>
+
+      <!-- ============ 2. TABLESPACE / FILE ============ -->
+      <text x="40" y="238" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#5B6472">02 · TABLESPACE (FILE)</text>
+      <rect x="40" y="250" width="920" height="200" rx="14" fill="var(--file-fill)" stroke="var(--file-line)" stroke-width="2"/>
+      <text x="60" y="280" font-family="Noto Sans KR" font-size="15" font-weight="700" fill="#1B2430">테이블 1개 = 파일 1개 (.ibd)</text>
+      <text x="60" y="300" font-family="Noto Sans KR" font-size="12" fill="#5B6472">innodb_file_per_table = ON (기본값) 기준 · 내부는 Extent 격자로 구성</text>
+
+      <!-- extent grid inside tablespace (6 x 2, one highlighted) -->
+      <g id="extent-grid-in-file">
+        <!-- generated 12 blocks -->
+      </g>
+      <script/>
+      <!-- manually laid out extent tiles -->
+      <g font-family="JetBrains Mono" font-size="10" fill="#2E4266">
+        <rect x="60" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2"/>
+        <rect x="200" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2.5"/>
+        <text x="265" y="376" text-anchor="middle" fill="#1B2A44" font-weight="700" font-size="11">extent</text>
+        <text x="265" y="392" text-anchor="middle" fill="#1B2A44" font-size="9">↓ 확대</text>
+        <rect x="340" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2"/>
+        <rect x="480" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2"/>
+        <rect x="620" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2" opacity="0.55"/>
+        <rect x="760" y="316" width="130" height="110" rx="8" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2" stroke-dasharray="4 4" opacity="0.4"/>
+      </g>
+      <text x="820" y="440" text-anchor="end" font-family="Noto Sans KR" font-size="11" fill="#5B6472">파일 크기만큼 계속 확장 →</text>
+
+      <!-- zoom connector 2 -->
+      <line x1="265" y1="426" x2="265" y2="470" stroke="#5E78AC" stroke-width="2" stroke-dasharray="4 4"/>
+      <polygon points="265,478 257,464 273,464" fill="#5E78AC"/>
+
+      <!-- ============ 3. EXTENT ============ -->
+      <text x="40" y="512" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#5B6472">03 · EXTENT</text>
+      <rect x="40" y="524" width="450" height="330" rx="14" fill="var(--extent-fill)" stroke="var(--extent-line)" stroke-width="2"/>
+      <text x="60" y="554" font-family="Noto Sans KR" font-size="15" font-weight="700" fill="#12203A">1 MB = Page 64개 묶음</text>
+      <text x="60" y="574" font-family="Noto Sans KR" font-size="12" fill="#233A5E">공간 할당(allocation)의 최소 단위 · 한 번에 묶어서 확보</text>
+
+      <!-- 8x8 page grid -->
+      <g id="page-grid">
+        <!-- rows 8, cols 8, each 45x28, start x=60 y=590 -->
+      </g>
+
+      <footer id="grid-note"></footer>
+
+      <!-- zoom connector 3 -->
+      <line x1="490" y1="600" x2="560" y2="600" stroke="#B96F16" stroke-width="2" stroke-dasharray="4 4"/>
+      <polygon points="568,600 554,592 554,608" fill="#B96F16"/>
+
+      <!-- ============ 4. PAGE ============ -->
+      <text x="580" y="512" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#5B6472">04 · PAGE</text>
+      <rect x="580" y="524" width="380" height="330" rx="14" fill="#FFF3E1" stroke="var(--page-line)" stroke-width="2.5"/>
+      <text x="600" y="554" font-family="Noto Sans KR" font-size="15" font-weight="700" fill="#8A5A0F">16 KB 고정 크기</text>
+      <text x="600" y="574" font-family="Noto Sans KR" font-size="12" fill="#8A5A0F">디스크 ↔ 메모리 I/O 최소 단위 · Buffer Pool 캐싱 단위</text>
+
+      <!-- page internal structure -->
+      <rect x="600" y="592" width="340" height="26" rx="5" fill="#B96F16"/>
+      <text x="770" y="609" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#FFF">FIL HEADER / PAGE HEADER</text>
+
+      <!-- rows inside page -->
+      <g font-family="JetBrains Mono" font-size="10" fill="#FFF">
+        <rect x="600" y="626" width="340" height="30" fill="var(--row-fill)"/>
+        <text x="770" y="645" text-anchor="middle">row · emp_no=10001</text>
+
+        <rect x="600" y="660" width="340" height="30" fill="#3E4E6C"/>
+        <text x="770" y="679" text-anchor="middle">row · emp_no=10002</text>
+
+        <rect x="600" y="694" width="340" height="30" fill="var(--row-fill)"/>
+        <text x="770" y="713" text-anchor="middle">row · emp_no=10003</text>
+
+        <rect x="600" y="728" width="340" height="30" fill="#3E4E6C"/>
+        <text x="770" y="747" text-anchor="middle">row · emp_no=10004</text>
+
+        <rect x="600" y="762" width="340" height="24" fill="var(--row-fill)" opacity="0.7"/>
+        <text x="770" y="778" text-anchor="middle" font-size="9">… 페이지가 가득 찰 때까지 반복</text>
+      </g>
+
+      <!-- free space -->
+      <rect x="600" y="792" width="340" height="34" rx="6" fill="#FFFFFF" stroke="#E3B677" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="770" y="813" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#B98A45">여유 공간 (Free Space)</text>
+
+      <text x="600" y="840" font-family="Noto Sans KR" font-size="11" fill="#8A5A0F">Page Directory · Trailer는 생략</text>
+
+      <!-- ============ 5. ROW summary strip ============ -->
+      <line x1="770" y1="854" x2="770" y2="884" stroke="#1B2430" stroke-width="2" stroke-dasharray="4 4"/>
+      <polygon points="770,892 762,878 778,878" fill="#1B2430"/>
+
+      <text x="40" y="934" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#5B6472">05 · ROW</text>
+      <rect x="40" y="946" width="920" height="90" rx="14" fill="var(--row-fill)"/>
+      <text x="60" y="978" font-family="Noto Sans KR" font-size="15" font-weight="700" fill="#FFF">실제 레코드 (가변 크기, 보통 수십~수백 byte)</text>
+      <text x="60" y="1000" font-family="Noto Sans KR" font-size="12" fill="#C7D0E0">emp_no, birth_date, first_name … 컬럼 값이 실제로 저장되는 최종 단위</text>
+      <text x="60" y="1018" font-family="JetBrains Mono" font-size="11" fill="#8FA3C4">1 Page(16KB) 안에 Row 수십~수백 개가 나란히 저장됨</text>
+
+    </svg>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">단위별 요약</p>
+    <table>
+      <thead>
+        <tr><th>단위</th><th>크기</th><th>특징</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="unit"><span class="dot" style="background:var(--db-fill);border:1.5px solid var(--db-line)"></span>Database</td>
+          <td><span class="size mono">가변</span></td>
+          <td>스키마(논리) 단위 : 물리적으로는 디렉토리, 여러 테이블(파일) 포함</td>
+        </tr>
+        <tr>
+          <td class="unit"><span class="dot" style="background:var(--file-fill);border:1.5px solid var(--file-line)"></span>Tablespace(File)</td>
+          <td><span class="size mono">가변 (.ibd)</span></td>
+          <td>테이블 1개 → 파일 1개 : OS 파일 시스템이 다루는 실제 단위</td>
+        </tr>
+        <tr>
+          <td class="unit"><span class="dot" style="background:var(--extent-fill);border:1.5px solid var(--extent-line)"></span>Extent</td>
+          <td><span class="size mono">1MB = Page 64개</span></td>
+          <td>공간 할당 최소 단위 : Page를 낱개가 아닌 묶음으로 확보</td>
+        </tr>
+        <tr>
+          <td class="unit"><span class="dot" style="background:var(--page-fill);border:1.5px solid var(--page-line)"></span>Page</td>
+          <td><span class="size mono">16KB 고정</span></td>
+          <td>디스크 ↔ 메모리 I/O 최소 단위 : Buffer Pool도 Page 단위로 캐싱</td>
+        </tr>
+        <tr>
+          <td class="unit"><span class="dot" style="background:var(--row-fill);border:1.5px solid #000"></span>Row</td>
+          <td><span class="size mono">가변 (수십~수백 byte)</span></td>
+          <td>실제 레코드 : 한 Page 안에 여러 Row가 순차 저장됨</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="tag">핵심 포인트</span>
+    Row 1건만 필요해도 <b>최소 Page(16KB) 단위</b>로 읽어옴 → 필요 없는 나머지 데이터까지 통째로 I/O 발생.<br>
+    지난 글의 <b>Handler_read_rnd</b> 수치가 높다는 것 = 서로 다른 Page를 랜덤하게 계속 읽어왔다는 뜻.
+  </div>
+
+  <footer>MySQL InnoDB Storage Hierarchy · Database → Tablespace → Extent → Page → Row</footer>
+</div>
+
+<script>
+  // extent grid inside tablespace box was drawn manually above.
+  // 8x8 page grid inside extent box, generated dynamically.
+  (function(){
+    var svgNS = "http://www.w3.org/2000/svg";
+    var g = document.getElementById("page-grid");
+    var cols = 8, rows = 8;
+    var cellW = 45, cellH = 28, gap = 4;
+    var startX = 60, startY = 592;
+    var highlightIndex = 12; // which page is "zoomed" into the Page box
+    for (var r = 0; r < rows; r++){
+      for (var c = 0; c < cols; c++){
+        var idx = r*cols + c;
+        var rect = document.createElementNS(svgNS, "rect");
+        rect.setAttribute("x", startX + c*(cellW+gap));
+        rect.setAttribute("y", startY + r*(cellH+gap));
+        rect.setAttribute("width", cellW);
+        rect.setAttribute("height", cellH);
+        rect.setAttribute("rx", 4);
+        if (idx === highlightIndex){
+          rect.setAttribute("fill", "#F4A340");
+          rect.setAttribute("stroke", "#B96F16");
+          rect.setAttribute("stroke-width", "2.5");
+        } else {
+          rect.setAttribute("fill", "#C7D6EF");
+          rect.setAttribute("stroke", "#8FA3C4");
+          rect.setAttribute("stroke-width", "1");
+        }
+        g.appendChild(rect);
+      }
+    }
+  })();
+
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+</body>
+</html>
