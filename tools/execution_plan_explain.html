@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EXPLAIN FORMAT=JSON 시각화 도구</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f7f7f5;
+        --panel: #ffffff;
+        --ink: #1c1c1a;
+        --sub: #6b6b66;
+        --line: #dcdad4;
+        --accent: #2f6f4f;
+        --warn: #b3401f;
+        --warn-soft: #fbeae4;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans KR", sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+      .wrap {
+        max-width: 1024px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+      header {
+        margin-bottom: 24px;
+      }
+      header .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      header h1 {
+        font-size: 22px;
+        font-weight: 900;
+        margin: 0 0 6px;
+      }
+      header p {
+        margin: 0;
+        color: var(--sub);
+        font-size: 14px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 18px;
+      }
+      .panel-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin: 0 0 10px;
+      }
+      .panel-desc {
+        font-size: 12.5px;
+        color: var(--sub);
+        margin: 0 0 12px;
+      }
+      .panel-desc div {
+        margin-top: 2px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--ink);
+        background: #fbfbfa;
+      }
+      textarea:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+
+      .input-split {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .input-split > div {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .input-split textarea {
+        flex: 1;
+      }
+      
+      .output-split {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;
+      }
+      .output-split > .left-col {
+        flex: 6;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+      }
+      .output-split > .right-col {
+        flex: 4;
+        min-width: 0;
+        position: relative;
+      }
+      .right-col.is-fullscreen {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 9999;
+        background: #fbfbfa;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+      .right-col.is-fullscreen .tree-scroll {
+        flex: 1;
+        border: none;
+        border-radius: 0;
+        overflow-y: auto;
+      }
+      #expandBtn {
+        position: absolute;
+        top: 8px; right: 8px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        display: none;
+        z-index: 10;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+      #expandBtn:hover {
+        background: #f0f0f0;
+      }
+      .code-view {
+        padding: 16px;
+        background: #fbfbfa;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        line-height: 1.5;
+        white-space: pre;
+        overflow-x: auto;
+        color: var(--ink);
+      }
+      .code-view-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--accent);
+      }
+      .table-view {
+        background: #fbfbfa;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+      .table-view-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .table-view-header .code-view-title {
+        margin-bottom: 0;
+      }
+      .trad-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 12.5px;
+        text-align: left;
+      }
+      .trad-table th {
+        color: var(--sub);
+        font-weight: 500;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        background: #f4f4f2;
+      }
+      .trad-table td {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .trad-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+      button {
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 9px 16px;
+        border-radius: 7px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      button:hover {
+        filter: brightness(0.97);
+      }
+
+      #errBox {
+        display: none;
+        margin-top: 10px;
+        background: var(--warn-soft);
+        border: 1px solid var(--warn);
+        color: var(--warn);
+        padding: 10px 12px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-family: "JetBrains Mono", monospace;
+        white-space: pre-wrap;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 12px;
+      }
+      .legend .item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+      }
+
+      .summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .summary .stat {
+        flex: 1 1 140px;
+        background: #fbfbfa;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .summary .stat .k {
+        font-size: 11px;
+        color: var(--sub);
+        font-family: "JetBrains Mono", monospace;
+        margin-bottom: 3px;
+      }
+      .summary .stat .v {
+        font-size: 16px;
+        font-weight: 900;
+      }
+
+      .tree-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 8px;
+        background: #fbfbfa;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      #diagramHost {
+        display: block;
+      }
+      .empty {
+        color: var(--sub);
+        font-size: 13px;
+        padding: 40px 4px;
+        text-align: center;
+      }
+
+      footer {
+        margin-top: 20px;
+        font-size: 11.5px;
+        color: var(--sub);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="eyebrow">MySQL · Query Plan Viewer</div>
+        <h1>EXPLAIN FORMAT=JSON 시각화 도구</h1>
+        <p>MySQL Workbench Visual Explain 대체용 · 박스 + 화살표 구조로 실행계획 표시</p>
+      </header>
+
+      <div class="panel">
+        <div class="panel-title">① 데이터 입력</div>
+        <div class="panel-desc">순수 JSON/TREE 텍스트 또는 <code>CALL explain_all(...)</code> 전체 로그 결과를 그대로 붙여넣으세요. 도구가 자동으로 파싱합니다.</div>
+        <textarea id="dataInput" placeholder='+ ------------------------------------ +
+| ### START OF EXPLAIN REPORT ###      |
+...
+또는 순수 JSON {"query_plan": {...}}' style="height: 200px;"></textarea>
+        <div class="btn-row">
+          <button class="primary" onclick="renderDiagram()">다이어그램 생성</button>
+          <button onclick="loadSample()">예시 보기</button>
+          <button onclick="clearAll()">초기화</button>
+        </div>
+        <div id="errBox"></div>
+        <details style="margin-top: 16px; font-size: 12px; color: var(--sub);">
+          <summary style="cursor: pointer; font-weight: 500;">💡 추천: 한번에 모든 결과를 뽑아주는 MySQL 프로시저 스크립트 (클릭)</summary>
+          <pre style="margin-top: 8px; padding: 10px; background: #f0f0f0; border-radius: 6px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #333;">DELIMITER //
+DROP PROCEDURE IF EXISTS explain_all //
+CREATE PROCEDURE explain_all(p_query TEXT)
+BEGIN
+    SELECT '### START OF EXPLAIN REPORT ###' AS 'LOG';
+
+    SELECT '--- [1. TRADITIONAL FORMAT] ---' AS 'FORMAT_TYPE';
+    SET @sql_trad = CONCAT('EXPLAIN FORMAT=TRADITIONAL ', p_query);
+    PREPARE stmt1 FROM @sql_trad; EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+
+    SELECT '--- [2. JSON FORMAT] ---' AS 'FORMAT_TYPE';
+    SET @sql_json = CONCAT('EXPLAIN FORMAT=JSON ', p_query);
+    PREPARE stmt2 FROM @sql_json; EXECUTE stmt2; DEALLOCATE PREPARE stmt2;
+
+    SELECT '--- [3. TREE FORMAT] ---' AS 'FORMAT_TYPE';
+    SET @sql_tree = CONCAT('EXPLAIN FORMAT=TREE ', p_query);
+    PREPARE stmt3 FROM @sql_tree; EXECUTE stmt3; DEALLOCATE PREPARE stmt3;
+    
+    SELECT '### END OF EXPLAIN REPORT ###' AS 'LOG';
+END //
+DELIMITER ;
+
+-- 실행 예시: CALL explain_all('SELECT * FROM employees');</pre>
+        </details>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">② 박스 색상 범례</div>
+        <div class="legend">
+          <span class="item"><span class="swatch" style="background: #5aa7c9"></span>const / system : 단일 행 조회</span>
+          <span class="item"><span class="swatch" style="background: #5aa7c9"></span>eq_ref / ref : 인덱스 조회</span>
+          <span class="item"><span class="swatch" style="background: #e0a83e"></span>range / index : 부분·인덱스 스캔</span>
+          <span class="item"><span class="swatch" style="background: #d9704f"></span>ALL : 풀 테이블 스캔</span>
+          <span class="item"><span class="swatch" style="background: #d9d9d3"></span>gray : 연산 노드 (join / sort / group)</span>
+        </div>
+      </div>
+
+      <div class="panel" id="summaryPanel" style="display: none">
+        <div class="panel-title">③ 비용 요약</div>
+        <div class="summary" id="summaryBox"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">④ 실행 계획 종합 뷰</div>
+        <div class="panel-desc">
+
+          <div style="margin-top: 6px; font-size: 11.5px; color: var(--sub);">화살표 방향 : 하위 접근(테이블) → 상위 연산(join/sort) → 최종 결과 | 화살표 라벨 : 상단 cost · 하단 row 수</div>
+        </div>
+        
+        <div id="queryHost" class="code-view" style="display: none; margin-bottom: 16px; word-break: break-all; white-space: pre-wrap;"></div>
+        <div id="tradHost" class="table-view" style="display: none; margin-bottom: 16px;"></div>
+
+        <div class="output-split">
+          <div class="left-col">
+            <div id="treeHost" class="code-view" style="display: none;"></div>
+            <div id="jsonHost" class="code-view" style="display: none;"></div>
+          </div>
+          <div class="right-col">
+            <button id="expandBtn" onclick="toggleExpand()">확대 ⛶</button>
+            <div class="tree-scroll" style="height: 100%;">
+              <div id="diagramHost"><div class="empty">데이터를 붙여넣고 [다이어그램 생성]을 누르면 여기에 표시됩니다.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>실제 MySQL Workbench Visual Explain 색상·화살표 구조를 참고해 재구성한 도구입니다.</footer>
+    </div>
+
+    <script>
+      const sampleV2 = {
+        query: "/* select#1 */ select `i`.`name`, `orders`.`quantity` from `orders` join `items` `i` on `i`.`id`=`orders`.`item_id` where `orders`.`quantity` > 1000",
+        query_plan: {
+          operation: "Nested loop inner join",
+          access_type: "nested_loop_join",
+          estimated_rows: 76470.0,
+          estimated_total_cost: 49828.0,
+          estimated_first_row_cost: 0.0,
+          inputs: [
+            {
+              operation: "Filter: ((orders.quantity > 1000) and (orders.item_id is not null))",
+              access_type: "filter",
+              condition: "((orders.quantity > 1000) and (orders.item_id is not null))",
+              estimated_rows: 76470.0,
+              estimated_total_cost: 23063.45,
+              inputs: [
+                {
+                  operation: "Table scan on orders",
+                  table_name: "orders",
+                  schema_name: "customer",
+                  access_type: "table",
+                  estimated_rows: 229432.0,
+                  estimated_total_cost: 23063.45,
+                },
+              ],
+            },
+            {
+              operation: "Single-row index lookup on i using PRIMARY (id=orders.item_id)",
+              table_name: "i",
+              index_name: "PRIMARY",
+              access_type: "eq_ref",
+              estimated_rows: 1.0,
+              estimated_total_cost: 0.25,
+            },
+          ],
+        },
+        query_type: "select",
+        json_schema_version: "2.0",
+      };
+
+      function loadSample() {
+        document.getElementById("jsonInput").value = JSON.stringify(sampleV2, null, 2);
+        renderDiagram();
+      }
+      function clearAll() {
+        document.getElementById("dataInput").value = "";
+        document.getElementById("diagramHost").innerHTML = '<div class="empty">데이터를 붙여넣고 [다이어그램 생성]을 누르면 여기에 표시됩니다.</div>';
+        document.getElementById("treeHost").innerHTML = "";
+        document.getElementById("treeHost").style.display = "none";
+        document.getElementById("jsonHost").innerHTML = "";
+        document.getElementById("jsonHost").style.display = "none";
+        document.getElementById("tradHost").innerHTML = "";
+        document.getElementById("tradHost").style.display = "none";
+        document.getElementById("queryHost").innerHTML = "";
+        document.getElementById("queryHost").style.display = "none";
+        document.getElementById("textLogsContainer").style.display = "none";
+        document.getElementById("errBox").style.display = "none";
+        document.getElementById("summaryPanel").style.display = "none";
+        document.getElementById("expandBtn").style.display = "none";
+        document.querySelector('.right-col').classList.remove('is-fullscreen');
+        document.getElementById("expandBtn").textContent = "확대 ⛶";
+        if (typeof sendHeightToParent === 'function') sendHeightToParent();
+      }
+      function toggleExpand() {
+        const rightCol = document.querySelector('.right-col');
+        const btn = document.getElementById('expandBtn');
+        if (rightCol.classList.contains('is-fullscreen')) {
+          rightCol.classList.remove('is-fullscreen');
+          btn.textContent = '확대 ⛶';
+        } else {
+          rightCol.classList.add('is-fullscreen');
+          btn.textContent = '축소 ✖';
+        }
+      }
+      function showErr(msg) {
+        const e = document.getElementById("errBox");
+        e.style.display = "block";
+        e.textContent = msg;
+      }
+      function hideErr() {
+        document.getElementById("errBox").style.display = "none";
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      }
+
+      function parseAsciiTableToHtml(asciiText) {
+        const lines = asciiText.split('\n');
+        let html = '<table class="trad-table"><thead><tr>';
+        let isHeader = true;
+        let hasData = false;
+        
+        for (let line of lines) {
+          line = line.trim();
+          if (!line.startsWith('|')) continue;
+          
+          const cells = line.split('|').map(c => c.trim());
+          cells.shift(); // remove empty before first |
+          cells.pop();   // remove empty after last |
+          
+          if (cells.length < 5) continue;
+          
+          if (isHeader) {
+            cells.forEach(c => { html += '<th>' + esc(c) + '</th>'; });
+            html += '</tr></thead><tbody>';
+            isHeader = false;
+          } else {
+            html += '<tr>';
+            cells.forEach(c => { html += '<td>' + esc(c) + '</td>'; });
+            html += '</tr>';
+            hasData = true;
+          }
+        }
+        
+        if (!hasData && isHeader) {
+          return '<div style="padding:16px; font-family:\'JetBrains Mono\', monospace; font-size:12.5px; white-space:pre; overflow-x:auto;">' + esc(asciiText) + '</div>';
+        }
+        html += '</tbody></table>';
+        return html;
+      }
+
+      /* ---------- 신형 포맷 (explain_json_format_version=2) ---------- */
+      const TABLE_LABELS_V2 = {
+        system: "Single Row (constant)",
+        const: "Single Row (constant)",
+        rows_fetched_before_execution: "Single Row (constant)",
+        zero_rows: "Zero Rows",
+        zero_rows_aggregated: "Zero Rows (Aggregated)",
+        eq_ref: "Unique Key Lookup",
+        ref: "Index Lookup",
+        ref_or_null: "Index Lookup (+NULL)",
+        range: "Index Range Scan",
+        index_range_scan: "Index Range Scan",
+        dynamic_index_range_scan: "Index Range Scan",
+        index_skip_scan: "Index Skip Scan",
+        group_index_skip_scan: "Group Skip Scan",
+        index_merge: "Index Merge",
+        index_lookup: "Index Lookup",
+        index_scan: "Full Index Scan",
+        index: "Full Index Scan",
+        covering_index_scan: "Covering Index Scan",
+        table: "Full Table Scan",
+        fulltext: "Fulltext Search",
+        table_value_constructor: "Table Value Constructor",
+        unqualified_count: "Unqualified Count",
+      };
+      const OP_LABELS_V2 = {
+        filter: "Filter",
+        nested_loop_join: "Nested Loop Join",
+        hash_join: "Hash Join",
+        join: "Join",
+        sort: "Sort (ORDER BY)",
+        aggregate: "Aggregate (GROUP BY)",
+        temptable_aggregate: "Temp Table Aggregate",
+        limit_offset: "Limit",
+        materialize: "Materialize",
+        stream: "Stream",
+        union: "Union",
+        window: "Window Function",
+        remove_duplicates: "중복 제거 (DISTINCT)",
+      };
+      function shortLabelV2(node, dict) {
+        const t1 = (node.index_access_type || "").toLowerCase();
+        const t2 = (node.access_type || "").toLowerCase();
+        return dict[t1] || dict[t2] || truncateStr(node.operation || t1 || t2 || "연산", 24);
+      }
+      function accessColorV2(accessType, hasTable) {
+        const t = (accessType || "").toLowerCase();
+        if (!t) return hasTable ? "#9a9a94" : null;
+        if (t.includes("before_execution") || t === "zero_rows" || t === "zero_rows_aggregated" || t === "const" || t === "system") return "#5aa7c9";
+        if (t === "eq_ref" || t === "ref" || t.includes("lookup")) return "#5aa7c9";
+        if (t.includes("range") || t.includes("skip")) return "#e0a83e";
+        if (t === "table") return "#d9704f";
+        if (t.includes("index")) return "#e0a83e";
+        return hasTable ? "#9a9a94" : null;
+      }
+      function truncateStr(s, n) {
+        return s && s.length > n ? s.slice(0, n) + "…" : s;
+      }
+
+      let extractedMetadata = [];
+
+      function walkV2(node) {
+        if (!node) return null;
+        const children = (node.inputs || []).map(walkV2).filter(Boolean);
+        
+        let tName = node.table_name;
+        let kName = node.index_name;
+        let effectiveAccessType = node.index_access_type || node.access_type || "";
+
+        // 메타데이터(TRADITIONAL) 활용: 누락된 테이블/인덱스 정보 보완
+        if (effectiveAccessType === "rows_fetched_before_execution" && !tName && extractedMetadata.length > 0) {
+            const meta = extractedMetadata.shift();
+            tName = meta.table;
+            kName = meta.key;
+        }
+
+        const hasTable = !!tName;
+        const color = accessColorV2(effectiveAccessType, hasTable);
+        const isLeafStyle =
+          hasTable ||
+          (!!color &&
+            !["nested_loop_join", "hash_join", "filter", "sort", "aggregate", "materialize", "stream", "limit_offset", "temptable_aggregate", "join"].includes((node.access_type || "").toLowerCase()));
+        if (isLeafStyle && color) {
+          return {
+            kind: "table",
+            title: shortLabelV2(node, TABLE_LABELS_V2),
+            color: color,
+            tableName: truncateStr(tName || "(constant)", 20),
+            keyName: kName ? truncateStr(kName, 20) : tName ? "인덱스 없음" : "-",
+            rows: node.actual_rows !== undefined ? node.actual_rows : node.estimated_rows,
+            actualRows: node.actual_rows,
+            actualLoops: node.actual_loops,
+            actualTime: node.actual_last_row_ms !== undefined ? node.actual_last_row_ms : node.actual_time,
+            cost: node.estimated_total_cost,
+            warn: node.access_type === "table",
+            children,
+          };
+        }
+        return {
+          kind: "op",
+          title: shortLabelV2(node, OP_LABELS_V2),
+          sub: node.condition ? truncateStr(node.condition, 26) : null,
+          color: "#d9d9d3",
+          rows: node.actual_rows !== undefined ? node.actual_rows : node.estimated_rows,
+          actualRows: node.actual_rows,
+          actualLoops: node.actual_loops,
+          actualTime: node.actual_last_row_ms !== undefined ? node.actual_last_row_ms : node.actual_time,
+          cost: node.estimated_total_cost,
+          children,
+        };
+      }
+
+      function buildTree(data) {
+        if (data.query_block) {
+          throw new Error("구형 포맷(MySQL 8.0 이하)은 더 이상 지원하지 않습니다. MySQL 8.3 이상의 신형 포맷을 사용해주세요.");
+        }
+        const top = data.query_plan || data;
+        let root = walkV2(top);
+        
+        // 항상 최상단에 query_block #1 연산 노드를 감싸주어 Workbench와 동일한 시각적 계층 제공
+        if (root && root.title !== "query_block #1") {
+          root = {
+            kind: "op",
+            title: "query_block #1",
+            sub: null,
+            color: "#d9d9d3",
+            rows: null,
+            cost: null,
+            children: [root]
+          };
+        }
+        
+        const queryCost = typeof top.estimated_total_cost === "number" ? top.estimated_total_cost.toFixed(2) : null;
+        return { root, queryCost, version: "v2 · MySQL 8.3+/9.x (신형)" };
+      }
+
+      /* ---------- 레이아웃 계산 ---------- */
+      const BOX_W = 180,
+        BOX_H_OP = 42,
+        BOX_H_TABLE = 42;
+      const LEAF_GAP = 230,
+        LEVEL_GAP = 128,
+        MARGIN = 60,
+        LEAF_LABEL_H = 46;
+
+      function layout(root) {
+        let leafCounter = 0;
+        function assignX(node) {
+          if (!node.children || node.children.length === 0) {
+            node._x = leafCounter * LEAF_GAP + LEAF_GAP / 2;
+            leafCounter++;
+            return node._x;
+          }
+          const xs = node.children.map(assignX);
+          node._x = xs.reduce((a, b) => a + b, 0) / xs.length;
+          return node._x;
+        }
+        function assignY(node, depth) {
+          node._depth = depth;
+          node._y = depth * LEVEL_GAP;
+          (node.children || []).forEach((c) => assignY(c, depth + 1));
+        }
+        assignX(root);
+        assignY(root, 0);
+        let maxDepth = 0;
+        (function walkDepth(n) {
+          maxDepth = Math.max(maxDepth, n._depth);
+          (n.children || []).forEach(walkDepth);
+        })(root);
+        const width = leafCounter * LEAF_GAP + MARGIN * 2;
+        const height = MARGIN + (maxDepth + 1) * LEVEL_GAP + BOX_H_TABLE + LEAF_LABEL_H + MARGIN;
+        return { width, height };
+      }
+
+      /* ---------- SVG 렌더링 ---------- */
+      function fmt(n) {
+        if (n === null || n === undefined || isNaN(n)) return null;
+        return (Math.round(n * 100) / 100).toString();
+      }
+      function fitAttr(str, fontSize, maxWidth) {
+        const est = String(str).length * fontSize * 0.62;
+        return est > maxWidth ? ' textLength="' + maxWidth.toFixed(0) + '" lengthAdjust="spacingAndGlyphs"' : "";
+      }
+
+      function parseLog(raw) {
+        let jsonStr = "";
+        let treeStr = "";
+        let tradStr = "";
+        extractedMetadata = [];
+
+        // 1. JSON 추출
+        const jsonMatch = raw.match(/\[\d+\.\s*JSON FORMAT.*?\]/i);
+        if (jsonMatch) {
+            const startIdx = raw.indexOf("{", jsonMatch.index);
+            if (startIdx !== -1) {
+                const treeMatch = raw.match(/\[\d+\.\s*TREE FORMAT.*?\]/i);
+                const searchArea = (treeMatch && treeMatch.index > startIdx) ? raw.substring(startIdx, treeMatch.index) : raw.substring(startIdx);
+                const endIdx = searchArea.lastIndexOf("}");
+                if (endIdx !== -1) {
+                    jsonStr = searchArea.substring(0, endIdx + 1);
+                }
+            }
+        } else {
+            const start = raw.indexOf("{");
+            const end = raw.lastIndexOf("}");
+            if (start !== -1 && end !== -1) {
+                jsonStr = raw.substring(start, end + 1);
+            }
+        }
+
+        // 2. TREE 추출
+        if (raw.trim().startsWith("->")) {
+           treeStr = raw.trim();
+        } else {
+           const treeMatch2 = raw.match(/\[\d+\.\s*TREE FORMAT.*?\][\s\S]*?\+\s*-+\s*\+\n\|\s*(->[\s\S]*?)\s*\|\n\+\s*-/i);
+           if (treeMatch2) {
+               treeStr = treeMatch2[1].split('\n').map(l => l.replace(/^\|\s?/, '')).join('\n').trim();
+           } else {
+               // 포크된 다른 형식일 경우 억지 추출 시도
+               const fallbackMatch = raw.match(/\|\s*(->[\s\S]*?)\s*\|(?=\n\+)/);
+               if (fallbackMatch && fallbackMatch[1].includes("cost=")) {
+                   treeStr = fallbackMatch[1].split('\n').map(l => l.replace(/^\|\s?/, '')).join('\n').trim();
+               }
+           }
+        }
+
+        // 3. TRADITIONAL 블록 전체 텍스트 추출 (뷰어용)
+        const tradMatch = raw.match(/\[\d+\.\s*TRADITIONAL FORMAT.*?\]/i);
+        if (tradMatch) {
+            const nextMatch = raw.match(/\[\d+\.\s*(?:JSON|TREE) FORMAT.*?\]/i);
+            if (nextMatch && nextMatch.index > tradMatch.index) {
+                tradStr = raw.substring(tradMatch.index, nextMatch.index).trim();
+            } else {
+                tradStr = raw.substring(tradMatch.index).trim();
+            }
+        } else if (raw.includes("| id |") && raw.includes("| select_type |")) {
+            tradStr = raw;
+        }
+
+        // 4. TRADITIONAL 메타데이터(const/system) 파싱
+        const lines = raw.split('\n');
+        for (let line of lines) {
+            if (line.trim().startsWith('|') && (line.includes('const') || line.includes('system')) && !line.includes('FORMAT_TYPE') && !line.includes('select_type')) {
+                const parts = line.split('|').map(s => s.trim());
+                if (parts.length >= 8) {
+                    const table = parts[3];
+                    const type = parts[5];
+                    const key = parts[7];
+                    if (type === 'const' || type === 'system') {
+                        extractedMetadata.push({ table, key });
+                    }
+                }
+            }
+        }
+
+        return { jsonStr, treeStr, tradStr };
+      }
+
+      function renderDiagram() {
+        hideErr();
+        const raw = document.getElementById("dataInput").value.trim();
+
+        if (!raw) {
+          showErr("데이터를 붙여넣어 주세요.");
+          return;
+        }
+
+        let rawJson = raw;
+        let rawTree = "";
+        let rawTrad = "";
+        extractedMetadata = [];
+
+        if (!raw.startsWith("{")) {
+            const parsed = parseLog(raw);
+            if (parsed.jsonStr) rawJson = parsed.jsonStr;
+            if (parsed.treeStr) rawTree = parsed.treeStr;
+            if (parsed.tradStr) rawTrad = parsed.tradStr;
+        }
+
+        const treeHost = document.getElementById("treeHost");
+        if (rawTree) {
+          let formattedTree = rawTree.replace(/  \(cost=/g, '\n    (cost=');
+          treeHost.innerHTML = '<div class="code-view-title">TREE FORMAT</div>' + esc(formattedTree);
+          treeHost.style.display = "block";
+        } else {
+          treeHost.innerHTML = "";
+          treeHost.style.display = "none";
+        }
+
+        const jsonHost = document.getElementById("jsonHost");
+        const queryHost = document.getElementById("queryHost");
+        if (rawJson) {
+          let prettyJson = rawJson;
+          let extractedQuery = "";
+          try { 
+              let jsonObj = JSON.parse(rawJson);
+              function extractQuery(obj) {
+                  if (!obj || typeof obj !== 'object') return;
+                  if (obj.query && typeof obj.query === 'string') {
+                      if (!extractedQuery) extractedQuery = obj.query;
+                      delete obj.query;
+                  }
+                  for (let key in obj) {
+                      extractQuery(obj[key]);
+                  }
+              }
+              extractQuery(jsonObj);
+              prettyJson = JSON.stringify(jsonObj, null, 2); 
+          } catch(e){}
+          
+          jsonHost.innerHTML = '<div class="code-view-title">JSON FORMAT</div>' + esc(prettyJson);
+          jsonHost.style.display = "block";
+
+          if (extractedQuery) {
+              queryHost.innerHTML = '<div class="code-view-title">QUERY (옵티마이저가 재작성한 튜닝 쿼리)</div><div style="margin-top: 8px;">' + esc(extractedQuery) + '</div>';
+              queryHost.style.display = "block";
+          } else {
+              queryHost.innerHTML = "";
+              queryHost.style.display = "none";
+          }
+        } else {
+          jsonHost.innerHTML = "";
+          jsonHost.style.display = "none";
+          queryHost.innerHTML = "";
+          queryHost.style.display = "none";
+        }
+
+        const tradHost = document.getElementById("tradHost");
+        if (rawTrad) {
+          let contentHtml = parseAsciiTableToHtml(rawTrad);
+          tradHost.innerHTML = '<div class="table-view-header"><div class="code-view-title">TRADITIONAL FORMAT</div></div>' + contentHtml;
+          tradHost.style.display = "block";
+        } else {
+          tradHost.innerHTML = "";
+          tradHost.style.display = "none";
+        }
+
+        if (!rawJson) {
+          document.getElementById("diagramHost").innerHTML = '<div class="empty">JSON 데이터가 없습니다.</div>';
+          document.getElementById("summaryPanel").style.display = "none";
+          if (typeof sendHeightToParent === 'function') sendHeightToParent();
+          return;
+        }
+
+        let data;
+        try {
+          data = JSON.parse(rawJson);
+        } catch (e) {
+          showErr("JSON 파싱 실패\n" + e.message + "\n\n※ EXPLAIN FORMAT=JSON 결과의 JSON 부분만 정확히 복사했는지 확인하세요.");
+          return;
+        }
+
+        const { root, queryCost, version } = buildTree(data);
+        if (!root || (root.kind === "op" && root.title.indexOf("query_block") === 0 && !root.children[0])) {
+          document.getElementById("diagramHost").innerHTML = '<div class="empty">인식 가능한 실행계획 구조를 찾지 못했습니다.</div>';
+          document.getElementById("summaryPanel").style.display = "none";
+          return;
+        }
+        const { width, height } = layout(root);
+
+        const parts = [];
+        parts.push('<svg width="100%" viewBox="0 0 ' + width + " " + height + '" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans KR, sans-serif">');
+        parts.push(
+          '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker></defs>',
+        );
+
+        // 최상단 query cost 라벨
+        if (queryCost) {
+          parts.push(
+            '<text x="' +
+              (root._x + MARGIN) +
+              '" y="' +
+              (MARGIN - 14 > 18 ? MARGIN - 14 : 18) +
+              '" text-anchor="middle" font-size="13" fill="#000000" font-family="sans-serif">Query cost: ' +
+              esc(queryCost) +
+              "</text>",
+          );
+        }
+
+        const edges = [];
+        const boxes = [];
+
+        (function walkRender(node) {
+          const cx = node._x + MARGIN;
+          const cy = node._y + MARGIN;
+          node._cx = cx;
+          node._cy = cy;
+          (node.children || []).forEach((child) => {
+            if (!child) return;
+            walkRender(child);
+            edges.push({ from: child, to: node });
+          });
+          boxes.push(node);
+        })(root);
+
+        // 화살표 (자식 -> 부모, 위쪽 방향)
+        edges.forEach((e) => {
+          const x1 = e.from._cx,
+            y1 = e.from._cy;
+          const x2 = e.to._cx,
+            y2 = e.to._cy + BOX_H_OP;
+          parts.push('<path d="M ' + x1 + " " + y1 + " L " + x2 + " " + y2 + '" stroke="#000000" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />');
+          const mx = (x1 + x2) / 2,
+            my = (y1 + y2) / 2;
+          const costLbl = fmt(e.from.cost);
+          let rowsLbl = e.from.rows !== undefined && e.from.rows !== null && !isNaN(e.from.rows) ? fmt(e.from.rows) + " row" + (Math.round(e.from.rows) == 1 ? "" : "s") : null;
+          
+          let extraLbl = [];
+          if (e.from.actualTime !== undefined) extraLbl.push(fmt(e.from.actualTime) + "ms");
+          if (e.from.actualLoops !== undefined) extraLbl.push(e.from.actualLoops + " loop" + (e.from.actualLoops == 1 ? "" : "s"));
+          
+          if (costLbl) {
+            parts.push('<text x="' + (mx + 8) + '" y="' + (my - 6) + '" font-size="12" font-family="sans-serif" fill="#000000">' + esc(costLbl) + "</text>");
+          }
+          if (rowsLbl) {
+            parts.push('<text x="' + (mx + 8) + '" y="' + (my + 8) + '" font-size="12" font-family="sans-serif" fill="#000000">' + esc(rowsLbl) + "</text>");
+          }
+          if (extraLbl.length > 0) {
+            parts.push('<text x="' + (mx + 8) + '" y="' + (my + 22) + '" font-size="11" font-family="sans-serif" fill="#d9704f" font-weight="bold">' + esc(extraLbl.join(", ")) + "</text>");
+          }
+        });
+
+        // 박스
+        boxes.forEach((n) => {
+          const x = n._cx - BOX_W / 2,
+            y = n._cy;
+          const innerMax = BOX_W - 20;
+          const belowMax = LEAF_GAP - 24;
+          parts.push('<g style="cursor:default">');
+          if (n.kind === "op") {
+            parts.push('<title>' + esc(n.title) + (n.sub ? '&#10;' + esc(n.sub) : '') + '</title>');
+            parts.push('<rect x="' + x + '" y="' + y + '" width="' + BOX_W + '" height="' + BOX_H_OP + '" fill="' + n.color + '" stroke="#000000" stroke-width="1.2"/>');
+            parts.push(
+              '<text x="' +
+                n._cx +
+                '" y="' +
+                (y + BOX_H_OP / 2 + (n.sub ? -4 : 4)) +
+                '" text-anchor="middle" font-size="13" fill="#000000"' +
+                fitAttr(n.title, 13, innerMax) +
+                ">" +
+                esc(n.title) +
+                "</text>",
+            );
+            if (n.sub) {
+              parts.push(
+                '<text x="' +
+                  n._cx +
+                  '" y="' +
+                  (y + BOX_H_OP / 2 + 12) +
+                  '" text-anchor="middle" font-size="11" fill="#b3401f"' +
+                  fitAttr(n.sub, 11, innerMax) +
+                  ">" +
+                  esc(n.sub) +
+                  "</text>",
+              );
+            }
+          } else {
+            parts.push('<title>' + esc(n.title) + '&#10;테이블: ' + esc(n.tableName) + '&#10;키: ' + esc(n.keyName) + (n.warn ? '&#10;⚠ 풀 테이블 스캔' : '') + '</title>');
+            parts.push('<rect x="' + x + '" y="' + y + '" width="' + BOX_W + '" height="' + BOX_H_TABLE + '" fill="' + n.color + '" stroke="#000000" stroke-width="1.2"/>');
+            parts.push(
+              '<text x="' +
+                n._cx +
+                '" y="' +
+                (y + BOX_H_TABLE / 2 + 4) +
+                '" text-anchor="middle" font-size="13" fill="#ffffff"' +
+                fitAttr(n.title, 13, innerMax) +
+                ">" +
+                esc(n.title) +
+                "</text>",
+            );
+            // 박스 밖 하단: 테이블명 / 키
+            parts.push(
+              '<text x="' +
+                n._cx +
+                '" y="' +
+                (y + BOX_H_TABLE + 18) +
+                '" text-anchor="middle" font-size="13" fill="#000000"' +
+                fitAttr(n.tableName, 13, belowMax) +
+                ">" +
+                esc(n.tableName) +
+                "</text>",
+            );
+            parts.push(
+              '<text x="' +
+                n._cx +
+                '" y="' +
+                (y + BOX_H_TABLE + 34) +
+                '" text-anchor="middle" font-size="12" font-weight="700" fill="#000000"' +
+                fitAttr(n.keyName, 12, belowMax) +
+                ">" +
+                esc(n.keyName) +
+                "</text>",
+            );
+            if (n.warn) {
+              parts.push(
+                '<text x="' +
+                  n._cx +
+                  '" y="' +
+                  (y + BOX_H_TABLE + 48) +
+                  '" text-anchor="middle" font-size="11" font-weight="700" fill="#b3401f"' +
+                  fitAttr("⚠ 풀 테이블 스캔", 11, belowMax) +
+                  ">⚠ 풀 테이블 스캔</text>",
+              );
+            }
+          }
+          parts.push('</g>');
+        });
+
+        parts.push("</svg>");
+        document.getElementById("diagramHost").innerHTML = parts.join("");
+        document.getElementById("expandBtn").style.display = "block";
+
+        // 요약 패널
+        let tableCount = 0,
+          fullScanCount = 0;
+        (function count(n) {
+          if (n.kind === "table") {
+            tableCount++;
+            if (n.warn) fullScanCount++;
+          }
+          (n.children || []).forEach(count);
+        })(root);
+        document.getElementById("summaryBox").innerHTML =
+          '<div class="stat"><div class="k">감지된 포맷</div><div class="v" style="font-size:13px">' +
+          esc(version) +
+          "</div></div>" +
+          '<div class="stat"><div class="k">QUERY COST</div><div class="v">' +
+          (queryCost ? esc(queryCost) : "-") +
+          "</div></div>" +
+          '<div class="stat"><div class="k">TABLE COUNT</div><div class="v">' +
+          tableCount +
+          "</div></div>" +
+          '<div class="stat"><div class="k">FULL SCAN</div><div class="v" style="color:' +
+          (fullScanCount > 0 ? "#b3401f" : "#2f6f4f") +
+          '">' +
+          fullScanCount +
+          "</div></div>";
+        document.getElementById("summaryPanel").style.display = "block";
+        if (typeof sendHeightToParent === 'function') sendHeightToParent();
+      }
+
+      function sendHeightToParent() {
+        setTimeout(() => {
+          const height = document.body.scrollHeight;
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ height: height }, "*");
+          }
+        }, 50); // DOM 업데이트 후 측정되도록 약간의 지연 시간 부여
+      }
+
+      window.onload = function () {
+        sendHeightToParent();
+      };
+    </script>
+  </body>
+</html>
