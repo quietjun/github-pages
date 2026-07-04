@@ -152,6 +152,15 @@
     ]
   },
   {
+    "label": "tools",
+    "children": [
+      {
+        "label": "EXPLAIN FORMAT=JSON 시각화 도구",
+        "path": "tools/execution_plan_explain.html"
+      }
+    ]
+  },
+  {
     "label": "vue",
     "children": [
       {
