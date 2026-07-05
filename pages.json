@@ -106,7 +106,7 @@
         "path": "devops/3tierarchitecture.html"
       },
       {
-        "label": "GCP 3-tier 완전 실습 가이드",
+        "label": "GCP 3-Tier 구축 가이드 (무료 플랜 실무형)",
         "path": "devops/gcp_3tier_guide.html"
       },
       {
@@ -127,6 +127,10 @@
   {
     "label": "java",
     "children": [
+      {
+        "label": "SOLID 원칙 : Java 예제로 이해하기",
+        "path": "java/solid.html"
+      },
       {
         "label": "Java 멀티스레드 가이드",
         "path": "java/thread.html"
