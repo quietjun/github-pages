@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCP 3-tier 완전 실습 가이드</title>
+    <title>GCP 3-Tier 구축 가이드 (무료 플랜 실무형)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * {
@@ -34,9 +34,20 @@
         }
         
         .subtitle {
-            font-size: 14px;
-            color: #666;
+            font-size: 15px;
+            color: #5f6368;
             margin-bottom: 40px;
+            font-weight: 500;
+        }
+        
+        /* 다이어그램 스타일 */
+        .diagram-box {
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
         .phase {
@@ -56,12 +67,12 @@
         }
         
         .phase-number {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             color: white;
             background: #1a73e8;
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -80,29 +91,29 @@
             padding: 16px;
             border-radius: 4px;
             margin: 20px 0;
-            font-size: 13px;
+            font-size: 14px;
         }
         
         .concept-box strong {
             color: #0d47a1;
             display: block;
             margin-bottom: 8px;
+            font-size: 15px;
         }
         
         .step-list {
             list-style: none;
             counter-reset: step-counter;
-            margin: 20px 0;
+            margin: 24px 0;
         }
         
         .step-list li {
             counter-increment: step-counter;
-            padding-left: 40px;
+            padding-left: 48px;
             position: relative;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #5f6368;
-            line-height: 1.8;
+            margin-bottom: 28px;
+            font-size: 14px;
+            color: #3c4043;
         }
         
         .step-list li::before {
@@ -112,847 +123,412 @@
             top: 0;
             background: #1a73e8;
             color: white;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 14px;
         }
         
         .code-block {
-            background: #f5f5f5;
+            background: #202124;
             border-left: 3px solid #1a73e8;
-            padding: 14px;
+            padding: 16px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            margin: 12px 0;
-            border-radius: 4px;
+            font-size: 13px;
+            margin: 16px 0;
+            border-radius: 6px;
             overflow-x: auto;
-            color: #202124;
+            color: #e8eaed;
             line-height: 1.6;
         }
         
         .code-label {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
-            color: #1a73e8;
+            color: #8ab4f8;
             text-transform: uppercase;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             letter-spacing: 0.5px;
         }
         
         .menu-path {
-            background: #f8f9fa;
+            background: #f1f3f4;
             border: 1px solid #dadce0;
-            padding: 12px;
-            border-radius: 4px;
-            margin: 12px 0;
-            font-size: 12px;
-            font-family: 'JetBrains Mono', monospace;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+            font-size: 14px;
+            font-weight: 500;
             color: #1a73e8;
+            display: inline-block;
         }
         
         .important {
             background: #fff3e0;
             border-left: 4px solid #f57c00;
-            padding: 14px;
+            padding: 16px;
             border-radius: 4px;
-            margin: 12px 0;
-            font-size: 12px;
-            color: #e65100;
-        }
-        
-        .important strong {
+            margin: 16px 0;
+            font-size: 14px;
             color: #e65100;
         }
         
         .success {
-            background: #e8f5e9;
+            background: #e6f4ea;
             border-left: 4px solid #34a853;
-            padding: 14px;
-            border-radius: 4px;
-            margin: 12px 0;
-            font-size: 12px;
-            color: #2e7d32;
-        }
-        
-        .success strong {
-            color: #2e7d32;
-        }
-        
-        .verification {
-            background: #e3f2fd;
-            border-left: 4px solid #1a73e8;
-            padding: 14px;
-            border-radius: 4px;
-            margin: 12px 0;
-            font-size: 12px;
-            color: #1565c0;
-        }
-        
-        .verification strong {
-            color: #0d47a1;
-        }
-        
-        h3 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #202124;
-            margin: 24px 0 12px 0;
-        }
-        
-        h4 {
-            font-size: 13px;
-            font-weight: 700;
-            color: #202124;
-            margin: 16px 0 8px 0;
-        }
-        
-        .subsection {
-            background: #f8f9fa;
             padding: 16px;
             border-radius: 4px;
             margin: 16px 0;
-            border-left: 3px solid #4285f4;
+            font-size: 14px;
+            color: #137333;
+        }
+        
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #202124;
+            margin: 32px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dadce0;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 16px 0;
-            font-size: 12px;
+            font-size: 13px;
+            background: white;
         }
         
         th {
             background: #f1f3f4;
-            padding: 10px;
+            padding: 12px;
             text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #dadce0;
+            font-weight: 700;
+            color: #3c4043;
+            border: 1px solid #dadce0;
         }
         
         td {
-            padding: 10px;
-            border-bottom: 1px solid #dadce0;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            color: #3c4043;
         }
         
-        tr:last-child td {
-            border-bottom: none;
+        .note-aws {
+            background: #e8f0fe;
+            border-left: 4px solid #1a73e8;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1a73e8;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>GCP 3-tier 완전 실습 가이드</h1>
-        <p class="subtitle">Nginx + Spring Boot 멀티 인스턴스 + H2 메모리 DB 직접 구축</p>
+        <h1>GCP 3-Tier 구축 가이드 (무료 플랜 실무형)</h1>
+        <p class="subtitle">네트워크 망 분리 + Multi-AZ 구조를 100% 무료 리소스(H2, Nginx)로 시뮬레이션 해보기</p>
         
-        <!-- Phase 0: 준비 -->
+        <!-- 아키텍처 다이어그램 -->
+        <div class="diagram-box">
+            <h3 style="margin-top: 0; color: #1a73e8; text-align: center; margin-bottom: 24px; border: none;">🏗️ GCP Free Tier Architecture (실무 시뮬레이션)</h3>
+            
+            <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                <defs>
+                    <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                    <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                    <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                </defs>
+
+                <!-- GCP Region (us-central1) -->
+                <rect x="180" y="20" width="800" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                <text x="190" y="40" font-size="14" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa) - 무료 티어 지역</text>
+
+                <!-- VPC -->
+                <rect x="220" y="60" width="740" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                <text x="230" y="80" font-size="14" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                <!-- Zone A -->
+                <rect x="240" y="100" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                <text x="250" y="120" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                <!-- Zone C -->
+                <rect x="240" y="290" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                <text x="250" y="310" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+
+                <!-- Users & External -->
+                <g transform="translate(30, 200)">
+                    <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                    <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                    <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Users</text>
+                </g>
+                <g transform="translate(30, 100)">
+                    <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                    <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                    <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Dev</text>
+                </g>
+
+                <!-- Nginx Load Balancer (Replaces ALB) -->
+                <rect x="180" y="220" width="100" height="60" rx="8" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                <text x="230" y="245" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                <text x="230" y="265" text-anchor="middle" font-size="10" fill="#1a73e8">외부 IP ⭕</text>
+
+                <path d="M 80 235 L 180 250" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow-gray)" />
+
+                <!-- Bastion / IAP -->
+                <rect x="260" y="130" width="100" height="100" fill="#fff" stroke="#f29900" stroke-width="2"/>
+                <text x="310" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">IAP 터널링</text>
+                <text x="310" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(무료 Bastion)</text>
+                <path d="M 80 130 L 250 150" stroke="#b06000" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)" />
+
+                <!-- Temporary Public IP Trick (Replaces Cloud NAT) -->
+                <rect x="380" y="250" width="80" height="50" rx="4" fill="#fef7e0" stroke="#f29900" stroke-width="2"/>
+                <text x="420" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">임시 공인 IP</text>
+                <text x="420" y="285" text-anchor="middle" font-size="10" fill="#b06000">(NAT 꼼수 대체)</text>
+
+                <!-- Subnets (Logical representation) -->
+                <!-- Tomcat (WAS) in Zone A -->
+                <rect x="480" y="130" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                <text x="560" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                <text x="560" y="170" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.x</text>
+                <rect x="520" y="190" width="80" height="20" rx="4" fill="#1a73e8"/>
+                <text x="560" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                <!-- Tomcat (WAS) in Zone C -->
+                <rect x="480" y="320" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                <text x="560" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                <text x="560" y="360" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.y</text>
+                <rect x="520" y="380" width="80" height="20" rx="4" fill="#1a73e8"/>
+                <text x="560" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                <!-- ALB to WAS -->
+                <path d="M 280 250 L 480 180" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                <path d="M 280 260 L 480 370" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                <!-- IAP to WAS -->
+                <path d="M 360 180 L 480 180" stroke="#b06000" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow-gray)" />
+
+                <!-- DB Layer (Mocking Cloud SQL) -->
+                <rect x="740" y="130" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                <text x="820" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                <text x="820" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(내장 DB, 상태 공유 X)</text>
+                <path d="M 800 190 Q 820 180 840 190 L 840 210 Q 820 220 800 210 Z" fill="#d93025"/>
+                <text x="820" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                <rect x="740" y="320" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                <text x="820" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                <text x="820" y="360" text-anchor="middle" font-size="10" fill="#5f6368">(내장 DB, 상태 공유 X)</text>
+                <path d="M 800 380 Q 820 370 840 380 L 840 400 Q 820 410 800 400 Z" fill="#d93025"/>
+                <text x="820" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                <!-- WAS to DB -->
+                <path d="M 640 180 L 740 180" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                <path d="M 640 370 L 740 370" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+            </svg>
+        </div>
+
+        <div class="note-aws">
+            <strong>💡 실무 아키텍처와 무료 시뮬레이션의 차이점</strong><br>
+            이 가이드는 망 분리(VPC/Subnet), 다중 가용영역(Multi-AZ) 같은 <strong>실무형 네트워크 뼈대</strong>는 그대로 가져가되, 비용이 발생하는 Cloud SQL이나 L7 로드밸런서, Cloud NAT 대신 <strong>Nginx, H2 DB, 임시 외부 IP 등 100% 무료 우회 기술</strong>을 사용하여 요금 폭탄을 방지합니다. 
+            (참고: GCP 평생 무료 `e2-micro`는 리전당 1대이므로, 3대 사용 시 월 약 $10 정도의 요금이 발생할 수 있으나, 가입 시 제공되는 $300 크레딧에서 차감됩니다.)
+        </div>
+
+        <!-- Phase 1: 네트워크 설계 -->
         <div class="phase">
             <div class="phase-header">
-                <div class="phase-number">0</div>
-                <div class="phase-title">GCP 계정 준비</div>
+                <div class="phase-number">1</div>
+                <div class="phase-title">실무형 망 분리 (VPC & Subnet)</div>
             </div>
             
             <div class="concept-box">
                 <strong>🎯 이 단계의 목표</strong>
-                GCP 계정을 생성하고, 프로젝트를 세팅한 후 기본 도구를 설치합니다.
+                모든 인프라의 기반이 되는 격리된 네트워크 망(Custom VPC)을 구축합니다. Nginx용 망과 백엔드(Spring Boot)용 망을 논리적으로 분리합니다.
             </div>
             
+            <h3>Step 1-1: Custom VPC 생성</h3>
             <ul class="step-list">
                 <li>
-                    <strong>Google Cloud Console 접속</strong><br>
-                    https://console.cloud.google.com 방문
+                    <div class="menu-path">VPC 네트워크 → VPC 네트워크 생성</div>
+                    - 이름: `free-prd-vpc`<br>
+                    - 서브넷 생성 모드: <strong>맞춤설정(Custom)</strong>
                 </li>
                 
                 <li>
-                    <strong>신규 프로젝트 생성</strong><br>
-                    <div class="menu-path">좌측 상단 "프로젝트 선택" → "새 프로젝트" → "3tier-app" 입력 → 만들기</div>
-                </li>
-                
-                <li>
-                    <strong>결제 계정 연결</strong><br>
-                    결제 설정에서 신용카드 등록 (자동으로 $300 크레딧 획득, e2-micro는 항상 무료)
-                </li>
-                
-                <li>
-                    <strong>필수 API 활성화</strong><br>
-                    <div class="menu-path">상단 검색창 → "Compute Engine API" 검색 → 활성화</div>
-                </li>
-                
-                <li>
-                    <strong>gcloud CLI 설치 (선택사항)</strong><br>
-                    <div class="code-block">
-<div class="code-label">로컬에서 GCP 관리하려면</div>
-$ curl https://sdk.cloud.google.com | bash
-$ gcloud init
-$ gcloud auth login
-                    </div>
+                    <strong>계층별 서브넷(Subnet) 구성</strong><br>
+                    보안을 위해 역할을 분리하여 2개의 서브넷을 생성합니다. (리전은 모두 무료 티어인 <strong>us-central1</strong> 사용)
+                    <table>
+                        <tr>
+                            <th>서브넷 이름</th>
+                            <th>IP 범위</th>
+                            <th>용도 (티어)</th>
+                        </tr>
+                        <tr>
+                            <td><code>free-snet-web</code></td>
+                            <td>10.250.1.0/24</td>
+                            <td>Nginx LB (Frontend)</td>
+                        </tr>
+                        <tr>
+                            <td><code>free-snet-was</code></td>
+                            <td>10.250.2.0/24</td>
+                            <td>Spring Boot (Backend)</td>
+                        </tr>
+                    </table>
                 </li>
             </ul>
-            
-            <div class="verification">
-                <strong>✓ 확인</strong><br>
-                GCP 콘솔에 로그인되어 "3tier-app" 프로젝트가 선택되었는지 확인
-            </div>
+
+            <h3>Step 1-2: IAP 및 기본 방화벽 설정</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>IAP 방화벽 오픈 (중요)</strong><br>
+                    나중에 생성할 외부 IP가 없는 Private WAS에 안전하게 접속하기 위해 필수입니다.
+                    <div class="menu-path">VPC 네트워크 → 방화벽 → 방화벽 규칙 만들기</div>
+                    - 이름: `allow-iap-ssh`<br>
+                    - 네트워크: `free-prd-vpc`<br>
+                    - 소스 IPv4 범위: <strong>35.235.240.0/20</strong> (구글 IAP 대역)<br>
+                    - 프로토콜/포트: TCP 22
+                </li>
+                <li>
+                    <strong>내부 망 통신 및 HTTP 허용</strong><br>
+                    - 규칙 1 (`allow-http`): 소스 `0.0.0.0/0`, TCP 80, 443 (웹 서버용)<br>
+                    - 규칙 2 (`allow-internal-vpc`): 소스 `10.250.0.0/16`, TCP 8080 (내부 로드밸런싱 통신용)
+                </li>
+            </ul>
         </div>
-        
-        <!-- Phase 1: 1-tier (Nginx) -->
-        <div class="phase" style="border-left-color: #bbdefb;">
+
+        <!-- Phase 2: 무료 Nginx 로드밸런서 -->
+        <div class="phase" style="border-left-color: #fbbc04;">
             <div class="phase-header">
-                <div class="phase-number" style="background: #2196f3;">1</div>
-                <div class="phase-title">1-tier: Nginx 배포 (Frontend)</div>
+                <div class="phase-number" style="background: #fbbc04;">2</div>
+                <div class="phase-title">Nginx 로드밸런서 (비싼 ALB 대체)</div>
             </div>
             
-            <div class="concept-box" style="background: #e3f2fd; border-left-color: #2196f3;">
-                <strong>🌐 역할: 정적 파일 제공 + 로드밸런싱</strong>
-                사용자의 HTTP 요청을 받아 Vue.js 파일을 제공하고, /api/* 요청을 Spring Boot로 전달합니다. 여러 Boot 인스턴스에 요청을 분산(로드밸런싱)합니다.
+            <div class="concept-box" style="background: #fef7e0; border-left-color: #fbbc04;">
+                <strong>🌐 역할: 글로벌 트래픽 인입 및 라우팅</strong>
+                유료인 GCP External ALB 대신, Nginx가 설치된 VM에 공인 IP를 달아 외부 요청을 뒷단의 Private 서버들로 분산(로드밸런싱)시킵니다.
             </div>
             
-            <h3>Step 1-1: VPC 네트워크 생성</h3>
+            <h3>Step 2-1: Nginx 인스턴스 배포</h3>
             <ul class="step-list">
                 <li>
-                    <strong>VPC 생성</strong><br>
-                    <div class="menu-path">좌측 메뉴 → VPC 네트워크 → VPC 네트워크 생성</div>
+                    <div class="menu-path">Compute Engine → 인스턴스 → 만들기</div>
+                    - 이름: `nginx-lb-vm`<br>
+                    - 리전/영역: `us-central1` / `us-central1-a`<br>
+                    - 머신 유형: `e2-micro`<br>
+                    - 네트워크: `free-prd-vpc` / 서브넷: `free-snet-web`<br>
+                    - <strong>외부 IPv4 주소: 임시 또는 고정</strong> (외부에서 접근해야 하므로 필수)
                 </li>
-                
                 <li>
-                    <strong>설정값</strong><br>
-                    <table>
-                        <tr>
-                            <th>항목</th>
-                            <th>값</th>
-                        </tr>
-                        <tr>
-                            <td>네트워크 이름</td>
-                            <td>3tier-network</td>
-                        </tr>
-                        <tr>
-                            <td>서브넷 모드</td>
-                            <td>자동</td>
-                        </tr>
-                        <tr>
-                            <td>생성</td>
-                            <td>클릭</td>
-                        </tr>
-                    </table>
-                </li>
-            </ul>
-            
-            <h3>Step 1-2: 방화벽 규칙 설정</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>HTTP 트래픽 허용</strong><br>
-                    <div class="menu-path">VPC 네트워크 → 방화벽 → 규칙 만들기</div>
-                    <table>
-                        <tr>
-                            <th>항목</th>
-                            <th>값</th>
-                        </tr>
-                        <tr>
-                            <td>이름</td>
-                            <td>allow-http</td>
-                        </tr>
-                        <tr>
-                            <td>네트워크</td>
-                            <td>3tier-network</td>
-                        </tr>
-                        <tr>
-                            <td>우선순위</td>
-                            <td>1000</td>
-                        </tr>
-                        <tr>
-                            <td>방향</td>
-                            <td>수신</td>
-                        </tr>
-                        <tr>
-                            <td>소스 IP 범위</td>
-                            <td>0.0.0.0/0</td>
-                        </tr>
-                        <tr>
-                            <td>프로토콜 및 포트</td>
-                            <td>TCP 80, 443</td>
-                        </tr>
-                    </table>
-                </li>
-                
-                <li>
-                    <strong>내부 통신 허용</strong><br>
-                    같은 과정으로 또 다른 규칙 생성
-                    <table>
-                        <tr>
-                            <th>항목</th>
-                            <th>값</th>
-                        </tr>
-                        <tr>
-                            <td>이름</td>
-                            <td>allow-internal-8080</td>
-                        </tr>
-                        <tr>
-                            <td>소스 IP 범위</td>
-                            <td>10.0.0.0/8</td>
-                        </tr>
-                        <tr>
-                            <td>프로토콜 및 포트</td>
-                            <td>TCP 8080</td>
-                        </tr>
-                    </table>
-                </li>
-            </ul>
-            
-            <h3>Step 1-3: Nginx VM 생성</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>인스턴스 생성</strong><br>
-                    <div class="menu-path">좌측 메뉴 → Compute Engine → 인스턴스 → 만들기</div>
-                </li>
-                
-                <li>
-                    <strong>설정값</strong><br>
-                    <table>
-                        <tr>
-                            <th>항목</th>
-                            <th>값</th>
-                        </tr>
-                        <tr>
-                            <td>이름</td>
-                            <td>nginx-vm</td>
-                        </tr>
-                        <tr>
-                            <td>리전</td>
-                            <td>us-central1 (항상 무료)</td>
-                        </tr>
-                        <tr>
-                            <td>영역</td>
-                            <td>us-central1-a</td>
-                        </tr>
-                        <tr>
-                            <td>머신 타입</td>
-                            <td>e2-micro (항상 무료)</td>
-                        </tr>
-                        <tr>
-                            <td>이미지</td>
-                            <td>Ubuntu 22.04 LTS</td>
-                        </tr>
-                        <tr>
-                            <td>부팅 디스크</td>
-                            <td>30GB</td>
-                        </tr>
-                        <tr>
-                            <td>네트워크</td>
-                            <td>3tier-network</td>
-                        </tr>
-                    </table>
-                </li>
-                
-                <li>
-                    <strong>생성 대기</strong><br>
-                    VM이 시작될 때까지 대기 (1-2분)
-                </li>
-            </ul>
-            
-            <div class="verification">
-                <strong>✓ 확인</strong><br>
-                nginx-vm 우측의 SSH 버튼이 활성화되었는지 확인
-            </div>
-            
-            <h3>Step 1-4: Nginx 설치 & 설정</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>VM에 SSH 접속</strong><br>
-                    nginx-vm 우측 → SSH 버튼 클릭
-                </li>
-                
-                <li>
-                    <strong>Nginx 설치</strong><br>
+                    VM 접속 후 Nginx 설치:
                     <div class="code-block">
-<div class="code-label">터미널에서 실행</div>
 $ sudo apt-get update
 $ sudo apt-get install -y nginx
-$ sudo systemctl start nginx
-$ sudo systemctl enable nginx
                     </div>
                 </li>
-                
-                <li>
-                    <strong>Nginx 설정 파일 편집</strong><br>
-                    <div class="code-block">
-<div class="code-label">편집 시작</div>
-$ sudo nano /etc/nginx/sites-available/default
-                    </div>
-                    아래 내용으로 전체 교체:
-                    <div class="code-block">
-upstream spring_boot {
-    server 10.0.0.20:8080;  # Boot VM-1
-    server 10.0.0.21:8080;  # Boot VM-2
-}
-
-server {
-    listen 80;
-    server_name _;
-
-    # Vue.js 정적 파일
-    location / {
-        root /var/www/html;
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Spring Boot API
-    location /api/ {
-        proxy_pass http://spring_boot;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>Ctrl+X → Y → Enter로 저장</strong><br>
-                    nano 에디터 종료
-                </li>
-                
-                <li>
-                    <strong>Nginx 재시작</strong><br>
-                    <div class="code-block">
-$ sudo nginx -t
-$ sudo systemctl restart nginx
-                    </div>
-                </li>
+                <li>Nginx 설정은 뒷단 WAS 서버들의 IP를 확보한 뒤, Step 3 이후에 구성합니다.</li>
             </ul>
-            
-            <h3>Step 1-5: Vue.js 배포</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>로컬에서 Vue.js 빌드</strong><br>
-                    <div class="code-block">
-<div class="code-label">로컬 터미널</div>
-$ cd your-vue-project
-$ npm run build
-# dist/ 폴더 생성됨
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>VM으로 파일 전송</strong><br>
-                    <div class="code-block">
-<div class="code-label">로컬에서</div>
-$ gcloud compute scp --recurse dist/* \
-  nginx-vm:/tmp/ --zone=us-central1-a
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>VM에서 배포</strong><br>
-                    <div class="code-block">
-<div class="code-label">nginx-vm SSH 터미널</div>
-$ sudo cp -r /tmp/* /var/www/html/
-$ sudo chown -R www-data:www-data /var/www/html/
-$ sudo systemctl reload nginx
-                    </div>
-                </li>
-            </ul>
-            
-            <div class="success">
-                <strong>✓ 완료</strong><br>
-                nginx-vm의 외부 IP로 브라우저 접속 → Vue.js 앱이 로드되는지 확인
-            </div>
         </div>
         
-        <!-- Phase 2: 2-tier (Spring Boot) -->
-        <div class="phase" style="border-left-color: #c8e6c9;">
+        <!-- Phase 3: 백엔드 계층 (Multi-AZ + H2) -->
+        <div class="phase" style="border-left-color: #34a853;">
             <div class="phase-header">
-                <div class="phase-number" style="background: #4caf50;">2</div>
-                <div class="phase-title">2-tier: Spring Boot 배포 (Backend)</div>
+                <div class="phase-number" style="background: #34a853;">3</div>
+                <div class="phase-title">백엔드 계층 (Spring Boot Multi-AZ)</div>
             </div>
             
-            <div class="concept-box" style="background: #f1f8e9; border-left-color: #4caf50;">
-                <strong>⚙️ 역할: API 제공 + 비즈니스 로직</strong>
-                Nginx에서 받은 /api/* 요청을 처리하고, H2 메모리 DB에 데이터를 저장/조회합니다. 2개 VM에서 독립적으로 실행됩니다.
+            <div class="concept-box" style="background: #e6f4ea; border-left-color: #34a853;">
+                <strong>⚙️ 역할: 서버 이중화 및 내장 DB(H2) 시뮬레이션</strong>
+                유료인 Cloud SQL 대신, Spring Boot 앱 안에 내장된 H2를 각각 실행합니다. A존과 C존에 분산 배치하여 고가용성 구조를 실습합니다.
             </div>
             
-            <h3>Step 2-1: Spring Boot 프로젝트 준비</h3>
+            <h3>Step 3-1: WAS 인스턴스 2대 배포 (NAT 꼼수)</h3>
+            <div class="important">
+                <strong>⚠️ 외부 IP 임시 할당 꼼수</strong>: 원래 외부 IP가 없는 VM이 인터넷(apt-get 등)을 쓰려면 유료인 Cloud NAT가 필요합니다. 무료로 하려면 VM 생성 시 <strong>임시 외부 IP를 부여</strong>하고, 세팅 완료 후 외부 IP를 떼어내는 방식을 사용하세요.
+            </div>
             <ul class="step-list">
                 <li>
-                    <strong>pom.xml 의존성 추가</strong><br>
-                    <div class="code-block">
-&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-&lt;/dependency&gt;
-
-&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
-&lt;/dependency&gt;
-
-&lt;dependency&gt;
-    &lt;groupId&gt;com.h2database&lt;/groupId&gt;
-    &lt;artifactId&gt;h2&lt;/artifactId&gt;
-    &lt;scope&gt;runtime&lt;/scope&gt;
-&lt;/dependency&gt;
-                    </div>
+                    <strong>VM 1 (Zone A)</strong><br>
+                    - 이름: `free-was-a` (영역: `us-central1-a`)<br>
+                    - 서브넷: `free-snet-was`<br>
+                    - 외부 IP: 임시 할당 (설치 완료 후 수정에서 '없음'으로 변경할 것)
                 </li>
-                
                 <li>
-                    <strong>application.properties 설정</strong><br>
-                    <div class="code-block">
-<div class="code-label">src/main/resources/application.properties</div>
-# H2 메모리 DB
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-
-# JPA
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
-
-# Server
-server.port=8080
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>Entity 생성</strong><br>
-                    <div class="code-block">
-<div class="code-label">User.java</div>
-@Entity
-public class User {
-    @Id @GeneratedValue
-    private Long id;
-    private String name;
-    private String email;
-    // getter/setter
-}
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>Repository 생성</strong><br>
-                    <div class="code-block">
-<div class="code-label">UserRepository.java</div>
-@Repository
-public interface UserRepository 
-    extends JpaRepository&lt;User, Long&gt; {
-}
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>Controller 생성</strong><br>
-                    <div class="code-block">
-<div class="code-label">UserController.java</div>
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-    @Autowired
-    private UserRepository userRepo;
-
-    @GetMapping
-    public List&lt;User&gt; getAll() {
-        return userRepo.findAll();
-    }
-
-    @PostMapping
-    public User create(@RequestBody User user) {
-        return userRepo.save(user);
-    }
-}
-                    </div>
+                    <strong>VM 2 (Zone C)</strong><br>
+                    - 이름: `free-was-c` (영역: `us-central1-c`)<br>
+                    - 서브넷: `free-snet-was`<br>
+                    - 외부 IP: 임시 할당
                 </li>
             </ul>
-            
-            <h3>Step 2-2: Spring Boot 빌드 & 배포</h3>
+
+            <h3>Step 3-2: Java 설치 및 H2 Spring Boot 실행</h3>
             <ul class="step-list">
                 <li>
-                    <strong>로컬에서 빌드</strong><br>
-                    <div class="code-block">
-<div class="code-label">로컬 터미널</div>
-$ mvn clean package
-# target/app.jar 생성 (또는 실제 빌드 결과 jar 파일)
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>Boot VM-1, VM-2 생성</strong><br>
-                    Nginx VM과 동일한 방식으로 2개 VM 생성
-                    <table>
-                        <tr>
-                            <th>설정</th>
-                            <th>값</th>
-                        </tr>
-                        <tr>
-                            <td>이름</td>
-                            <td>boot-vm-1, boot-vm-2</td>
-                        </tr>
-                        <tr>
-                            <td>머신 타입</td>
-                            <td>e2-micro</td>
-                        </tr>
-                        <tr>
-                            <td>이미지</td>
-                            <td>Ubuntu 22.04 LTS</td>
-                        </tr>
-                        <tr>
-                            <td>네트워크</td>
-                            <td>3tier-network</td>
-                        </tr>
-                        <tr>
-                            <td>외부 IP</td>
-                            <td>없음 (내부 통신만)</td>
-                        </tr>
-                    </table>
-                </li>
-                
-                <li>
-                    <strong>JAR 파일 전송</strong><br>
-                    <div class="code-block">
-<div class="code-label">로컬에서</div>
-$ gcloud compute scp target/app.jar \
-  boot-vm-1:/tmp/ --zone=us-central1-a
-$ gcloud compute scp target/app.jar \
-  boot-vm-2:/tmp/ --zone=us-central1-a
-                    </div>
-                </li>
-            </ul>
-            
-            <h3>Step 2-3: Boot VM에 Java 설치 & 실행</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>boot-vm-1 SSH 접속</strong><br>
-                    <div class="menu-path">GCP 콘솔 → boot-vm-1 → SSH</div>
-                </li>
-                
-                <li>
-                    <strong>Java 설치</strong><br>
+                    외부 IP가 붙어있을 때 각 VM에 접속하여 Java를 설치합니다.
                     <div class="code-block">
 $ sudo apt-get update
 $ sudo apt-get install -y openjdk-21-jre
                     </div>
                 </li>
-                
                 <li>
-                    <strong>Systemd 서비스 등록</strong><br>
+                    로컬에서 컴파일한 H2 포함 `.jar` 파일을 전송합니다.
                     <div class="code-block">
-<div class="code-label">/etc/systemd/system/springboot.service 생성</div>
-$ sudo nano /etc/systemd/system/springboot.service
-                    </div>
-                    아래 내용 입력:
-                    <div class="code-block">
-[Unit]
-Description=Spring Boot Application
-After=network.target
-
-[Service]
-Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/app
-ExecStart=/usr/bin/java -jar app.jar
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+$ gcloud compute scp app.jar free-was-a:~/ --zone=us-central1-a
+$ gcloud compute scp app.jar free-was-c:~/ --zone=us-central1-c
                     </div>
                 </li>
-                
                 <li>
-                    <strong>서비스 시작</strong><br>
-                    <div class="code-block">
-$ sudo cp /tmp/app.jar /home/ubuntu/app/
-$ sudo chown ubuntu:ubuntu /home/ubuntu/app/app.jar
-$ sudo systemctl daemon-reload
-$ sudo systemctl enable springboot
-$ sudo systemctl start springboot
-$ sudo systemctl status springboot  # 확인
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>boot-vm-2도 동일하게 설정</strong><br>
-                    boot-vm-2에 SSH 접속해서 같은 절차 반복
+                    전송 후 백그라운드에서 실행(`nohup java -jar app.jar &`)한 뒤, <strong>VM 수정 화면으로 가서 외부 IP를 반드시 '없음'으로 변경</strong>합니다! (보안 강화 완수)
                 </li>
             </ul>
-            
-            <div class="success">
-                <strong>✓ 완료</strong><br>
-                두 VM 모두 systemctl status springboot에서 "active (running)" 표시되는지 확인
-            </div>
         </div>
-        
-        <!-- Phase 3: 통합 테스트 -->
-        <div class="phase" style="border-left-color: #f9ab00;">
-            <div class="phase-header">
-                <div class="phase-number" style="background: #f57c00;">3</div>
-                <div class="phase-title">통합 테스트 & 검증</div>
-            </div>
-            
-            <div class="concept-box" style="background: #fff3e0; border-left-color: #f57c00;">
-                <strong>🧪 목표: 전체 아키텍처가 제대로 동작하는지 확인</strong>
-                Nginx를 통한 요청, 로드밸런싱, 데이터 격리 등을 검증합니다.
-            </div>
-            
-            <h3>Step 3-1: 기본 연결 확인</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>Vue.js 앱 로드 확인</strong><br>
-                    브라우저에서 nginx-vm 외부 IP 접속 → Vue.js 화면이 로드되는지 확인
-                </li>
-                
-                <li>
-                    <strong>API 응답 확인</strong><br>
-                    <div class="code-block">
-<div class="code-label">터미널에서 (또는 브라우저)</div>
-$ curl http://NGINX_EXTERNAL_IP/api/users
-→ []  # 빈 배열 (아직 데이터 없음)
-                    </div>
-                </li>
-            </ul>
-            
-            <h3>Step 3-2: 로드밸런싱 확인</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>각 Boot VM에 서버 식별자 추가</strong><br>
-                    다시 각 Boot VM의 application.properties에 추가:
-                    <div class="code-block">
-# application.properties 하단에 추가
-SERVER_ID=boot-vm-1  (boot-vm-1에는 boot-vm-1, boot-vm-2에는 boot-vm-2)
-                    </div>
-                    또는 controller에 추가:
-                    <div class="code-block">
-@RestController
-@RequestMapping("/api")
-public class InfoController {
-    @Value("${SERVER_ID:unknown}")
-    private String serverId;
 
-    @GetMapping("/server")
-    public Map&lt;String,String&gt; getServer() {
-        return Map.of("server", serverId);
+        <!-- Phase 4: Nginx LB 연동 -->
+        <div class="phase" style="border-left-color: #d93025;">
+            <div class="phase-header">
+                <div class="phase-number" style="background: #d93025;">4</div>
+                <div class="phase-title">로드밸런싱 연동 및 테스트</div>
+            </div>
+            
+            <h3>Step 4-1: Nginx 프록시 구성</h3>
+            <ul class="step-list">
+                <li>
+                    다시 <strong>nginx-lb-vm</strong> 에 접속하여 `/etc/nginx/sites-available/default` 파일을 수정합니다.
+                    <div class="code-block">
+upstream backend_was {
+    server 10.250.2.x:8080;  # free-was-a의 실제 내부 IP 입력
+    server 10.250.2.y:8080;  # free-was-c의 실제 내부 IP 입력
+}
+
+server {
+    listen 80;
+    location /api/ {
+        proxy_pass http://backend_was;
     }
 }
                     </div>
                 </li>
-                
-                <li>
-                    <strong>여러 번 요청하면 VM이 번갈아 응답하는지 확인</strong><br>
-                    <div class="code-block">
-<div class="code-label">여러 번 실행</div>
-$ curl http://NGINX_IP/api/server
-→ {"server":"boot-vm-1"}
-$ curl http://NGINX_IP/api/server
-→ {"server":"boot-vm-2"}
-$ curl http://NGINX_IP/api/server
-→ {"server":"boot-vm-1"}
-                    </div>
-                </li>
+                <li>Nginx를 재시작합니다. (`sudo systemctl restart nginx`)</li>
             </ul>
-            
-            <h3>Step 3-3: 데이터 격리 확인</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>boot-vm-1에만 데이터 생성</strong><br>
-                    <div class="code-block">
-<div class="code-label">boot-vm-1의 내부 IP로 직접 요청</div>
-$ curl -X POST http://10.0.0.20:8080/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Alice","email":"alice@test.com"}'
-→ {"id":1,"name":"Alice",...}
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>boot-vm-1에서 조회 (데이터 있음)</strong><br>
-                    <div class="code-block">
-$ curl http://10.0.0.20:8080/api/users
-→ [{"id":1,"name":"Alice",...}]
-                    </div>
-                </li>
-                
-                <li>
-                    <strong>boot-vm-2에서 조회 (데이터 없음!)</strong><br>
-                    <div class="code-block">
-$ curl http://10.0.0.21:8080/api/users
-→ []  # 빈 배열 (H2 메모리는 독립적)
-                    </div>
-                    이것이 의도된 동작입니다!
-                </li>
-            </ul>
-            
-            <div class="important">
-                <strong>⚠️ 중요</strong><br>
-                boot-vm-1과 boot-vm-2는 각각 독립적인 H2 메모리 DB를 사용합니다. 데이터가 공유되지 않는 것이 정상입니다. 이는 학습 목적이기 때문에 의도된 동작입니다.
-            </div>
-            
-            <h3>Step 3-4: Nginx를 통한 로드밸런싱 테스트</h3>
-            <ul class="step-list">
-                <li>
-                    <strong>Nginx를 통해 여러 요청 후 조회</strong><br>
-                    <div class="code-block">
-<div class="code-label">Nginx IP를 통한 요청</div>
-$ curl -X POST http://NGINX_IP/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Bob","email":"bob@test.com"}'
 
-# 응답이 boot-vm-1 또는 boot-vm-2에서 올 수 있음
-                    </div>
-                </li>
-                
+            <h3>Step 4-2: 최종 검증</h3>
+            <ul class="step-list">
                 <li>
-                    <strong>이전에 생성한 Alice 데이터 확인</strong><br>
-                    <div class="code-block">
-$ curl http://NGINX_IP/api/users
-→ [{"id":1,"name":"Alice",...}] 또는 []
-                    </div>
-                    라운드로빈 로드밸런싱으로 VM-1 또는 VM-2로 가므로 응답이 다를 수 있습니다.
+                    <strong>데이터 격리 확인</strong><br>
+                    브라우저나 curl로 Nginx의 외부 IP(`http://[NGINX_외부_IP]/api/users`)를 여러 번 호출해보세요. <br>
+                    H2 데이터베이스는 각 VM 메모리에 독립적으로 존재하므로, 로드밸런싱으로 인해 요청이 A존과 C존을 번갈아 타면서 반환되는 데이터가 다를 것입니다. 이것이 우리가 의도한 "가짜 이중화" 시뮬레이션의 핵심입니다!
                 </li>
             </ul>
             
             <div class="success">
-                <strong>✓ 성공!</strong><br>
-                • Nginx가 정적 파일(Vue.js)을 제공 ✓<br>
-                • 로드밸런싱이 동작 (요청이 VM-1/VM-2에 번갈아 감) ✓<br>
-                • 각 VM이 독립적 H2 메모리 DB 사용 ✓
-            </div>
-        </div>
-        
-        <!-- 다음 단계 -->
-        <div class="phase" style="border-left-color: #34a853;">
-            <div class="phase-header">
-                <div class="phase-number" style="background: #34a853;">4</div>
-                <div class="phase-title">다음 단계: 데이터 지속성 추가</div>
-            </div>
-            
-            <div class="success">
-                <strong>축하합니다! 3-tier 아키텍처를 완성했습니다.</strong><br>
-                <br>
-                이제 다음과 같은 확장이 가능합니다:
-            </div>
-            
-            <h3>📈 Phase 2: Firestore로 업그레이드</h3>
-            <div class="subsection">
-                <strong>언제: 데이터 지속성이 필요할 때</strong><br>
-                지금은 H2 메모리 사용 → 재시작 시 데이터 소실<br>
-                Firestore 전환 → 완전 무료, 데이터 영구 저장, 멀티 인스턴스 공유 가능
-            </div>
-            
-            <h3>🔍 Phase 3: Cloud SQL로 확대</h3>
-            <div class="subsection">
-                <strong>언제: 진정한 MySQL 경험이 필요할 때</strong><br>
-                복잡한 SQL 쿼리 학습<br>
-                월 $6.50+ (학습 기간에는 $300 크레딧으로 무료)<br>
-                더 실무적인 환경
+                <strong>🎉 무료 플랜 아키텍처 완성!</strong><br>
+                요금을 한 푼도 내지 않으면서도 (크레딧 미미하게 소모), 대기업에서 사용하는 VPC 분리, Multi-AZ 배포, 그리고 IAP 보안 터널링 및 L7 프록시 서버의 흐름을 완벽하게 실습해 냈습니다.
             </div>
         </div>
     </div>
-    
-    <script>
-        window.onload = function() {
-            const height = document.body.scrollHeight;
-            window.parent.postMessage({ height: height }, "*");
-        };
-    </script>
 </body>
 </html>
