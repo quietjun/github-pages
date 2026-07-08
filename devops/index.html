@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP 3-Tier Multi-AZ 서비스 대시보드</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --primary-light: #e8f0fe;
+            --success: #34a853;
+            --warning: #fbbc04;
+            --danger: #d93025;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Style */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .badge-vpc {
+            display: inline-block;
+            background: rgba(147, 52, 230, 0.2);
+            color: #d8b4fe;
+            border: 1px dashed #c084fc;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 900px) {
+            .grid {
+                grid-template-columns: 2fr 3fr;
+            }
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+        }
+
+        .card-title i {
+            color: #60a5fa;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.25);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: rgba(217, 48, 37, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(217, 48, 37, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Member List & Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* Diagnostics & Monitoring Panel */
+        .monitor-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border-left: 4px solid var(--warning);
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .log-entry.info { color: #60a5fa; }
+        .log-entry.success { color: #34a853; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.warning { color: #fbbf24; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-top: 4px;
+        }
+
+        /* Modal Settings */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e1b4b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1><i class="fa-solid fa-server"></i> GCP 3-Tier Multi-AZ Dashboard</h1>
+        <p>Nginx 로드밸런서를 통해 전송된 트래픽과 Spring Boot 사설 백엔드 API 연동 실시간 모니터</p>
+        <span class="badge-vpc"><i class="fa-solid fa-network-wired"></i> VPC: free-prd-vpc (망 분리 적용됨)</span>
+    </header>
+
+    <div class="grid">
+        <!-- Left: Form Card -->
+        <div class="card">
+            <h2 class="card-title"><i class="fa-solid fa-user-plus"></i> 신규 회원 등록 (Create)</h2>
+            <form id="createForm" onsubmit="event.preventDefault(); handleCreate();">
+                <div class="form-group">
+                    <label for="memberId">회원 로그인 ID</label>
+                    <input type="text" id="memberId" class="form-control" placeholder="4~20자리 영문/숫자 입력" minlength="4" maxlength="20" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberName">이름 (Name)</label>
+                    <input type="text" id="memberName" class="form-control" placeholder="회원 실명 입력" maxlength="50" required>
+                </div>
+                <div class="form-group">
+                    <label for="memberPassword">비밀번호</label>
+                    <input type="password" id="memberPassword" class="form-control" placeholder="최소 6자리 입력" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> GCP WAS에 등록 전송
+                </button>
+            </form>
+
+            <h2 class="card-title" style="margin-top: 40px;"><i class="fa-solid fa-gauge-high"></i> 로드밸런싱 검증 툴</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">총 API 요청 횟수</div>
+                    <div id="statTotal" class="stat-val">0</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">연결 상태</div>
+                    <div id="statStatus" class="stat-val" style="color: #34a853;">READY</div>
+                </div>
+            </div>
+            <button onclick="triggerLoadBalancingTest()" class="btn btn-secondary" style="width: 100%;">
+                <i class="fa-solid fa-bolt"></i> 5회 고속 API 호출 (분산 검증)
+            </button>
+            <div id="consoleLogs" class="monitor-panel">
+                <div class="log-entry info">[INFO] 모니터링 콘솔이 활성화되었습니다. API를 찔러 로드밸런싱을 관찰해 보세요.</div>
+            </div>
+        </div>
+
+        <!-- Right: List Card -->
+        <div class="card">
+            <h2 class="card-title" style="justify-content: space-between;">
+                <span><i class="fa-solid fa-users"></i> 회원 명부 (GCP H2 Memory DB)</span>
+                <button onclick="loadMembers()" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                    <i class="fa-solid fa-arrows-rotate"></i> 새로고침
+                </button>
+            </h2>
+
+            <div class="concept-box" style="background: rgba(24bbc4, 0.05); border-left: 3px solid var(--warning); padding: 12px; font-size: 0.8rem; line-height: 1.6; color: #fbbf24; margin-bottom: 20px; border-radius: 4px;">
+                <strong>💡 이중화 데이터 불일치 테스트 팁</strong><br>
+                새로고침을 여러 번 누를 때 응답을 주는 WAS 서버 노드(Zone A 또는 C)가 교대로 바뀌기 때문에, **회원 목록이 보였다가 안 보였다가(데이터가 매칭되지 않는) 현상**이 발견될 것입니다. 
+                이것은 WAS들이 메모리 DB를 각각 별도로 갖고 있기 때문이며, Nginx의 로드밸런싱이 멀티 영역에 걸쳐 물리적으로 완벽하게 분산되고 있음을 뜻하는 증거입니다!
+            </div>
+
+            <div class="table-container">
+                <table id="memberTable">
+                    <thead>
+                        <tr>
+                            <th>로그인 ID</th>
+                            <th>이름</th>
+                            <th style="text-align: right;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberList">
+                        <!-- Dynamic content loaded here -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state">
+                    <i class="fa-solid fa-database"></i>
+                    <p>현재 조회된 회원이 없습니다.<br>목록 새로고침을 누르거나 회원 가입을 진행하세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h2 class="modal-header"><i class="fa-solid fa-user-pen"></i> 회원 정보 수정</h2>
+        <form id="editForm" onsubmit="event.preventDefault(); handleUpdateSubmit();">
+            <input type="hidden" id="editOriginalId">
+            <div class="form-group">
+                <label for="editMemberId">회원 ID (수정 불가)</label>
+                <input type="text" id="editMemberId" class="form-control" disabled>
+            </div>
+            <div class="form-group">
+                <label for="editMemberName">이름 (Name)</label>
+                <input type="text" id="editMemberName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="editMemberPassword">비밀번호 확인/수정</label>
+                <input type="password" id="editMemberPassword" class="form-control" placeholder="수정 시 비밀번호 입력 필수" minlength="6" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">취소</button>
+                <button type="submit" class="btn btn-primary">수정사항 저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Config: API Base URL
+    // Nginx가 프록시해주기 때문에 동일 도메인의 '/api' 상대 경로를 사용해야 CORS 에러가 없습니다.
+    const API_BASE = '/api/members';
+    const HELLO_API = '/api/hello';
+    let requestCount = 0;
+
+    function addConsoleLog(message, type = 'info') {
+        const consoleEl = document.getElementById('consoleLogs');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        const time = new Date().toLocaleTimeString();
+        entry.innerHTML = `[${time}] ${message}`;
+        consoleEl.appendChild(entry);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    // CREATE: Member
+    async function handleCreate() {
+        const id = document.getElementById('memberId').value;
+        const name = document.getElementById('memberName').value;
+        const password = document.getElementById('memberPassword').value;
+
+        addConsoleLog(`회원가입 요청 시도: ID=${id}, Name=${name}`, 'info');
+        requestCount++;
+        document.getElementById('statTotal').innerText = requestCount;
+
+        try {
+            const response = await fetch(API_BASE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, password, name })
+            });
+
+            if (response.status === 201) {
+                const data = await response.json();
+                addConsoleLog(`회원 등록 성공: ${data.name} (${data.id})`, 'success');
+                document.getElementById('createForm').reset();
+                loadMembers();
+            } else {
+                const errMsg = await response.text();
+                addConsoleLog(`등록 실패: ${errMsg || response.statusText}`, 'error');
+                alert(`등록 실패: ${errMsg}`);
+            }
+        } catch (error) {
+            addConsoleLog(`네트워크 에러: ${error.message}`, 'error');
+            alert(`API 서버 통신에 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // READ: Load Member List
+    async function loadMembers() {
+        addConsoleLog('회원 명부 조회 요청 (GET /api/members)', 'info');
+        requestCount++;
+        document.getElementById('statTotal').innerText = requestCount;
+
+        try {
+            const response = await fetch(API_BASE);
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const members = await response.json();
+            const tbody = document.getElementById('memberList');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('memberTable');
+
+            tbody.innerHTML = '';
+            
+            if (members.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                addConsoleLog('회원 명부가 비어 있습니다. (H2 DB 상태 확인)', 'warning');
+            } else {
+                emptyState.style.display = 'none';
+                table.style.display = 'table';
+                
+                members.forEach(member => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: 600; color: #60a5fa;">${member.id}</td>
+                        <td>${member.name}</td>
+                        <td style="text-align: right;">
+                            <div class="actions" style="justify-content: flex-end;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="openEditModal('${member.id}', '${member.name}')">
+                                    <i class="fa-solid fa-user-pen"></i> 수정
+                                </button>
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="handleDelete('${member.id}')">
+                                    <i class="fa-solid fa-trash-can"></i> 삭제
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                addConsoleLog(`총 ${members.length}명의 회원 리스트 조회 완료`, 'success');
+            }
+            document.getElementById('statStatus').innerText = 'CONNECTED';
+            document.getElementById('statStatus').style.color = '#34a853';
+        } catch (error) {
+            addConsoleLog(`명부 로드 중 에러: ${error.message}`, 'error');
+            document.getElementById('statStatus').innerText = 'ERR_CONN';
+            document.getElementById('statStatus').style.color = '#d93025';
+        }
+    }
+
+    // UPDATE: Open Modal & Submit
+    function openEditModal(id, name) {
+        document.getElementById('editOriginalId').value = id;
+        document.getElementById('editMemberId').value = id;
+        document.getElementById('editMemberName').value = name;
+        document.getElementById('editMemberPassword').value = '';
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    async function handleUpdateSubmit() {
+        const id = document.getElementById('editOriginalId').value;
+        const name = document.getElementById('editMemberName').value;
+        const password = document.getElementById('editMemberPassword').value;
+
+        addConsoleLog(`회원 수정 요청 시도: ID=${id}`, 'info');
+        requestCount++;
+        document.getElementById('statTotal').innerText = requestCount;
+
+        try {
+            const response = await fetch(`${API_BASE}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, password, name })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                addConsoleLog(`회원 수정 성공: ${data.name} (${data.id})`, 'success');
+                closeEditModal();
+                loadMembers();
+            } else {
+                const errMsg = await response.text();
+                addConsoleLog(`수정 실패: ${errMsg || response.statusText}`, 'error');
+                alert(`수정 실패: ${errMsg}`);
+            }
+        } catch (error) {
+            addConsoleLog(`수정 네트워크 에러: ${error.message}`, 'error');
+        }
+    }
+
+    // DELETE: Member
+    async function handleDelete(id) {
+        if (!confirm(`아이디 [${id}] 회원을 정말로 삭제하시겠습니까?`)) return;
+
+        addConsoleLog(`회원 삭제 요청 시도: ID=${id}`, 'info');
+        requestCount++;
+        document.getElementById('statTotal').innerText = requestCount;
+
+        try {
+            const response = await fetch(`${API_BASE}/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.status === 204) {
+                addConsoleLog(`회원 삭제 완료: ID=${id}`, 'success');
+                loadMembers();
+            } else {
+                const errMsg = await response.text();
+                addConsoleLog(`삭제 실패: ${errMsg}`, 'error');
+                alert(`삭제 실패: ${errMsg}`);
+            }
+        } catch (error) {
+            addConsoleLog(`삭제 네트워크 에러: ${error.message}`, 'error');
+        }
+    }
+
+    // LOAD BALANCING TEST: Trigger 5 concurrent requests
+    async function triggerLoadBalancingTest() {
+        addConsoleLog('🚀 로드밸런싱 실시간 검증 시작 (연속 5회 GET /api/hello)', 'warning');
+        
+        for(let i = 1; i <= 5; i++) {
+            setTimeout(async () => {
+                requestCount++;
+                document.getElementById('statTotal').innerText = requestCount;
+                try {
+                    const start = performance.now();
+                    const response = await fetch(HELLO_API);
+                    const duration = (performance.now() - start).toFixed(0);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // 스프링부트 hello 응답에서 메시지를 파싱하여 콘솔에 띄움
+                        addConsoleLog(`[호출 ${i}] 응답 수신 (${duration}ms): <span style="color:#a78bfa;">${data.message}</span>`, 'success');
+                    } else {
+                        addConsoleLog(`[호출 ${i}] 서버 오류 (${response.status})`, 'error');
+                    }
+                } catch (error) {
+                    addConsoleLog(`[호출 ${i}] 연결 실패: ${error.message}`, 'error');
+                }
+            }, i * 250); // 250ms 간격으로 호출
+        }
+    }
+
+    // Initial Load
+    window.onload = function() {
+        loadMembers();
+    };
+</script>
+</body>
+</html>

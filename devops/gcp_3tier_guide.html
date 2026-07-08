@@ -144,6 +144,8 @@
             overflow-x: auto;
             color: #e8eaed;
             line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
         
         .code-label {
@@ -346,10 +348,138 @@
                 <div class="phase-title">실무형 망 분리 (VPC & Subnet)</div>
             </div>
             
+            <!-- Phase 1 미니 다이어그램 -->
+            <div class="diagram-box" style="padding: 16px; margin-bottom: 24px; background: #fafafa; border: 1px dashed #dadce0;">
+                <h4 style="font-size: 13px; color: #5f6368; margin-bottom: 12px; text-align: center;">🏗️ Phase 1 진행 상황: 격리된 VPC 망 및 서브넷 구축</h4>
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                    <defs>
+                        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                        <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                    </defs>
+
+                    <!-- GCP Region (us-central1) -->
+                    <rect x="180" y="20" width="800" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                    <text x="190" y="40" font-size="14" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa) - 무료 티어 지역</text>
+
+                    <!-- VPC -->
+                    <rect x="220" y="60" width="740" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                    <text x="230" y="80" font-size="14" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                    <!-- Dev -->
+                    <g transform="translate(30, 100)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Dev</text>
+                    </g>
+
+                    <!-- Bastion / IAP -->
+                    <rect x="260" y="130" width="100" height="100" fill="#fff" stroke="#f29900" stroke-width="2"/>
+                    <text x="310" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">IAP 터널링</text>
+                    <text x="310" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(무료 Bastion)</text>
+                    <path d="M 80 130 L 250 150" stroke="#b06000" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)" />
+                    <text x="160" y="125" font-size="10" font-weight="700" fill="#b06000" text-anchor="middle">TCP 22 (IAP 보안접속)</text>
+
+                    <!-- 비활성화된 향후 구성 자원들 (물리 영역 분할 전 단계) -->
+                    <g opacity="0.15">
+                        <!-- 가용 영역 분할 -->
+                        <rect x="240" y="100" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                        <text x="250" y="120" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                        <rect x="240" y="290" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                        <text x="250" y="310" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+                        <!-- Users & External -->
+                        <g transform="translate(30, 200)">
+                            <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                            <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                            <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Users</text>
+                        </g>
+
+                        <!-- Nginx Load Balancer -->
+                        <rect x="180" y="220" width="100" height="60" rx="8" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                        <text x="230" y="245" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                        <text x="230" y="265" text-anchor="middle" font-size="10" fill="#1a73e8">외부 IP ⭕</text>
+                        <path d="M 80 235 L 180 250" stroke="#5f6368" stroke-width="2" marker-end="url(#arrow-gray)" />
+                        <text x="130" y="232" font-size="9" font-weight="700" fill="#5f6368" text-anchor="middle">TCP 80, 443</text>
+
+                        <!-- Temporary Public IP Trick -->
+                        <rect x="380" y="250" width="80" height="50" rx="4" fill="#fef7e0" stroke="#f29900" stroke-width="2"/>
+                        <text x="420" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">임시 공인 IP</text>
+                        <text x="420" y="285" text-anchor="middle" font-size="10" fill="#b06000">(NAT 꼼수 대체)</text>
+
+                        <!-- Tomcat (WAS) in Zone A -->
+                        <rect x="480" y="130" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                        <text x="560" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                        <text x="560" y="170" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.x</text>
+                        <rect x="520" y="190" width="80" height="20" rx="4" fill="#1a73e8"/>
+                        <text x="560" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                        <!-- Tomcat (WAS) in Zone C -->
+                        <rect x="480" y="320" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                        <text x="560" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                        <text x="560" y="360" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.y</text>
+                        <rect x="520" y="380" width="80" height="20" rx="4" fill="#1a73e8"/>
+                        <text x="560" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                        <!-- ALB to WAS -->
+                        <path d="M 280 250 L 480 180" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                        <path d="M 280 260 L 480 370" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                        <text x="370" y="230" font-size="9" font-weight="700" fill="#1a73e8" text-anchor="middle">TCP 8080</text>
+
+                        <!-- IAP to WAS -->
+                        <path d="M 360 180 L 480 180" stroke="#b06000" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow-gray)" />
+
+                        <!-- DB Layer -->
+                        <rect x="740" y="130" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="820" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                        <path d="M 800 190 Q 820 180 840 190 L 840 210 Q 820 220 800 210 Z" fill="#d93025"/>
+                        <text x="820" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                        <rect x="740" y="320" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="820" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                        <path d="M 800 380 Q 820 370 840 380 L 840 400 Q 820 410 800 400 Z" fill="#d93025"/>
+                        <text x="820" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                        <!-- WAS to DB -->
+                        <path d="M 640 180 L 740 180" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                        <path d="M 640 370 L 740 370" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                    </g>
+                </svg>
+            </div>
+
             <div class="concept-box">
                 <strong>🎯 이 단계의 목표</strong>
-                모든 인프라의 기반이 되는 격리된 네트워크 망(Custom VPC)을 구축합니다. Nginx용 망과 백엔드(Spring Boot)용 망을 논리적으로 분리합니다.
+                모든 인프라의 기반이 되는 격리된 네트워크 망(Custom VPC)을 구축한다. Nginx용 망과 백엔드(Spring Boot)용 망을 논리적으로 분리한다.
+                <br><br>
+                <strong>🌐 VPC (Virtual Private Cloud) 란?</strong><br>
+                클라우드상에 구축하는 <strong>나만의 격리된 가상 네트워크 공간</strong>이다. 
+                가상 서버(VM)들이 공용 인터넷에 무방비하게 노출되지 않도록 사설 IP 대역을 직접 정의한다. 외부 침입을 1차적으로 차단하는 가장 기본적인 <strong>보안 성벽</strong> 역할을 한다.
+                <br><br>
+                <strong>🕸️ 서브넷 (Subnet) 이란?</strong><br>
+                VPC라는 큰 성벽 내부를 여러 개의 구역(하위 네트워크)으로 다시 쪼갠 것이다.
+                <ul>
+                    <li><strong>왜 쪼개서 사용하나?</strong>: 성문 입구(Public Subnet, 웹서버 망)와 가장 안전한 안방(Private Subnet, WAS/DB 망)을 구분하기 위함이다. 외부 침입자가 우연히 성문(Nginx)을 뚫고 들어오더라도, 중요 데이터나 비즈니스 로직(WAS) 서버가 있는 안방까지 다이렉트로 침투할 수 없게 차단벽을 치는 <strong>망 분리(Network Segmentation)</strong>의 핵심 수단이다.</li>
+                </ul>
             </div>
+
+            <div class="important" style="background: #e8f0fe; border-left-color: #1a73e8; color: #1a73e8;">
+                <strong>💡 GCP 콘솔 메뉴 찾기 팁</strong><br>
+                GCP 콘솔 왼쪽 상단의 <strong>탐색 메뉴(☰ 삼선 아이콘)</strong>를 누르고 스크롤을 내려 <strong>'네트워크'</strong> 섹션의 <strong>'VPC 네트워크'</strong>를 선택하거나, 콘솔 상단 <strong>검색창에 'VPC 네트워크'를 검색</strong>하면 빠르게 이동할 수 있습니다.
+            </div>
+
+            <h3>Step 1-0: GCP 프로젝트 생성 및 선택</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>GCP 리소스의 기본 단위 '프로젝트'</strong><br>
+                    GCP의 모든 리소스(VPC, VM 등)는 반드시 하나의 프로젝트 내부에서 생성됩니다. 실습 중 다른 리소스와 섞이는 것을 방지하고 나중에 한 번에 삭제하기 쉽도록, 전용 실습 프로젝트를 만드는 것이 좋습니다.
+                </li>
+                <li>
+                    <strong>프로젝트 준비 단계</strong><br>
+                    - GCP 콘솔 상단 왼쪽 로고 옆의 <strong>프로젝트 선택 드롭다운</strong>을 클릭합니다.<br>
+                    - <strong>새 프로젝트(New Project)</strong>를 클릭하고 프로젝트 이름(예: <code>free-3tier-demo</code>)을 입력한 뒤 생성합니다.<br>
+                    - 생성 완료 알림이 뜨면 상단 드롭다운에서 방금 만든 프로젝트가 <strong>활성화(선택)된 상태인지 반드시 확인</strong>하세요.
+                </li>
+            </ul>
             
             <h3>Step 1-1: Custom VPC 생성</h3>
             <ul class="step-list">
@@ -362,6 +492,23 @@
                 <li>
                     <strong>계층별 서브넷(Subnet) 구성</strong><br>
                     보안을 위해 역할을 분리하여 2개의 서브넷을 생성합니다. (리전은 모두 무료 티어인 <strong>us-central1</strong> 사용)
+                    
+                    <div style="background: #f1f3f4; border-left: 3px solid #5f6368; padding: 12px 14px; margin: 14px 0; font-size: 13px; border-radius: 4px; line-height: 1.6; color: #3c4043;">
+                        <strong>💡 IP 범위(CIDR) 표기법 쉽게 읽기</strong><br>
+                        GCP에서 네트워크 대역을 설정할 때 사용하는 <code>/16</code>, <code>/24</code> 등의 단위를 CIDR(사이더)라고 한다. IP 주소 뒤에 고정할 비트 수를 지정하는 방식이다.<br>
+                        - <strong>/16 (VPC 전체)</strong>: <code>10.250.0.0/16</code>은 <code>10.250.0.0</code> ~ <code>10.250.255.255</code> (약 6만 5천 개 IP) 범위를 의미한다.<br>
+                        - <strong>/24 (서브넷 단위)</strong>: <code>10.250.1.0/24</code>는 <code>10.250.1.0</code> ~ <code>10.250.1.255</code> (총 256개 IP) 범위를 의미한다.<br>
+                        - <strong>/32 (단일 IP 장비)</strong>: 특정 PC나 서버 1대의 고유 IP만 지정할 때 사용한다.<br>
+                        - <strong>0.0.0.0/0 (인터넷 전체)</strong>: 고정 비트가 없으므로 전 세계 모든 IP 주소를 뜻한다. (공개 서비스용)
+                    </div>
+
+                    <div style="background: #e8f0fe; border-left: 3px solid #1a73e8; padding: 12px 14px; margin: 14px 0; font-size: 13px; border-radius: 4px; line-height: 1.6; color: #1c3d5a;">
+                        <strong>💡 리전(Region)과 영역(Zone) 쉽게 이해하기</strong><br>
+                        - <strong>리전 (Region)</strong>: 데이터 센터들이 위치한 지리적인 <strong>도시</strong> 단위다. 예: <code>us-central1</code> (미국 아이오와)<br>
+                        - <strong>영역 (Zone)</strong>: 하나의 리전 내부에서 전력과 네트워크가 완전히 독립된 개별 <strong>데이터 센터 건물</strong>이다. 예: <code>us-central1-a</code>, <code>us-central1-c</code><br>
+                        - <strong>이중화 배포의 목적</strong>: 지진이나 정전 등으로 특정 건물(Zone A)이 통째로 중단되더라도, 다른 건물(Zone C)에 살아있는 서버가 즉시 트래픽을 넘겨받아 서비스 무중단(고가용성)을 달성하기 위함이다.
+                    </div>
+                    
                     <table>
                         <tr>
                             <th>서브넷 이름</th>
@@ -369,34 +516,77 @@
                             <th>용도 (티어)</th>
                         </tr>
                         <tr>
-                            <td><code>free-snet-web</code></td>
+                            <td><code>free-snet-public-web</code></td>
                             <td>10.250.1.0/24</td>
                             <td>Nginx LB (Frontend)</td>
                         </tr>
                         <tr>
-                            <td><code>free-snet-was</code></td>
+                            <td><code>free-snet-private-was</code></td>
                             <td>10.250.2.0/24</td>
                             <td>Spring Boot (Backend)</td>
                         </tr>
                     </table>
                 </li>
+                
+                <li>
+                    <strong>VPC 생성 완료</strong><br>
+                    서브넷 2개를 모두 추가했다면, 화면 맨 아래로 스크롤하여 <strong>[만들기(Create)]</strong> 버튼을 클릭합니다. 
+                    네트워크가 최종 생성되어 GCP 콘솔에 반영되어야만 이후 단계(방화벽 생성 등)에서 우리가 정의한 VPC(<code>free-prd-vpc</code>)를 선택할 수 있게 됩니다.
+                </li>
             </ul>
 
             <h3>Step 1-2: IAP 및 기본 방화벽 설정</h3>
+            <div class="concept-box" style="background: #e8f0fe; border-left-color: #1a73e8; font-size: 13.5px; line-height: 1.8;">
+                <strong>🔐 IAP (Identity-Aware Proxy) 란?</strong><br>
+                외부 공인 IP가 전혀 없는 사설망 내부의 VM에 구글 로그인을 통해 안전하게 원격 접속할 수 있게 해주는 구글의 완전 관리형 보안 프록시 서비스다.
+                <br><br>
+                <strong>💡 왜 사용하나? (개발자의 딜레마와 해결책)</strong><br>
+                사설망 내부에 있는 <code>free-snet-private-was</code>에 외부에서 접근하려면 원래 외부망인 <code>free-snet-public-web</code>을 거쳐야 한다. 일반 웹 사용자에게는 이것이 정상적인 흐름이지만, 앱을 배포하고 서버를 관리해야 하는 개발자에게는 적당한 구조가 아니다. 원격 제어(SSH 등)를 해야 하는데 일반 사용자가 지나다니는 웹 서버에 관리용 통로를 열어두는 것은 보안상 매우 위험하기 때문이다.
+                <br><br>
+                이 문제를 해결하기 위해 기존(예: AWS 등)에는 <strong>Bastion Host</strong>라고 하는 우회용 가상 서버를 공인 IP 대역에 띄워두고 우회 접속해서 사용해 왔다. 하지만 이는 추가적인 서버 관리 비용이 들고, 해킹 공격을 당할 수 있는 관문이 하나 더 생긴다는 단점이 있다.
+                <br><br>
+                반면, GCP의 IAP를 이용하면 이러한 <strong>우회용 서버(Bastion Host) 없이</strong> 구글 계정 인증 및 권한 확인만 거쳐 안전하게 사설 VM으로 바로 터널링 접속이 가능하다.
+            </div>
             <ul class="step-list">
                 <li>
-                    <strong>IAP 방화벽 오픈 (중요)</strong><br>
-                    나중에 생성할 외부 IP가 없는 Private WAS에 안전하게 접속하기 위해 필수입니다.
+                    <strong>필수 방화벽 규칙 생성 (총 3회 반복하여 개별 생성)</strong><br>
                     <div class="menu-path">VPC 네트워크 → 방화벽 → 방화벽 규칙 만들기</div>
-                    - 이름: `allow-iap-ssh`<br>
-                    - 네트워크: `free-prd-vpc`<br>
-                    - 소스 IPv4 범위: <strong>35.235.240.0/20</strong> (구글 IAP 대역)<br>
-                    - 프로토콜/포트: TCP 22
-                </li>
-                <li>
-                    <strong>내부 망 통신 및 HTTP 허용</strong><br>
-                    - 규칙 1 (`allow-http`): 소스 `0.0.0.0/0`, TCP 80, 443 (웹 서버용)<br>
-                    - 규칙 2 (`allow-internal-vpc`): 소스 `10.250.0.0/16`, TCP 8080 (내부 로드밸런싱 통신용)
+                    이 가이드의 실습 환경을 위해 <strong>총 3개의 독립적인 방화벽 규칙을 각각 따로 클릭하여 생성</strong>해야 합니다. 아래 표에 나열된 순서대로 각각 폼을 채운 뒤 <strong>[만들기]</strong>를 눌러 완료해 주세요.
+                    
+                    <table style="margin-top: 16px; width: 100%;">
+                        <tr>
+                            <th>방화벽 규칙 이름</th>
+                            <th>네트워크</th>
+                            <th>대상 (Targets)</th>
+                            <th>소스 IPv4 범위</th>
+                            <th>허용할 프로토콜/포트</th>
+                            <th>목적 (설명)</th>
+                        </tr>
+                        <tr>
+                            <td><code>allow-iap-private-ssh</code></td>
+                            <td><code>free-prd-vpc</code></td>
+                            <td><strong>네트워크의 모든 인스턴스</strong></td>
+                            <td><strong>35.235.240.0/20</strong><br>(구글 IAP 터널링 대역)</td>
+                            <td>TCP: <code>22</code></td>
+                            <td>외부 IP가 없는 사설 WAS 서버에 개발자가 웹 콘솔을 통해 안전하게 SSH 원격 접속하기 위함 (보안 우회 통로)</td>
+                        </tr>
+                        <tr>
+                            <td><code>allow-http</code></td>
+                            <td><code>free-prd-vpc</code></td>
+                            <td><strong>네트워크의 모든 인스턴스</strong></td>
+                            <td><strong>0.0.0.0/0</strong><br>(인터넷 전체 오픈)</td>
+                            <td>TCP: <code>80</code>, <code>443</code></td>
+                            <td>일반 웹 사용자들이 Nginx 웹 서버(포트 80, 443)에 브라우저로 접근할 수 있게 개방 (공개용 대문)</td>
+                        </tr>
+                        <tr>
+                            <td><code>allow-internal-vpc</code></td>
+                            <td><code>free-prd-vpc</code></td>
+                            <td><strong>네트워크의 모든 인스턴스</strong></td>
+                            <td><strong>10.250.0.0/16</strong><br>(우리 VPC 내부 대역)</td>
+                            <td>TCP: <code>8080</code></td>
+                            <td>VPC 내부의 Nginx 웹 서버와 백엔드 WAS 서버끼리 내부망 통신을 허용하기 위함 (내부 통로)</td>
+                        </tr>
+                    </table>
                 </li>
             </ul>
         </div>
@@ -407,27 +597,135 @@
                 <div class="phase-number" style="background: #fbbc04;">2</div>
                 <div class="phase-title">Nginx 로드밸런서 (비싼 ALB 대체)</div>
             </div>
-            
-            <div class="concept-box" style="background: #fef7e0; border-left-color: #fbbc04;">
-                <strong>🌐 역할: 글로벌 트래픽 인입 및 라우팅</strong>
-                유료인 GCP External ALB 대신, Nginx가 설치된 VM에 공인 IP를 달아 외부 요청을 뒷단의 Private 서버들로 분산(로드밸런싱)시킵니다.
+
+            <!-- Phase 2 미니 다이어그램 -->
+            <div class="diagram-box" style="padding: 16px; margin-bottom: 24px; background: #fafafa; border: 1px dashed #dadce0;">
+                <h4 style="font-size: 13px; color: #5f6368; margin-bottom: 12px; text-align: center;">🏗️ Phase 2 진행 상황: Nginx 웹 서버 및 로드밸런서 VM 생성</h4>
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                    <defs>
+                        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                        <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                    </defs>
+
+                    <!-- GCP Region (us-central1) -->
+                    <rect x="180" y="20" width="800" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                    <text x="190" y="40" font-size="14" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa) - 무료 티어 지역</text>
+
+                    <!-- VPC -->
+                    <rect x="220" y="60" width="740" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                    <text x="230" y="80" font-size="14" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                    <!-- Zone A (Nginx VM이 배치되는 영역 활성화) -->
+                    <rect x="240" y="100" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="250" y="120" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                    <!-- Users & External -->
+                    <g transform="translate(30, 200)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Users</text>
+                    </g>
+
+                    <!-- Dev -->
+                    <g transform="translate(30, 100)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Dev</text>
+                    </g>
+
+                    <!-- Nginx Load Balancer -->
+                    <rect x="180" y="220" width="100" height="60" rx="8" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="230" y="245" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                    <text x="230" y="265" text-anchor="middle" font-size="10" fill="#1a73e8">외부 IP ⭕</text>
+                    <path d="M 80 235 L 180 250" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                    <!-- Bastion / IAP -->
+                    <rect x="260" y="130" width="100" height="100" fill="#fff" stroke="#f29900" stroke-width="2"/>
+                    <text x="310" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">IAP 터널링</text>
+                    <text x="310" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(무료 Bastion)</text>
+                    <path d="M 80 130 L 250 150" stroke="#b06000" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)" />
+
+                    <!-- 비활성화된 향후 구성 자원들 -->
+                    <g opacity="0.15">
+                        <!-- Zone C (WAS VM-C 배치 전이므로 아직 영역 활성화 X) -->
+                        <rect x="240" y="290" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                        <text x="250" y="310" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+                        <!-- Temporary Public IP Trick -->
+                        <rect x="380" y="250" width="80" height="50" rx="4" fill="#fef7e0" stroke="#f29900" stroke-width="2"/>
+                        <text x="420" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">임시 공인 IP</text>
+                        <text x="420" y="285" text-anchor="middle" font-size="10" fill="#b06000">(NAT 꼼수 대체)</text>
+
+                        <!-- Tomcat (WAS) in Zone A -->
+                        <rect x="480" y="130" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                        <text x="560" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                        <text x="560" y="170" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.x</text>
+                        <rect x="520" y="190" width="80" height="20" rx="4" fill="#1a73e8"/>
+                        <text x="560" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                        <!-- Tomcat (WAS) in Zone C -->
+                        <rect x="480" y="320" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                        <text x="560" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                        <text x="560" y="360" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.y</text>
+                        <rect x="520" y="380" width="80" height="20" rx="4" fill="#1a73e8"/>
+                        <text x="560" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                        <!-- ALB to WAS -->
+                        <path d="M 280 250 L 480 180" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                        <path d="M 280 260 L 480 370" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                        <!-- IAP to WAS -->
+                        <path d="M 360 180 L 480 180" stroke="#b06000" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow-gray)" />
+
+                        <!-- DB Layer -->
+                        <rect x="740" y="130" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="820" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                        <path d="M 800 190 Q 820 180 840 190 L 840 210 Q 820 220 800 210 Z" fill="#d93025"/>
+                        <text x="820" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                        <rect x="740" y="320" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="820" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                        <path d="M 800 380 Q 820 370 840 380 L 840 400 Q 820 410 800 400 Z" fill="#d93025"/>
+                        <text x="820" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                        <!-- WAS to DB -->
+                        <path d="M 640 180 L 740 180" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                        <path d="M 640 370 L 740 370" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                    </g>
+                </svg>
+            </div>
+
+            <div class="concept-box" style="background: #fef7e0; border-left-color: #fbbc04; font-size: 13.5px; line-height: 1.8;">
+                <strong>🌐 Nginx(엔진엑스)란 무엇인가요?</strong><br>
+                Nginx는 기본적으로 고성능 웹 서버(Web Server)로서 사용자의 최초 요청을 받아들이는 웹 계층(Presentation Tier)을 담당한다. 동시에 클라이언트의 요청을 대리하여 백엔드 서버로 중개해 주는 <strong>리버스 프록시(Reverse Proxy)</strong> 역할을 수행하는 초경량 오픈소스 소프트웨어다.
+                <br><br>
+                <strong>⚡ 막강한 내장 기능: 로드 밸런서(Load Balancer)</strong><br>
+                Nginx는 여기에 추가적으로 매우 강력한 <strong>로드 밸런서</strong> 역할을 수행할 수 있는 기능을 내장하고 있다. 
+                원래 실무에서는 트래픽 분산을 위해 클라우드 서비스사에서 제공하는 고가의 L7 로드 밸런서(GCP HTTP(S) Load Balancing 등)를 사용해야 한다. 하지만 무료 실습 환경 구성을 위해, 무료 VM 위에 Nginx를 직접 설치하여 L7 로드 밸런서(부하 분산기) 역할을 하도록 우회 구현한다.
+                <br><br>
+                결과적으로 Nginx는 추후 Vue.js 같은 프론트엔드 정적 파일 서빙(웹 서버)과 백엔드 WAS(Spring Boot)로 요청을 균등하게 토스해 주는 부하 분산(리버스 프록시) 역할을 한 몸으로 동시에 깔끔하게 처리해 준다.
             </div>
             
             <h3>Step 2-1: Nginx 인스턴스 배포</h3>
             <ul class="step-list">
                 <li>
                     <div class="menu-path">Compute Engine → 인스턴스 → 만들기</div>
-                    - 이름: `nginx-lb-vm`<br>
-                    - 리전/영역: `us-central1` / `us-central1-a`<br>
-                    - 머신 유형: `e2-micro`<br>
-                    - 네트워크: `free-prd-vpc` / 서브넷: `free-snet-web`<br>
-                    - <strong>외부 IPv4 주소: 임시 또는 고정</strong> (외부에서 접근해야 하므로 필수)
+                    - 이름: <code>nginx-lb-vm</code><br>
+                    - 리전/영역: <code>us-central1</code> / <code>us-central1-a</code><br>
+                    - 머신 유형: <code>e2-micro</code><br>
+                    <br>
+                    <strong>⚙️ 네트워크 설정 (화면 아래로 스크롤)</strong><br>
+                    화면을 아래로 많이 스크롤하여 <strong>[네트워킹, 디스크, 보안, 관리, 단독 테넌시]</strong>(또는 고급 옵션) 아코디언 메뉴를 찾아 클릭한다.<br>
+                    - <strong>[네트워킹] 탭</strong> 클릭 → <strong>[네트워크 인터페이스]</strong> 기본 설정 항목의 연필(수정) 아이콘 클릭<br>
+                    - 네트워크: <code>free-prd-vpc</code><br>
+                    - 서브넷: <code>free-snet-public-web</code><br>
+                    - 외부 IPv4 주소: <strong>임시(Ephemeral) 또는 고정 IP</strong> 선택 (외부 접근을 위해 필수)
                 </li>
                 <li>
                     VM 접속 후 Nginx 설치:
                     <div class="code-block">
-$ sudo apt-get update
-$ sudo apt-get install -y nginx
+sudo apt-get update
+sudo apt-get install -y nginx
                     </div>
                 </li>
                 <li>Nginx 설정은 뒷단 WAS 서버들의 IP를 확보한 뒤, Step 3 이후에 구성합니다.</li>
@@ -440,7 +738,105 @@ $ sudo apt-get install -y nginx
                 <div class="phase-number" style="background: #34a853;">3</div>
                 <div class="phase-title">백엔드 계층 (Spring Boot Multi-AZ)</div>
             </div>
-            
+
+            <!-- Phase 3 미니 다이어그램 -->
+            <div class="diagram-box" style="padding: 16px; margin-bottom: 24px; background: #fafafa; border: 1px dashed #dadce0;">
+                <h4 style="font-size: 13px; color: #5f6368; margin-bottom: 12px; text-align: center;">🏗️ Phase 3 진행 상황: Private WAS VM 구축 및 임시 인터넷 연결 세팅</h4>
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                    <defs>
+                        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                        <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                    </defs>
+
+                    <!-- GCP Region (us-central1) -->
+                    <rect x="180" y="20" width="800" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                    <text x="190" y="40" font-size="14" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa) - 무료 티어 지역</text>
+
+                    <!-- VPC -->
+                    <rect x="220" y="60" width="740" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                    <text x="230" y="80" font-size="14" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                    <!-- Zone A -->
+                    <rect x="240" y="100" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="250" y="120" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                    <!-- Zone C -->
+                    <rect x="240" y="290" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="250" y="310" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+
+                    <!-- Users & External -->
+                    <g transform="translate(30, 200)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Users</text>
+                    </g>
+
+                    <!-- Dev -->
+                    <g transform="translate(30, 100)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Dev</text>
+                    </g>
+
+                    <!-- Nginx Load Balancer -->
+                    <rect x="180" y="220" width="100" height="60" rx="8" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="230" y="245" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                    <text x="230" y="265" text-anchor="middle" font-size="10" fill="#1a73e8">외부 IP ⭕</text>
+                    <path d="M 80 235 L 180 250" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                    <!-- Bastion / IAP -->
+                    <rect x="260" y="130" width="100" height="100" fill="#fff" stroke="#f29900" stroke-width="2"/>
+                    <text x="310" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">IAP 터널링</text>
+                    <text x="310" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(무료 Bastion)</text>
+                    <path d="M 80 130 L 250 150" stroke="#b06000" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)" />
+
+                    <!-- Temporary Public IP Trick -->
+                    <rect x="380" y="250" width="80" height="50" rx="4" fill="#fef7e0" stroke="#f29900" stroke-width="2"/>
+                    <text x="420" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">임시 공인 IP</text>
+                    <text x="420" y="285" text-anchor="middle" font-size="10" fill="#b06000">(NAT 꼼수 대체)</text>
+
+                    <!-- Tomcat (WAS) in Zone A -->
+                    <rect x="480" y="130" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="560" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                    <text x="560" y="170" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.x</text>
+                    <rect x="520" y="190" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="560" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- Tomcat (WAS) in Zone C -->
+                    <rect x="480" y="320" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="560" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                    <text x="560" y="360" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.y</text>
+                    <rect x="520" y="380" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="560" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- IAP to WAS (터널링 연결 활성화) -->
+                    <path d="M 360 180 L 480 180" stroke="#b06000" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow-gray)" />
+
+                    <!-- DB Layer -->
+                    <rect x="740" y="130" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="820" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                    <path d="M 800 190 Q 820 180 840 190 L 840 210 Q 820 220 800 210 Z" fill="#d93025"/>
+                    <text x="820" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                    <rect x="740" y="320" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="820" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                    <path d="M 800 380 Q 820 370 840 380 L 840 400 Q 820 410 800 400 Z" fill="#d93025"/>
+                    <text x="820" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                    <!-- WAS to DB -->
+                    <path d="M 640 180 L 740 180" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                    <path d="M 640 370 L 740 370" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+
+                    <!-- 비활성화된 향후 구성 자원들 -->
+                    <g opacity="0.15">
+                        <!-- ALB to WAS (최종 연동 화살표) -->
+                        <path d="M 280 250 L 480 180" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                        <path d="M 280 260 L 480 370" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                    </g>
+                </svg>
+            </div>
+
             <div class="concept-box" style="background: #e6f4ea; border-left-color: #34a853;">
                 <strong>⚙️ 역할: 서버 이중화 및 내장 DB(H2) 시뮬레이션</strong>
                 유료인 Cloud SQL 대신, Spring Boot 앱 안에 내장된 H2를 각각 실행합니다. A존과 C존에 분산 배치하여 고가용성 구조를 실습합니다.
@@ -450,39 +846,107 @@ $ sudo apt-get install -y nginx
             <div class="important">
                 <strong>⚠️ 외부 IP 임시 할당 꼼수</strong>: 원래 외부 IP가 없는 VM이 인터넷(apt-get 등)을 쓰려면 유료인 Cloud NAT가 필요합니다. 무료로 하려면 VM 생성 시 <strong>임시 외부 IP를 부여</strong>하고, 세팅 완료 후 외부 IP를 떼어내는 방식을 사용하세요.
             </div>
+            <div style="background: #e8f0fe; padding: 12px; border-radius: 4px; font-size: 13px; line-height: 1.6; border-left: 4px solid #1a73e8; margin-bottom: 16px; color: #1a73e8;">
+                <strong>⚙️ 공통 네트워크 설정 방법 (2대 동일)</strong><br>
+                인스턴스 만들기 화면 하단으로 내려 <strong>[네트워킹]</strong> 탭 ➡️ <strong>[네트워크 인터페이스]</strong> 기본 설정 항목의 연필(수정) 아이콘을 클릭한 뒤 아래 표의 값을 지정한다.
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px;">
+                <thead>
+                    <tr style="background: #f1f3f4; border-bottom: 2px solid #dadce0;">
+                        <th style="padding: 10px; text-align: left;">인스턴스 이름</th>
+                        <th style="padding: 10px; text-align: left;">영역 (Zone)</th>
+                        <th style="padding: 10px; text-align: left;">VPC / 서브네트워크</th>
+                        <th style="padding: 10px; text-align: left;">외부 IP (External IP)</th>
+                        <th style="padding: 10px; text-align: left;">머신 유형 및 비고</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #dadce0;">
+                        <td style="padding: 10px; font-weight: 700; color: #1a73e8;">free-was-a</td>
+                        <td style="padding: 10px;">us-central1-a</td>
+                        <td style="padding: 10px; font-size: 12px;">free-prd-vpc<br><span style="color: #5f6368;">free-snet-private-was</span></td>
+                        <td style="padding: 10px; font-weight: bold; color: #b06000;">임시 (Ephemeral)</td>
+                        <td style="padding: 10px; font-size: 12px; color: #5f6368;">e2-micro (무료)<br>Spring Boot WAS 1호기<br>(설치 완료 후 외부 IP '없음'으로 제거 예정)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #dadce0;">
+                        <td style="padding: 10px; font-weight: 700; color: #1a73e8;">free-was-c</td>
+                        <td style="padding: 10px;">us-central1-c</td>
+                        <td style="padding: 10px; font-size: 12px;">free-prd-vpc<br><span style="color: #5f6368;">free-snet-private-was</span></td>
+                        <td style="padding: 10px; font-weight: bold; color: #b06000;">임시 (Ephemeral)</td>
+                        <td style="padding: 10px; font-size: 12px; color: #5f6368;">e2-micro (무료)<br>Spring Boot WAS 2호기<br>(설치 완료 후 외부 IP '없음'으로 제거 예정)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Step 3-2: 로컬 PC에서 도커 이미지 빌드 및 푸시</h3>
             <ul class="step-list">
                 <li>
-                    <strong>VM 1 (Zone A)</strong><br>
-                    - 이름: `free-was-a` (영역: `us-central1-a`)<br>
-                    - 서브넷: `free-snet-was`<br>
-                    - 외부 IP: 임시 할당 (설치 완료 후 수정에서 '없음'으로 변경할 것)
+                    <strong>Spring Boot 프로젝트 빌드</strong><br>
+                    로컬 프로젝트 루트 폴더에서 패키징(빌드) 명령을 수행하여 <code>app.jar</code> 파일을 생성한다.
                 </li>
                 <li>
-                    <strong>VM 2 (Zone C)</strong><br>
-                    - 이름: `free-was-c` (영역: `us-central1-c`)<br>
-                    - 서브넷: `free-snet-was`<br>
-                    - 외부 IP: 임시 할당
+                    <strong>Dockerfile 작성</strong><br>
+                    빌드된 jar 파일이 위치한 경로에 아래 내용의 <code>Dockerfile</code>을 작성한다.
+                    <div class="code-block">
+FROM openjdk:21-slim
+COPY app.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+                    </div>
+                </li>
+                <li>
+                    <strong>도커 이미지 빌드 및 도커 허브 업로드</strong><br>
+                    본인의 도커 허브(Docker Hub) 계정명을 지정하여 이미지를 빌드하고 업로드(Push)한다.
+                    <div class="code-block">
+docker build -t [도커허브계정명]/free-was-app:latest .
+docker login
+docker push [도커허브계정명]/free-was-app:latest
+                    </div>
                 </li>
             </ul>
 
-            <h3>Step 3-2: Java 설치 및 H2 Spring Boot 실행</h3>
+            <h3>Step 3-3: WAS VM에 Docker 설치 및 컨테이너 구동</h3>
             <ul class="step-list">
                 <li>
-                    외부 IP가 붙어있을 때 각 VM에 접속하여 Java를 설치합니다.
+                    <strong>VM에 Docker 설치</strong><br>
+                    임시 외부 IP가 붙어있는 2대의 WAS VM(<code>free-was-a</code>, <code>free-was-c</code>)에 각각 접속(SSH)하여 도커를 설치한다.
                     <div class="code-block">
-$ sudo apt-get update
-$ sudo apt-get install -y openjdk-21-jre
+sudo apt-get update
+sudo apt-get install -y docker.io
                     </div>
                 </li>
                 <li>
-                    로컬에서 컴파일한 H2 포함 `.jar` 파일을 전송합니다.
+                    <strong>도커 허브에서 이미지 Pull 및 컨테이너 구동</strong><br>
+                    도커 허브에 푸시했던 백엔드 이미지를 내려받아 8080 포트로 백그라운드 구동한다.
                     <div class="code-block">
-$ gcloud compute scp app.jar free-was-a:~/ --zone=us-central1-a
-$ gcloud compute scp app.jar free-was-c:~/ --zone=us-central1-c
+sudo docker run -d -p 8080:8080 --name spring-was [도커허브계정명]/free-was-app:latest
+                    </div>
+                </li>
+            </ul>
+
+            <h3>Step 3-4: WAS 동작 검증 및 외부 IP 제거</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>도커 실행 상태 및 로그 확인</strong><br>
+                    각 WAS VM의 SSH 터미널에서 아래 명령을 실행하여 컨테이너가 정상 구동 중인지와 Spring Boot의 실행 로그를 확인한다.
+                    <div class="code-block">
+# 1. 실행 중인 컨테이너 목록 조회 (Status가 Up 8080->8080 인지 체크)
+sudo docker ps
+
+# 2. Spring Boot 콘솔 로그 실시간 확인 (Tomcat started on port 8080 문구 확인)
+sudo docker logs -f spring-was
                     </div>
                 </li>
                 <li>
-                    전송 후 백그라운드에서 실행(`nohup java -jar app.jar &`)한 뒤, <strong>VM 수정 화면으로 가서 외부 IP를 반드시 '없음'으로 변경</strong>합니다! (보안 강화 완수)
+                    <strong>로컬 내부 API 호출 테스트 (curl)</strong><br>
+                    VM 터미널 내에서 스스로의 API 주소를 찔러 JSON 데이터가 정상 반환되는지 직접 확인한다.
+                    <div class="code-block">
+curl http://localhost:8080/api/users
+                    </div>
+                </li>
+                <li>
+                    <strong>외부 IP 제거 (사설 격리 완수)</strong><br>
+                    위 검증 과정에서 Spring Boot가 정상 기동되고 curl 호출에 성공했다면, <strong>GCP VM 수정 화면으로 이동하여 임시 외부 IP를 '없음'으로 변경</strong>함으로써 백엔드 서버를 사설망 안으로 안전하게 격리 완료한다.
                 </li>
             </ul>
         </div>
@@ -493,36 +957,339 @@ $ gcloud compute scp app.jar free-was-c:~/ --zone=us-central1-c
                 <div class="phase-number" style="background: #d93025;">4</div>
                 <div class="phase-title">로드밸런싱 연동 및 테스트</div>
             </div>
+
+            <!-- Phase 4 미니 다이어그램 -->
+            <div class="diagram-box" style="padding: 16px; margin-bottom: 24px; background: #fafafa; border: 1px dashed #dadce0;">
+                <h4 style="font-size: 13px; color: #5f6368; margin-bottom: 12px; text-align: center;">🏗️ Phase 4 진행 상황: 최종 아키텍처 연동 완료 및 서비스 오픈</h4>
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                    <defs>
+                        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                        <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                    </defs>
+
+                    <!-- GCP Region (us-central1) -->
+                    <rect x="180" y="20" width="800" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                    <text x="190" y="40" font-size="14" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa) - 무료 티어 지역</text>
+
+                    <!-- VPC -->
+                    <rect x="220" y="60" width="740" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                    <text x="230" y="80" font-size="14" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                    <!-- Zone A -->
+                    <rect x="240" y="100" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="250" y="120" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                    <!-- Zone C -->
+                    <rect x="240" y="290" width="700" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="250" y="310" font-size="12" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+
+                    <!-- Users & External -->
+                    <g transform="translate(30, 200)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Users</text>
+                    </g>
+
+                    <!-- Dev -->
+                    <g transform="translate(30, 100)">
+                        <circle cx="30" cy="30" r="15" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <circle cx="30" cy="15" r="8" fill="#e8eaed" stroke="#9aa0ae" stroke-width="2"/>
+                        <text x="30" y="65" text-anchor="middle" font-size="12" font-weight="700">Dev</text>
+                    </g>
+
+                    <!-- Nginx Load Balancer -->
+                    <rect x="180" y="220" width="100" height="60" rx="8" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="230" y="245" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                    <text x="230" y="265" text-anchor="middle" font-size="10" fill="#1a73e8">외부 IP ⭕</text>
+                    <path d="M 80 235 L 180 250" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                    <!-- Bastion / IAP -->
+                    <rect x="260" y="130" width="100" height="100" fill="#fff" stroke="#f29900" stroke-width="2"/>
+                    <text x="310" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">IAP 터널링</text>
+                    <text x="310" y="170" text-anchor="middle" font-size="10" fill="#5f6368">(무료 Bastion)</text>
+                    <path d="M 80 130 L 250 150" stroke="#b06000" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)" />
+
+                    <!-- Temporary Public IP Trick -->
+                    <rect x="380" y="250" width="80" height="50" rx="4" fill="#fef7e0" stroke="#f29900" stroke-width="2"/>
+                    <text x="420" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#b06000">임시 공인 IP</text>
+                    <text x="420" y="285" text-anchor="middle" font-size="10" fill="#b06000">(NAT 꼼수 대체)</text>
+
+                    <!-- Tomcat (WAS) in Zone A -->
+                    <rect x="480" y="130" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="560" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                    <text x="560" y="170" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.x</text>
+                    <rect x="520" y="190" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="560" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- Tomcat (WAS) in Zone C -->
+                    <rect x="480" y="320" width="160" height="100" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="560" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                    <text x="560" y="360" text-anchor="middle" font-size="10" fill="#5f6368">10.250.2.y</text>
+                    <rect x="520" y="380" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="560" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- ALB to WAS (최종 로드밸런싱 활성화) -->
+                    <path d="M 280 250 L 480 180" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+                    <path d="M 280 260 L 480 370" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrow-blue)" />
+
+                    <!-- IAP to WAS -->
+                    <path d="M 360 180 L 480 180" stroke="#b06000" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow-gray)" />
+
+                    <!-- DB Layer -->
+                    <rect x="740" y="130" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="820" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                    <path d="M 800 190 Q 820 180 840 190 L 840 210 Q 820 220 800 210 Z" fill="#d93025"/>
+                    <text x="820" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                    <rect x="740" y="320" width="160" height="100" fill="#fce8e6" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="820" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#d93025">H2 Memory DB</text>
+                    <path d="M 800 380 Q 820 370 840 380 L 840 400 Q 820 410 800 400 Z" fill="#d93025"/>
+                    <text x="820" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">H2</text>
+
+                    <!-- WAS to DB -->
+                    <path d="M 640 180 L 740 180" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                    <path d="M 640 370 L 740 370" stroke="#d93025" stroke-width="2" marker-end="url(#arrow-red)" />
+                </svg>
+            </div>
             
-            <h3>Step 4-1: Nginx 프록시 구성</h3>
+            <h3>Step 4-1: Nginx 프론트엔드 랜딩 페이지 배포</h3>
+            <div class="important" style="background: #e8f0fe; border-left-color: #1a73e8; color: #1c3d5a;">
+                <strong>💡 웹 SSH 파일 전송 팁 (먹통 방지)</strong><br>
+                index.html 파일은 크기가 크기 때문에(약 24KB) 직접 nano 창에 복사-붙여넣기를 실행하면 웹 브라우저 터미널 버퍼 한계로 창이 먹통이 되어 뻗을 수 있다. 
+                따라서 구글 콘솔의 <strong>[파일 업로드]</strong> 기능을 사용해 전송하는 것을 강력히 권장한다.
+            </div>
             <ul class="step-list">
                 <li>
-                    다시 <strong>nginx-lb-vm</strong> 에 접속하여 `/etc/nginx/sites-available/default` 파일을 수정합니다.
+                    <strong>웹 SSH 파일 업로드 진행</strong><br>
+                    구글 클라우드 콘솔의 VM SSH 브라우저 창의 우측 상단 ⚙️(톱니바퀴) 또는 도구 모음에서 <strong>[파일 업로드]</strong>를 선택하고, 로컬의 <code>index.html</code> 파일을 선택하여 업로드한다.<br>
+                    - 파일은 VM의 홈 디렉토리(<code>~/index.html</code>)에 안전하게 바로 업로드된다.
+                </li>
+                <li>
+                    <strong>Nginx 웹 기본 경로로 파일 복사</strong><br>
+                    VM 터미널 창에서 아래 명령어를 실행하여 업로드된 파일을 Nginx 서빙 경로로 덮어쓰기 복사한다.
                     <div class="code-block">
+sudo cp ~/index.html /var/www/html/index.html
+                    </div>
+                </li>
+            </ul>
+
+            <h3>Step 4-2: Nginx 역방향 프록시(Reverse Proxy) 및 로드밸런서 설정</h3>
+            <ul class="step-list">
+                <li>
+                    Nginx 기본 설정 파일(<code>/etc/nginx/sites-available/default</code>)을 열어 백엔드 WAS 이중화 및 API 프록시 경로 설정을 완료한다.
+                    <div class="code-block">
+sudo nano /etc/nginx/sites-available/default
+                    </div>
+                </li>
+                <li>
+                    기존 내용을 모두 지우고 아래와 같이 새 설정을 입력한 뒤 저장한다.
+                    <div class="code-block">
+# 1. 뒷단의 사설망 WAS VM 2대를 로드밸런싱 그룹으로 묶음
 upstream backend_was {
-    server 10.250.2.x:8080;  # free-was-a의 실제 내부 IP 입력
-    server 10.250.2.y:8080;  # free-was-c의 실제 내부 IP 입력
+    server 10.250.2.x:8080;  # free-was-a의 실제 내부(사설) IP 입력
+    server 10.250.2.y:8080;  # free-was-c의 실제 내부(사설) IP 입력
 }
 
 server {
-    listen 80;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # Nginx가 서빙할 프론트엔드 정적 파일(대시보드 index.html) 경로
+    root /var/www/html;
+    index index.html index.htm;
+
+    server_name _;
+
+    # 루트(/) 접속 시 대시보드 서빙
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # /api/로 들어오는 모든 요청은 뒷단의 WAS 로드밸런싱 그룹으로 안전하게 포워딩 (리버스 프록시)
     location /api/ {
         proxy_pass http://backend_was;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
                     </div>
                 </li>
-                <li>Nginx를 재시작합니다. (`sudo systemctl restart nginx`)</li>
-            </ul>
-
-            <h3>Step 4-2: 최종 검증</h3>
-            <ul class="step-list">
                 <li>
-                    <strong>데이터 격리 확인</strong><br>
-                    브라우저나 curl로 Nginx의 외부 IP(`http://[NGINX_외부_IP]/api/users`)를 여러 번 호출해보세요. <br>
-                    H2 데이터베이스는 각 VM 메모리에 독립적으로 존재하므로, 로드밸런싱으로 인해 요청이 A존과 C존을 번갈아 타면서 반환되는 데이터가 다를 것입니다. 이것이 우리가 의도한 "가짜 이중화" 시뮬레이션의 핵심입니다!
+                    Nginx 설정을 검증하고 서비스를 재시작하여 반영한다.
+                    <div class="code-block">
+sudo nginx -t  # 설정 구문 에러 검증 (successful 문구 확인)
+sudo systemctl restart nginx
+                    </div>
                 </li>
             </ul>
+
+            <h3>Step 4-3: 최종 아키텍처 동작 및 분산 검증 (가장 중요)</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>대시보드 접속 및 웹 CRUD 테스트</strong><br>
+                    웹 브라우저를 열어 Nginx 웹 서버의 외부 공인 IP 주소(<code>http://[NGINX_외부_IP]</code>)로 접속한다.<br>
+                    - 화면 왼쪽 폼에 회원 로그인 ID, 이름, 비밀번호를 입력하고 <strong>[GCP WAS에 등록 전송]</strong> 버튼을 누른다.<br>
+                    - 회원 등록이 정상 성공하며 콘솔 로그 패널에 성공 초록색 로그가 표시되는지 확인한다.
+                </li>
+                <li>
+                    <strong>이중화 데이터 분리 직접 눈으로 목격하기 (꿀잼 포인트)</strong><br>
+                    우측 회원 명부의 <strong>[새로고침]</strong> 버튼을 2~3초 간격으로 연속해서 클릭해 본다.<br>
+                    - 로드밸런서(Nginx)가 요청을 Zone A와 Zone C의 WAS 서버로 교대로 분산 포워딩한다.<br>
+                    - 이때, 각각의 WAS는 메모리(H2 DB)가 독립되어 있어 **회원 명부에 데이터가 보였다가 안 보였다가(데이터 불일치)** 하는 현상이 교대로 나타나야 정상이다. (VPC 격리 및 물리 분산이 완벽하다는 최고의 반증!)
+                </li>
+                <li>
+                    <strong>실시간 로드밸런싱 분산 시뮬레이션</strong><br>
+                    왼쪽 하단의 <strong>[5회 고속 API 호출]</strong> 버튼을 클릭한다.<br>
+                    - Nginx를 통해 5개의 API 트래픽이 연속해서 흘러가면서, <code>spring-was</code> 노드 A와 C가 번갈아가며 응답을 처리하고 그 분산 결과가 로그창에 실시간으로 기록되는 모습을 확인한다.
+                </li>
+            </ul>
+            
+        <!-- Phase 5: [심화] 시놀로지 NAS / 외부 MySQL 연동 -->
+        <div class="phase" style="border-left-color: #9334e6;">
+            <div class="phase-header">
+                <div class="phase-number" style="background: #9334e6;">5</div>
+                <div class="phase-title">[심화] 외부 DB(시놀로지 NAS MySQL) 연동 및 진짜 이중화</div>
+            </div>
+
+            <!-- Phase 5 미니 다이어그램 -->
+            <div class="diagram-box" style="padding: 16px; margin-bottom: 24px; background: #fafafa; border: 1px dashed #dadce0;">
+                <h4 style="font-size: 13px; color: #5f6368; margin-bottom: 12px; text-align: center;">🏗️ Phase 5 진행 상황: 외부 시놀로지 NAS MySQL 연동 및 진짜 이중화</h4>
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif;">
+                    <defs>
+                        <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a73e8" /></marker>
+                        <marker id="arrow-gray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa0ae" /></marker>
+                        <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+                    </defs>
+
+                    <!-- GCP Region (us-central1) -->
+                    <rect x="50" y="20" width="670" height="460" fill="#f8f9fa" stroke="#34a853" stroke-width="2" stroke-dasharray="8,4" />
+                    <text x="60" y="40" font-size="13" font-weight="700" fill="#137333">GCP Region: us-central1 (Iowa)</text>
+
+                    <!-- VPC -->
+                    <rect x="80" y="60" width="610" height="400" fill="#ffffff" stroke="#9334e6" stroke-width="2" />
+                    <text x="95" y="80" font-size="13" font-weight="700" fill="#9334e6">VPC: free-prd-vpc (10.250.0.0/16)</text>
+
+                    <!-- Zone A -->
+                    <rect x="100" y="100" width="570" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="110" y="120" font-size="11" font-weight="700" fill="#1a73e8">Zone: us-central1-a</text>
+
+                    <!-- Zone C -->
+                    <rect x="100" y="290" width="570" height="150" fill="#f1f3f4" stroke="#1a73e8" stroke-width="1.5" stroke-dasharray="4,2" />
+                    <text x="110" y="310" font-size="11" font-weight="700" fill="#1a73e8">Zone: us-central1-c</text>
+
+                    <!-- Users & External -->
+                    <g transform="translate(10, 230)">
+                        <circle cx="15" cy="15" r="10" fill="#e8eaed" stroke="#9aa0ae" stroke-width="1.5"/>
+                        <circle cx="15" cy="5" r="5" fill="#e8eaed" stroke="#9aa0ae" stroke-width="1.5"/>
+                        <text x="15" y="40" text-anchor="middle" font-size="10" font-weight="700">Users</text>
+                    </g>
+                    <path d="M 40 250 L 100 250" stroke="#1a73e8" stroke-width="1.5" marker-end="url(#arrow-blue)" />
+
+                    <!-- Nginx Load Balancer -->
+                    <rect x="100" y="220" width="80" height="60" rx="6" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="140" y="245" text-anchor="middle" font-size="10" font-weight="700" fill="#1a73e8">Nginx LB VM</text>
+                    <text x="140" y="265" text-anchor="middle" font-size="9" fill="#1a73e8">외부 IP ⭕</text>
+
+                    <!-- Bastion / IAP -->
+                    <rect x="150" y="130" width="80" height="80" fill="#fff" stroke="#f29900" stroke-width="1.5"/>
+                    <text x="190" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#b06000">IAP 터널링</text>
+                    <text x="190" y="170" text-anchor="middle" font-size="9" fill="#5f6368">(무료 SSH)</text>
+
+                    <!-- Spring Boot VM-A -->
+                    <rect x="360" y="120" width="160" height="110" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="440" y="140" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Spring Boot VM-A</text>
+                    <text x="440" y="160" text-anchor="middle" font-size="9" fill="#5f6368">10.250.2.x</text>
+                    <text x="440" y="180" text-anchor="middle" font-size="9" font-weight="700" fill="#b06000">외부 IP ⭕ (아웃바운드)</text>
+                    <rect x="400" y="195" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="440" y="209" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- Spring Boot VM-C -->
+                    <rect x="360" y="310" width="160" height="110" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+                    <text x="440" y="330" text-anchor="middle" font-size="11" font-weight="700" fill="#1a73e8">Spring Boot VM-C</text>
+                    <text x="440" y="350" text-anchor="middle" font-size="9" fill="#5f6368">10.250.2.y</text>
+                    <text x="440" y="370" text-anchor="middle" font-size="9" font-weight="700" fill="#b06000">외부 IP ⭕ (아웃바운드)</text>
+                    <rect x="400" y="385" width="80" height="20" rx="4" fill="#1a73e8"/>
+                    <text x="440" y="399" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">e2-micro (무료)</text>
+
+                    <!-- Nginx to WAS Load Balancing -->
+                    <path d="M 180 230 L 360 160" stroke="#1a73e8" stroke-width="1.5" marker-end="url(#arrow-blue)" />
+                    <path d="M 180 270 L 360 365" stroke="#1a73e8" stroke-width="1.5" marker-end="url(#arrow-blue)" />
+
+                    <!-- 🏠 우리집 (Home Network - VPC 외부 인터넷 영역) -->
+                    <rect x="750" y="20" width="230" height="460" fill="#fcf8e3" stroke="#f29900" stroke-width="2" stroke-dasharray="6,4" />
+                    <text x="765" y="45" font-size="14" font-weight="700" fill="#b06000">🏠 우리집 (Home Net)</text>
+
+                    <!-- Synology NAS -->
+                    <rect x="780" y="160" width="170" height="160" rx="8" fill="#ffffff" stroke="#f29900" stroke-width="2" />
+                    <text x="865" y="190" text-anchor="middle" font-size="12" font-weight="700" fill="#b06000">시놀로지 NAS</text>
+                    <text x="865" y="210" text-anchor="middle" font-size="9" fill="#7f8c8d">quietjun.synology.me</text>
+                    
+                    <!-- MySQL DB Icon -->
+                    <g transform="translate(835, 230)">
+                        <rect x="0" y="0" width="60" height="60" rx="6" fill="#f29900" stroke="#d67c00" stroke-width="1.5"/>
+                        <path d="M 10 20 Q 30 10 50 20 L 50 40 Q 30 50 10 40 Z" fill="#fff" stroke="#d67c00" stroke-width="1.5"/>
+                        <text x="30" y="35" text-anchor="middle" font-size="9" font-weight="700" fill="#d67c00">MySQL</text>
+                        <text x="30" y="52" text-anchor="middle" font-size="8" fill="#7f8c8d">3306</text>
+                    </g>
+
+                    <!-- WAS to Synology DB (인터넷 통신선) -->
+                    <path d="M 520 180 L 780 230" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-red)" />
+                    <path d="M 520 370 L 780 250" stroke="#d93025" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arrow-red)" />
+                    
+                    <text x="640" y="195" font-size="10" font-weight="700" fill="#d93025" text-anchor="middle">TCP 3306 (MySQL)</text>
+                </svg>
+            </div>
+            
+            <div class="concept-box" style="background: #f3e5f5; border-left-color: #9334e6; font-size: 13.5px; line-height: 1.8; color: #4a148c;">
+                <strong>💡 왜 하나? (H2 내장형 DB의 한계 극복)</strong><br>
+                H2 Memory DB는 WAS VM이 꺼지면 데이터가 모두 유실되고, 각 VM이 자신만의 독립된 DB 메모리를 가져 데이터가 동기화되지 않는 한계가 있다. 
+                집의 시놀로지 NAS MySQL이나 외부 데이터베이스로 연결하면, <strong>두 대의 WAS가 하나의 중앙 DB를 공유</strong>하게 되면서 비로소 데이터가 완벽하게 일치하는 <strong>진정한 액티브-액티브(Active-Active) 이중화</strong>가 구현된다.
+            </div>
+
+            <h3>Step 5-1: 네트워크 및 접속 장벽 해소</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>집 공유기 및 NAS 방화벽 설정 (인바운드 오픈)</strong><br>
+                    - **포트포워딩(Port Forwarding)**: 외부 인터넷에서 집 공유기 IP의 <strong>TCP 3306</strong> 포트로 들어오는 요청을 <strong>시놀로지 NAS 내부 IP의 3306 포트</strong>로 토스하도록 설정합니다.<br>
+                    - **DDNS 연결**: IP가 수시로 바뀌는 가정집 환경이므로, 시놀로지 DDNS(예: <code>아이디.synology.me</code>)를 설정하여 고정 도메인을 확보합니다.<br>
+                    - **DB 계정 권한**: MySQL에 접속하여 외부(GCP WAS)에서 접속할 수 있는 계정을 생성합니다.<br>
+                    <div class="code-block">
+CREATE USER 'gcp_user'@'%' IDENTIFIED BY '비밀번호';
+GRANT ALL PRIVILEGES ON *.* TO 'gcp_user'@'%';
+FLUSH PRIVILEGES;
+                    </div>
+                </li>
+                <li>
+                    <strong>GCP WAS 서버의 인터넷 아웃바운드 회선 확보</strong><br>
+                    GCP의 사설망 VM들은 기본적으로 외부 인터넷(집 NAS)으로 쿼리를 던질 수 없습니다.<br>
+                    - **간편한 방법 (무료)**: 각 WAS VM 설정으로 이동하여 일시적으로 떼어냈던 <strong>임시 외부 IPv4 주소</strong>를 다시 장착해 줍니다.<br>
+                    - **실무형 방법 (유료)**: GCP의 Cloud NAT를 신규 생성하여 사설 IP 대역의 VM들이 외부 인터넷으로 나갈 수 있게 아웃바운드 게이트웨이를 구성합니다.
+                </li>
+            </ul>
+
+            <h3>Step 5-2: Spring Boot application.properties 수정</h3>
+            <ul class="step-list">
+                <li>
+                    로컬 소스 코드의 <code>src/main/resources/application.properties</code>의 H2 설정을 주석 처리하고 아래와 같이 시놀로지 DB 정보를 채워 다시 컴파일 및 배포합니다.
+                    <div class="code-block" style="color: #e8eaed;">
+# 기존 H2 설정은 주석 처리
+# spring.datasource.url=jdbc:h2:mem:testdb ...
+
+# 시놀로지 NAS MySQL 연결 설정
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://[본인DDNS].synology.me:3306/[디비명]?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+spring.datasource.username=gcp_user
+spring.datasource.password=비밀번호
+
+# Hibernate DDL 자동 설정 (최초 실행 시 테이블 자동 생성)
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+                    </div>
+                </li>
+            </ul>
+        </div>
             
             <div class="success">
                 <strong>🎉 무료 플랜 아키텍처 완성!</strong><br>
