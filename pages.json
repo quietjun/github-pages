@@ -37,6 +37,10 @@
               {
                 "label": "pandas axis 핵심 이해",
                 "path": "ai/python/pandas/axis.html"
+              },
+              {
+                "label": "pandas Broadcasting 완벽 이해",
+                "path": "ai/python/pandas/broadcasting.html"
               }
             ]
           }
