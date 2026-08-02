@@ -184,6 +184,8 @@
     border-radius: 4px;
     overflow-x: auto;
     line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
   
   .rule-card {
@@ -319,27 +321,52 @@
   <div class="rule-card">
     <h3>규칙 1: 차원 개수 맞추기</h3>
     <p>차원 적은 쪽의 앞에 1 추가</p>
-    <div class="code-block">배열 A shape: (3, 4) → 그대로
-배열 B shape: (4,)   → (1, 4)로 변환
-이제 (3, 4) vs (1, 4) : 차원 같음 ✓</div>
+    <div class="code-block">step 1) 차원 개수 확인
+  A: (3, 4)   → 2차원 ✓
+  B: (4,)     → 1차원 (모자람)
+
+
+step 2) B의 앞에 1 추가
+  (4,) → (1, 4)
+
+
+step 3) 비교
+  A: (3, 4) vs B: (1, 4)
+  → 차원 같음 ✓</div>
   </div>
   
   <div class="rule-card">
     <h3>규칙 2: 각 차원 크기 호환성</h3>
     <p>각 축의 크기: 같거나 / 하나가 1 / 없는 축</p>
     <div class="code-block">A shape: (3, 4) vs B shape: (1, 4)
-축0: 3 vs 1 → 1이 3으로 확장 ✓
-축1: 4 vs 4 → 같음 ✓
-→ 연산 가능</div>
+
+
+축0 비교: 3 vs 1
+  → 1이 작으니 3에 맞춰 확장 ✓
+
+
+축1 비교: 4 vs 4
+  → 크기 같음 ✓
+
+
+결론: 호환 가능 ✓</div>
   </div>
   
   <div class="rule-card">
     <h3>규칙 3: 크기 1인 축은 확장</h3>
     <p>값을 반복해서 채워 큰 크기에 맞춤</p>
-    <div class="code-block">B: [[5, 6, 7, 8]] (shape 1x4)
-→ [[5, 6, 7, 8],
-   [5, 6, 7, 8],
-   [5, 6, 7, 8]]  (shape 3x4로 확장)</div>
+    <div class="code-block">원본 B: (1, 4)
+[[5, 6, 7, 8]]
+
+
+확장 과정: 축0의 크기를 1 → 3으로 변경
+[[5, 6, 7, 8],
+ [5, 6, 7, 8],
+ [5, 6, 7, 8]]
+
+
+최종: (3, 4)
+모든 행이 동일한 값으로 채워짐</div>
   </div>
   
   <!-- 인터랙티브 예제 -->
@@ -359,26 +386,28 @@
   <div class="comparison-grid">
     <div class="comparison-box success">
       <h4>✓ 호환 가능</h4>
+      
       <p><code>(3, 4)</code> + <code>(4,)</code></p>
-      <p style="margin-top: 0.5rem;">→ (1, 4) + (3, 4)</p>
+      <p style="margin-top: 0.25rem;">→ (1, 4)로 변환 후 호환</p>
       
-      <p style="margin-top: 0.75rem;"><code>(5, 1)</code> + <code>(3,)</code></p>
-      <p>→ (5, 1) + (1, 3) = 에러</p>
+      <p style="margin-top: 1rem;"><code>(5, 1)</code> + <code>(3,)</code></p>
+      <p style="margin-top: 0.25rem;">→ (1, 3)로 변환 후 호환</p>
       
-      <p style="margin-top: 0.75rem;"><code>(1, 1, 3)</code> + <code>(2, 1)</code></p>
-      <p>→ (1, 1, 3) + (1, 2, 1)</p>
+      <p style="margin-top: 1rem;"><code>(1, 1, 3)</code> + <code>(2, 1)</code></p>
+      <p style="margin-top: 0.25rem;">→ (1, 1, 3) + (1, 2, 1)</p>
     </div>
     
     <div class="comparison-box error">
       <h4>✗ 비호환</h4>
+      
       <p><code>(3, 4)</code> + <code>(3,)</code></p>
-      <p style="margin-top: 0.5rem;">축 불일치 (4 vs 3)</p>
+      <p style="margin-top: 0.25rem;">축 불일치: 4 vs 3</p>
       
-      <p style="margin-top: 0.75rem;"><code>(2, 3)</code> + <code>(2, 4)</code></p>
-      <p>같은 축 크기 다름 (3 vs 4)</p>
+      <p style="margin-top: 1rem;"><code>(2, 3)</code> + <code>(2, 4)</code></p>
+      <p style="margin-top: 0.25rem;">축1 크기 다름: 3 vs 4</p>
       
-      <p style="margin-top: 0.75rem;"><code>(3,)</code> + <code>(4,)</code></p>
-      <p>1D인데 크기 다름 (3 vs 4)</p>
+      <p style="margin-top: 1rem;"><code>(3,)</code> + <code>(4,)</code></p>
+      <p style="margin-top: 0.25rem;">1D 크기 다름: 3 vs 4</p>
     </div>
   </div>
   
@@ -387,39 +416,61 @@
   
   <div class="rule-card">
     <h3>패턴 1: 정규화 (각 행에서 평균 빼기)</h3>
-    <div class="code-block">df shape: (100, 4)
-df.mean() shape: (4,)
-→ df - df.mean() : 자동 확장
-각 행에서 열별 평균 제거 ✓</div>
+    <div class="code-block">데이터: df shape (100, 4)
+평균값: df.mean() shape (4,)
+
+
+연산: df - df.mean()
+  → (4,)는 자동으로 (1, 4)로 변환
+  → (100, 4) - (1, 4) : 호환 ✓
+
+
+결과: 각 행에서 열별 평균 제거됨</div>
   </div>
   
   <div class="rule-card">
     <h3>패턴 2: 스칼라 연산</h3>
-    <div class="code-block">df shape: (50, 3)
-scalar: 10
-→ df * 10 : 모든 원소에 10 곱함
-broadcasting 자동 적용 ✓</div>
+    <div class="code-block">배열: arr shape (50, 3)
+스칼라: 10 (shape ())
+
+
+연산: arr * 10
+  → scalar는 모든 크기와 호환
+  → 모든 원소에 10 곱하기 ✓
+
+
+결과: (50, 3) 유지</div>
   </div>
   
   <div class="rule-card">
-    <h3>패턴 3: reshape 명시 (안전)</h3>
-    <div class="code-block">mean_vals shape: (4,)
-mean_vals.reshape(1, -1) → (1, 4)
-명시적으로 차원 표현
-→ 에러 가능성 낮음</div>
+    <h3>패턴 3: reshape로 명시 (안전 방법)</h3>
+    <div class="code-block">원본: mean_vals shape (4,)
+
+
+명시적 변환:
+  mean_vals.reshape(1, -1)
+  → (4,) → (1, 4) 명확하게 표현
+
+
+장점: broadcasting 규칙 직관적
+     실수로 인한 에러 가능성 낮음</div>
   </div>
   
   <div class="mnemonic">
     <div class="mnemonic-title">💡 기억 법칙</div>
+    
     <p><strong>뒤에서부터 비교 (오른쪽 축부터)</strong></p>
     <p style="margin-top: 0.75rem;">
-      A: (3, 4, 5) vs B: (4, 5)<br>
-      → 뒤부터: 5=5 ✓ / 4=4 ✓ / 3과 없는 축 ✓<br>
+      A: (3, 4, 5) vs B: (4, 5)<br><br>
+      → 뒤부터: 5=5 ✓<br>
+      → 그 다음: 4=4 ✓<br>
+      → 남은 것: 3과 없는 축 ✓<br><br>
       → 호환 가능
     </p>
-    <p style="margin-top: 1rem;"><strong>1인 축은 언제든 확장</strong></p>
+    
+    <p style="margin-top: 1.5rem;"><strong>1인 축은 언제든 확장</strong></p>
     <p style="margin-top: 0.75rem;">
-      크기 1인 축만 자동 반복 가능<br>
+      크기 1인 축만 자동 반복 가능<br><br>
       (1, 4) → (3, 4) : 가능<br>
       (2, 4) → (3, 4) : 불가능
     </p>
@@ -436,9 +487,11 @@ const examples = [
     code: `df = np.array([[1, 2, 3, 4],
          [5, 6, 7, 8],
          [9, 10, 11, 12]])
+
 row = np.array([10, 20, 30, 40])
+
 result = df + row`,
-    explanation: '1D 배열 shape (4,) → (1, 4)로 변환 : 각 행에 row 값 더함 : 결과 shape (3, 4)',
+    explanation: 'step 1) 차원 맞추기: (4,) → (1, 4)<br>step 2) 비교: (3, 4) vs (1, 4) → 호환 ✓<br>step 3) 확장: (1, 4) 축0 크기를 1 → 3으로<br>step 4) 연산: 각 행에 row 값 더하기',
     visual: `
       <div class="array-visual">
         <div class="array-box">
@@ -475,9 +528,11 @@ result = df + row`,
     shapeA: '(5,)',
     shapeB: '() (scalar)',
     code: `arr = np.array([1, 2, 3, 4, 5])
+
 scalar = 10
+
 result = arr * scalar`,
-    explanation: 'Scalar (차원 0) : 모든 값과 호환 : 각 원소에 10 곱함',
+    explanation: 'step 1) Scalar는 차원 0<br>step 2) 모든 크기와 호환 가능<br>step 3) 배열의 모든 원소에 10을 곱하기<br>step 4) 결과: (5,) 유지',
     visual: `
       <div class="array-visual">
         <div class="array-box">
@@ -510,9 +565,11 @@ result = arr * scalar`,
     code: `df = np.array([[1, 2, 3, 4],
          [5, 6, 7, 8],
          [9, 10, 11, 12]])
+
 col = np.array([10, 20, 30])
+
 result = df + col  # ❌ ValueError`,
-    explanation: '(3, 4) vs (3,) : 차원 다름 : (3,)는 (1, 3)으로 변환 : (3, 4) vs (1, 3) 축1에서 4 vs 3 : 호환 불가능 → ValueError 발생',
+    explanation: 'step 1) 차원 맞추기: (3,) → (1, 3)<br>step 2) 비교: (3, 4) vs (1, 3)<br>step 3) 축1 확인: 4 vs 3 → 다름 ✗<br>step 4) 결과: 호환 불가능 → ValueError 발생',
     visual: `
       <div class="array-visual">
         <div class="array-box">
