@@ -29,6 +29,20 @@
         ]
       },
       {
+        "label": "python",
+        "children": [
+          {
+            "label": "pandas",
+            "children": [
+              {
+                "label": "pandas axis 핵심 이해",
+                "path": "ai/python/pandas/axis.html"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "label": "rag",
         "children": [
           {
