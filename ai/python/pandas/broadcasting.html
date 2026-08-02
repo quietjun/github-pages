@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas Broadcasting 완벽 이해</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { 
+    font-family: 'Noto Sans KR', sans-serif; 
+    background: #fefdfb;
+    color: #3d3d3a;
+  }
+  body {
+    padding: 2rem 1rem;
+    line-height: 1.6;
+  }
+  
+  .container { 
+    max-width: 1024px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1a1a18;
+  }
+  
+  .subtitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #1a1a18;
+  }
+  
+  .core-text {
+    background: #f5f3ed;
+    border-left: 3px solid #d4a574;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+    border-radius: 4px;
+    line-height: 1.7;
+  }
+  
+  .core-text strong { color: #7a6d5c; }
+  
+  .button-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  button {
+    padding: 10px 18px;
+    border: 1.5px solid #c9c5ba;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+  
+  button:hover {
+    border-color: #888780;
+    background: #f9f7f2;
+  }
+  
+  button.active {
+    background: #534ab7;
+    color: white;
+    border-color: #534ab7;
+  }
+  
+  .demo-section {
+    margin-bottom: 2.5rem;
+    background: white;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 6px;
+    padding: 1.5rem;
+  }
+  
+  .demo-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1a1a18;
+  }
+  
+  .shape-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #5f5e5a;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 0.5rem;
+  }
+  
+  .array-visual {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .array-box {
+    display: inline-block;
+  }
+  
+  .grid {
+    display: grid;
+    gap: 4px;
+    background: white;
+    padding: 8px;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 4px;
+  }
+  
+  .cell {
+    background: #f9f7f2;
+    border: 0.5px solid #c9c5ba;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    min-width: 40px;
+    color: #3d3d3a;
+  }
+  
+  .cell.highlight {
+    background: #e6f1fb;
+    color: #042c53;
+    border-color: #85b7eb;
+  }
+  
+  .operator {
+    font-size: 20px;
+    font-weight: bold;
+    color: #185fa5;
+    display: flex;
+    align-items: center;
+  }
+  
+  .equals {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3b6d11;
+  }
+  
+  .explanation {
+    background: #e6f1fb;
+    border: 0.5px solid #85b7eb;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  
+  .explanation-title {
+    font-weight: 600;
+    color: #042c53;
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+  }
+  
+  .code-block {
+    background: #f9f7f2;
+    border-left: 3px solid #ba7517;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #3d3d3a;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  
+  .rule-card {
+    background: white;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .rule-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #1a1a18;
+  }
+  
+  .rule-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #5f5e5a;
+    margin-bottom: 0.5rem;
+  }
+  
+  .memory-key {
+    color: #534ab7;
+    font-weight: 600;
+  }
+  
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .comparison-box {
+    background: white;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 6px;
+    padding: 1rem;
+  }
+  
+  .comparison-box.success {
+    border-color: #97c459;
+    background: #eaf3de;
+  }
+  
+  .comparison-box.error {
+    border-color: #f09595;
+    background: #fcebeb;
+  }
+  
+  .comparison-box h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .comparison-box.success h4 {
+    color: #3b6d11;
+  }
+  
+  .comparison-box.error h4 {
+    color: #501313;
+  }
+  
+  .comparison-box p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  
+  .comparison-box code {
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  
+  .mnemonic {
+    background: #faeeda;
+    border: 0.5px solid #ef9f27;
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-top: 2rem;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  
+  .mnemonic-title {
+    font-weight: 600;
+    color: #854f0b;
+    margin-bottom: 0.75rem;
+    font-size: 14px;
+  }
+  
+  .mnemonic p {
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 640px) {
+    .comparison-grid {
+      grid-template-columns: 1fr;
+    }
+    .array-visual {
+      flex-direction: column;
+    }
+    .title {
+      font-size: 20px;
+    }
+    body {
+      padding: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">pandas Broadcasting 완벽 이해</div>
+  
+  <div class="core-text">
+    <strong>핵심:</strong> 다른 크기 배열 연산<br>
+    → 작은 것을 큰 것에 맞춰 자동 확장<br>
+    → 규칙 따르면 호환 : 연산 가능<br>
+    → 규칙 어기면 에러 : shape 불일치
+  </div>
+  
+  <!-- 기본 규칙 -->
+  <div class="subtitle">Broadcasting 규칙 3가지</div>
+  
+  <div class="rule-card">
+    <h3>규칙 1: 차원 개수 맞추기</h3>
+    <p>차원 적은 쪽의 앞에 1 추가</p>
+    <div class="code-block">배열 A shape: (3, 4) → 그대로
+배열 B shape: (4,)   → (1, 4)로 변환
+이제 (3, 4) vs (1, 4) : 차원 같음 ✓</div>
+  </div>
+  
+  <div class="rule-card">
+    <h3>규칙 2: 각 차원 크기 호환성</h3>
+    <p>각 축의 크기: 같거나 / 하나가 1 / 없는 축</p>
+    <div class="code-block">A shape: (3, 4) vs B shape: (1, 4)
+축0: 3 vs 1 → 1이 3으로 확장 ✓
+축1: 4 vs 4 → 같음 ✓
+→ 연산 가능</div>
+  </div>
+  
+  <div class="rule-card">
+    <h3>규칙 3: 크기 1인 축은 확장</h3>
+    <p>값을 반복해서 채워 큰 크기에 맞춤</p>
+    <div class="code-block">B: [[5, 6, 7, 8]] (shape 1x4)
+→ [[5, 6, 7, 8],
+   [5, 6, 7, 8],
+   [5, 6, 7, 8]]  (shape 3x4로 확장)</div>
+  </div>
+  
+  <!-- 인터랙티브 예제 -->
+  <div class="subtitle">시각적 예제</div>
+  
+  <div class="button-group">
+    <button class="active" onclick="switchExample(0)">예1: 2D + 1D (성공)</button>
+    <button onclick="switchExample(1)">예2: 1D + scalar (성공)</button>
+    <button onclick="switchExample(2)">예3: shape 불일치 (실패)</button>
+  </div>
+  
+  <div id="demo-content"></div>
+  
+  <!-- 비교 테이블 -->
+  <div class="subtitle">호환 vs 비호환</div>
+  
+  <div class="comparison-grid">
+    <div class="comparison-box success">
+      <h4>✓ 호환 가능</h4>
+      <p><code>(3, 4)</code> + <code>(4,)</code></p>
+      <p style="margin-top: 0.5rem;">→ (1, 4) + (3, 4)</p>
+      
+      <p style="margin-top: 0.75rem;"><code>(5, 1)</code> + <code>(3,)</code></p>
+      <p>→ (5, 1) + (1, 3) = 에러</p>
+      
+      <p style="margin-top: 0.75rem;"><code>(1, 1, 3)</code> + <code>(2, 1)</code></p>
+      <p>→ (1, 1, 3) + (1, 2, 1)</p>
+    </div>
+    
+    <div class="comparison-box error">
+      <h4>✗ 비호환</h4>
+      <p><code>(3, 4)</code> + <code>(3,)</code></p>
+      <p style="margin-top: 0.5rem;">축 불일치 (4 vs 3)</p>
+      
+      <p style="margin-top: 0.75rem;"><code>(2, 3)</code> + <code>(2, 4)</code></p>
+      <p>같은 축 크기 다름 (3 vs 4)</p>
+      
+      <p style="margin-top: 0.75rem;"><code>(3,)</code> + <code>(4,)</code></p>
+      <p>1D인데 크기 다름 (3 vs 4)</p>
+    </div>
+  </div>
+  
+  <!-- 실무 활용 -->
+  <div class="subtitle">실무 패턴</div>
+  
+  <div class="rule-card">
+    <h3>패턴 1: 정규화 (각 행에서 평균 빼기)</h3>
+    <div class="code-block">df shape: (100, 4)
+df.mean() shape: (4,)
+→ df - df.mean() : 자동 확장
+각 행에서 열별 평균 제거 ✓</div>
+  </div>
+  
+  <div class="rule-card">
+    <h3>패턴 2: 스칼라 연산</h3>
+    <div class="code-block">df shape: (50, 3)
+scalar: 10
+→ df * 10 : 모든 원소에 10 곱함
+broadcasting 자동 적용 ✓</div>
+  </div>
+  
+  <div class="rule-card">
+    <h3>패턴 3: reshape 명시 (안전)</h3>
+    <div class="code-block">mean_vals shape: (4,)
+mean_vals.reshape(1, -1) → (1, 4)
+명시적으로 차원 표현
+→ 에러 가능성 낮음</div>
+  </div>
+  
+  <div class="mnemonic">
+    <div class="mnemonic-title">💡 기억 법칙</div>
+    <p><strong>뒤에서부터 비교 (오른쪽 축부터)</strong></p>
+    <p style="margin-top: 0.75rem;">
+      A: (3, 4, 5) vs B: (4, 5)<br>
+      → 뒤부터: 5=5 ✓ / 4=4 ✓ / 3과 없는 축 ✓<br>
+      → 호환 가능
+    </p>
+    <p style="margin-top: 1rem;"><strong>1인 축은 언제든 확장</strong></p>
+    <p style="margin-top: 0.75rem;">
+      크기 1인 축만 자동 반복 가능<br>
+      (1, 4) → (3, 4) : 가능<br>
+      (2, 4) → (3, 4) : 불가능
+    </p>
+  </div>
+  
+</div>
+
+<script>
+const examples = [
+  {
+    title: '예제 1: 2D 배열 + 1D 배열',
+    shapeA: '(3, 4)',
+    shapeB: '(4,)',
+    code: `df = np.array([[1, 2, 3, 4],
+         [5, 6, 7, 8],
+         [9, 10, 11, 12]])
+row = np.array([10, 20, 30, 40])
+result = df + row`,
+    explanation: '1D 배열 shape (4,) → (1, 4)로 변환 : 각 행에 row 값 더함 : 결과 shape (3, 4)',
+    visual: `
+      <div class="array-visual">
+        <div class="array-box">
+          <div class="shape-label">A: (3, 4)</div>
+          <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+            <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+            <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+          </div>
+        </div>
+        <div class="operator">+</div>
+        <div class="array-box">
+          <div class="shape-label">B: (4,) → (1, 4)</div>
+          <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="cell highlight">10</div><div class="cell highlight">20</div><div class="cell highlight">30</div><div class="cell highlight">40</div>
+            <div class="cell highlight">10</div><div class="cell highlight">20</div><div class="cell highlight">30</div><div class="cell highlight">40</div>
+            <div class="cell highlight">10</div><div class="cell highlight">20</div><div class="cell highlight">30</div><div class="cell highlight">40</div>
+          </div>
+        </div>
+        <div class="equals">=</div>
+        <div class="array-box">
+          <div class="shape-label">결과: (3, 4)</div>
+          <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="cell">11</div><div class="cell">22</div><div class="cell">33</div><div class="cell">44</div>
+            <div class="cell">15</div><div class="cell">26</div><div class="cell">37</div><div class="cell">48</div>
+            <div class="cell">19</div><div class="cell">30</div><div class="cell">41</div><div class="cell">52</div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    title: '예제 2: 1D 배열 + Scalar',
+    shapeA: '(5,)',
+    shapeB: '() (scalar)',
+    code: `arr = np.array([1, 2, 3, 4, 5])
+scalar = 10
+result = arr * scalar`,
+    explanation: 'Scalar (차원 0) : 모든 값과 호환 : 각 원소에 10 곱함',
+    visual: `
+      <div class="array-visual">
+        <div class="array-box">
+          <div class="shape-label">A: (5,)</div>
+          <div class="grid" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div><div class="cell">5</div>
+          </div>
+        </div>
+        <div class="operator">×</div>
+        <div class="array-box">
+          <div class="shape-label">B: scalar</div>
+          <div class="grid" style="grid-template-columns: 1fr;">
+            <div class="cell highlight">10</div>
+          </div>
+        </div>
+        <div class="equals">=</div>
+        <div class="array-box">
+          <div class="shape-label">결과: (5,)</div>
+          <div class="grid" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="cell">10</div><div class="cell">20</div><div class="cell">30</div><div class="cell">40</div><div class="cell">50</div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    title: '예제 3: Shape 불일치 (에러)',
+    shapeA: '(3, 4)',
+    shapeB: '(3,)',
+    code: `df = np.array([[1, 2, 3, 4],
+         [5, 6, 7, 8],
+         [9, 10, 11, 12]])
+col = np.array([10, 20, 30])
+result = df + col  # ❌ ValueError`,
+    explanation: '(3, 4) vs (3,) : 차원 다름 : (3,)는 (1, 3)으로 변환 : (3, 4) vs (1, 3) 축1에서 4 vs 3 : 호환 불가능 → ValueError 발생',
+    visual: `
+      <div class="array-visual">
+        <div class="array-box">
+          <div class="shape-label">A: (3, 4)</div>
+          <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+            <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell">8</div>
+            <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+          </div>
+        </div>
+        <div class="operator">+</div>
+        <div class="array-box">
+          <div class="shape-label">B: (3,) → (1, 3)</div>
+          <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="cell">10</div><div class="cell">20</div><div class="cell">30</div>
+          </div>
+          <div style="margin-top: 0.5rem; color: #a32d2d; font-weight: 600; font-size: 13px;">❌ 축 크기 불일치<br>축1: 4 vs 3</div>
+        </div>
+      </div>
+    `
+  }
+];
+
+function switchExample(idx) {
+  document.querySelectorAll('.button-group button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+  
+  const ex = examples[idx];
+  const html = `
+    <div class="demo-section">
+      <div class="demo-title">${ex.title}</div>
+      <div style="font-size: 13px; color: #5f5e5a; margin-bottom: 1rem;">
+        <strong>Shape:</strong> ${ex.shapeA} <span style="color: #185fa5;">+</span> ${ex.shapeB}
+      </div>
+      ${ex.visual}
+      <div class="code-block">${ex.code}</div>
+      <div class="explanation">
+        <div class="explanation-title">동작 원리</div>
+        <p>${ex.explanation}</p>
+      </div>
+    </div>
+  `;
+  document.getElementById('demo-content').innerHTML = html;
+}
+
+switchExample(0);
+
+window.onload = function() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+};
+</script>
+
+</body>
+</html>
