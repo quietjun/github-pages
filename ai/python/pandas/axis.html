@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas axis 핵심 이해</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { 
+    font-family: 'Noto Sans KR', sans-serif; 
+    background: #fefdfb;
+    color: #3d3d3a;
+    line-height: 1.6;
+  }
+  body {
+    padding: 2rem 1rem;
+  }
+  
+  .container { 
+    max-width: 1024px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1a1a18;
+  }
+  
+  .memory-text {
+    background: #f5f3ed;
+    border-left: 3px solid #d4a574;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+    border-radius: 4px;
+    line-height: 1.7;
+  }
+  
+  .memory-text strong { color: #7a6d5c; }
+  
+  .button-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  button {
+    padding: 10px 18px;
+    border: 1.5px solid #c9c5ba;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+  
+  button:hover {
+    border-color: #888780;
+    background: #f9f7f2;
+  }
+  
+  button.active {
+    background: #534ab7;
+    color: white;
+    border-color: #534ab7;
+  }
+  
+  .demo-section {
+    margin-bottom: 2.5rem;
+  }
+  
+  .demo-section > .label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: #3d3d3a;
+  }
+  
+  .dataframe-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2rem;
+  }
+  
+  table {
+    border-collapse: collapse;
+    background: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  
+  th, td {
+    border: 0.5px solid #d3d1c7;
+    padding: 10px 14px;
+    text-align: right;
+  }
+  
+  th {
+    background: #f1efe8;
+    font-weight: 600;
+    color: #3d3d3a;
+  }
+  
+  td {
+    background: white;
+  }
+  
+  th:first-child, td:first-child {
+    text-align: left;
+  }
+  
+  .axis-arrow {
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    color: #185fa5;
+    transition: all 0.3s;
+  }
+  
+  .axis-arrow.axis0 { top: -45px; right: 40px; }
+  .axis-arrow.axis1 { top: 40px; right: -60px; }
+  
+  .highlight-row td { 
+    background: #e6f1fb !important;
+    color: #042c53;
+    font-weight: 500;
+  }
+  
+  .highlight-col { 
+    background: #e6f1fb !important;
+    color: #042c53 !important;
+    font-weight: 500;
+  }
+  
+  .explanation {
+    background: #e6f1fb;
+    border: 0.5px solid #85b7eb;
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  
+  .explanation-title {
+    font-weight: 600;
+    color: #042c53;
+    margin-bottom: 0.75rem;
+    font-size: 15px;
+  }
+  
+  .code-block {
+    background: #f9f7f2;
+    border-left: 3px solid #ba7517;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #3d3d3a;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  
+  .memory-key {
+    color: #534ab7;
+    font-weight: 600;
+  }
+  
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  
+  .comparison-card {
+    border: 0.5px solid #d3d1c7;
+    padding: 1.25rem;
+    border-radius: 6px;
+    background: white;
+  }
+  
+  .comparison-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1a1a18;
+  }
+  
+  .comparison-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #5f5e5a;
+    margin-bottom: 0.75rem;
+  }
+  
+  .comparison-card code {
+    background: #f1efe8;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #3d3d3a;
+  }
+  
+  .mnemonic {
+    background: #faeeda;
+    border: 0.5px solid #ef9f27;
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-top: 2rem;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  
+  .mnemonic-title {
+    font-weight: 600;
+    color: #854f0b;
+    margin-bottom: 1rem;
+    font-size: 15px;
+  }
+  
+  .mnemonic p {
+    margin-bottom: 0.75rem;
+  }
+  
+  @media (max-width: 640px) {
+    .comparison-grid {
+      grid-template-columns: 1fr;
+    }
+    .title {
+      font-size: 20px;
+    }
+    body {
+      padding: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">pandas axis 핵심 이해</div>
+  
+  <div class="memory-text">
+    <strong>핵심:</strong> axis = 이동 방향<br>
+    → axis=0: 위 → 아래 (↓) : 각 열 순회<br>
+    → axis=1: 좌 → 우 (→) : 각 행 순회
+  </div>
+  
+  <div class="demo-section">
+    <div class="label">축 선택:</div>
+    <div class="button-group">
+      <button class="active" onclick="switchAxis(0)">axis=0 (행 방향 ↓)</button>
+      <button onclick="switchAxis(1)">axis=1 (열 방향 →)</button>
+    </div>
+  </div>
+  
+  <div class="dataframe-container">
+    <svg style="position: absolute; top: -60px; right: 0; width: 120px; height: 120px;">
+      <text id="arrow-label" class="axis-arrow axis0" x="0" y="0">↓</text>
+    </svg>
+    <table id="dataframe-table">
+      <thead>
+        <tr>
+          <th>index</th>
+          <th>A</th>
+          <th>B</th>
+          <th>C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="row-0">
+          <td>row_0</td>
+          <td>10</td>
+          <td>20</td>
+          <td>30</td>
+        </tr>
+        <tr id="row-1">
+          <td>row_1</td>
+          <td>40</td>
+          <td>50</td>
+          <td>60</td>
+        </tr>
+        <tr id="row-2">
+          <td>row_2</td>
+          <td>70</td>
+          <td>80</td>
+          <td>90</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="explanation">
+    <div class="explanation-title" id="exp-title">axis=0 설명</div>
+    <div id="exp-content"></div>
+  </div>
+  
+  <div class="comparison-grid">
+    <div class="comparison-card">
+      <h3>axis=0 (행 방향 ↓)</h3>
+      <p><strong>방향:</strong> 위 → 아래</p>
+      <p><strong>순회:</strong> 각 <span class="memory-key">열(column)</span></p>
+      <p><strong>결과:</strong> 열 개수 = 반환값 개수</p>
+      <p style="margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7;">
+        <code>df.sum(axis=0)</code><br>
+        → A:120, B:150, C:180
+      </p>
+    </div>
+    
+    <div class="comparison-card">
+      <h3>axis=1 (열 방향 →)</h3>
+      <p><strong>방향:</strong> 왼 → 오른</p>
+      <p><strong>순회:</strong> 각 <span class="memory-key">행(row)</span></p>
+      <p><strong>결과:</strong> 행 개수 = 반환값 개수</p>
+      <p style="margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7;">
+        <code>df.sum(axis=1)</code><br>
+        → row_0:60, row_1:150, row_2:240
+      </p>
+    </div>
+  </div>
+  
+  <div class="mnemonic">
+    <div class="mnemonic-title">💡 영구기억 법칙</div>
+    <p><strong>방법 1: 이름으로 기억</strong></p>
+    <p style="margin-top: 0.75rem;">
+      • 0 = "영(0)행" = 행 : ↓ 이동<br>
+      • 1 = "일(1)열" = 열 : → 이동
+    </p>
+    <p style="margin-top: 1rem;"><strong>방법 2: 변화로 기억</strong></p>
+    <p style="margin-top: 0.75rem;">
+      • axis=0 → <span class="memory-key">행 변함</span> (열 연산)<br>
+      • axis=1 → <span class="memory-key">열 변함</span> (행 연산)
+    </p>
+  </div>
+  
+</div>
+
+<script>
+function switchAxis(axis) {
+  document.querySelectorAll('.button-group button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === axis);
+  });
+  
+  document.querySelectorAll('td').forEach(td => {
+    td.classList.remove('highlight-col', 'highlight-row');
+  });
+  
+  if (axis === 0) {
+    for (let colIdx = 1; colIdx <= 3; colIdx++) {
+      document.querySelectorAll(`th:nth-child(${colIdx + 1}), td:nth-child(${colIdx + 1})`).forEach(cell => {
+        if (cell.tagName !== 'TH') cell.classList.add('highlight-col');
+      });
+    }
+    
+    document.getElementById('arrow-label').textContent = '↓';
+    document.getElementById('arrow-label').className = 'axis-arrow axis0';
+    document.getElementById('exp-title').textContent = 'axis=0 (행 방향 이동)';
+    document.getElementById('exp-content').innerHTML = `
+      <p><strong>→ 위에서 아래로 이동 (↓)</strong></p>
+      <p style="margin-top: 0.75rem;">각 <span class="memory-key">열(A, B, C)</span> 따라 순회<br>→ 해당 열의 모든 값 연산</p>
+      <div class="code-block">df.sum(axis=0)
+→ A: 120, B: 150, C: 180
+  (열별 합)</div>
+      <p style="margin-top: 1rem;"><strong>사용 시점</strong><br>: 각 변수(열)별 통계 필요<br>: 전체 평균, 전체 합, 최댓값 등</p>
+    `;
+  } else {
+    document.querySelectorAll('tbody tr').forEach((row) => {
+      row.querySelectorAll('td').forEach(td => {
+        td.classList.add('highlight-row');
+      });
+    });
+    
+    document.getElementById('arrow-label').textContent = '→';
+    document.getElementById('arrow-label').className = 'axis-arrow axis1';
+    document.getElementById('exp-title').textContent = 'axis=1 (열 방향 이동)';
+    document.getElementById('exp-content').innerHTML = `
+      <p><strong>→ 왼쪽에서 오른쪽으로 이동 (→)</strong></p>
+      <p style="margin-top: 0.75rem;">각 <span class="memory-key">행(row_0, row_1, row_2)</span> 따라 순회<br>→ 해당 행의 모든 값 연산</p>
+      <div class="code-block">df.sum(axis=1)
+→ row_0: 60, row_1: 150, row_2: 240
+  (행별 합)</div>
+      <p style="margin-top: 1rem;"><strong>사용 시점</strong><br>: 각 샘플/기록(행)별 통계 필요<br>: 각 사람의 총점, 각 제품의 매출 등</p>
+    `;
+  }
+}
+
+switchAxis(0);
+
+window.onload = function() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+};
+</script>
+
+</body>
+</html>
