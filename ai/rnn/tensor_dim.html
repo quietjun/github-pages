@@ -1197,10 +1197,11 @@ print("원본 텐서 크기:", tensor.shape)  # 출력: torch.Size([2, 3, 4])</p
   drawBase();
   switchDim(-1);
 
-window.onload = function() {
-  const height = document.body.scrollHeight;
+const resizeObserver = new ResizeObserver(entries => {
+  const height = document.documentElement.scrollHeight;
   window.parent.postMessage({ height: height }, "*");
-};  
+});
+resizeObserver.observe(document.body);
 </script>
 </body>
 </html>
