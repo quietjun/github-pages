@@ -75,6 +75,10 @@
             "path": "ai/rnn/rnn.html"
           },
           {
+            "label": "텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해",
+            "path": "ai/rnn/tensor_dim.html"
+          },
+          {
             "label": "Transformer & Self-Attention 시각화",
             "path": "ai/rnn/transformer.html"
           },
