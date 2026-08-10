@@ -391,32 +391,7 @@
     </div>
   </div>
 
-  <!-- [수정] 이미지 반응형 처리: width 고정값 제거, max-width:100% 적용 -->
-  <div class="dg-wrap">
-    <img
-      src="https://substackcdn.com/image/fetch/$s_!qbpc!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff6133c18-bfaf-4578-8c5a-e5ac7809f65b_1632x784.png"
-      alt="Encoder-Decoder vs Decoder-only Transformer 구조 비교"
-      style="width:100%;height:auto;display:block;max-width:100%;"
-      loading="lazy"
-    />
-    <!-- 이미지 캡션 -->
-    <div style="padding:16px 20px 18px;background:var(--surface2);border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div style="flex-shrink:0;width:32px;height:32px;border-radius:8px;background:var(--q-l);border:2px solid var(--q);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:var(--q);">LN</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:3px;">Layer Normalization</div>
-          <div style="font-size:.78rem;color:var(--sub);line-height:1.7;">각 레이어의 출력 벡터를 평균 0, 분산 1로 정규화한다. Self-Attention과 FFNN 이전에 각각 적용(Pre-LN)되며, 깊은 네트워크에서 학습을 안정시키는 역할을 한다.</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div style="flex-shrink:0;width:32px;height:32px;border-radius:8px;background:var(--v-l);border:2px solid var(--v);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--v);">FF</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:3px;">Feed-Forward Network (FFNN)</div>
-          <div style="font-size:.78rem;color:var(--sub);line-height:1.7;">Self-Attention 이후 각 토큰에 독립적으로 적용되는 2층 MLP이다. 토큰 간 상호작용 없이 각자의 벡터를 비선형 변환하며, 모델 파라미터의 약 2/3를 차지한다.</div>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
 </div><!-- /tab-0 -->
 

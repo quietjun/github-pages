@@ -73,11 +73,13 @@ header p  { color: var(--sub); font-size: 0.9rem; }
   display: flex; flex-direction: column; gap: 5px;
 }
 .bullet-list li {
-  display: flex; align-items: flex-start; gap: 8px;
+  position: relative;
+  padding-left: 12px;
   font-size: 0.875rem; color: var(--sub); line-height: 1.65;
 }
 .bullet-list li::before {
-  content: '·'; font-weight: 700; color: var(--sub); flex-shrink: 0;
+  content: '·'; font-weight: 700; color: var(--sub);
+  position: absolute; left: 0; top: 0;
 }
 
 /* ── Role 카드 ── */
@@ -202,7 +204,7 @@ header p  { color: var(--sub); font-size: 0.9rem; }
       <li>System은 항상 맨 앞에 고정 / 턴이 쌓일수록 입력 블록도 누적</li>
       <li>LLM은 매 응답마다 <strong>컨텍스트 윈도우</strong>(LLM이 한 번의 요청에서 읽을 수 있는 최대 토큰 수) 이내의 전체 대화를 한 번에 입력으로 수신</li>
       <li>이전 대화를 "기억"하는 것이 아니라 <strong>매번 통째로 재입력</strong></li>
-      <li><strong>컨텍스트 윈도우 초과 시</strong> → 오래된 대화부터 잘려나감 (truncation) / 일부 서비스는 요약으로 압축</li>
+      <li><strong>컨텍스트 윈도우 초과 시</strong> → 오래된 대화부터 잘려나감 / 일부 서비스는 요약으로 압축</li>
       <li><strong>API 비용</strong>은 입력 토큰 수에 비례 → 대화가 길어질수록 매 요청 비용도 선형 증가</li>
     </ul>
   </div>
