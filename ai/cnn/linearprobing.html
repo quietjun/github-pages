@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Probing & Fine-tuning — 전이학습 전략</title>
+<link rel="stylesheet" href="../../css/content.css">
+<script src="../../js/content.js"></script>
+<style>
+  /* ── Page Specific Styles (AGENTS Rule 준수) ── */
+  :root {
+    --frozen: #2563eb;
+    --frozen-bg: #eff6ff;
+    --frozen-border: #bfdbfe;
+    --train: #ea580c;
+    --train-bg: #fff7ed;
+    --train-border: #fed7aa;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  @media(max-width: 768px){ .grid-2 { grid-template-columns: 1fr; } }
+
+  .block { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+  .block-hd { padding: 16px 20px; border-bottom: 1px solid #eef1f6; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .bname { font-size: 15px; font-weight: 700; color: #1e2a3a; }
+  .block-body { padding: 20px; }
+  .bdesc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
+
+  /* Mode Toggle */
+  .mode-toggle { display: flex; gap: 8px; }
+  .mode-btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 6px 14px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; transition: all .15s; font-weight: 600; }
+  .mode-btn:hover { border-color: #2563eb; color: #2563eb; }
+  .mode-btn.lp.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .mode-btn.ft.active { background: #ea580c; border-color: #ea580c; color: #fff; }
+
+  /* CNN Flow */
+  .cnn-flow { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 16px 8px; justify-content: center; min-width: 600px; }
+  .cnn-block { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .cnn-box { width: 90px; height: 90px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12px; font-weight: 700; color: #1e2a3a; position: relative; padding: 6px; transition: all .2s; }
+  .cnn-box .icon { font-size: 20px; margin-bottom: 4px; }
+  .cnn-box .sub { font-size: 10px; color: #64748b; margin-top: 2px; font-weight: 500; line-height: 1.2; }
+  .cnn-box.frozen-box { background: var(--frozen-bg); border-color: var(--frozen); color: #1e3a8a; }
+  .cnn-box.train-box { background: var(--train-bg); border-color: var(--train); color: #7c2d12; }
+  .cnn-box.input-box, .cnn-box.output-box { background: #f8fafc; border-color: #94a3b8; }
+  .arrow { font-size: 16px; color: #cbd5e1; flex-shrink: 0; }
+  .lock-badge { position: absolute; top: -6px; right: -6px; background: var(--frozen); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+
+  .block-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .label-frozen { background: var(--frozen-bg); color: var(--frozen); }
+  .label-train { background: var(--train-bg); color: var(--train); }
+
+  /* Params Visualization */
+  .params-vis { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media(max-width: 600px){ .params-vis { grid-template-columns: 1fr; } }
+  .param-group { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; }
+  .param-group-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 12px; }
+  .param-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .param-bar-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #475569; width: 90px; flex-shrink: 0; font-weight: 600; }
+  .param-bar-track { flex: 1; height: 18px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .param-bar-fill { height: 100%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #fff; transition: width .3s ease; }
+  .fill-frozen { background: var(--frozen); }
+  .fill-train { background: var(--train); }
+
+  .load-bar-wrap { margin-top: 10px; }
+  .load-bar-track { height: 12px; background: var(--frozen); border-radius: 6px; overflow: hidden; display: flex; }
+  .load-bar-fill { height: 100%; transition: width .3s ease; }
+  .load-bar-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600; }
+
+  /* Table */
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; }
+  .compare-table th, .compare-table td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; }
+  .compare-table th { background: #f8fafc; font-weight: 700; color: #1e2a3a; font-size: 13.5px; }
+  .compare-table th.lp-head { color: var(--frozen); background: var(--frozen-bg); }
+  .compare-table th.ft-head { color: var(--train); background: var(--train-bg); }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .tag-good { background: #dcfce7; color: #15803d; }
+  .tag-warn { background: #ffedd5; color: #c2410c; }
+  .tag-info { background: #dbeafe; color: #1d4ed8; }
+
+  /* Scenario Cards */
+  .scenario-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; height: 100%; }
+  .scenario-card.lp-card { border-left: 4px solid var(--frozen); }
+  .scenario-card.ft-card { border-left: 4px solid var(--train); }
+  .scenario-card h4 { font-size: 13.5px; font-weight: 700; margin-bottom: 10px; color: #1e2a3a; }
+  .scenario-card ul { padding-left: 18px; font-size: 13.5px; color: #475569; line-height: 1.7; }
+
+  /* Simulation Chart */
+  .sim-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .sim-btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: all .15s; }
+  .sim-btn-run { background: #2563eb; color: #fff; }
+  .sim-btn-run:hover { opacity: .9; }
+  .sim-btn-reset { background: #fff; border: 1.5px solid #cbd5e1; color: #475569; }
+  .sim-btn-reset:hover { background: #f1f5f9; }
+  .sim-info { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; font-weight: 600; }
+
+  .chart-wrap { position: relative; width: 100%; height: 240px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+  .chart-legend { display: flex; gap: 16px; justify-content: center; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #475569; font-weight: 600; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-line { width: 16px; height: 3px; border-radius: 2px; }
+  .line-lp { background: var(--frozen); }
+  .line-ft { background: var(--train); }
+  .line-rnd { background: #94a3b8; }
+
+  .epoch-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .epoch-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; }
+  .epoch-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+  .epoch-value { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; }
+  .ec-lp { color: var(--frozen); }
+  .ec-ft { color: var(--train); }
+  .ec-rnd { color: #64748b; }
+
+  /* Insights Grid */
+  .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 10px; }
+  .insight-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .insight-icon { font-size: 20px; flex-shrink: 0; }
+  .insight-card h4 { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 4px; }
+  .insight-card p { font-size: 13.5px; color: #64748b; line-height: 1.6; }
+
+  footer { text-align: center; padding: 24px; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; border-top: 1px solid #e2e8f0; margin-top: 40px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>🧠 Linear Probing & <span>Fine-tuning</span></h1>
+  <p class="subtitle">전이학습(Transfer Learning)의 두 가지 핵심 전략 비교 가이드<br>동결(Freeze) 범위, 학습 파라미터 비율, 성능 인터랙티브 시뮬레이션</p>
+</header>
+
+<div class="wrap">
+
+<!-- ── SEC 01: Architecture & Params ── -->
+<div class="sec"><div class="ln"></div><span>① CNN 특징 추출 구조 & 파라미터 동결 상태</span><div class="ln"></div></div>
+
+  <div class="block">
+    <div class="block-hd">
+      <div class="bname">🏗️ 레이어별 동결(Freeze) vs 학습(Train) 구조</div>
+      <div class="mode-toggle">
+        <button class="mode-btn lp active" onclick="setMode('lp')">🔒 Linear Probing 모드</button>
+        <button class="mode-btn ft" onclick="setMode('ft')">🔥 Fine-tuning 모드</button>
+      </div>
+    </div>
+    <div class="block-body">
+      <div id="modeDesc" class="bdesc">
+        🔒 <strong>Linear Probing:</strong> 특징 추출 레이어(Conv + Pooling)를 <strong>동결(freeze)</strong>하고, 분류층(FC Layer)만 새로 학습합니다. 사전 학습된 지식을 그대로 활용하여 학습이 매우 빠르고 과적합 위험이 낮습니다.
+      </div>
+
+      <!-- CNN Flow Diagram -->
+      <div id="cnnFlow" class="cnn-flow"></div>
+
+      <!-- Params Visualization -->
+      <div class="params-vis">
+        <div class="param-group">
+          <div class="param-group-title">📦 레이어별 파라미터 상태</div>
+          <div class="param-bar-row">
+            <div class="param-bar-label">Conv Block 1</div>
+            <div class="param-bar-track"><div id="bar1" class="param-bar-fill fill-frozen" style="width: 100%;">✓ 동결</div></div>
+          </div>
+          <div class="param-bar-row">
+            <div class="param-bar-label">Conv Block 2</div>
+            <div class="param-bar-track"><div id="bar2" class="param-bar-fill fill-frozen" style="width: 100%;">✓ 동결</div></div>
+          </div>
+          <div class="param-bar-row">
+            <div class="param-bar-label">Conv Block 3</div>
+            <div class="param-bar-track"><div id="bar3" class="param-bar-fill fill-frozen" style="width: 100%;">✓ 동결</div></div>
+          </div>
+          <div class="param-bar-row">
+            <div class="param-bar-label">FC Classifier</div>
+            <div class="param-bar-track"><div id="bar4" class="param-bar-fill fill-train" style="width: 12%;">~1%</div></div>
+          </div>
+          <div style="margin-top: 10px; font-size: 12px; color: #64748b; font-weight: 500;">
+            <span style="display: inline-block; width: 10px; height: 10px; background: var(--frozen); border-radius: 3px; margin-right: 4px; vertical-align: middle;"></span>동결된 파라미터 (사전 학습) &nbsp;&nbsp; 
+            <span style="display: inline-block; width: 10px; height: 10px; background: var(--train); border-radius: 3px; margin-right: 4px; vertical-align: middle;"></span>학습 중인 파라미터
+          </div>
+        </div>
+
+        <div class="param-group" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="param-group-title">📊 전체 학습 파라미터 비율</div>
+            <div style="text-align: center; margin: 10px 0;">
+              <div id="trainPct" style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--train);">~1%</div>
+              <div style="font-size: 13px; color: #64748b; font-weight: 600;">의 파라미터만 업데이트</div>
+            </div>
+            <div class="load-bar-wrap">
+              <div class="load-bar-track">
+                <div id="totalBar" class="load-bar-fill" style="background: var(--train); width: 1%;"></div>
+              </div>
+              <div class="load-bar-label">
+                <span id="frozenLabel">동결: ~99%</span>
+                <span id="trainLabel">학습: ~1%</span>
+              </div>
+            </div>
+          </div>
+          <div id="paramNote" style="font-size: 13px; color: #475569; font-weight: 500; line-height: 1.6; margin-top: 10px;">
+            Linear Probing은 분류층(전체의 ~1%)만 학습하므로 분 단위의 매우 빠른 학습이 가능합니다!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ── SEC 02: Comparison & Scenarios ── -->
+<div class="sec" style="margin-top:30px;"><div class="ln"></div><span>② Linear Probing vs Fine-tuning 전략 비교</span><div class="ln"></div></div>
+
+  <div class="block">
+    <div class="block-hd"><div class="bname">⚖️ 두 전략 핵심 사양 비교표</div></div>
+    <div class="block-body" style="overflow-x:auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>비교 항목</th>
+            <th class="lp-head">🔒 Linear Probing</th>
+            <th class="ft-head">🔥 Fine-tuning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>개념 정의</strong></td>
+            <td>특징 추출 레이어 동결,<br>분류층(FC)만 새로 학습</td>
+            <td>사전 학습 가중치를 초기값으로,<br>전체/일부 모델을 추가 학습</td>
+          </tr>
+          <tr>
+            <td><strong>학습 파라미터</strong></td>
+            <td><span class="tag tag-good">~1% (분류층만)</span></td>
+            <td><span class="tag tag-warn">100% (전체 모델)</span></td>
+          </tr>
+          <tr>
+            <td><strong>학습 속도</strong></td>
+            <td>⚡ 매우 빠름 <span style="font-size:12px; color:#64748b;">(분 단위)</span></td>
+            <td>🐢 상대적으로 느림 <span style="font-size:12px; color:#64748b;">(시간/일 단위)</span></td>
+          </tr>
+          <tr>
+            <td><strong>권장 학습률 (Learning Rate)</strong></td>
+            <td><span class="tag tag-info">0.001 ~ 0.01</span> (상대적으로 큼)</td>
+            <td><span class="tag tag-warn">0.0001 ~ 0.001</span> (미세 조정)</td>
+          </tr>
+          <tr>
+            <td><strong>과적합 위험</strong></td>
+            <td><span class="tag tag-good">낮음 😊</span></td>
+            <td><span class="tag tag-warn">높음 (데이터 부족 시)</span></td>
+          </tr>
+          <tr>
+            <td><strong>초기 정확도 (Epoch 1)</strong></td>
+            <td><span class="tag tag-good">~60%+ 이상에서 시작</span></td>
+            <td><span class="tag tag-warn">~10% 수준에서 시작</span></td>
+          </tr>
+          <tr>
+            <td><strong>최종 성능</strong></td>
+            <td>70%+ (빠르고 준수한 성과)</td>
+            <td><span class="tag tag-good">90%+ 최고 성능 달성</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="scenario-card lp-card">
+      <h4>🔒 Linear Probing 선택 상황</h4>
+      <ul>
+        <li>데이터셋 규모가 작을 때 (수백 ~ 수천 장)</li>
+        <li>빠른 가설 검증 및 프로토타이핑이 필요할 때</li>
+        <li>컴퓨팅 자원(GPU)이 제한적일 때</li>
+        <li>과적합(Overfitting) 방지가 최우선일 때</li>
+        <li>원본 데이터와 대상 데이터의 도메인이 유사할 때</li>
+      </ul>
+    </div>
+    <div class="scenario-card ft-card">
+      <h4>🔥 Fine-tuning 선택 상황</h4>
+      <ul>
+        <li>충분한 라벨링 데이터가 확보되었을 때 (수만 장 이상)</li>
+        <li>최고 레벨의 모델 정확도가 필요할 때</li>
+        <li>충분한 GPU/TPU 연산 자원이 있을 때</li>
+        <li>원본 데이터와 타겟 도메인의 차이가 클 때</li>
+        <li>학습 시간에 여유가 있을 때</li>
+      </ul>
+    </div>
+  </div>
+
+<!-- ── SEC 03: Interactive Simulation ── -->
+<div class="sec" style="margin-top:30px;"><div class="ln"></div><span>③ 학습 정확도 시뮬레이션 (CIFAR-10 기반)</span><div class="ln"></div></div>
+
+  <div class="block">
+    <div class="block-hd">
+      <div class="bname">📈 에포크별 학습 곡선 및 성능 비교</div>
+      <div class="sim-controls">
+        <button id="runBtn" class="sim-btn sim-btn-run" onclick="runSimulation()">▶ 시뮬레이션 시작</button>
+        <button class="sim-btn sim-btn-reset" onclick="resetSimulation()">↺ 초기화</button>
+        <span id="simStatus" class="sim-info">에포크 0 / 30</span>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="chart-wrap">
+        <canvas id="accChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-line line-lp"></div>Linear Probing</div>
+        <div class="legend-item"><div class="legend-line line-ft"></div>Fine-tuning</div>
+        <div class="legend-item"><div class="legend-line line-rnd" style="border-top:2px dashed #94a3b8; background:none;"></div>Random Init</div>
+      </div>
+
+      <div class="epoch-info">
+        <div class="epoch-card">
+          <div class="epoch-label">🔒 Linear Probing</div>
+          <div id="lpAcc" class="epoch-value ec-lp">-</div>
+        </div>
+        <div class="epoch-card">
+          <div class="epoch-label">🔥 Fine-tuning</div>
+          <div id="ftAcc" class="epoch-value ec-ft">-</div>
+        </div>
+        <div class="epoch-card">
+          <div class="epoch-label">🎲 Random Init</div>
+          <div id="rndAcc" class="epoch-value ec-rnd">-</div>
+        </div>
+      </div>
+
+      <div id="simComment" style="margin-top:14px; padding:12px 16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; font-size:13.5px; font-weight:500; color:#475569; line-height:1.7;">
+        ▶ 시뮬레이션을 시작하면 세 가지 접근 방식의 학습 곡선 추이를 확인할 수 있습니다.
+      </div>
+    </div>
+  </div>
+
+<!-- ── SEC 04: Insights & Formulas ── -->
+<div class="sec" style="margin-top:30px;"><div class="ln"></div><span>④ 핵심 인사이트 & 수학적 수식 요약</span><div class="ln"></div></div>
+
+  <div class="block" style="margin-bottom:20px;">
+    <div class="block-hd"><div class="bname">💡 전이학습 핵심 관찰 포인트</div></div>
+    <div class="block-body">
+      <div class="insight-grid">
+        <div class="insight-card">
+          <div class="insight-icon">⚡</div>
+          <div>
+            <h4>1. 신속한 수렴 속도</h4>
+            <p>사전 학습 모델은 처음부터 학습하는 것보다 수렴 속도가 비약적으로 빠르며, Linear Probing은 특히 분 단위로 수렴합니다.</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">🚀</div>
+          <div>
+            <h4>2. 우수한 초기 성능</h4>
+            <p>첫 에포크부터 높은 정확도를 보입니다. (Random 초기화 ~10% vs 전이학습 ~60%+ 이상)</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">🎯</div>
+          <div>
+            <h4>3. 최종 성능 달성</h4>
+            <p>Linear Probing만으로도 70%+ 수준을 달성하며, Fine-tuning 시 90%+ 이상의 최고 정확도를 확보합니다.</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon">🧊</div>
+          <div>
+            <h4>4. 저수준 특징의 범용성</h4>
+            <p>ImageNet 등으로 학습된 엣지, 색상, 질감 등 저수준 특징은 대부분의 시각 문제에 공통으로 유용합니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulas -->
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+        <div style="background:var(--frozen-bg); border:1.5px solid var(--frozen-border); border-radius:8px; padding:14px 18px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:var(--frozen); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🔒 Linear Probing 연산식</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13.5px; color:#1e2a3a;">Output = <span style="color:var(--frozen); font-weight:700;">W_new</span> · <span style="color:#64748b; font-weight:700;">Freeze(CNN_features(X))</span></div>
+          <div style="font-size:13px; color:#475569; margin-top:6px; font-weight:500;">분류층 W_new만 업데이트하고, 특징 추출기 CNN_features는 완전히 동결합니다.</div>
+        </div>
+
+        <div style="background:var(--train-bg); border:1.5px solid var(--train-border); border-radius:8px; padding:14px 18px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:var(--train); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🔥 Fine-tuning 연산식</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13.5px; color:#1e2a3a;">Output = <span style="color:var(--train); font-weight:700;">W_new</span> · <span style="color:var(--train); font-weight:700;">CNN_features(X; θ_pretrained)</span></div>
+          <div style="font-size:13px; color:#475569; margin-top:6px; font-weight:500;">W_new와 θ 모두 작은 학습률(Learning Rate)을 적용하여 미세하게 함께 업데이트합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Linear Probing & Fine-tuning · Transfer Learning Guide</footer>
+
+<script>
+// ─── CNN Architecture & Params Logic ───
+let currentMode = 'lp';
+
+function renderCNN(mode) {
+  const container = document.getElementById('cnnFlow');
+  if(!container) return;
+  container.innerHTML = '';
+
+  const blocks = [
+    { label: 'Input\nImage', icon: '🖼️', type: 'input' },
+    { label: 'Conv\nBlock 1', icon: '⬛', type: 'frozen', sub: '저수준 특징\n엣지·색상' },
+    { label: 'Conv\nBlock 2', icon: '⬛', type: 'frozen', sub: '중수준 특징\n모양·패턴' },
+    { label: 'Conv\nBlock 3', icon: '⬛', type: 'frozen', sub: '고수준 특징\n형태·질감' },
+    { label: 'FC\nClassifier', icon: '🎯', type: 'classifier', sub: '분류 결정' },
+    { label: 'Output\nClass', icon: '✅', type: 'output' },
+  ];
+
+  blocks.forEach((b, i) => {
+    if (i > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow';
+      arrow.textContent = '→';
+      container.appendChild(arrow);
+    }
+
+    const cell = document.createElement('div');
+    cell.className = 'cnn-block';
+
+    const box = document.createElement('div');
+    let boxClass = 'cnn-box ';
+    if (b.type === 'input') boxClass += 'input-box';
+    else if (b.type === 'frozen') boxClass += (mode === 'lp' ? 'frozen-box' : 'train-box');
+    else if (b.type === 'classifier') boxClass += 'train-box';
+    else boxClass += 'output-box';
+
+    box.className = boxClass;
+    box.innerHTML = `<div class="icon">${b.icon}</div>${b.label.replace('\n','<br>')}${b.sub ? `<div class="sub">${b.sub.replace('\n','<br>')}</div>` : ''}`;
+
+    if (b.type === 'frozen') {
+      const lock = document.createElement('div');
+      lock.className = 'lock-badge';
+      if (mode === 'lp') {
+        lock.textContent = '🔒';
+      } else {
+        lock.textContent = '🔥';
+        lock.style.background = 'var(--train)';
+      }
+      box.appendChild(lock);
+    }
+
+    const label = document.createElement('div');
+    label.className = 'block-label';
+    if (b.type === 'frozen') {
+      label.classList.add(mode === 'lp' ? 'label-frozen' : 'label-train');
+      label.textContent = mode === 'lp' ? '동결 ❄️' : '학습 중 🔥';
+    } else if (b.type === 'classifier') {
+      label.classList.add('label-train');
+      label.textContent = '학습 중 🔥';
+    } else {
+      label.style.visibility = 'hidden';
+      label.textContent = '-';
+    }
+
+    cell.appendChild(box);
+    cell.appendChild(label);
+    container.appendChild(cell);
+  });
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.mode-btn.${mode}`).classList.add('active');
+  renderCNN(mode);
+  updateParams(mode);
+
+  const desc = document.getElementById('modeDesc');
+  if (mode === 'lp') {
+    desc.innerHTML = '🔒 <strong>Linear Probing:</strong> 특징 추출 레이어(Conv + Pooling)를 <strong>동결(freeze)</strong>하고, 분류층(FC Layer)만 새로 학습합니다. 사전 학습된 지식을 그대로 활용하여 학습이 매우 빠르고 과적합 위험이 낮습니다.';
+  } else {
+    desc.innerHTML = '🔥 <strong>Fine-tuning:</strong> 사전 학습된 가중치를 초기값으로 활용하되, <strong>전체 모델을 추가 학습</strong>합니다. 더 높은 성능을 달성할 수 있지만, 더 많은 시간과 데이터가 필요합니다.';
+  }
+}
+
+function updateParams(mode) {
+  if (mode === 'lp') {
+    ['bar1','bar2','bar3'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el){ el.className = 'param-bar-fill fill-frozen'; el.style.width = '100%'; el.textContent = '✓ 동결'; }
+    });
+    const el4 = document.getElementById('bar4');
+    if(el4){ el4.className = 'param-bar-fill fill-train'; el4.style.width = '12%'; el4.textContent = '~1%'; }
+    document.getElementById('trainPct').textContent = '~1%';
+    document.getElementById('totalBar').style.width = '1%';
+    document.getElementById('frozenLabel').textContent = '동결: ~99%';
+    document.getElementById('trainLabel').textContent = '학습: ~1%';
+    document.getElementById('paramNote').textContent = 'Linear Probing은 분류층(전체의 ~1%)만 학습하므로 분 단위의 매우 빠른 학습이 가능합니다!';
+  } else {
+    ['bar1','bar2','bar3','bar4'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el){ el.className = 'param-bar-fill fill-train'; el.style.width = '100%'; el.textContent = '🔥 학습'; }
+    });
+    document.getElementById('trainPct').textContent = '100%';
+    document.getElementById('totalBar').style.width = '100%';
+    document.getElementById('frozenLabel').textContent = '동결: 0%';
+    document.getElementById('trainLabel').textContent = '학습: 100%';
+    document.getElementById('paramNote').textContent = 'Fine-tuning은 전체 파라미터를 미세 조정하므로 더 높은 성능을 얻을 수 있지만, 더 긴 학습 시간과 데이터가 필요합니다.';
+  }
+}
+
+// ─── Simulation Chart Logic ───
+let isRunning = false;
+let epoch = 0;
+const MAX_EPOCH = 30;
+
+function lpCurve(e) { return 62 + 12 * (1 - Math.exp(-e / 4)) + (Math.random() - 0.5) * 1.2; }
+function ftCurve(e) { return 10 + 81 * (1 - Math.exp(-e / 8)) + (Math.random() - 0.5) * 1.5; }
+function rndCurve(e) { return 10 + 50 * (1 - Math.exp(-e / 12)) + (Math.random() - 0.5) * 1.8; }
+
+let lpData = [], ftData = [], rndData = [];
+
+function drawChart() {
+  const canvas = document.getElementById('accChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth - 20;
+  const H = canvas.parentElement.clientHeight - 20;
+  canvas.width = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD = { top: 20, right: 20, bottom: 36, left: 45 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  // Grid
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = PAD.top + cH - (i / 5) * cH;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, y);
+    ctx.lineTo(PAD.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText((i * 20) + '%', PAD.left - 6, y + 4);
+  }
+
+  // X Axis
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 11px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  [0, 5, 10, 15, 20, 25, 30].forEach(e => {
+    const x = PAD.left + (e / MAX_EPOCH) * cW;
+    ctx.fillText(e === 0 ? '0' : `${e}`, x, H - PAD.bottom + 18);
+  });
+  ctx.fillText('Epochs', PAD.left + cW / 2, H - 4);
+
+  function plotLine(data, color, dash = []) {
+    if (data.length < 1) return;
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(dash);
+    ctx.lineJoin = 'round';
+    data.forEach((v, i) => {
+      const x = PAD.left + (i / MAX_EPOCH) * cW;
+      const y = PAD.top + cH - (Math.min(v, 100) / 100) * cH;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (data.length > 0) {
+      const last = data.length - 1;
+      const x = PAD.left + (last / MAX_EPOCH) * cW;
+      const y = PAD.top + cH - (Math.min(data[last], 100) / 100) * cH;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+  }
+
+  plotLine(rndData, '#94a3b8', [4, 4]);
+  plotLine(lpData, '#2563eb');
+  plotLine(ftData, '#ea580c');
+}
+
+function runSimulation() {
+  if (isRunning) return;
+  isRunning = true;
+  document.getElementById('runBtn').textContent = '⏸ 실행 중...';
+  document.getElementById('runBtn').disabled = true;
+
+  function step() {
+    if (epoch > MAX_EPOCH) {
+      isRunning = false;
+      document.getElementById('runBtn').textContent = '✅ 시뮬레이션 완료';
+      document.getElementById('runBtn').disabled = false;
+      return;
+    }
+
+    lpData.push(epoch === 0 ? 62 : lpCurve(epoch));
+    ftData.push(epoch === 0 ? 10 : ftCurve(epoch));
+    rndData.push(epoch === 0 ? 10 : rndCurve(epoch));
+
+    const lp = lpData[lpData.length - 1];
+    const ft = ftData[ftData.length - 1];
+    const rnd = rndData[rndData.length - 1];
+
+    document.getElementById('lpAcc').textContent = lp.toFixed(1) + '%';
+    document.getElementById('ftAcc').textContent = ft.toFixed(1) + '%';
+    document.getElementById('rndAcc').textContent = rnd.toFixed(1) + '%';
+    document.getElementById('simStatus').textContent = `에포크 ${epoch} / ${MAX_EPOCH}`;
+
+    updateComment(epoch, lp, ft, rnd);
+    drawChart();
+    epoch++;
+    setTimeout(step, 100);
+  }
+  step();
+}
+
+function updateComment(e, lp, ft, rnd) {
+  const el = document.getElementById('simComment');
+  if(!el) return;
+  if (!e) {
+    el.textContent = '▶ 시뮬레이션을 시작하면 세 가지 접근 방식의 학습 곡선 추이를 확인할 수 있습니다.';
+    return;
+  }
+  if (e === 1) {
+    el.innerHTML = `🚀 <strong>첫 에포크:</strong> Linear Probing은 사전 학습 덕분에 시작부터 <strong>${lp.toFixed(1)}%</strong>의 높은 정확도를 기록합니다! (Random Init ${rnd.toFixed(1)}%)`;
+  } else if (e === 5) {
+    el.innerHTML = `⚡ <strong>5 에포크:</strong> Linear Probing(${lp.toFixed(1)}%)이 안정적으로 앞서지만, Fine-tuning(${ft.toFixed(1)}%)이 빠르게 추격하고 있습니다.`;
+  } else if (e === 15) {
+    el.innerHTML = `🔥 <strong>15 에포크:</strong> 전체 가중치를 미세 조정하는 Fine-tuning(${ft.toFixed(1)}%)이 Linear Probing(${lp.toFixed(1)}%)의 성능을 역전하기 시작합니다.`;
+  } else if (e >= MAX_EPOCH) {
+    el.innerHTML = `✅ <strong>학습 완료:</strong> Fine-tuning: <strong>${ft.toFixed(1)}%</strong> | Linear Probing: <strong>${lp.toFixed(1)}%</strong> | Random: ${rnd.toFixed(1)}%. 데이터와 자원이 충분하다면 Fine-tuning이 최고 성능을 발휘합니다! 🎉`;
+  }
+}
+
+function resetSimulation() {
+  isRunning = false;
+  epoch = 0;
+  lpData = []; ftData = []; rndData = [];
+  document.getElementById('lpAcc').textContent = '-';
+  document.getElementById('ftAcc').textContent = '-';
+  document.getElementById('rndAcc').textContent = '-';
+  document.getElementById('simStatus').textContent = `에포크 0 / ${MAX_EPOCH}`;
+  document.getElementById('runBtn').textContent = '▶ 시뮬레이션 시작';
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('simComment').textContent = '▶ 시뮬레이션을 시작하면 세 가지 접근 방식의 학습 곡선 추이를 확인할 수 있습니다.';
+  drawChart();
+}
+
+// Init on Page Load
+window.addEventListener('DOMContentLoaded', () => {
+  renderCNN('lp');
+  updateParams('lp');
+  setTimeout(drawChart, 150);
+});
+window.addEventListener('resize', drawChart);
+</script>
+
+</body>
+</html>
+�� <strong>5 에포크</strong>: Linear Probing(${lp.toFixed(1)}%) vs Fine-tuning(${ft.toFixed(1)}%). 아직은 LP가 앞서지만, Fine-tuning이 빠르게 따라오고 있어요!`;
+  } else if (e === 15) {
+    el.innerHTML = `🔥 <strong>15 에포크</strong>: Fine-tuning이 ${ft.toFixed(1)}%로 앞서기 시작했어요! 전체 모델 학습의 효과가 나타나고 있어요.`;
+  } else if (e >= MAX_EPOCH) {
+    el.innerHTML = `✅ <strong>학습 완료!</strong> LP: ${lp.toFixed(1)}% | Fine-tuning: ${ft.toFixed(1)}% | 랜덤: ${rnd.toFixed(1)}%. Fine-tuning이 최고 성능이지만, LP도 충분히 훌륭한 결과예요! 🎉`;
+  }
+}
+
+function resetSimulation() {
+  isRunning = false;
+  epoch = 0;
+  lpData = []; ftData = []; rndData = [];
+  document.getElementById('lpAcc').textContent = '-';
+  document.getElementById('ftAcc').textContent = '-';
+  document.getElementById('rndAcc').textContent = '-';
+  document.getElementById('simStatus').textContent = `에포크 0 / ${MAX_EPOCH}`;
+  document.getElementById('runBtn').textContent = '▶ 시뮬레이션 시작';
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('simComment').textContent = '▶ 시뮬레이션을 시작하면 세 가지 방법의 학습 곡선을 비교할 수 있어요!';
+  drawChart();
+}
+
+// Init
+renderCNN('lp');
+updateParams('lp');
+window.addEventListener('load', () => {
+  setTimeout(drawChart, 100);
+});
+window.addEventListener('resize', drawChart);
+</script>
+<div style="margin: 0; padding: 0; border: none; background: none; float: none; clear: none; z-index: 0;">&nbsp;</div>
+<script type="text/javascript" src="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/script/common.js"></script>
+<script>window.tiara = {"svcDomain":"user.tistory.com","section":"글뷰","trackPage":"글뷰_보기","page":"글뷰","key":"1922944-928","customProps":{"userId":"1446129","blogId":"1922944","entryId":"928","role":"owner","trackPage":"글뷰_보기","filterTarget":false},"entry":{"entryId":"928","entryTitle":"LinearProbling","entryType":"POST","categoryName":"ML,DL,LangChain/04_CNN과 이미지 생성모델","categoryId":"1257179","serviceCategoryName":null,"serviceCategoryId":null,"author":"1446129","authorNickname":"은서파","blogNmae":"모두의 코딩","image":"","plink":"/928","tags":[]},"kakaoAppKey":"3e6ddd834b023f24221217e370daed18","appUserId":"1517393043","thirdProvideAgree":null}</script>
+<script type="module" src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index.js"></script>
+<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/polyfills-legacy.js"></script>
+<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index-legacy.js"></script>
+</div>

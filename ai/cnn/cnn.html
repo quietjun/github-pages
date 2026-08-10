@@ -7,132 +7,128 @@
 <link rel="stylesheet" href="../../css/content.css">
 <script src="../../js/content.js"></script>
 <style>
-  /* ── Page Specific Visualization Styles ── */
-  .intro-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 16px; box-shadow: var(--shadow); }
-  .intro-icon { font-size: 22px; margin-bottom: 8px; }
-  .intro-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-  .intro-card p { font-size: 12px; color: var(--sub); line-height: 1.8; }
+  /* ── Page Specific Visualization & Typography Styles (AGENTS Rule 준수) ── */
+  .intro-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .intro-icon { font-size: 24px; margin-bottom: 8px; }
+  .intro-card h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
+  .intro-card p { font-size: 13.5px; color: #64748b; line-height: 1.7; }
 
-  .hbox { border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; border-left: 4px solid; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
+  .hbox { border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; border-left: 4px solid; display: flex; gap: 14px; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
   .hbox.blue { background: #eff6ff; border-color: #2563eb; }
   .hbox.green { background: #f0fdf4; border-color: #16a34a; }
   .hbox.orange { background: #fff7ed; border-color: #ea580c; }
-  .hbox-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
-  .hbox-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .hbox-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .hbox-title { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
   .hbox.blue .hbox-title { color: #2563eb; }
   .hbox.green .hbox-title { color: #16a34a; }
   .hbox.orange .hbox-title { color: #ea580c; }
-  .hbox-text { font-size: 12px; color: var(--sub); line-height: 1.8; }
-  .hbox-text strong { color: var(--text); }
+  .hbox-text { font-size: 14px; color: #475569; line-height: 1.7; }
+  .hbox-text strong { color: #1e2a3a; }
 
+  .card-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  @media(max-width: 768px){ .card-3 { grid-template-columns: 1fr; } }
 
-.card-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
-@media(max-width:600px){.card-3{grid-template-columns:1fr;}}
-.intro-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px 16px;}
-.intro-icon{font-size:22px;margin-bottom:8px;}
-.intro-card h3{font-size:14px;font-weight:700;margin-bottom:6px;}
-.intro-card p{font-size:12px;color:#64748b;line-height:1.8;}
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  @media(max-width: 768px){ .grid-2 { grid-template-columns: 1fr; } }
 
-.hbox{border-radius:8px;padding:14px 18px;margin-bottom:20px;border-left:4px solid;display:flex;gap:12px;align-items:flex-start;}
-.hbox.blue{background:#eff6ff;border-color:#2563eb;}
-.hbox.green{background:#f0fdf4;border-color:#16a34a;}
-.hbox.orange{background:#fff7ed;border-color:#ea580c;}
-.hbox-icon{font-size:16px;flex-shrink:0;margin-top:2px;}
-.hbox-title{font-size:12px;font-weight:700;margin-bottom:4px;}
-.hbox.blue .hbox-title{color:#2563eb;}
-.hbox.green .hbox-title{color:#16a34a;}
-.hbox.orange .hbox-title{color:#ea580c;}
-.hbox-text{font-size:12px;color:#64748b;line-height:1.8;}
-.hbox-text strong{color:#1e2a3a;}
+  .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  @media(max-width: 768px){ .grid-4 { grid-template-columns: 1fr; } }
 
-.block{background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;overflow:hidden;}
-.block-hd{padding:16px 20px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.bnum{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:3px;}
-.bapi{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;}
-.bname{font-size:15px;font-weight:700;color:#1e2a3a;margin-top:2px;}
-.block-body{padding:18px 20px;}
-.bdesc{font-size:12px;color:#64748b;line-height:1.9;margin-bottom:14px;}
-.bdesc strong{color:#1e2a3a;}
+  .block { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+  .block-hd { padding: 16px 20px; border-bottom: 1px solid #eef1f6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .bnum { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 4px; }
+  .bapi { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; }
+  .bname { font-size: 15px; font-weight: 700; color: #1e2a3a; margin-top: 2px; }
+  .block-body { padding: 20px; }
+  .bdesc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
+  .bdesc strong { color: #1e2a3a; }
 
-.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px;}
-.param{background:#eef1f6;border-radius:6px;padding:9px 12px;}
-.param-k{font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;margin-bottom:2px;}
-.param-v{font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e2a3a;font-weight:600;}
+  .params { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
+  .param { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+  .param-k { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+  .param-v { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #1e2a3a; font-weight: 700; }
 
-.sim{background:#eef1f6;border:1px solid #e2e8f0;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;}
-.sim-top{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;}
-.sim-ctrl{display:flex;flex-direction:column;flex:1;min-width:190px;gap:12px;}
-.ctrl-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px;}
-.btn-grp{display:flex;gap:5px;flex-wrap:wrap;}
-.kbtn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;color:#64748b;cursor:pointer;transition:all .15s;}
-.kbtn:hover{border-color:#2563eb;color:#2563eb;}
-.kbtn.active{background:#2563eb;border-color:#2563eb;color:#fff;}
-.sim-play{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 12px;border:none;border-radius:4px;background:#2563eb;color:#fff;cursor:pointer;}
-.sim-play:hover{opacity:.85;}
-.sim-step{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 10px;border:1.5px solid #2563eb;border-radius:4px;background:#fff;color:#2563eb;cursor:pointer;}
-.sim-step:hover{background:#eff6ff;}
-.sim-reset{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;color:#64748b;cursor:pointer;}
-.sim-reset:hover{background:#eef1f6;}
+  .sim { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .sim-top { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .sim-ctrl { display: flex; flex-direction: column; flex: 1; min-width: 200px; gap: 14px; }
+  .ctrl-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  .btn-grp { display: flex; gap: 6px; flex-wrap: wrap; }
+  .kbtn { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; transition: all .15s; font-weight: 500; }
+  .kbtn:hover { border-color: #2563eb; color: #2563eb; }
+  .kbtn.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 700; }
+  .sim-play { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 14px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600; }
+  .sim-play:hover { opacity: .9; }
+  .sim-step { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 12px; border: 1.5px solid #2563eb; border-radius: 6px; background: #fff; color: #2563eb; cursor: pointer; font-weight: 600; }
+  .sim-step:hover { background: #eff6ff; }
+  .sim-reset { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; font-weight: 500; }
+  .sim-reset:hover { background: #f1f5f9; }
 
-.kern-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.kern-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;}
-.kern-name{font-family:'JetBrains Mono',monospace;font-size:9px;color:#ea580c;margin-top:2px;text-align:center;}
+  .kern-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .kern-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #475569; }
+  .kern-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #ea580c; margin-top: 2px; text-align: center; font-weight: 600; }
 
-.fbox{background:#fff;border:1px solid #e2e8f0;border-left:3px solid #2563eb;border-radius:6px;padding:12px 14px;min-width:160px;}
-.fbox-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
-.fbox-expr{font-family:'JetBrains Mono',monospace;font-size:10px;color:#1e2a3a;line-height:1.8;}
-.fbox-result{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#2563eb;margin-top:4px;}
+  .fbox { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; padding: 14px 16px; min-width: 170px; }
+  .fbox-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  .fbox-expr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #1e2a3a; line-height: 1.7; }
+  .fbox-result { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #2563eb; margin-top: 4px; }
 
-.sim-grids{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.gw{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.glabel{font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;}
-.glabel span{color:#1e2a3a;font-weight:600;}
-.sgrid{display:grid;gap:2px;}
-.cell{width:40px;height:40px;border:1.5px solid #e2e8f0;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#1e2a3a;transition:background .2s,border-color .2s;}
-.cell.hi{background:#eff6ff;border-color:#2563eb;}
-.cell.kact{background:#fff7ed;border-color:#ea580c;}
-.cell.done{background:#f0fdf4;border-color:#16a34a;color:#16a34a;}
-.cell.cur{background:#2563eb;border-color:#2563eb;color:#fff;animation:pop .3s ease;}
-.cell.pad{background:#f0f7ff;border:1.5px dashed #93c5fd;color:#93c5fd;font-size:9px;}
-.cell.pad.hi{background:#eff6ff;border-color:#2563eb;border-style:dashed;color:#2563eb;}
-@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+  .sim-grids { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .gw { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .glabel { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #475569; font-weight: 500; }
+  .glabel span { color: #1e2a3a; font-weight: 700; }
+  .sgrid { display: grid; gap: 3px; }
+  .cell { width: 42px; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #1e2a3a; transition: background .2s, border-color .2s; }
+  .cell.hi { background: #eff6ff; border-color: #2563eb; }
+  .cell.kact { background: #fff7ed; border-color: #ea580c; }
+  .cell.done { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
+  .cell.cur { background: #2563eb; border-color: #2563eb; color: #fff; animation: pop .3s ease; }
+  .cell.pad { background: #f0f7ff; border: 1.5px dashed #93c5fd; color: #93c5fd; font-size: 11px; }
+  .cell.pad.hi { background: #eff6ff; border-color: #2563eb; border-style: dashed; color: #2563eb; }
+  @keyframes pop { 0%{transform:scale(.8)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
-.cbox{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;}
-.cbox-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
-#simCalc{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;color:#1e2a3a;}
-#simCalcR{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#2563eb;margin-top:4px;min-height:18px;}
+  .cbox { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; }
+  .cbox-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  #simCalc { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; color: #1e2a3a; }
+  #simCalcR { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #2563eb; margin-top: 6px; min-height: 20px; }
 
-.dots-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:320px;}
-.dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0;transition:background .2s,transform .2s;}
-.dot.done{background:#16a34a;}
-.dot.cur{background:#2563eb;transform:scale(1.4);}
-#simSteps{font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;}
+  .dots-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .dots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 340px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; transition: background .2s, transform .2s; }
+  .dot.done { background: #16a34a; }
+  .dot.cur { background: #2563eb; transform: scale(1.3); }
+  #simSteps { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; font-weight: 500; }
 
-.dw{background:#eef1f6;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-top:14px;overflow-x:auto;}
+  .dw { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 16px; overflow-x: auto; }
 
-.pipe-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;overflow-x:auto;margin-bottom:20px;}
-.pipe-flow{display:flex;align-items:center;gap:6px;min-width:700px;}
-.pblock{border:1.5px solid;border-radius:8px;padding:10px 12px;text-align:center;min-width:84px;flex-shrink:0;}
-.pblock:hover{opacity:.85;}
-.picon{font-size:18px;margin-bottom:4px;}
-.pname{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:#1e2a3a;}
-.psize{font-family:'JetBrains Mono',monospace;font-size:8px;color:#94a3b8;margin-top:2px;}
-.parr{font-size:16px;color:#cbd5e1;flex-shrink:0;}
-.pipe-note{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;line-height:1.7;}
+  .pipe-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 22px; overflow-x: auto; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .pipe-flow { display: flex; align-items: center; gap: 8px; min-width: 720px; }
+  .pblock { border: 1.5px solid; border-radius: 8px; padding: 12px 14px; text-align: center; min-width: 96px; flex-shrink: 0; }
+  .pblock:hover { opacity: .85; }
+  .picon { font-size: 20px; margin-bottom: 4px; }
+  .pname { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1e2a3a; }
+  .psize { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; margin-top: 4px; }
+  .parr { font-size: 18px; color: #94a3b8; flex-shrink: 0; }
+  .pipe-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 13.5px; color: #475569; line-height: 1.7; }
 
-.hier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-@media(max-width:600px){.hier-grid{grid-template-columns:1fr;}}
-.hcard{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px 16px;text-align:center;}
-.hlevel{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px;}
-.htitle{font-size:15px;font-weight:700;margin-bottom:6px;}
-.hdesc{font-size:12px;color:#64748b;line-height:1.7;}
-.htags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px;}
-.htag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;border-radius:99px;font-weight:500;}
+  .hier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media(max-width: 768px){ .hier-grid { grid-template-columns: 1fr; } }
+  .hcard { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 18px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+  .hlevel { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; font-weight: 600; }
+  .htitle { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
+  .hdesc { font-size: 13.5px; color: #64748b; line-height: 1.7; }
+  .htags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+  .htag { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
 
-input[type=range]{width:80px;accent-color:#2563eb;}
+  /* ── Interactive Feature Component Cards ── */
+  .feat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .feat-card-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .feat-card-desc { font-size: 13.5px; color: #64748b; line-height: 1.7; margin-bottom: 12px; }
 
-footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;border-top:1px solid #e2e8f0;margin-top:40px;}
+  canvas.interactive-canvas { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; display: block; margin: 10px auto; max-width: 100%; height: auto; }
+
+  input[type=range] { width: 100px; accent-color: #2563eb; cursor: pointer; }
+
+  footer { text-align: center; padding: 24px; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; border-top: 1px solid #e2e8f0; margin-top: 40px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -141,41 +137,62 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 
 <header>
   <h1><span>CNN</span> (Convolutional Neural Network)</h1>
-  <p class="subtitle">합성곱 신경망 — 이미지를 이해하는 방법<br>Conv · Pooling · FC 세 가지 핵심 블록의 구조와 역할</p>
+  <p class="subtitle">합성곱 신경망 — 이미지를 이해하는 시각 신경망 가이드<br>Conv · Pooling · FC 핵심 블록의 원리와 인터랙티브 시각화</p>
 </header>
-
 
 <div class="wrap">
 
 <!-- ── SEC 01 ── -->
-<div class="sec"><div class="ln"></div><span>① CNN이란? (이미지 이해)</span><div class="ln"></div></div>
+<div class="sec"><div class="ln"></div><span>① CNN이란? (이미지의 본질)</span><div class="ln"></div></div>
 
   <div class="card-3">
     <div class="intro-card">
-      <div class="intro-icon">🖼️</div>
-      <h3>이미지는 숫자 행렬</h3>
-      <p>픽셀값(0~255)으로 이루어진 숫자 배열로 인식<br>컬러 이미지 → R·G·B 3채널</p>
+      <div>
+        <div class="intro-icon">🖼️</div>
+        <h3>이미지는 숫자 행렬</h3>
+        <p>컴퓨터는 이미지를 픽셀 밝기값(0~255) 행렬로 인지합니다. 컬러 사진은 R·G·B 3채널의 3D 행렬로 표현됩니다.</p>
+      </div>
     </div>
     <div class="intro-card">
-      <div class="intro-icon">🔍</div>
-      <h3>지역적 패턴 학습</h3>
-      <p>작은 필터(커널)를 슬라이딩하며 적용<br>엣지·곡선·텍스처 등 지역 특징 자동 추출</p>
+      <div>
+        <div class="intro-icon">🔍</div>
+        <h3>지역적 패턴 학습</h3>
+        <p>작은 필터(커널)를 슬라이딩하면서 엣지, 선, 곡선 등 국소적 패턴(Local Features)을 연산으로 추출합니다.</p>
+      </div>
     </div>
     <div class="intro-card">
-      <div class="intro-icon">📐</div>
-      <h3>위치 불변성</h3>
-      <p>동일 필터를 이미지 전체에 공유 적용<br>객체가 어디에 있어도 동일 특징으로 인식</p>
+      <div>
+        <div class="intro-icon">📐</div>
+        <h3>공간/위치 불변성</h3>
+        <p>동일한 필터 가중치를 이미지 전체 영역에 공유 적용하여, 객체가 이미지 내 어디에 있든 동일하게 감지합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- [NEW Visual Component 1] 픽셀 대조 시각화 (cnnbasic.html 보완) -->
+  <div class="block" style="margin-bottom: 20px;">
+    <div class="block-hd" style="background:#f8fafc;">
+      <div class="bname">🖼️ 시각적 픽셀 vs 컴퓨터의 2D 숫자 행렬 (0~255)</div>
+    </div>
+    <div class="block-body">
+      <div class="bdesc">
+        우리가 눈으로 보는 이미지는 컴퓨터 내부에서 각 위치마다 <strong>0(검은색)부터 255(흰색)까지의 픽셀 밝기 수치</strong>로 변환되어 저장됩니다.
+      </div>
+      <canvas id="pixelCanvas" class="interactive-canvas" width="600" height="230"></canvas>
+      <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 8px;">
+        ▲ [왼쪽] 사람이 인식하는 이미지 패턴 &nbsp;|&nbsp; [오른쪽] 컴퓨터가 실제 처리하는 픽셀 밝기 수치 행렬
+      </p>
     </div>
   </div>
 
   <div class="hbox blue">
     <div class="hbox-icon">💡</div>
     <div>
-      <div class="hbox-title">MLP와의 결정적 차이</div>
+      <div class="hbox-title">MLP(다층 페셉트론)와 CNN의 결정적 차이</div>
       <div class="hbox-text">
-        MLP → 이미지를 1D 벡터로 펼쳐 처리 : <strong>공간적 구조(위치 관계) 손실</strong><br>
-        CNN → 2D 구조 유지 + <strong>인접 픽셀 간 관계</strong>를 필터로 학습<br>
-        파라미터 공유(weight sharing) → 학습 파라미터 수 대폭 절감
+        <strong>MLP</strong> → 2D 이미지를 1D 평탄화(Flatten)하여 입력 : 공간적 위치 구조 정보가 완전히 손실됨<br>
+        <strong>CNN</strong> → 2D/3D 형상을 그 대로 유지 + <strong>인접 픽셀 간 상호 관계</strong>를 필터로 탐지<br>
+        <strong>파라미터 공유(Weight Sharing)</strong> → 이미지 전체에 동일 필터를 슬라이딩하여 가중치 수 대폭 절감
       </div>
     </div>
   </div>
@@ -194,9 +211,22 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
     </div>
     <div class="block-body">
       <div class="bdesc">
-        입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 내적(dot product) + bias를 계산해 <strong>Feature Map</strong> 생성<br>
-        → 필터 하나 = 하나의 특징 감지 / 여러 필터를 쌓아 다양한 특징 동시 추출<br>
-        → 실제 연산: <span class="mono" style="font-size:11px;color:#1d4ed8;">output = Σ(input × weight) + bias</span>
+        입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 요소별 곱셈 및 합산(Dot Product + Bias)을 수행해 <strong>Feature Map(특징 맵)</strong>을 생성합니다.<br>
+        → 필터 하나 = 하나의 특정한 엣지/패턴 감지기<br>
+        → 기본 연산식: <span class="mono" style="font-size:12.5px;color:#1d4ed8;font-weight:600;">output = Σ(input × weight) + bias</span><br>
+        <span style="font-size:13px;color:#64748b;">(※ 수학적으로 필터를 반전하지 않고 원소별로 바로 곱해 더하는 연산은 <strong>교차 상관(Cross-Correlation)</strong>에 해당하나, 딥러닝 분야에서는 이를 통칭하여 <strong>합성곱(Convolution)</strong> 연산이라 부릅니다.)</span>
+      </div>
+
+      <div class="hbox green" style="margin-bottom:16px;">
+        <div class="hbox-icon">❓</div>
+        <div>
+          <div class="hbox-title">필터 수치는 사람이 정하나요, 아니면 스스로 학습하나요?</div>
+          <div class="hbox-text">
+            <strong>학습 과정에서 스스로 찾아냅니다!</strong><br>
+            초기 필터는 난수(Random)로 설정되지만, 수많은 사진을 학습(역전파, Backpropagation)하면서 <strong>이미지를 가장 잘 분류할 수 있는 수직 엣지, 곡선, 질감 등의 최적 필터 가중치를 인공지능이 스스로 탐색하고 갱신</strong>합니다.<br>
+            (시뮬레이션의 'Sobel/블러' 필터는 이해를 돕기 위한 예시이며, 실제 모델은 더 유용하고 복잡한 필터를 자동 생성합니다.)
+          </div>
+        </div>
       </div>
 
       <div class="sim">
@@ -212,7 +242,7 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
               </div>
             </div>
             <div>
-              <div class="ctrl-label">Stride</div>
+              <div class="ctrl-label">Stride (이동 간격)</div>
               <div class="btn-grp">
                 <button class="kbtn stride-btn active" onclick="selS(1,this)">S=1</button>
                 <button class="kbtn stride-btn" onclick="selS(2,this)">S=2</button>
@@ -220,33 +250,33 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
               </div>
             </div>
             <div>
-              <div class="ctrl-label">Padding</div>
+              <div class="ctrl-label">Padding (외곽 패딩)</div>
               <div class="btn-grp">
-                <button class="kbtn pad-btn active" onclick="selP(0,this)">없음</button>
+                <button class="kbtn pad-btn active" onclick="selP(0,this)">없음 (P=0)</button>
                 <button class="kbtn pad-btn" onclick="selP(1,this)">Zero (P=1)</button>
               </div>
             </div>
             <div>
-              <div class="ctrl-label" style="margin-bottom:2px;">재생 속도</div>
-              <div style="display:flex;align-items:center;gap:8px;">
+              <div class="ctrl-label" style="margin-bottom:4px;">재생 속도</div>
+              <div style="display:flex;align-items:center;gap:10px;">
                 <input type="range" id="spd" min="1" max="3" value="2" step="1" oninput="updSpd(this.value)">
-                <span id="spdLbl" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;">보통</span>
+                <span id="spdLbl" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#475569;font-weight:600;">보통</span>
               </div>
             </div>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
               <button class="sim-play" id="playBtn" onclick="toggleSim()">▶ 시작</button>
               <button class="sim-step" onclick="stepSim()">→ 다음</button>
               <button class="sim-reset" onclick="resetSim()">↺ 초기화</button>
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:14px;">
             <div class="kern-wrap">
-              <div class="kern-label">현재 Kernel <span style="color:#1e2a3a;font-weight:600;">(3×3)</span></div>
-              <div class="sgrid" style="grid-template-columns:repeat(3,40px);" id="simKern"></div>
+              <div class="kern-label">현재 Kernel <span style="color:#1e2a3a;font-weight:700;">(3×3)</span></div>
+              <div class="sgrid" style="grid-template-columns:repeat(3,42px);" id="simKern"></div>
               <div class="kern-name" id="simKernName"></div>
             </div>
             <div class="fbox">
-              <div class="fbox-label">출력 크기 공식</div>
+              <div class="fbox-label">출력 크기 계산 공식</div>
               <div class="fbox-expr" id="fExpr"></div>
               <div class="fbox-result" id="fRes"></div>
             </div>
@@ -258,7 +288,7 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
             <div class="glabel" id="inLbl">Input <span>(5×5)</span></div>
             <div class="sgrid" id="simIn"></div>
           </div>
-          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b;line-height:1.6;">내적<br><span style="font-size:18px;color:#cbd5e1;">→</span></div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:#64748b;line-height:1.6;">내적 연산<br><span style="font-size:20px;color:#94a3b8;">→</span></div>
           <div class="gw">
             <div class="glabel" id="outLbl">Feature Map</div>
             <div class="sgrid" id="simOut"></div>
@@ -266,22 +296,34 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
         </div>
 
         <div class="cbox">
-          <div class="cbox-title">계산 과정</div>
+          <div class="cbox-title">실시간 연산 과정</div>
           <div id="simCalc">▶ 시작 버튼을 눌러 합성곱 과정을 확인하세요.</div>
           <div id="simCalcR"></div>
         </div>
 
         <div class="dots-wrap">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;">Step Progress</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#64748b;letter-spacing:.05em;text-transform:uppercase;font-weight:600;">진행 단계</div>
           <div class="dots" id="simDots"></div>
           <div id="simSteps"></div>
         </div>
       </div>
 
+      <!-- [NEW Visual Component 2] 다중 필터 시각화 (cnnbasic.html 보완) -->
+      <div style="margin-top:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px;">
+        <div style="font-size:13.5px; font-weight:700; color:#1e2a3a; margin-bottom:8px;">📊 여러 필터 동시 사용 = 다양한 다채널 특징 맵(Feature Maps) 생성</div>
+        <div style="font-size:14px; color:#475569; line-height:1.7; margin-bottom:14px;">
+          CNN은 1개의 필터만 쓰지 않고 32개, 64개 등 수많은 필터를 동시 적용합니다. 필터마다 서로 다른 형태의 패턴(수직선, 수평선, 선명함, 부드러움 등)을 감지해 다채로운 특징 맵 레이어를 구성합니다.
+        </div>
+        <canvas id="multiFilterCanvas" class="interactive-canvas" width="640" height="200"></canvas>
+        <p style="text-align:center; font-size:13px; color:#64748b; margin-top:8px;">
+          ▲ 1개의 동일한 원본 사진 → 서로 다른 필터 적용 → 각각 감지된 특징이 강조된 채널 맵들
+        </p>
+      </div>
+
       <div class="params">
-        <div class="param"><div class="param-k">Kernel Size (K)</div><div class="param-v">3×3 (일반적)</div></div>
+        <div class="param"><div class="param-k">Kernel Size (K)</div><div class="param-v">3×3 (일반적 사용)</div></div>
         <div class="param"><div class="param-k">Stride (S)</div><div class="param-v">커널 이동 칸 수</div></div>
-        <div class="param"><div class="param-k">Padding (P)</div><div class="param-v">입력 경계에 0 추가</div></div>
+        <div class="param"><div class="param-k">Padding (P)</div><div class="param-v">입력 외곽 0 채움</div></div>
         <div class="param"><div class="param-k">출력 크기</div><div class="param-v">⌊(N+2P−K)/S⌋ + 1</div></div>
       </div>
     </div>
@@ -297,51 +339,40 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
     </div>
     <div class="block-body">
       <div class="bdesc">
-        Feature Map 크기를 줄여 <strong>계산량 절감</strong> + 위치 변화에 강인한 표현 생성<br>
-        → 2×2 영역의 최댓값만 선택 : <strong>Max Pooling</strong> (가장 널리 사용)<br>
-        → 학습 파라미터 없음 — 단순 선택/집계 연산 (역전파 시 최댓값 위치만 추적)
+        Feature Map의 해상도를 축소하여 <strong>다운샘플링(Downsampling)</strong>을 수행함으로써 <strong>계산량을 크게 절감</strong>하고 위치 변화에 강인한 표현을 형성합니다.<br>
+        → 2×2 영역에서 최댓값을 선택하는 <strong>Max Pooling</strong>이 가장 대표적입니다.<br>
+        → 학습 파라미터 없음 (가중치 0개) — 단순 집계 연산 수행
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+          <a href="https://www.youtube.com/watch?v=f1fXCRtSUWU" target="_blank" class="kbtn active" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px;">
+            <span>🎬</span> 영상 1: Top Breeder (격자 재배치와 다운샘플링)
+          </a>
+          <a href="https://www.youtube.com/watch?v=U1KiC0AXhHg" target="_blank" class="kbtn" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px;">
+            <span>🎬</span> 영상 2: #todayscuriosity: Avatar (사진 슬라이싱 작업)
+          </a>
+        </div>
       </div>
 
-      <div class="dw">
-        <svg viewBox="0 0 420 155" width="100%" style="max-width:420px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
-          <text x="10" y="14" font-size="10" fill="#64748b" font-family="JetBrains Mono,monospace">Input (4×4)</text>
-          <rect x="10" y="20" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="24" y="38" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">1</text>
-          <rect x="38" y="20" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="52" y="38" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">6</text>
-          <rect x="10" y="48" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="24" y="66" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">3</text>
-          <rect x="38" y="48" width="28" height="28" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/><text x="52" y="66" text-anchor="middle" font-size="11" fill="#166534" font-family="JetBrains Mono,monospace">2</text>
-          <rect x="66" y="20" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="38" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">5</text>
-          <rect x="94" y="20" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="38" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">3</text>
-          <rect x="66" y="48" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="80" y="66" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">8</text>
-          <rect x="94" y="48" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="66" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">4</text>
-          <rect x="10" y="76" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="24" y="94" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">5</text>
-          <rect x="38" y="76" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="52" y="94" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">2</text>
-          <rect x="10" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="24" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">1</text>
-          <rect x="38" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="52" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">3</text>
-          <rect x="66" y="76" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="94" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">2</text>
-          <rect x="94" y="76" width="28" height="28" fill="#16a34a" stroke="#16a34a" stroke-width="1"/><text x="108" y="94" text-anchor="middle" font-size="11" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">9</text>
-          <rect x="66" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="80" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">4</text>
-          <rect x="94" y="104" width="28" height="28" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/><text x="108" y="122" text-anchor="middle" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">1</text>
-          <line x1="10" y1="76" x2="122" y2="76" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,2"/>
-          <line x1="66" y1="20" x2="66" y2="132" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,2"/>
-          <text x="136" y="78" font-size="16" fill="#cbd5e1">→</text>
-          <text x="126" y="92" font-size="9" fill="#16a34a" font-family="JetBrains Mono,monospace">2×2 MaxPool</text>
-          <text x="172" y="14" font-size="10" fill="#64748b" font-family="JetBrains Mono,monospace">Output (2×2)</text>
-          <rect x="172" y="20" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="194" y="46" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">6</text>
-          <rect x="216" y="20" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="238" y="46" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">8</text>
-          <rect x="172" y="64" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="194" y="90" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">5</text>
-          <rect x="216" y="64" width="44" height="44" fill="#16a34a" stroke="#16a34a" rx="4"/><text x="238" y="90" text-anchor="middle" font-size="20" fill="white" font-weight="bold" font-family="JetBrains Mono,monospace">9</text>
-          <text x="194" y="124" text-anchor="middle" font-size="9" fill="#16a34a" font-family="JetBrains Mono,monospace">각 구역의 최댓값 선택</text>
-          <text x="300" y="38" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↓ 해상도 ½ 감소</text>
-          <text x="300" y="55" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↓ 파라미터 수 절감</text>
-          <text x="300" y="72" font-size="11" fill="#64748b" font-family="JetBrains Mono,monospace">↑ 위치 불변성 강화</text>
-          <rect x="290" y="25" width="118" height="60" fill="none" stroke="#e2e8f0" rx="4"/>
-        </svg>
+      <!-- [NEW Visual Component 3] Max vs Avg Pooling 인터랙티브 시뮬레이터 (cnnbasic.html 보완) -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div style="font-size:13.5px; font-weight:700; color:#1e2a3a;">🎬 Pooling 인터랙티브 시뮬레이터 (2×2 vs 3×3 커널 비교)</div>
+          <div class="btn-grp" id="poolingCtrlBtns">
+            <button class="kbtn active" onclick="switchPoolingConfig(2,'max',this)">2×2 Max</button>
+            <button class="kbtn" onclick="switchPoolingConfig(3,'max',this)">3×3 Max</button>
+            <button class="kbtn" onclick="switchPoolingConfig(2,'avg',this)">2×2 Avg</button>
+            <button class="kbtn" onclick="switchPoolingConfig(3,'avg',this)">3×3 Avg</button>
+          </div>
+        </div>
+        <canvas id="poolingCanvas" class="interactive-canvas" width="640" height="230"></canvas>
+        <div id="poolingExplainText" style="font-size:13.5px; color:#475569; line-height:1.7; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; margin-top:10px;">
+          <strong>2×2 Max Pooling (S=2):</strong> 2×2 겹치지 않는 영역에서 가장 큰 값만 추출합니다. (출력 크기: 2×2)
+        </div>
       </div>
 
       <div class="params">
         <div class="param"><div class="param-k">Max Pooling</div><div class="param-v">영역 내 최댓값 선택</div></div>
         <div class="param"><div class="param-k">Avg Pooling</div><div class="param-v">영역 내 평균값 계산</div></div>
-        <div class="param"><div class="param-k">학습 파라미터</div><div class="param-v">없음 (0개)</div></div>
+        <div class="param"><div class="param-k">학습 파라미터</div><div class="param-v">0개 (파라미터 없음)</div></div>
         <div class="param"><div class="param-k">출력 크기</div><div class="param-v">⌊(N−K)/S⌋ + 1</div></div>
       </div>
     </div>
@@ -357,65 +388,70 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
     </div>
     <div class="block-body">
       <div class="bdesc">
-        Conv/Pooling으로 추출된 특징을 <strong>1D 벡터로 펼쳐(Flatten)</strong> 최종 분류 수행<br>
-        → 모든 입력 뉴런이 모든 출력 뉴런에 연결 (완전 연결)<br>
-        → <strong>분류 문제</strong>의 출력층에는 Softmax로 확률 계산 / 회귀 문제엔 Softmax 불필요
+        Conv와 Pooling을 거쳐 다듬어진 특징 맵을 <strong>1차원 벡터로 펼쳐(Flatten)</strong> 최종 분류를 진행합니다.<br>
+        → 추출된 고수준 특징 조합을 바탕으로 <strong>Softmax 함수</strong>를 적용하여 클래스별 확률값을 출력합니다.
       </div>
 
       <div class="dw">
-        <svg viewBox="0 0 420 130" width="100%" style="max-width:420px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="22" width="34" height="34" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
-          <rect x="16" y="28" width="34" height="34" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
-          <rect x="22" y="34" width="34" height="34" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
-          <text x="39" y="88" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Feature Maps</text>
-          <text x="68" y="56" font-size="14" fill="#cbd5e1">→</text>
-          <text x="62" y="70" font-size="9" fill="#7c3aed" font-family="JetBrains Mono,monospace">Flatten</text>
-          <rect x="90" y="16" width="14" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="2"/>
-          <text x="97" y="40" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
-          <text x="97" y="52" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
-          <text x="97" y="64" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
-          <text x="97" y="76" text-anchor="middle" font-size="8" fill="#7c3aed">·</text>
-          <text x="97" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">1D Vector</text>
-          <line x1="105" y1="30" x2="130" y2="38" stroke="#e0d5f0" stroke-width="0.9"/>
-          <line x1="105" y1="45" x2="130" y2="58" stroke="#e0d5f0" stroke-width="0.9"/>
-          <line x1="105" y1="60" x2="130" y2="78" stroke="#e0d5f0" stroke-width="0.9"/>
-          <line x1="105" y1="75" x2="130" y2="58" stroke="#e0d5f0" stroke-width="0.9"/>
-          <line x1="105" y1="30" x2="130" y2="78" stroke="#e0d5f0" stroke-width="0.9"/>
-          <circle cx="134" cy="38" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
-          <circle cx="134" cy="58" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
-          <circle cx="134" cy="78" r="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
-          <text x="134" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Hidden</text>
-          <text x="152" y="61" font-size="14" fill="#cbd5e1">→</text>
-          <rect x="168" y="28" width="70" height="16" rx="3" fill="#7c3aed"/>
-          <text x="203" y="39" text-anchor="middle" font-size="9" fill="white" font-family="JetBrains Mono,monospace">고양이 85%</text>
-          <rect x="168" y="48" width="42" height="16" rx="3" fill="#a78bfa"/>
-          <text x="189" y="59" text-anchor="middle" font-size="9" fill="white" font-family="JetBrains Mono,monospace">개 12%</text>
-          <rect x="168" y="68" width="22" height="16" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
-          <text x="179" y="79" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="JetBrains Mono,monospace">기타</text>
-          <text x="203" y="106" text-anchor="middle" font-size="9" fill="#64748b" font-family="JetBrains Mono,monospace">Softmax 출력 (분류)</text>
+        <svg viewBox="0 0 680 135" width="100%" style="max-width:680px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Feature Maps -->
+          <rect x="20" y="22" width="38" height="38" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+          <rect x="27" y="28" width="38" height="38" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+          <rect x="34" y="34" width="38" height="38" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+          <text x="53" y="96" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Feature Maps</text>
+
+          <!-- Flatten Arrow -->
+          <text x="120" y="56" text-anchor="middle" font-size="18" fill="#cbd5e1">→</text>
+          <text x="120" y="74" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">Flatten</text>
+
+          <!-- 1D Vector -->
+          <rect x="170" y="16" width="18" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
+          <text x="179" y="38" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+          <text x="179" y="50" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+          <text x="179" y="62" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+          <text x="179" y="74" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+          <text x="179" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">1D Vector</text>
+
+          <!-- Connection Lines -->
+          <line x1="188" y1="30" x2="255" y2="34" stroke="#e0d5f0" stroke-width="1.2"/>
+          <line x1="188" y1="45" x2="255" y2="55" stroke="#e0d5f0" stroke-width="1.2"/>
+          <line x1="188" y1="60" x2="255" y2="76" stroke="#e0d5f0" stroke-width="1.2"/>
+          <line x1="188" y1="75" x2="255" y2="55" stroke="#e0d5f0" stroke-width="1.2"/>
+          <line x1="188" y1="30" x2="255" y2="76" stroke="#e0d5f0" stroke-width="1.2"/>
+
+          <!-- Hidden Layer -->
+          <circle cx="260" cy="34" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <circle cx="260" cy="55" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <circle cx="260" cy="76" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="260" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Hidden Layer</text>
+
+          <!-- Softmax Arrow -->
+          <text x="325" y="56" text-anchor="middle" font-size="18" fill="#cbd5e1">→</text>
+          <text x="325" y="74" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">Softmax</text>
+
+          <!-- Output Probabilities -->
+          <rect x="380" y="22" width="130" height="22" rx="4" fill="#7c3aed"/>
+          <text x="445" y="37" text-anchor="middle" font-size="12" fill="white" font-family="JetBrains Mono,monospace" font-weight="700">고양이 85%</text>
+
+          <rect x="380" y="48" width="85" height="22" rx="4" fill="#a78bfa"/>
+          <text x="422" y="63" text-anchor="middle" font-size="12" fill="white" font-family="JetBrains Mono,monospace" font-weight="700">개 12%</text>
+
+          <rect x="380" y="74" width="45" height="22" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+          <text x="402" y="89" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">기타</text>
+
+          <text x="445" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Softmax 확률 출력</text>
         </svg>
       </div>
 
       <div class="params">
         <div class="param"><div class="param-k">Flatten</div><div class="param-v">3D → 1D 벡터 변환</div></div>
-        <div class="param"><div class="param-k">Dense</div><div class="param-v">완전연결 행렬 곱</div></div>
-        <div class="param"><div class="param-k">Activation</div><div class="param-v">ReLU (중간 레이어)</div></div>
-        <div class="param"><div class="param-k">출력 (분류)</div><div class="param-v">Softmax 확률 분포</div></div>
+        <div class="param"><div class="param-k">Dense (Linear)</div><div class="param-v">완전연결 행렬 곱</div></div>
+        <div class="param"><div class="param-k">Activation</div><div class="param-v">ReLU (은닉층)</div></div>
+        <div class="param"><div class="param-k">출력 (분류)</div><div class="param-v">Softmax 확률 출력</div></div>
       </div>
     </div>
   </div>
 
-  <div class="hbox orange">
-    <div class="hbox-icon">⚠️</div>
-    <div>
-      <div class="hbox-title">출력 활성화 함수 주의</div>
-      <div class="hbox-text">
-        <strong>다중 분류</strong>: Softmax → 클래스 확률 합 = 1<br>
-        <strong>이진 분류</strong>: Sigmoid → 단일 뉴런 출력 (0~1)<br>
-        <strong>회귀</strong>: 활성화 함수 없음(None) 또는 linear — Softmax 사용하지 않음
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ── SEC 03 ── -->
@@ -437,7 +473,20 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
       <div class="parr">→</div>
       <div class="pblock" style="background:#f8fafc;border-color:#334155;"><div class="picon">🏷️</div><div class="pname">Class</div><div class="psize">예측 결과</div></div>
     </div>
-    <div class="pipe-note">레이어가 깊어질수록 : 저수준(엣지·색상) → 중간 수준(형태·패턴) → 고수준(눈·코·얼굴·객체)</div>
+    <div class="pipe-note">레이어가 깊어질수록 : 저수준(엣지·색상) → 중간 수준(형태·패턴) → 고수준(눈·코·얼굴·객체 전체)</div>
+  </div>
+
+  <!-- [NEW] CNN 전체 아키텍처 이미지 (MathWorks) -->
+  <div class="block" style="margin-top:16px; margin-bottom:20px;">
+    <div class="block-hd" style="background:#f8fafc;">
+      <div class="bname">📐 CNN 전체 아키텍처 구조도 (MathWorks)</div>
+    </div>
+    <div class="block-body" style="text-align:center;">
+      <img src="https://kr.mathworks.com/discovery/convolutional-neural-network/_jcr_content/mainParsys/band_copy_copy/mainParsys/lockedsubnav/mainParsys/columns/a32c7d5d-8012-4de1-bc76-8bd092f97db8/image_2109075398_cop.adapt.full.medium.jpg/1785923231874.jpg" alt="CNN Architecture Diagram" style="max-width:100%; height:auto; border-radius:8px; border:1px solid #e2e8f0; display:block; margin:0 auto;">
+      <p style="font-size:13px; color:#64748b; margin-top:10px; line-height:1.6;">
+        ▲ 입력 이미지 → Convolution + ReLU → Pooling (특징 추출 파트) → Flatten & Fully Connected Layer (분류 파트) 전체 연결 흐름
+      </p>
+    </div>
   </div>
 </div>
 
@@ -445,44 +494,364 @@ footer{text-align:center;padding:24px;color:#94a3b8;font-family:'JetBrains Mono'
 <div class="sec"><div class="ln"></div><span>④ 레이어 깊이에 따른 특징 학습</span><div class="ln"></div></div>
 
   <div class="hier-grid">
-    <div class="hcard" style="border-top:3px solid #2563eb;">
-      <div class="hlevel">Low-Level · 앞부분 레이어</div>
-      <div class="htitle">저수준 특징</div>
-      <div class="hdesc">이미지의 기본 시각 요소 감지<br>단순하고 전역적으로 공유 가능</div>
+    <div class="hcard" style="border-top:4px solid #2563eb;">
+      <div>
+        <div class="hlevel">Low-Level · 앞부분 레이어</div>
+        <div class="htitle">저수준 특징 (Low-Level)</div>
+        <div class="hdesc">이미지의 기본 시각 요소를 감지합니다.<br>단순하며 모든 영상에서 공통적으로 발견됩니다.</div>
+      </div>
       <div class="htags">
         <span class="htag" style="background:#eff6ff;color:#2563eb;">엣지 (Edge)</span>
         <span class="htag" style="background:#eff6ff;color:#2563eb;">색상 (Color)</span>
         <span class="htag" style="background:#eff6ff;color:#2563eb;">그라디언트</span>
       </div>
     </div>
-    <div class="hcard" style="border-top:3px solid #ea580c;">
-      <div class="hlevel">Mid-Level · 중간 레이어</div>
-      <div class="htitle">중간 수준 특징</div>
-      <div class="hdesc">저수준 특징이 조합되어 형성<br>형태·구조 정보 표현</div>
+    <div class="hcard" style="border-top:4px solid #ea580c;">
+      <div>
+        <div class="hlevel">Mid-Level · 중간 레이어</div>
+        <div class="htitle">중간 수준 특징 (Mid-Level)</div>
+        <div class="hdesc">저수준 엣지들이 조합되어 형성됩니다.<br>특정 기하학적 형태나 질감 정보를 표현합니다.</div>
+      </div>
       <div class="htags">
         <span class="htag" style="background:#fff7ed;color:#ea580c;">곡선 (Curve)</span>
         <span class="htag" style="background:#fff7ed;color:#ea580c;">텍스처</span>
-        <span class="htag" style="background:#fff7ed;color:#ea580c;">기하학 패턴</span>
+        <span class="htag" style="background:#fff7ed;color:#ea580c;">기하학 모양</span>
       </div>
     </div>
-    <div class="hcard" style="border-top:3px solid #7c3aed;">
-      <div class="hlevel">High-Level · 뒷부분 레이어</div>
-      <div class="htitle">고수준 특징</div>
-      <div class="hdesc">의미 있는 추상적 표현<br>클래스 구분에 직접 활용</div>
+    <div class="hcard" style="border-top:4px solid #7c3aed;">
+      <div>
+        <div class="hlevel">High-Level · 뒷부분 레이어</div>
+        <div class="htitle">고수준 특징 (High-Level)</div>
+        <div class="hdesc">의미 있는 추상적 형태를 완성합니다.<br>물체의 특정 부위나 고유 객체 구조를 나타냅니다.</div>
+      </div>
       <div class="htags">
         <span class="htag" style="background:#f5f3ff;color:#7c3aed;">눈·코·입</span>
         <span class="htag" style="background:#f5f3ff;color:#7c3aed;">얼굴 구조</span>
-        <span class="htag" style="background:#f5f3ff;color:#7c3aed;">객체 전체</span>
+        <span class="htag" style="background:#f5f3ff;color:#7c3aed;">객체 형상</span>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ── SEC 05 ── [NEW] cnnbasic.html 기반 CNN 4가지 핵심 원리 -->
+<div class="sec" style="margin-top:30px;"><div class="ln"></div><span>⑤ CNN이 강력한 4가지 핵심 원리</span><div class="ln"></div></div>
+
+  <div class="grid-4">
+    <div class="feat-card">
+      <div>
+        <div class="feat-card-title">🔗 1. 지역 연결성 (Local Connectivity)</div>
+        <div class="feat-card-desc">
+          일반 신경망(MLP)처럼 모든 픽셀을 전체 뉴런에 연결하지 않고, 3×3 등 **작은 국소 영역(Receptive Field)**만 뉴런에 연결합니다. 이로 인해 연산량과 파라미터가 비약적으로 감소합니다.
+        </div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div>
+        <div class="feat-card-title">⚖️ 2. 가중치 공유 (Weight Sharing)</div>
+        <div class="feat-card-desc">
+          하나의 필터 가중치를 **이미지 전체 위치에 동일하게 슬라이딩**하며 적용합니다. 필터 하나가 특정 패턴(예: 세로선)을 학습하면 이미지 어디서나 해당 패턴을 감지할 수 있습니다.
+        </div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div>
+        <div class="feat-card-title">📚 3. 계층적 학습 (Hierarchical Features)</div>
+        <div class="feat-card-desc">
+          층이 깊어질수록 **단순한 엣지 → 복잡한 모양 → 고수준 부위/객체**로 추상화 수준이 높아집니다. 사람의 시각 피질이 사물을 인지하는 방식과 정확히 일치합니다.
+        </div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div>
+        <div class="feat-card-title">🎯 4. 이동 불변성 (Translation Invariance)</div>
+        <div class="feat-card-desc">
+          합성곱 연산과 Pooling 축소를 거치면서 피사체(예: 고양이)가 이미지의 중앙, 좌측, 우측 등 **어느 위치로 이동하더라도 동일하게 인식**하는 강인성을 가집니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </div>
 
-<footer>CNN · Convolutional Neural Network · 기초 개념 자료 &nbsp;·&nbsp; Deep Learning</footer>
+<footer>CNN · Convolutional Neural Network · 초보자 가이드 & 인터랙티브 시뮬레이션</footer>
 
 <script>
+/* ── SEC 01: Pixel Visualization Script ── */
+function drawPixelVisualization() {
+  const canvas = document.getElementById('pixelCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Left side: Human View (Pattern Image)
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(30, 20, 210, 170);
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(30, 20, 210, 170);
+
+  // Shape inside
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(60, 50, 70, 70);
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.arc(170, 85, 35, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#1e2a3a';
+  ctx.font = '700 13.5px "Noto Sans KR", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('우리가 보는 이미지', 135, 212);
+
+  // Arrow
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '700 20px "JetBrains Mono", monospace';
+  ctx.fillText('➔', 280, 110);
+
+  // Right side: Computer View (2D Array)
+  const pixelValues = [
+    [255, 255, 255, 255, 255],
+    [255,  40,  40, 255, 120],
+    [255,  40,  40, 255, 120],
+    [255, 255, 255, 255, 255],
+    [255, 180, 180, 255, 255]
+  ];
+
+  const startX = 320;
+  const startY = 20;
+  const cellSize = 34;
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(startX, startY, cellSize * 5, cellSize * 5);
+
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      const x = startX + j * cellSize;
+      const y = startY + i * cellSize;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.strokeRect(x, y, cellSize, cellSize);
+
+      const val = pixelValues[i][j];
+      ctx.fillStyle = val < 100 ? '#2563eb' : (val < 200 ? '#64748b' : '#0f172a');
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(val, x + cellSize / 2, y + cellSize / 2);
+    }
+  }
+
+  ctx.fillStyle = '#1e2a3a';
+  ctx.font = '700 13.5px "Noto Sans KR", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('컴퓨터가 보는 픽셀 수치 (0~255)', startX + (cellSize * 5) / 2, 212);
+}
+
+/* ── SEC 02: Multi-Filter Visualization Script ── */
+function drawMultiFilterVisualization() {
+  const canvas = document.getElementById('multiFilterCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const filters = [
+    { title: '수직 엣지', color: '#2563eb', bg: '#eff6ff' },
+    { title: '수평 엣지', color: '#ea580c', bg: '#fff7ed' },
+    { title: '샤프닝', color: '#16a34a', bg: '#f0fdf4' },
+    { title: '블러', color: '#7c3aed', bg: '#f5f3ff' }
+  ];
+
+  // Draw Input image icon on left
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(20, 40, 80, 80);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(35, 55, 50, 50);
+  ctx.fillStyle = '#1e2a3a';
+  ctx.font = '700 12px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('Input (2D)', 60, 142);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '700 18px "JetBrains Mono", monospace';
+  ctx.fillText('➔', 120, 85);
+
+  // Draw Feature maps for each filter
+  const startX = 150;
+  const spacing = 120;
+
+  filters.forEach((f, idx) => {
+    const x = startX + idx * spacing;
+    const y = 30;
+
+    ctx.fillStyle = f.bg;
+    ctx.fillRect(x, y, 90, 90);
+    ctx.strokeStyle = f.color;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x, y, 90, 90);
+
+    // Inner pattern simulation
+    ctx.fillStyle = f.color;
+    if(idx === 0) { // Vertical
+      ctx.fillRect(x + 25, y + 10, 12, 70);
+      ctx.fillRect(x + 55, y + 10, 12, 70);
+    } else if(idx === 1) { // Horizontal
+      ctx.fillRect(x + 10, y + 25, 70, 12);
+      ctx.fillRect(x + 10, y + 55, 70, 12);
+    } else if(idx === 2) { // Sharpen
+      ctx.strokeRect(x + 20, y + 20, 50, 50);
+      ctx.fillRect(x + 35, y + 35, 20, 20);
+    } else { // Blur
+      ctx.globalAlpha = 0.4;
+      ctx.fillRect(x + 15, y + 15, 60, 60);
+      ctx.globalAlpha = 1.0;
+    }
+
+    ctx.fillStyle = '#1e2a3a';
+    ctx.font = '700 12.5px "Noto Sans KR", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(f.title + ' Map', x + 45, y + 112);
+  });
+}
+
+/* ── SEC 02: Max vs Avg & 2x2 vs 3x3 Pooling Simulator Script ── */
+let currentPoolingK = 2;
+let currentPoolingMode = 'max';
+
+function switchPoolingConfig(k, mode, btn) {
+  currentPoolingK = k;
+  currentPoolingMode = mode;
+  document.querySelectorAll('#poolingCtrlBtns .kbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const expEl = document.getElementById('poolingExplainText');
+  if(k === 2 && mode === 'max') {
+    expEl.innerHTML = '<strong>2×2 Max Pooling (S=2):</strong> 2×2 겹치지 않는 영역에서 가장 큰 값만 추출합니다. (출력 크기: 2×2)';
+  } else if(k === 3 && mode === 'max') {
+    expEl.innerHTML = '<strong>3×3 Max Pooling (S=1):</strong> 3×3 영역을 1칸씩 슬라이딩하며 영역 내 가장 큰 값만 추출합니다. (출력 크기: 2×2)';
+  } else if(k === 2 && mode === 'avg') {
+    expEl.innerHTML = '<strong>2×2 Avg Pooling (S=2):</strong> 2×2 겹치지 않는 영역 픽셀 4개의 평균을 계산합니다. (출력 크기: 2×2)';
+  } else if(k === 3 && mode === 'avg') {
+    expEl.innerHTML = '<strong>3×3 Avg Pooling (S=1):</strong> 3×3 영역 픽셀 9개의 평균을 계산합니다. (출력 크기: 2×2)';
+  }
+  drawPoolingSim();
+}
+
+function drawPoolingSim() {
+  const canvas = document.getElementById('poolingCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const inputGrid = [
+    [1, 6, 5, 3],
+    [3, 2, 8, 4],
+    [5, 2, 2, 9],
+    [1, 3, 4, 1]
+  ];
+
+  // Draw Input Matrix (4x4)
+  ctx.fillStyle = '#1e2a3a';
+  ctx.font = '700 12.5px "JetBrains Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('Input Feature Map (4×4)', 20, 20);
+
+  const cSize = 36;
+  const inX = 20, inY = 32;
+  const colors = ['#eff6ff', '#fff7ed', '#f0fdf4', '#f5f3ff'];
+
+  for(let r=0; r<4; r++) {
+    for(let c=0; c<4; c++) {
+      let qIdx = 0;
+      if(currentPoolingK === 2) {
+        qIdx = (r >= 2 ? 2 : 0) + (c >= 2 ? 1 : 0);
+      } else {
+        // For 3x3, color background neutral
+        qIdx = 0;
+      }
+      ctx.fillStyle = colors[qIdx];
+      ctx.fillRect(inX + c*cSize, inY + r*cSize, cSize, cSize);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(inX + c*cSize, inY + r*cSize, cSize, cSize);
+
+      ctx.fillStyle = '#1e2a3a';
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(inputGrid[r][c], inX + c*cSize + cSize/2, inY + r*cSize + cSize/2);
+    }
+  }
+
+  // Draw overlay outline for active pooling kernel (Highlight initial Top-Left sector)
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(inX, inY, cSize * currentPoolingK, cSize * currentPoolingK);
+
+  // Arrow & Label
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '700 18px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('➔', 230, inY + cSize*2);
+  ctx.fillStyle = '#2563eb';
+  ctx.font = '700 12px "JetBrains Mono", monospace';
+  ctx.fillText(`${currentPoolingK}×${currentPoolingK} Pooling`, 230, inY + cSize*2 + 20);
+
+  // Draw Output Matrix (2x2)
+  ctx.fillStyle = '#1e2a3a';
+  ctx.font = '700 12.5px "JetBrains Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Output Map (2×2) — ${currentPoolingK}×${currentPoolingK} ${currentPoolingMode.toUpperCase()}`, 330, 20);
+
+  const outCSize = 56;
+  const outX = 340, outY = 38;
+
+  let results = [];
+  if(currentPoolingK === 2) {
+    if(currentPoolingMode === 'max') {
+      results = [
+        [Math.max(1,6,3,2), Math.max(5,3,8,4)],
+        [Math.max(5,2,1,3), Math.max(2,9,4,1)]
+      ];
+    } else {
+      results = [
+        [((1+6+3+2)/4).toFixed(1), ((5+3+8+4)/4).toFixed(1)],
+        [((5+2+1+3)/4).toFixed(1), ((2+9+4+1)/4).toFixed(1)]
+      ];
+    }
+  } else { // 3x3 Pooling (S=1)
+    if(currentPoolingMode === 'max') {
+      results = [
+        [Math.max(1,6,5,3,2,8,5,2,2), Math.max(6,5,3,2,8,4,2,2,9)],
+        [Math.max(3,2,8,5,2,2,1,3,4), Math.max(2,8,4,2,2,9,3,4,1)]
+      ];
+    } else {
+      results = [
+        [((1+6+5+3+2+8+5+2+2)/9).toFixed(1), ((6+5+3+2+8+4+2+2+9)/9).toFixed(1)],
+        [((3+2+8+5+2+2+1+3+4)/9).toFixed(1), ((2+8+4+2+2+9+3+4+1)/9).toFixed(1)]
+      ];
+    }
+  }
+
+  for(let r=0; r<2; r++) {
+    for(let c=0; c<2; c++) {
+      const qIdx = r*2 + c;
+      ctx.fillStyle = colors[qIdx];
+      ctx.fillRect(outX + c*outCSize, outY + r*outCSize, outCSize, outCSize);
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(outX + c*outCSize, outY + r*outCSize, outCSize, outCSize);
+
+      ctx.fillStyle = '#2563eb';
+      ctx.font = '700 16px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(results[r][c], outX + c*outCSize + outCSize/2, outY + r*outCSize + outCSize/2);
+    }
+  }
+}
+
+/* ── Interactive Conv Simulation Logic ── */
 const BASE_INPUT=[[3,0,1,2,7],[1,5,8,9,3],[2,7,2,5,1],[0,1,3,1,7],[4,2,1,0,6]];
 const KERNELS={
   edge_v:{name:'수직 엣지 감지 (Sobel)',w:[[1,0,-1],[2,0,-2],[1,0,-1]]},
@@ -517,7 +886,7 @@ function updFormula(){
 function buildInputGrid(){
   const P=curP,sz=buildPad();
   const inp=document.getElementById('simIn');
-  inp.style.gridTemplateColumns=`repeat(${sz},40px)`;
+  inp.style.gridTemplateColumns=`repeat(${sz},42px)`;
   inp.innerHTML='';
   for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){
     const isPad=P>0&&(r<P||r>=P+5||c<P||c>=P+5);
@@ -544,7 +913,7 @@ function buildKernGrid(){
 
 function buildOutGrid(){
   const out=outSz(5,3,curP,curS),og=document.getElementById('simOut');
-  og.style.gridTemplateColumns=`repeat(${out},40px)`;
+  og.style.gridTemplateColumns=`repeat(${out},42px)`;
   og.innerHTML='';
   for(let i=0;i<out*out;i++){
     const d=document.createElement('div');
@@ -602,8 +971,8 @@ function execStep(step){
   document.getElementById(`dot_${step}`).className='dot cur';
   document.getElementById('simCalc').innerHTML=
     `위치 출력(${or},${oc}) — 패치 시작(${pr},${pc})<br>`+
-    `<span style="color:#2563eb">${terms.join(' + ')}</span>`;
-  document.getElementById('simCalcR').textContent=`= ${sum}  (bias 제외 단순화)`;
+    `<span style="color:#2563eb;font-weight:600;">${terms.join(' + ')}</span>`;
+  document.getElementById('simCalcR').textContent=`= ${sum}  (bias 제외 단순화 연산)`;
   document.getElementById('simSteps').textContent=`${step+1} / ${positions.length}`;
 }
 
@@ -615,7 +984,7 @@ function finishSim(){
   }
   document.getElementById('playBtn').textContent='▶ 다시 재생';
   const out=outSz(5,3,curP,curS);
-  document.getElementById('simCalc').textContent=`✓ 완료! ${out}×${out} Feature Map 생성됨`;
+  document.getElementById('simCalc').textContent=`✓ 연산 완료! ${out}×${out} Feature Map 생성됨`;
   document.getElementById('simCalcR').textContent='';
   document.getElementById('simSteps').textContent=`${positions.length} / ${positions.length} 완료`;
   simStep=positions.length;
@@ -669,10 +1038,16 @@ function updSpd(val){
   if(isPlay){clearInterval(simTimer);simTimer=setInterval(()=>{simStep++;if(simStep>=positions.length){finishSim();return;}execStep(simStep);},spdMs);}
 }
 
-buildAll();
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+  buildAll();
+  drawPixelVisualization();
+  drawMultiFilterVisualization();
+  drawPoolingSim();
+});
 </script>
 
-</div>
 </body>
 </html>
+
 
