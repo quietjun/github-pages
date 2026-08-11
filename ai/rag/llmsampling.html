@@ -162,6 +162,50 @@
   .param-card-full.temp { border-top-color: var(--ct); }
   .param-card-full .card-left { }
   .param-card-full .card-right { }
+  .param-card-full .card-bottom {
+    grid-column: 1 / -1;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border);
+  }
+  .math-expr-wrap {
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    margin: 16px 0;
+    color: var(--text);
+  }
+  .math-fraction {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .math-numerator {
+    border-bottom: 1px solid var(--text);
+    padding: 0 8px;
+    padding-bottom: 2px;
+  }
+  .math-denominator {
+    padding: 0 8px;
+    padding-top: 2px;
+  }
+  .math-details-grid {
+    list-style: none;
+    padding-left: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  @media (max-width: 640px) {
+    .math-details-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 
   .param-card {
     background: var(--surface);
@@ -416,7 +460,7 @@
       <div class="param-badge" style="background:var(--ctl);border-color:var(--ct);color:var(--ctd);">T</div>
       <div class="param-title">🌡️ Temperature</div>
       <ul class="param-sub bullet-list">
-        <li>확률 분포의 <strong>"돋보기"</strong> — logit ÷ Temperature로 점수 차이 조절</li>
+        <li>확률 분포의 <strong>"대비(Contrast) 조절기"</strong> — logit ÷ Temperature로 점수 차이 조절</li>
         <li>범위: <span class="mono">T &gt; 0</span> (보통 0.1 ~ 2.0)</li>
       </ul>
       <div class="slider-row" style="margin-top:16px;">
@@ -432,6 +476,36 @@
     <div class="card-right">
       <div style="height:54px;"></div>
       <div id="eff-temp-table"></div>
+    </div>
+    
+    <!-- 하단: 수학적 상세 설명 (수식 포함) -->
+    <div class="card-bottom">
+      <div style="font-weight: 600; margin-bottom: 8px; color: var(--text); font-size: 0.95rem;">💡 수학적 원리: 왜 로짓의 순서는 유지되는데 확률 분포 모양만 바뀔까요?</div>
+      <div style="font-size: 0.88rem; color: var(--sub); line-height: 1.6;">
+        <p style="margin-bottom: 12px;">
+          각 토큰의 원본 점수(Logit)인 z<sub>i</sub>를 Temperature(T)로 나눈 값(z<sub>i</sub> / T)은 원래 점수들 간의 대소 순서와 비례 관계를 그대로 보존합니다.
+          그러나 최종 확률을 계산하는 <strong>Softmax(지수함수 e<sup>x</sup>)</strong> 연산을 거치며 확률 분포 그래프의 굴곡(대비)이 비선형적으로 왜곡됩니다.
+        </p>
+
+        <div class="math-expr-wrap">
+          <span>P(x<sub>i</sub>) =</span>
+          <div class="math-fraction">
+            <span class="math-numerator">e<sup>z<sub>i</sub> / T</sup></span>
+            <span class="math-denominator">∑ e<sup>z<sub>j</sub> / T</sup></span>
+          </div>
+        </div>
+
+        <ul class="math-details-grid">
+          <li style="background: var(--bg); padding: 12px; border-radius: 8px; border-left: 3px solid var(--ct);">
+            <strong>T가 작을 때 (T → 0.1) : 대비 극대화 (Sharp)</strong><br>
+            나눈 값(z<sub>i</sub> / T)이 원래 점수보다 크게 불어납니다. 지수 함수(e<sup>x</sup>)의 기하급수적인 팽창으로 인해, 미세하게 더 컸던 점수가 압도적인 확률값(100% 근접)으로 커져 분포가 날카로워집니다.
+          </li>
+          <li style="background: var(--bg); padding: 12px; border-radius: 8px; border-left: 3px solid var(--no);">
+            <strong>T가 클 때 (T → 2.0) : 대비 최소화 (Flat)</strong><br>
+            나눈 값(z<sub>i</sub> / T)의 격차가 크게 줄어듭니다. 지수 함수를 거친 값들이 서로 비슷비슷해지기 때문에, 원래의 순위가 무색해지며 모든 후보가 비교적 균등한 확률을 갖게 됩니다.
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
