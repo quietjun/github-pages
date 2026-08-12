@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="../../css/content.css">
 <script src="../../js/content.js"></script>
 <style>
+  /* AGENTS Rule Compliant Typography */
+  .algo-desc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
+  .algo-ex-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
+
   /* ── Page Specific Visualization & Typography Styles (AGENTS Rule 준수) ── */
   .intro-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
   .intro-icon { font-size: 24px; margin-bottom: 8px; }
@@ -82,7 +86,7 @@
   .cell.kact { background: #fff7ed; border-color: #ea580c; }
   .cell.done { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
   .cell.cur { background: #2563eb; border-color: #2563eb; color: #fff; animation: pop .3s ease; }
-  .cell.pad { background: #f0f7ff; border: 1.5px dashed #93c5fd; color: #93c5fd; font-size: 11px; }
+  .cell.pad { background: #f0f7ff; border: 1.5px dashed #93c5fd; color: #93c5fd; font-size: 12px; }
   .cell.pad.hi { background: #eff6ff; border-color: #2563eb; border-style: dashed; color: #2563eb; }
   @keyframes pop { 0%{transform:scale(.8)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
@@ -106,7 +110,7 @@
   .pblock:hover { opacity: .85; }
   .picon { font-size: 20px; margin-bottom: 4px; }
   .pname { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1e2a3a; }
-  .psize { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; margin-top: 4px; }
+  .psize { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-top: 4px; }
   .parr { font-size: 18px; color: #94a3b8; flex-shrink: 0; }
   .pipe-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 13.5px; color: #475569; line-height: 1.7; }
 
@@ -175,7 +179,7 @@
       <div class="bname">🖼️ 시각적 픽셀 vs 컴퓨터의 2D 숫자 행렬 (0~255)</div>
     </div>
     <div class="block-body">
-      <div class="bdesc">
+      <div class="bdesc algo-desc">
         우리가 눈으로 보는 이미지는 컴퓨터 내부에서 각 위치마다 <strong>0(검은색)부터 255(흰색)까지의 픽셀 밝기 수치</strong>로 변환되어 저장됩니다.
       </div>
       <canvas id="pixelCanvas" class="interactive-canvas" width="600" height="230"></canvas>
@@ -210,7 +214,7 @@
       </div>
     </div>
     <div class="block-body">
-      <div class="bdesc">
+      <div class="bdesc algo-desc">
         입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 요소별 곱셈 및 합산(Dot Product + Bias)을 수행해 <strong>Feature Map(특징 맵)</strong>을 생성합니다.<br>
         → 필터 하나 = 하나의 특정한 엣지/패턴 감지기<br>
         → 기본 연산식: <span class="mono" style="font-size:12.5px;color:#1d4ed8;font-weight:600;">output = Σ(input × weight) + bias</span><br>
@@ -338,7 +342,7 @@
       </div>
     </div>
     <div class="block-body">
-      <div class="bdesc">
+      <div class="bdesc algo-desc">
         Feature Map의 해상도를 축소하여 <strong>다운샘플링(Downsampling)</strong>을 수행함으로써 <strong>계산량을 크게 절감</strong>하고 위치 변화에 강인한 표현을 형성합니다.<br>
         → 2×2 영역에서 최댓값을 선택하는 <strong>Max Pooling</strong>이 가장 대표적입니다.<br>
         → 학습 파라미터 없음 (가중치 0개) — 단순 집계 연산 수행
@@ -387,7 +391,7 @@
       </div>
     </div>
     <div class="block-body">
-      <div class="bdesc">
+      <div class="bdesc algo-desc">
         Conv와 Pooling을 거쳐 다듬어진 특징 맵을 <strong>1차원 벡터로 펼쳐(Flatten)</strong> 최종 분류를 진행합니다.<br>
         → 추출된 고수준 특징 조합을 바탕으로 <strong>Softmax 함수</strong>를 적용하여 클래스별 확률값을 출력합니다.
       </div>

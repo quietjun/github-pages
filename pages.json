@@ -16,6 +16,10 @@
           {
             "label": "Linear Probing & Fine-tuning — 전이학습 전략",
             "path": "ai/cnn/linearprobing.html"
+          },
+          {
+            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처",
+            "path": "ai/cnn/vit.html"
           }
         ]
       },

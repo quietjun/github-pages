@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="../../css/content.css">
 <script src="../../js/content.js"></script>
 <style>
+  /* AGENTS Rule Compliant Typography */
+  .algo-desc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
+  .algo-ex-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
+
   /* ── Page Specific Styles (AGENTS Rule 준수) ── */
   :root {
     --frozen: #2563eb;
@@ -38,14 +42,14 @@
   .cnn-block { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .cnn-box { width: 90px; height: 90px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12px; font-weight: 700; color: #1e2a3a; position: relative; padding: 6px; transition: all .2s; }
   .cnn-box .icon { font-size: 20px; margin-bottom: 4px; }
-  .cnn-box .sub { font-size: 10px; color: #64748b; margin-top: 2px; font-weight: 500; line-height: 1.2; }
+  .cnn-box .sub { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: 500; line-height: 1.2; }
   .cnn-box.frozen-box { background: var(--frozen-bg); border-color: var(--frozen); color: #1e3a8a; }
   .cnn-box.train-box { background: var(--train-bg); border-color: var(--train); color: #7c2d12; }
   .cnn-box.input-box, .cnn-box.output-box { background: #f8fafc; border-color: #94a3b8; }
   .arrow { font-size: 16px; color: #cbd5e1; flex-shrink: 0; }
-  .lock-badge { position: absolute; top: -6px; right: -6px; background: var(--frozen); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .lock-badge { position: absolute; top: -6px; right: -6px; background: var(--frozen); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-  .block-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .block-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
   .label-frozen { background: var(--frozen-bg); color: var(--frozen); }
   .label-train { background: var(--train-bg); color: var(--train); }
 
@@ -57,14 +61,14 @@
   .param-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .param-bar-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #475569; width: 90px; flex-shrink: 0; font-weight: 600; }
   .param-bar-track { flex: 1; height: 18px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-  .param-bar-fill { height: 100%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #fff; transition: width .3s ease; }
+  .param-bar-fill { height: 100%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #fff; transition: width .3s ease; }
   .fill-frozen { background: var(--frozen); }
   .fill-train { background: var(--train); }
 
   .load-bar-wrap { margin-top: 10px; }
   .load-bar-track { height: 12px; background: var(--frozen); border-radius: 6px; overflow: hidden; display: flex; }
   .load-bar-fill { height: 100%; transition: width .3s ease; }
-  .load-bar-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600; }
+  .load-bar-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 600; }
 
   /* Table */
   .compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; }
@@ -72,7 +76,7 @@
   .compare-table th { background: #f8fafc; font-weight: 700; color: #1e2a3a; font-size: 13.5px; }
   .compare-table th.lp-head { color: var(--frozen); background: var(--frozen-bg); }
   .compare-table th.ft-head { color: var(--train); background: var(--train-bg); }
-  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
   .tag-good { background: #dcfce7; color: #15803d; }
   .tag-warn { background: #ffedd5; color: #c2410c; }
   .tag-info { background: #dbeafe; color: #1d4ed8; }
@@ -142,7 +146,7 @@
       </div>
     </div>
     <div class="block-body">
-      <div id="modeDesc" class="bdesc">
+      <div id="modeDesc" class="bdesc algo-desc">
         🔒 <strong>Linear Probing:</strong> 특징 추출 레이어(Conv + Pooling)를 <strong>동결(freeze)</strong>하고, 분류층(FC Layer)만 새로 학습합니다. 사전 학습된 지식을 그대로 활용하여 학습이 매우 빠르고 과적합 위험이 낮습니다.
       </div>
 
@@ -152,7 +156,7 @@
       <!-- Params Visualization -->
       <div class="params-vis">
         <div class="param-group">
-          <div class="param-group-title">📦 레이어별 파라미터 상태</div>
+          <div class="param-group-title algo-ex-title">📦 레이어별 파라미터 상태</div>
           <div class="param-bar-row">
             <div class="param-bar-label">Conv Block 1</div>
             <div class="param-bar-track"><div id="bar1" class="param-bar-fill fill-frozen" style="width: 100%;">✓ 동결</div></div>
@@ -177,7 +181,7 @@
 
         <div class="param-group" style="display:flex; flex-direction:column; justify-content:space-between;">
           <div>
-            <div class="param-group-title">📊 전체 학습 파라미터 비율</div>
+            <div class="param-group-title algo-ex-title">📊 전체 학습 파라미터 비율</div>
             <div style="text-align: center; margin: 10px 0;">
               <div id="trainPct" style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--train);">~1%</div>
               <div style="font-size: 13px; color: #64748b; font-weight: 600;">의 파라미터만 업데이트</div>
@@ -257,7 +261,7 @@
 
   <div class="grid-2">
     <div class="scenario-card lp-card">
-      <h4>🔒 Linear Probing 선택 상황</h4>
+      <h4 class="algo-ex-title">🔒 Linear Probing 선택 상황</h4>
       <ul>
         <li>데이터셋 규모가 작을 때 (수백 ~ 수천 장)</li>
         <li>빠른 가설 검증 및 프로토타이핑이 필요할 때</li>
@@ -267,7 +271,7 @@
       </ul>
     </div>
     <div class="scenario-card ft-card">
-      <h4>🔥 Fine-tuning 선택 상황</h4>
+      <h4 class="algo-ex-title">🔥 Fine-tuning 선택 상황</h4>
       <ul>
         <li>충분한 라벨링 데이터가 확보되었을 때 (수만 장 이상)</li>
         <li>최고 레벨의 모델 정확도가 필요할 때</li>
@@ -331,28 +335,28 @@
         <div class="insight-card">
           <div class="insight-icon">⚡</div>
           <div>
-            <h4>1. 신속한 수렴 속도</h4>
+            <h4 class="algo-ex-title">1. 신속한 수렴 속도</h4>
             <p>사전 학습 모델은 처음부터 학습하는 것보다 수렴 속도가 비약적으로 빠르며, Linear Probing은 특히 분 단위로 수렴합니다.</p>
           </div>
         </div>
         <div class="insight-card">
           <div class="insight-icon">🚀</div>
           <div>
-            <h4>2. 우수한 초기 성능</h4>
+            <h4 class="algo-ex-title">2. 우수한 초기 성능</h4>
             <p>첫 에포크부터 높은 정확도를 보입니다. (Random 초기화 ~10% vs 전이학습 ~60%+ 이상)</p>
           </div>
         </div>
         <div class="insight-card">
           <div class="insight-icon">🎯</div>
           <div>
-            <h4>3. 최종 성능 달성</h4>
+            <h4 class="algo-ex-title">3. 최종 성능 달성</h4>
             <p>Linear Probing만으로도 70%+ 수준을 달성하며, Fine-tuning 시 90%+ 이상의 최고 정확도를 확보합니다.</p>
           </div>
         </div>
         <div class="insight-card">
           <div class="insight-icon">🧊</div>
           <div>
-            <h4>4. 저수준 특징의 범용성</h4>
+            <h4 class="algo-ex-title">4. 저수준 특징의 범용성</h4>
             <p>ImageNet 등으로 학습된 엣지, 색상, 질감 등 저수준 특징은 대부분의 시각 문제에 공통으로 유용합니다.</p>
           </div>
         </div>
@@ -525,14 +529,14 @@ function drawChart() {
     ctx.lineTo(PAD.left + cW, y);
     ctx.stroke();
     ctx.fillStyle = '#64748b';
-    ctx.font = '600 11px "JetBrains Mono", monospace';
+    ctx.font = '600 12px "JetBrains Mono", monospace';
     ctx.textAlign = 'right';
     ctx.fillText((i * 20) + '%', PAD.left - 6, y + 4);
   }
 
   // X Axis
   ctx.fillStyle = '#64748b';
-  ctx.font = '600 11px "JetBrains Mono", monospace';
+  ctx.font = '600 12px "JetBrains Mono", monospace';
   ctx.textAlign = 'center';
   [0, 5, 10, 15, 20, 25, 30].forEach(e => {
     const x = PAD.left + (e / MAX_EPOCH) * cW;
@@ -650,40 +654,3 @@ window.addEventListener('resize', drawChart);
 
 </body>
 </html>
-�� <strong>5 에포크</strong>: Linear Probing(${lp.toFixed(1)}%) vs Fine-tuning(${ft.toFixed(1)}%). 아직은 LP가 앞서지만, Fine-tuning이 빠르게 따라오고 있어요!`;
-  } else if (e === 15) {
-    el.innerHTML = `🔥 <strong>15 에포크</strong>: Fine-tuning이 ${ft.toFixed(1)}%로 앞서기 시작했어요! 전체 모델 학습의 효과가 나타나고 있어요.`;
-  } else if (e >= MAX_EPOCH) {
-    el.innerHTML = `✅ <strong>학습 완료!</strong> LP: ${lp.toFixed(1)}% | Fine-tuning: ${ft.toFixed(1)}% | 랜덤: ${rnd.toFixed(1)}%. Fine-tuning이 최고 성능이지만, LP도 충분히 훌륭한 결과예요! 🎉`;
-  }
-}
-
-function resetSimulation() {
-  isRunning = false;
-  epoch = 0;
-  lpData = []; ftData = []; rndData = [];
-  document.getElementById('lpAcc').textContent = '-';
-  document.getElementById('ftAcc').textContent = '-';
-  document.getElementById('rndAcc').textContent = '-';
-  document.getElementById('simStatus').textContent = `에포크 0 / ${MAX_EPOCH}`;
-  document.getElementById('runBtn').textContent = '▶ 시뮬레이션 시작';
-  document.getElementById('runBtn').disabled = false;
-  document.getElementById('simComment').textContent = '▶ 시뮬레이션을 시작하면 세 가지 방법의 학습 곡선을 비교할 수 있어요!';
-  drawChart();
-}
-
-// Init
-renderCNN('lp');
-updateParams('lp');
-window.addEventListener('load', () => {
-  setTimeout(drawChart, 100);
-});
-window.addEventListener('resize', drawChart);
-</script>
-<div style="margin: 0; padding: 0; border: none; background: none; float: none; clear: none; z-index: 0;">&nbsp;</div>
-<script type="text/javascript" src="https://tistory1.daumcdn.net/tistory_admin/userblog/userblog-56518474e3296b9afe8e46bfadb1a2d099913950/static/script/common.js"></script>
-<script>window.tiara = {"svcDomain":"user.tistory.com","section":"글뷰","trackPage":"글뷰_보기","page":"글뷰","key":"1922944-928","customProps":{"userId":"1446129","blogId":"1922944","entryId":"928","role":"owner","trackPage":"글뷰_보기","filterTarget":false},"entry":{"entryId":"928","entryTitle":"LinearProbling","entryType":"POST","categoryName":"ML,DL,LangChain/04_CNN과 이미지 생성모델","categoryId":"1257179","serviceCategoryName":null,"serviceCategoryId":null,"author":"1446129","authorNickname":"은서파","blogNmae":"모두의 코딩","image":"","plink":"/928","tags":[]},"kakaoAppKey":"3e6ddd834b023f24221217e370daed18","appUserId":"1517393043","thirdProvideAgree":null}</script>
-<script type="module" src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index.js"></script>
-<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/polyfills-legacy.js"></script>
-<script src="https://t1.daumcdn.net/tistory_admin/frontend/tiara/v1.0.7/index-legacy.js"></script>
-</div>
