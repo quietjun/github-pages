@@ -1,13 +1,13 @@
-# 스타일 규격화 규칙 (AGENTS Rule)
+# Antigravity 추가 행동 규칙
 
-이 프로젝트의 웹 콘텐츠를 편집할 때, 임의의 매직 넘버 스타일로 가독성이 손상되는 것을 방지하기 위해 다음 타이포 및 패딩 규격을 반드시 영구히 준수한다.
+## GitHub Pages 프로젝트 HTML 생성 규칙
+- `github-pages` 프로젝트에서 새롭게 HTML 파일을 생성하거나 수정할 때, 모든 HTML 파일의 `</body>` 태그 바로 직전에 반드시 아래의 iframe 높이 조절 스크립트를 추가해야 합니다.
 
-## 1. 폰트 크기 규격 (Typography Scale)
-* **기본 본문 텍스트 (`.algo-desc`) :** 반드시 `14px`를 적용하며, 행간은 `line-height: 1.7`로 고정한다.
-* **카드 예시 내 서브 제목 (`.algo-ex-title`) :** 반드시 `13.5px`와 굵은 글씨(`font-weight: 700`)를 적용한다.
-* **카드 예시 내 일반 설명 본문 :** 인라인 스타일로 임의의 초소형 크기(`11.5px` 이하)를 절대 주지 않으며, 최소 `13px`~`13.5px`를 유지한다.
-* **코드 블록 및 특수 라벨 :** 가독성이 손상되지 않도록 최소 `12px`~`12.5px` 이상을 유지한다.
-
-## 2. 레이아웃 및 정렬 (Layout Alignment)
-* 좌우 2단 배치나 대조 카드를 구성할 때, 겉보기 부모 카드의 세로 높이(`height`)를 상호 일치시켜 수평 라인이 찌그러지지 않도록 정밀 얼라인먼트 작업을 동반한다.
-* 단어 매핑 등 인과관계 시각화 시에는 정보가 겹쳐 혼선을 주지 않도록 논리 단계별(예: 1단계 Vocab -> 2단계 임베딩 테이블)로 명확히 단계를 물리적으로 분리한다.
+```html
+<script>
+  window.onload = function() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  };
+</script>
+```
