@@ -1197,6 +1197,7 @@ print("원본 텐서 크기:", tensor.shape)  # 출력: torch.Size([2, 3, 4])</p
   drawBase();
   switchDim(-1);
 
+// iframe 높이 동적 조절을 위한 크기 감지 및 postMessage 전송
 const resizeObserver = new ResizeObserver(entries => {
   const height = document.documentElement.scrollHeight;
   window.parent.postMessage({ height: height }, "*");

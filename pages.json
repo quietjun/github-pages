@@ -12,6 +12,10 @@
           {
             "label": "CNN — 합성곱 신경망",
             "path": "ai/cnn/cnn.html"
+          },
+          {
+            "label": "Linear Probing & Fine-tuning — 전이학습 전략",
+            "path": "ai/cnn/linearprobing.html"
           }
         ]
       },
