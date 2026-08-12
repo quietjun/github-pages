@@ -5,9 +5,17 @@
 
 ```html
 <script>
-  window.onload = function() {
+  function sendHeight() {
     const height = document.body.scrollHeight;
     window.parent.postMessage({ height: height }, "*");
-  };
+  }
+  window.onload = sendHeight;
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
 </script>
 ```
