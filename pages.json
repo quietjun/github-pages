@@ -24,6 +24,27 @@
         ]
       },
       {
+        "label": "llm",
+        "children": [
+          {
+            "label": "LangChain 소개",
+            "path": "ai/llm/langchain.html"
+          },
+          {
+            "label": "LangGraph 시각화",
+            "path": "ai/llm/langgraph.html"
+          },
+          {
+            "label": "LLM 샘플링 파라미터",
+            "path": "ai/llm/llmsampling.html"
+          },
+          {
+            "label": "LLM Role 정리",
+            "path": "ai/llm/roles.html"
+          }
+        ]
+      },
+      {
         "label": "peft",
         "children": [
           {
@@ -51,27 +72,6 @@
                 "path": "ai/python/pandas/broadcasting.html"
               }
             ]
-          }
-        ]
-      },
-      {
-        "label": "rag",
-        "children": [
-          {
-            "label": "LangChain 소개",
-            "path": "ai/rag/langchain.html"
-          },
-          {
-            "label": "LangGraph 시각화",
-            "path": "ai/rag/langgraph.html"
-          },
-          {
-            "label": "LLM 샘플링 파라미터",
-            "path": "ai/rag/llmsampling.html"
-          },
-          {
-            "label": "LLM Role 정리",
-            "path": "ai/rag/roles.html"
           }
         ]
       },
