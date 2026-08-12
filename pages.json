@@ -58,6 +58,10 @@
         "label": "rag",
         "children": [
           {
+            "label": "LangChain 소개",
+            "path": "ai/rag/langchain.html"
+          },
+          {
             "label": "LangGraph 시각화",
             "path": "ai/rag/langgraph.html"
           },
