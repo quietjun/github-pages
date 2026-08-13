@@ -24,16 +24,25 @@
         ]
       },
       {
-        "label": "llm",
+        "label": "langchain",
         "children": [
           {
             "label": "LangChain 소개",
-            "path": "ai/llm/langchain.html"
+            "path": "ai/langchain/langchain.html"
           },
           {
             "label": "LangGraph 시각화",
-            "path": "ai/llm/langgraph.html"
+            "path": "ai/langchain/langgraph.html"
           },
+          {
+            "label": "RAG(검색 증강 생성) 기술 소개",
+            "path": "ai/langchain/rag.html"
+          }
+        ]
+      },
+      {
+        "label": "llm",
+        "children": [
           {
             "label": "LLM 샘플링 파라미터",
             "path": "ai/llm/llmsampling.html"
