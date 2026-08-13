@@ -757,11 +757,27 @@ print(result[<span style="color:#CE9178;">"answer"</span>])</pre>
       });
     }
   });
+</script>
 
-  window.onload = function() {
+<script>
+  function sendHeight() {
     const height = document.body.scrollHeight;
     window.parent.postMessage({ height: height }, "*");
-  };
+  }
+
+  // 1. 로드 즉시 실행
+  window.onload = sendHeight;
+
+  // 2. 부모창 리스너 등록 대기 및 렌더링 지연 대응 (다중 전송)
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+
+  // 3. 브라우저 리사이즈 및 웹 폰트/이미지 로드 완료에 따른 높이 변화 실시간 감지
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
 </script>
 </body>
 </html>
