@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangChain 소개</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAFAF8;
+    --panel: #FFFFFF;
+    --ink: #1A1D23;
+    --ink-soft: #565C66;
+    --line: #E4E2DC;
+    --forest: #2D6A4F;
+    --forest-soft: #E7F0EA;
+    --bronze: #A8763E;
+    --bronze-soft: #F5EDE1;
+    --indigo: #3D4FC4;
+    --indigo-soft: #EBEDFB;
+    --code-bg: #1A1D23;
+    --code-ink: #E7F0EA;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{overflow-x:hidden;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    line-height:1.7;
+    padding:0 20px 60px;
+  }
+  .wrap{max-width:1024px; margin:0 auto;}
+
+  /* ===== HERO ===== */
+  .hero{
+    padding:64px 8px 40px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px; letter-spacing:.06em;
+    color:var(--forest);
+    background:var(--forest-soft);
+    padding:5px 12px; border-radius:20px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"●"; font-size:8px;}
+  h1.title{
+    font-size:clamp(30px,5vw,44px);
+    font-weight:900; letter-spacing:-0.02em;
+    line-height:1.25;
+    margin-bottom:16px;
+  }
+  h1.title .accent{color:var(--forest);}
+  .lede{
+    font-size:17px; color:var(--ink-soft);
+    max-width:680px;
+    font-weight:500;
+  }
+  .lede b{color:var(--ink); font-weight:700;}
+  .chain-rule{
+    display:flex; align-items:center; gap:6px;
+    margin:32px 0 8px;
+  }
+  .chain-rule .link{
+    width:22px; height:12px; border:3px solid var(--bronze);
+    border-radius:8px;
+  }
+  .chain-rule .link:nth-child(even){ margin-top:6px; }
+  .chain-rule .rest{flex:1; height:2px; background:var(--line);}
+
+  /* ===== SECTION ===== */
+  section{padding:48px 8px;}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:26px;}
+  .sec-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px; color:var(--bronze); font-weight:700;
+  }
+  h2.sec-title{
+    font-size:24px; font-weight:700; letter-spacing:-0.01em;
+  }
+  .sec-desc{color:var(--ink-soft); font-size:14.5px; margin-top:6px; margin-bottom:24px;}
+
+  /* ===== 개조식 리스트 ===== */
+  .bullet-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:14px;
+  }
+  @media(max-width:640px){ .bullet-grid{grid-template-columns:1fr;} }
+  .bullet-card{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:18px 20px;
+  }
+  .bullet-card .k{
+    font-weight:700; font-size:15px; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .bullet-card .k::before{
+    content:"→"; color:var(--forest); font-weight:900;
+  }
+  .bullet-card .v{font-size:13.5px; color:var(--ink-soft);}
+
+  .arrow-note{
+    margin-top:22px; padding:14px 18px;
+    background:var(--forest-soft); border-radius:10px;
+    font-size:14.5px; font-weight:500; color:var(--forest);
+    border-left:4px solid var(--forest);
+  }
+
+  /* ===== 다이어그램 ===== */
+  .diagram-box{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; padding:20px 12px 8px;
+  }
+  .diagram-caption{
+    text-align:center; font-size:12.5px; color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace; margin-top:6px; padding-bottom:14px;
+  }
+
+  /* ===== 비교 표 ===== */
+  .compare{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+  @media(max-width:640px){ .compare{grid-template-columns:1fr;} }
+  .compare-card{
+    border-radius:14px; padding:22px;
+    border:1px solid var(--line);
+  }
+  .compare-card.chain{background:var(--bronze-soft); border-color:#E4D2B8;}
+  .compare-card.agent{background:var(--indigo-soft); border-color:#CBD1F5;}
+  .compare-card .tag{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    font-weight:700; letter-spacing:.05em;
+    padding:4px 10px; border-radius:6px; display:inline-block; margin-bottom:12px;
+  }
+  .compare-card.chain .tag{background:var(--bronze); color:#fff;}
+  .compare-card.agent .tag{background:var(--indigo); color:#fff;}
+  .compare-card h3{font-size:18px; margin-bottom:12px;}
+  .compare-card ul{list-style:none; font-size:14px;}
+  .compare-card li{
+    padding:6px 0 6px 18px; position:relative; color:var(--ink);
+  }
+  .compare-card li::before{
+    content:"–"; position:absolute; left:0; color:var(--ink-soft);
+  }
+
+  /* ===== 코드 ===== */
+  .code-block{
+    background:var(--code-bg); color:var(--code-ink);
+    border-radius:12px; padding:20px 22px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px; line-height:1.85;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-block .cm{color:#8A9B97;}
+  .code-block .kw{color:#E8B678;}
+  .code-block .st{color:#B9D6A3;}
+  .code-title{
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    color:var(--ink-soft); margin-bottom:8px;
+  }
+
+  /* ===== 생태계 카드 ===== */
+  .eco-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media(max-width:760px){ .eco-grid{grid-template-columns:1fr;} }
+  .eco-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:20px;
+  }
+  .eco-card .name{
+    font-weight:700; font-size:15.5px; margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eco-card .dot{width:8px; height:8px; border-radius:50%;}
+  .eco-card:nth-child(1) .dot{background:var(--forest);}
+  .eco-card:nth-child(2) .dot{background:var(--indigo);}
+  .eco-card:nth-child(3) .dot{background:var(--bronze);}
+  .eco-card .desc{font-size:13.5px; color:var(--ink-soft);}
+
+  /* ===== 비교 아사이드 (LangGraph 비교) ===== */
+  .aside-box{
+    background:var(--panel); border:1px dashed #C9C4B8; border-radius:14px;
+    padding:22px 24px;
+  }
+  .aside-box .aside-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    color:var(--ink-soft); margin-bottom:10px;
+  }
+  table.map-table{width:100%; border-collapse:collapse; font-size:13.5px; margin-top:12px;}
+  table.map-table th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    color:var(--ink-soft); font-weight:500; padding:8px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  table.map-table td{
+    padding:10px 10px; border-bottom:1px solid var(--line);
+  }
+  table.map-table td.lc{color:var(--forest); font-weight:700; font-family:'JetBrains Mono',monospace; font-size:12.5px;}
+  table.map-table td.lg{color:var(--indigo); font-weight:700; font-family:'JetBrains Mono',monospace; font-size:12.5px;}
+
+  /* ===== 마무리 ===== */
+  .closing{
+    margin-top:8px;
+    background:var(--ink); color:#F4F2ED;
+    border-radius:16px; padding:36px 32px;
+  }
+  .closing h2{font-size:20px; margin-bottom:16px; color:#fff;}
+  .closing .bullet-grid .bullet-card{
+    background:#262A32; border-color:#3A3F49;
+  }
+  .closing .bullet-card .k{color:#fff;}
+  .closing .bullet-card .k::before{color:#7BC49A;}
+  .closing .bullet-card .v{color:#B6BAC2;}
+
+  footer{
+    text-align:center; padding:30px 0 0;
+    font-size:12px; color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="eyebrow">LLM APPLICATION FRAMEWORK</span>
+    <h1 class="title">여러 개의 LLM 호출·도구·데이터를<br><span class="accent">사슬(Chain)</span>처럼 엮는 프레임워크</h1>
+    <p class="lede">
+      <b>LangChain</b> : 프롬프트·모델·검색·메모리·도구를 표준 인터페이스로 연결 →
+      단발성 LLM 호출을 넘어선 <b>워크플로우 · 에이전트</b> 구성을 지원하는 오픈소스 프레임워크
+    </p>
+    <div class="chain-rule">
+      <div class="link"></div><div class="link"></div><div class="link"></div>
+      <div class="rest"></div>
+    </div>
+  </div>
+
+  <!-- 1. 배경 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">등장 배경 : LLM 단독 호출의 한계</h2>
+    </div>
+    <p class="sec-desc">GPT·Claude 등 모델 API를 그냥 호출하는 것만으로는 실제 서비스 구축에 부족 → 아래 4가지 공백 발생</p>
+    <div class="bullet-grid">
+      <div class="bullet-card">
+        <div class="k">프롬프트 관리 부재</div>
+        <div class="v">템플릿화 · 버전 관리 · 재사용 구조 없음 → 문자열 하드코딩 반복</div>
+      </div>
+      <div class="bullet-card">
+        <div class="k">외부 데이터 단절</div>
+        <div class="v">모델은 학습 시점 지식만 보유 → 사내 문서 · DB · 최신 정보 접근 불가</div>
+      </div>
+      <div class="bullet-card">
+        <div class="k">상태(맥락) 미유지</div>
+        <div class="v">API 호출은 기본적으로 무상태(stateless) → 대화 기록 직접 관리 필요</div>
+      </div>
+      <div class="bullet-card">
+        <div class="k">행동(Action) 불가</div>
+        <div class="v">계산 · 검색 · API 호출 등 실제 작업 수행 능력 없음 → 텍스트 생성에 국한</div>
+      </div>
+    </div>
+    <div class="arrow-note">→ LangChain : 위 4가지를 각각 Prompt · Retrieval · Memory · Tool 모듈로 표준화</div>
+  </section>
+
+  <!-- 2. 핵심 구성요소 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">핵심 구성요소</h2>
+    </div>
+    <p class="sec-desc">입력부터 출력까지, 각 단계를 독립된 컴포넌트로 분리 → 자유롭게 조합(Chain)</p>
+
+    <div class="diagram-box">
+      <svg viewBox="0 0 900 430" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#565C66"/>
+          </marker>
+        </defs>
+
+        <!-- main pipeline -->
+        <g font-family="Noto Sans KR" font-size="14" font-weight="700">
+          <rect x="20" y="150" width="140" height="60" rx="10" fill="#FFFFFF" stroke="#E4E2DC"/>
+          <text x="90" y="176" text-anchor="middle" fill="#1A1D23">사용자 입력</text>
+          <text x="90" y="196" text-anchor="middle" font-size="11" fill="#565C66" font-weight="400">User Query</text>
+
+          <line x1="160" y1="180" x2="205" y2="180" stroke="#565C66" stroke-width="2" marker-end="url(#arrow)"/>
+
+          <rect x="210" y="150" width="150" height="60" rx="10" fill="#F5EDE1" stroke="#E4D2B8"/>
+          <text x="285" y="176" text-anchor="middle" fill="#A8763E">Prompt Template</text>
+          <text x="285" y="196" text-anchor="middle" font-size="11" fill="#A8763E" font-weight="400">프롬프트 조합</text>
+
+          <line x1="360" y1="180" x2="405" y2="180" stroke="#565C66" stroke-width="2" marker-end="url(#arrow)"/>
+
+          <rect x="410" y="150" width="150" height="60" rx="10" fill="#E7F0EA" stroke="#BFDCCB"/>
+          <text x="485" y="176" text-anchor="middle" fill="#2D6A4F">Chat Model</text>
+          <text x="485" y="196" text-anchor="middle" font-size="11" fill="#2D6A4F" font-weight="400">LLM 추론</text>
+
+          <line x1="560" y1="180" x2="605" y2="180" stroke="#565C66" stroke-width="2" marker-end="url(#arrow)"/>
+
+          <rect x="610" y="150" width="150" height="60" rx="10" fill="#FFFFFF" stroke="#E4E2DC"/>
+          <text x="685" y="176" text-anchor="middle" fill="#1A1D23">Output Parser</text>
+          <text x="685" y="196" text-anchor="middle" font-size="11" fill="#565C66" font-weight="400">구조화 출력</text>
+
+          <line x1="760" y1="180" x2="805" y2="180" stroke="#565C66" stroke-width="2" marker-end="url(#arrow)"/>
+
+          <rect x="810" y="150" width="70" height="60" rx="10" fill="#1A1D23"/>
+          <text x="845" y="176" text-anchor="middle" fill="#fff" font-size="13">결과</text>
+          <text x="845" y="196" text-anchor="middle" font-size="11" fill="#B6BAC2" font-weight="400">Result</text>
+        </g>
+
+        <!-- Retrieval branch (top) -->
+        <g font-family="Noto Sans KR" font-size="12">
+          <rect x="185" y="30" width="200" height="80" rx="10" fill="#EBEDFB" stroke="#CBD1F5"/>
+          <text x="285" y="55" text-anchor="middle" font-weight="700" fill="#3D4FC4" font-size="14">Retrieval (RAG)</text>
+          <text x="285" y="75" text-anchor="middle" fill="#3D4FC4" font-size="11">문서 로더 → 임베딩 → 벡터스토어</text>
+          <text x="285" y="93" text-anchor="middle" fill="#3D4FC4" font-size="11">→ 유사 문서 검색(Retriever)</text>
+          <line x1="285" y1="110" x2="285" y2="148" stroke="#3D4FC4" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+        </g>
+
+        <!-- Memory branch (bottom) -->
+        <g font-family="Noto Sans KR" font-size="12">
+          <rect x="185" y="310" width="200" height="70" rx="10" fill="#F5EDE1" stroke="#E4D2B8"/>
+          <text x="285" y="335" text-anchor="middle" font-weight="700" fill="#A8763E" font-size="14">Memory</text>
+          <text x="285" y="355" text-anchor="middle" fill="#A8763E" font-size="11">이전 대화 기록 저장 · 주입</text>
+          <line x1="285" y1="310" x2="285" y2="212" stroke="#A8763E" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+        </g>
+
+        <!-- Agent + Tools loop (right bottom) -->
+        <g font-family="Noto Sans KR" font-size="12">
+          <rect x="560" y="270" width="150" height="60" rx="10" fill="#E7F0EA" stroke="#BFDCCB"/>
+          <text x="635" y="295" text-anchor="middle" font-weight="700" fill="#2D6A4F" font-size="14">Agent</text>
+          <text x="635" y="313" text-anchor="middle" fill="#2D6A4F" font-size="11">도구 선택 · 실행 판단</text>
+
+          <rect x="760" y="270" width="120" height="60" rx="10" fill="#FFFFFF" stroke="#E4E2DC"/>
+          <text x="820" y="295" text-anchor="middle" font-weight="700" fill="#1A1D23" font-size="13">Tools</text>
+          <text x="820" y="313" text-anchor="middle" fill="#565C66" font-size="10">검색 · 계산 · API</text>
+
+          <line x1="485" y1="212" x2="580" y2="268" stroke="#2D6A4F" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+          <path d="M710,290 C 735,290 735,290 758,290" stroke="#2D6A4F" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M820,270 C 820,240 700,235 640,268" stroke="#2D6A4F" stroke-width="1.6" fill="none" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+          <text x="740" y="255" text-anchor="middle" font-size="10" fill="#2D6A4F">결과 반환 → 재판단(loop)</text>
+        </g>
+      </svg>
+      <div class="diagram-caption">실선 : 기본 파이프라인 흐름 · 점선 : 부가 모듈 연결 (Retrieval / Memory / Agent-Tool 루프)</div>
+    </div>
+
+    <!-- Agent Deprecated 경고 노트 -->
+    <div class="arrow-note" style="background:var(--indigo-soft); border-left-color:var(--indigo); color:var(--indigo); margin-top:16px;">
+      ⚠️ <strong>중요 변화:</strong> 기존 LangChain의 기본 에이전트 클래스(AgentExecutor)는 루프 제어력의 한계로 인해 현재 <strong>Deprecated(지원 중단)</strong> 수순을 밟고 있습니다. 현재는 에이전트 구축을 위한 새로운 공식 표준인 <strong>LangGraph</strong>를 사용하는 방향으로 생태계가 개편되었습니다.
+    </div>
+  </section>
+
+  <!-- 3. Chain vs Agent -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Chain vs Agent</h2>
+    </div>
+    <p class="sec-desc">"연결 방식을 누가 결정하는가"에 따른 구분 → 실행 순서 고정 여부가 핵심 차이</p>
+    <div class="compare">
+      <div class="compare-card chain">
+        <span class="tag">CHAIN</span>
+        <h3>고정된 순서 · 예측 가능한 파이프라인</h3>
+        <ul>
+          <li>개발자가 실행 순서를 사전에 명시</li>
+          <li>Prompt → LLM → Parser 등 선형 결합</li>
+          <li>디버깅 · 테스트 용이, 비용 예측 가능</li>
+          <li>단순 요약 · 번역 · 고정 포맷 추출에 적합</li>
+        </ul>
+      </div>
+      <div class="compare-card agent">
+        <span class="tag">AGENT</span>
+        <h3>LLM이 스스로 다음 행동을 판단</h3>
+        <ul>
+          <li>어떤 Tool을, 몇 번, 어떤 순서로 쓸지 모델이 결정</li>
+          <li>ReAct 패턴 : 추론(Reason) ↔ 행동(Act) 반복</li>
+          <li>동적 · 유연하지만 결과 예측 어려움</li>
+          <li>복합 질의 · 다단계 리서치 작업에 적합</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 코드 예시 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">LCEL(LangChain Expression Language) 예시</h2>
+    </div>
+    <p class="sec-desc">파이프 연산자(<span style="font-family:'JetBrains Mono';">|</span>)로 컴포넌트를 사슬처럼 연결</p>
+    <div class="code-title">chain = prompt | model | parser</div>
+    <div class="code-block"><span class="cm"># 1) 프롬프트 템플릿 정의</span>
+prompt = ChatPromptTemplate.from_template(
+    <span class="st">"{topic}에 대해 세 문장으로 설명해줘"</span>
+)
+
+<span class="cm"># 2) 모델 정의</span>
+model = ChatOpenAI(model=<span class="st">"gpt-4o-mini"</span>)
+
+<span class="cm"># 3) 출력 파서 정의</span>
+parser = StrOutputParser()
+
+<span class="cm"># 4) 파이프로 연결 → 하나의 Chain 완성</span>
+chain = prompt | model | parser
+
+<span class="kw">result</span> = chain.invoke({<span class="st">"topic"</span>: <span class="st">"LangChain"</span>})</div>
+  </section>
+
+  <!-- 5. 생태계 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">생태계</h2>
+    </div>
+    <p class="sec-desc">LangChain 코어를 중심으로 관찰(Observability) · 오케스트레이션 · 배포 영역까지 확장</p>
+    <div class="eco-grid">
+      <div class="eco-card">
+        <div class="name"><span class="dot"></span>Langfuse</div>
+        <div class="desc">오픈소스 LLM 트레이싱 · 디버깅 · 평가 플랫폼 ➡️ LangSmith의 대안으로 널리 쓰이는 대표적 LLMOps 관찰 도구</div>
+      </div>
+      <div class="eco-card">
+        <div class="name"><span class="dot"></span>LangGraph</div>
+        <div class="desc">그래프 기반 상태 관리 → 멀티 에이전트 · 사이클 있는 복잡한 워크플로우 오케스트레이션</div>
+      </div>
+      <div class="eco-card">
+        <div class="name"><span class="dot"></span>LangServe</div>
+        <div class="desc">작성한 Chain을 REST API로 즉시 배포 → FastAPI 기반 서빙 레이어 자동 생성</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. LangGraph 비교 아사이드 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">LangChain vs LangGraph 핵심 비교</h2>
+    </div>
+
+    <!-- 비교 시각화 다이어그램 -->
+    <div class="diagram-box" style="margin-bottom: 20px; padding: 24px 16px 16px;">
+      <svg viewBox="0 0 850 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--forest)"/>
+          </marker>
+          <marker id="arrow-indigo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--indigo)"/>
+          </marker>
+        </defs>
+
+        <!-- 구분선 -->
+        <line x1="425" y1="20" x2="425" y2="240" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 4"/>
+
+        <!-- LEFT: LangChain (Linear) -->
+        <g transform="translate(0, 0)">
+          <text x="212" y="35" text-anchor="middle" font-family="Noto Sans KR" font-size="14.5" font-weight="700" fill="var(--forest)">⛓️ LangChain (단방향 체인)</text>
+          <text x="212" y="55" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="var(--ink-soft)">선형 파이프라인 (컨베이어 벨트 비유)</text>
+
+          <!-- Nodes -->
+          <rect x="35" y="110" width="90" height="50" rx="8" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
+          <text x="80" y="140" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--forest)">Prompt</text>
+
+          <rect x="165" y="110" width="90" height="50" rx="8" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
+          <text x="210" y="140" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--forest)">LLM</text>
+
+          <rect x="295" y="110" width="90" height="50" rx="8" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
+          <text x="340" y="140" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--forest)">Parser</text>
+
+          <!-- Connectors -->
+          <line x1="125" y1="135" x2="158" y2="135" stroke="var(--forest)" stroke-width="2" marker-end="url(#arrow-green)"/>
+          <line x1="255" y1="135" x2="288" y2="135" stroke="var(--forest)" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+          <text x="212" y="210" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="var(--ink-soft)">데이터가 한쪽 방향으로만 흐르고 끝남 (되돌아가기 불가)</text>
+        </g>
+
+        <!-- RIGHT: LangGraph (Cyclic) -->
+        <g transform="translate(425, 0)">
+          <text x="212" y="35" text-anchor="middle" font-family="Noto Sans KR" font-size="14.5" font-weight="700" fill="var(--indigo)">🕸️ LangGraph (순환 그래프)</text>
+          <text x="212" y="55" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="var(--ink-soft)">루프 및 상태 관리 (뱀과 사다리 게임 비유)</text>
+
+          <!-- Nodes -->
+          <rect x="40" y="110" width="100" height="50" rx="8" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+          <text x="90" y="140" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--indigo)">1. 코드 작성</text>
+
+          <rect x="220" y="110" width="100" height="50" rx="8" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+          <text x="270" y="140" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--indigo)">2. 테스트 실행</text>
+
+          <!-- State Box -->
+          <rect x="140" y="180" width="80" height="30" rx="5" fill="#f8fafc" stroke="var(--line)" stroke-width="1"/>
+          <text x="180" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="var(--ink-soft)">Shared State</text>
+
+          <!-- Connectors -->
+          <!-- forward -->
+          <line x1="140" y1="135" x2="213" y2="135" stroke="var(--indigo)" stroke-width="2" marker-end="url(#arrow-indigo)"/>
+          <!-- backward loop -->
+          <path d="M 270,110 C 270,75 90,75 90,103" fill="none" stroke="var(--indigo)" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#arrow-indigo)"/>
+          <text x="180" y="70" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--indigo)" font-weight="700">실패 시 되돌아감 (Self-Correction)</text>
+
+          <!-- State links -->
+          <line x1="90" y1="160" x2="140" y2="185" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 2"/>
+          <line x1="270" y1="160" x2="220" y2="185" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 2"/>
+
+          <text x="212" y="235" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="var(--ink-soft)">공유된 State(상태)를 업데이트하며 반복 수행 가능</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="aside-box">
+      <div class="aside-tag">// 흐름 제어(Flow Control)와 상태 관리(State Management)의 차이</div>
+      <p style="font-size:14px; color:var(--ink-soft); margin-bottom:12px;">
+        단순 순차 파이프라인은 <strong>LangChain</strong>이 우수하며, 사이클(Loop)이 존재하고 자체 복구가 필요한 복잡한 에이전트는 <strong>LangGraph</strong>가 최적입니다.
+      </p>
+      <table class="map-table">
+        <tr><th>비교 항목</th><th>LangChain</th><th>LangGraph</th></tr>
+        <tr><td>동작 모델</td><td class="lc">선형 체인 (DAG, 순차 실행)</td><td class="lg">순환 그래프 (Node & Edge 기반)</td></tr>
+        <tr><td>상태 관리</td><td class="lc">무상태(Stateless) 기본</td><td class="lg">State 객체를 활용한 중앙 집중형 상태 관리</td></tr>
+        <tr><td>주요 특징</td><td class="lc">빠른 빌드, 디버깅 용이, 안정적</td><td class="lg">루프(Loop), 분기 및 조건부 복귀(Self-correction)</td></tr>
+        <tr><td>에이전트 패턴</td><td class="lc">단일 ReAct 루프 등 단순 에이전트</td><td class="lg">멀티 에이전트(Multi-agent) 협업 파이프라인</td></tr>
+        <tr><td>권장 케이스</td><td class="lc">RAG 기반 Q&A, 정형 데이터 추출 및 요약</td><td class="lg">자율 코딩 봇, 리서치 에이전트, 고객 지원 챗봇</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer>LangChain 소개 자료 · 교육용 시각화</footer>
+</div>
+
+<script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+
+  // 1. 로드 즉시 실행
+  window.onload = sendHeight;
+
+  // 2. 부모창 리스너 등록 대기 및 렌더링 지연 대응 (다중 전송)
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+
+  // 3. 브라우저 리사이즈 및 웹 폰트/이미지 로드 완료에 따른 높이 변화 실시간 감지
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
+</script>
+</body>
+</html>

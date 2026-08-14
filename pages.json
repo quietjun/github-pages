@@ -16,6 +16,40 @@
           {
             "label": "Linear Probing & Fine-tuning — 전이학습 전략",
             "path": "ai/cnn/linearprobing.html"
+          },
+          {
+            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처",
+            "path": "ai/cnn/vit.html"
+          }
+        ]
+      },
+      {
+        "label": "langchain",
+        "children": [
+          {
+            "label": "LangChain 소개",
+            "path": "ai/langchain/langchain.html"
+          },
+          {
+            "label": "LangGraph 시각화",
+            "path": "ai/langchain/langgraph.html"
+          },
+          {
+            "label": "RAG(검색 증강 생성) 기술 소개",
+            "path": "ai/langchain/rag.html"
+          }
+        ]
+      },
+      {
+        "label": "llm",
+        "children": [
+          {
+            "label": "LLM 샘플링 파라미터",
+            "path": "ai/llm/llmsampling.html"
+          },
+          {
+            "label": "LLM Role 정리",
+            "path": "ai/llm/roles.html"
           }
         ]
       },
@@ -47,23 +81,6 @@
                 "path": "ai/python/pandas/broadcasting.html"
               }
             ]
-          }
-        ]
-      },
-      {
-        "label": "rag",
-        "children": [
-          {
-            "label": "LangGraph 시각화",
-            "path": "ai/rag/langgraph.html"
-          },
-          {
-            "label": "LLM 샘플링 파라미터",
-            "path": "ai/rag/llmsampling.html"
-          },
-          {
-            "label": "LLM Role 정리",
-            "path": "ai/rag/roles.html"
           }
         ]
       },
