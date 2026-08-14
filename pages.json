@@ -31,6 +31,10 @@
         "label": "langchain",
         "children": [
           {
+            "label": "AI Agent 개념 및 ReAct 아키텍처",
+            "path": "ai/langchain/agent.html"
+          },
+          {
             "label": "LangChain 소개",
             "path": "ai/langchain/langchain.html"
           },
