@@ -1,0 +1,225 @@
+@charset "UTF-8";
+
+/* ===== 은서파 블로그 공통 스타일 (images/common.css) ===== */
+
+:root {
+  --bg: #FAF9F6;
+  --panel: #FFFFFF;
+  --ink: #1A1D23;
+  --ink-soft: #565C66;
+  --line: #E4E2DC;
+  --indigo: #3D4FC4;
+  --indigo-soft: #EBEDFB;
+  --orange: #EA580C;
+  --orange-soft: #FFF7ED;
+  --forest: #2D6A4F;
+  --forest-soft: #E7F0EA;
+  --code-bg: #1A1D23;
+  --code-ink: #E7F0EA;
+  --red: #C43D3D;
+  --red-soft: #FBEBEB;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.75;
+  padding: 0 20px 60px;
+  font-size: 15px; /* 표준 본문 규격 보장 */
+}
+
+/* ===== 블로그 헤더 및 폰트 장식 (H3, H4) ===== */
+h3 {
+  font-size: 20px;
+  font-weight: 700;
+  border-left: 5px solid var(--orange);
+  padding-left: 12px;
+  margin: 28px 0 16px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 700;
+  border-left: 10px solid var(--orange-soft);
+  padding-left: 10px;
+  color: #953b34; /* 블로그 규격 적갈색 */
+  margin: 22px 0 12px;
+  line-height: 1.4;
+}
+
+p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+
+/* ===== 인용구 (Blockquote) ===== */
+blockquote {
+  border-left: 4px solid var(--line);
+  padding-left: 16px;
+  margin: 20px 0;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ===== 공통 카드 컴포넌트 ===== */
+.comp-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+}
+
+.comp-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--orange);
+  box-shadow: 0 12px 20px -3px rgba(234, 88, 12, 0.08);
+}
+
+.comp-card .icon {
+  font-size: 28px;
+  margin-bottom: 14px;
+}
+
+.comp-card h3, .comp-card h4 {
+  border-left: none;
+  padding-left: 0;
+  margin: 0 0 8px 0;
+  color: var(--ink);
+}
+
+.comp-card h3 {
+  font-size: 16px;
+}
+
+.comp-card h4 {
+  font-size: 15px;
+}
+
+.comp-card .desc {
+  font-size: 14px; /* 최소 본문 규격 14px 엄수 */
+  color: var(--ink-soft);
+  line-height: 1.7;
+  flex-grow: 1;
+}
+
+/* ===== 공통 테이블 컴포넌트 ===== */
+.map-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-size: 14px; /* 최소 본문 규격 14px 엄수 */
+  text-align: left;
+  line-height: 1.7;
+}
+
+.map-table th, .map-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.map-table th {
+  background: var(--orange-soft);
+  color: var(--orange);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.map-table td.tech {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.map-table td.role {
+  white-space: nowrap;
+}
+
+/* ===== 공통 코드 뷰어 컴포넌트 ===== */
+.code-viewer {
+  background: var(--code-bg);
+  color: var(--code-ink);
+  border-radius: 10px;
+  padding: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; /* 최소 본문 규격 14px 엄수 */
+  line-height: 1.7;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  position: relative;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  margin: 16px 0;
+}
+
+.code-viewer::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 10px;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+/* ===== 팁 및 경고 컴포넌트 ===== */
+.aside-box {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+}
+
+.aside-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; /* 최소 본문 규격 14px 엄수 */
+  color: var(--ink-soft);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.danger-zone {
+  background: var(--red-soft);
+  border-left: 4px solid var(--red);
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-size: 14px; /* 최소 본문 규격 14px 엄수 */
+  color: var(--ink);
+  margin-top: 16px;
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+.danger-zone strong {
+  color: var(--red);
+  display: block;
+  margin-bottom: 4px;
+}
