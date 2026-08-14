@@ -9,6 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- KaTeX Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '\\(', right: '\\)', display: false}]});"></script>
+
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -816,7 +821,7 @@
       🧩 2. CLIP 멀티모달 유사도 계산기
     </button>
     <button class="tab-btn" onclick="switchTab('tab3')">
-      ⚔️ 3. CLIP vs ResNet-50 특성 비교
+      ⚔️ 3. ResNet-50 (CNN) 소개 & CLIP 비교
     </button>
     <button class="tab-btn" onclick="switchTab('tab4')">
       🔄 4. 합성 데이터 전이학습 & KD
@@ -1389,68 +1394,385 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
     </div>
   </div>
 
-  <!-- TAB 3: CLIP vs ResNet-50 -->
+  <!-- TAB 3: ResNet-50 CNN 모델 소개 & CLIP 비교 -->
   <div id="tab3" class="tab-content">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon">⚔️</div>
-        <div class="card-title">CLIP vs ResNet-50 (전통 CNN) 모델 특성 상세 비교</div>
-      </div>
-      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">
-        동일한 이미지(수채화 여우 그림 / 1960년대 클래식 카)를 분류할 때 두 모델은 완전히 다른 시각을 보여줍니다.
-      </p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>비교 항목</th>
-            <th>ResNet-50 (전통 CNN)</th>
-            <th>CLIP (멀티모달 파운데이션 모델)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>학습 방식</strong></td>
-            <td>ImageNet-1K 고정 1,000개 클래스 지도학습</td>
-            <td>4억 개 이미지-텍스트 대조학습 (Contrastive)</td>
-          </tr>
-          <tr>
-            <td><strong>분류 방식</strong></td>
-            <td>사전 정의된 1,000개 범주 중 하나 출력</td>
-            <td>임의로 작성한 텍스트 문장과의 유사도 계산 (Zero-Shot)</td>
-          </tr>
-          <tr>
-            <td><strong>화풍 / 스타일 인식</strong></td>
-            <td><span style="color:var(--rose); font-weight:700;">불가</span> (클래스가 "red fox" 뿐임)</td>
-            <td><span style="color:var(--accent); font-weight:700;">가능</span> ("watercolor" vs "oil painting" vs "photo" 구분)</td>
-          </tr>
-          <tr>
-            <td><strong>유연성 (Zero-shot)</strong></td>
-            <td>새 클래스 등장 시 레이어 재학습 필수</td>
-            <td>텍스트 레이블만 수정하면 코드 변경 없이 즉시 평가 가능</td>
-          </tr>
-          <tr>
-            <td><strong>예시 결과 (여우 수채화)</strong></td>
-            <td><code>red fox (85.2%)</code>, <code>kit fox (10.1%)</code></td>
-            <td><code>a watercolor painting of a fox (92.4%)</code></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="grid-2" style="margin-top:1.5rem;">
-        <div class="card" style="background:#090d16;">
-          <h4 style="color:var(--primary); margin-bottom:0.5rem;">ResNet-50의 핵심 관점</h4>
-          <p style="font-size:0.9rem; color:var(--text-muted);">
-            객체의 <strong>시각적 형태(주둥이, 귀, 털 색상)</strong>에 집중하여 사물의 종류를 좁힙니다. 화풍(수채화/유화/사진)은 클래스 정의에 없으므로 무시하거나 노이즈로 처리합니다.
-          </p>
+    <div class="grid-2">
+      <!-- 1. TL;DR & Problem/Solution Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">💡</div>
+          <div class="card-title">ResNet-50 핵심 요약 & 접근 방식</div>
         </div>
-        <div class="card" style="background:#090d16;">
-          <h4 style="color:var(--secondary); margin-bottom:0.5rem;">CLIP의 핵심 관점</h4>
-          <p style="font-size:0.9rem; color:var(--text-muted);">
-            이미지 전체의 <strong>의미적 맥락(Semantic Context)</strong>을 파악합니다. 객체 이름뿐만 아니라 화풍, 배경 분위기, 시제, 상태(새 차 vs 녹슨 폐차)까지 텍스트 임베딩으로 완벽 대조합니다.
+        <div class="tldr-dark">
+          <strong>한 줄 요약 :</strong> 층이 깊어져도 기울기 소실(Vanishing Gradient) 없이 안정적으로 학습할 수 있도록 <strong>잔차 학습(Residual Learning: Skip Connection)</strong>을 도입한 대표적 50계층 CNN 아키텍처입니다.
+        </div>
+
+        <div class="problem-col-container">
+          <div class="prob-card-dark">
+            <h4>❌ 기존 심층 CNN의 한계 (Degradation Problem)</h4>
+            <p class="algo-desc" style="color: var(--text-muted);">
+              신경망 층을 더 깊게 쌓을수록 기울기 소실/폭발 현상이 발생하여, 오버피팅이 아님에도 불구하고 50층 이상의 단순 CNN(Plain Net)은 오히려 20층 모델보다 학습 및 검증 에러율이 높아지는 성능 저하 문제가 존재했습니다.
+            </p>
+          </div>
+          <div class="sol-card-dark">
+            <h4>✅ ResNet의 해결책 (Skip Connection / 잔차 학습)</h4>
+            <p class="algo-desc" style="color: var(--text-muted);">
+              입력 데이터를 뒤쪽 레이어로 100% 직통 전달하는 <strong>지름길(Shortcut Connection)</strong>을 뚫어주어, 레이어가 처음부터 다 그리지 않고 미세한 차이점(잔차)만 배우도록 만들어 100층 이상의 초심층 모델도 안정적으로 수렴시켰습니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- In-Between: Master Integrated ResNet-50 Residual Visualization Block -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1rem;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+            📐 ResNet-50 잔차 학습 (Residual Learning & Skip Connection) 시각화
+          </h3>
+          <p class="algo-desc" style="color: var(--text-muted); margin-bottom: 1.25rem;">
+            아래 자료는 <strong>1) 이미지 처리 관점에서의 잔차(Residual) 개념</strong>과 <strong>2) 3-Stage 직렬 잔차 블록(Skip Connection) 아키텍처 연산</strong>을 함께 보여줍니다.
           </p>
+
+          <!-- Panel 1: Image & Feature Processing Residual Concept Visualizer -->
+          <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+            <div style="font-weight: 700; color: var(--primary); font-size: 13.5px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+              🖼️ 1. 특징 추출 관점에서의 '잔차(Residual)' 매핑 개념
+            </div>
+            
+            <svg width="100%" viewBox="0 0 660 140" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="blurFilter">
+                  <feGaussianBlur stdDeviation="2.2" />
+                </filter>
+              </defs>
+
+              <!-- 1. Blur Input (x) -->
+              <g transform="translate(10, 10)">
+                <rect x="0" y="0" width="165" height="115" rx="10" fill="#0f172a" stroke="var(--primary)" stroke-width="1"/>
+                <text x="82" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--primary)">1. 입력 특징 맵 (x)</text>
+                
+                <!-- Blurred Shapes -->
+                <g filter="url(#blurFilter)">
+                  <circle cx="82" cy="62" r="22" fill="#f8fafc"/>
+                  <circle cx="65" cy="47" r="9" fill="#334155"/>
+                  <circle cx="99" cy="47" r="9" fill="#334155"/>
+                  <ellipse cx="74" cy="61" rx="5" ry="7" fill="#334155"/>
+                  <ellipse cx="90" cy="61" rx="5" ry="7" fill="#334155"/>
+                </g>
+                <text x="82" y="102" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--text-muted)">이전 층의 개략 형체 특징</text>
+              </g>
+
+              <!-- Plus Sign -->
+              <text x="195" y="75" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="var(--text-muted)">+</text>
+
+              <!-- 2. Residual Edge Map (F(x)) -->
+              <g transform="translate(225, 10)">
+                <rect x="0" y="0" width="165" height="115" rx="10" fill="#020617" stroke="var(--accent)" stroke-width="1.5"/>
+                <text x="82" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--accent)">2. 잔차 특징 맵 F(x)</text>
+                
+                <!-- Sharp Edge Wireframe -->
+                <circle cx="82" cy="62" r="22" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <circle cx="65" cy="47" r="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <circle cx="99" cy="47" r="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <ellipse cx="74" cy="61" rx="4" ry="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <ellipse cx="90" cy="61" rx="4" ry="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <circle cx="74" cy="60" r="1.5" fill="var(--accent)"/>
+                <circle cx="90" cy="60" r="1.5" fill="var(--accent)"/>
+                
+                <text x="82" y="102" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--accent)" font-weight="600">추가 세부 텍스처/윤곽 보완 정보</text>
+              </g>
+
+              <!-- Arrow Sign -->
+              <text x="410" y="75" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="var(--text-muted)">➔</text>
+
+              <!-- 3. Final Combined Clear Image (H(x)) -->
+              <g transform="translate(440, 10)">
+                <rect x="0" y="0" width="210" height="115" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="1.5"/>
+                <text x="105" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--secondary)">3. 누적 특징 맵 H(x)=F(x)+x</text>
+                
+                <!-- Clear Panda -->
+                <circle cx="105" cy="62" r="22" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                <circle cx="88" cy="47" r="9" fill="#090d16"/>
+                <circle cx="122" cy="47" r="9" fill="#090d16"/>
+                <ellipse cx="97" cy="61" rx="5" ry="7" fill="#090d16"/>
+                <ellipse cx="113" cy="61" rx="5" ry="7" fill="#090d16"/>
+                <circle cx="98" cy="59" r="1.8" fill="#fff"/>
+                <circle cx="112" cy="59" r="1.8" fill="#fff"/>
+                
+                <text x="105" y="102" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--secondary)" font-weight="700">정교화된 특징 ➔ 🎯 "판다" 클래스 분류</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Panel 2: Master Integrated Serial Skip Connection Pipeline -->
+          <div style="background: #090d16; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem 1rem; display: flex; flex-direction: column; align-items: center;">
+            <div style="font-weight: 700; color: var(--accent); font-size: 13.5px; margin-bottom: 0.75rem; align-self: flex-start; display: flex; align-items: center; gap: 6px;">
+              🚀 2. ResNet-50 3-Stage 직렬 잔차 블록 (Serial Bottleneck Layers) 통합 파이프라인
+            </div>
+            <svg width="100%" viewBox="0 0 760 235" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="master-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </marker>
+              </defs>
+
+              <!-- 0. Input Node (x0) -->
+              <g transform="translate(10, 88)">
+                <rect x="0" y="0" width="75" height="70" rx="10" fill="rgba(56, 189, 248, 0.1)" stroke="var(--primary)" stroke-width="1.5"/>
+                <text x="37" y="32" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="var(--primary)">📥 입력</text>
+                <text x="37" y="50" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="var(--text-main)">x₀</text>
+              </g>
+
+              <!-- Split 0 Line -->
+              <circle cx="105" cy="123" r="4" fill="var(--primary)"/>
+              <line x1="85" y1="123" x2="105" y2="123" stroke="var(--primary)" stroke-width="2"/>
+
+              <!-- STAGE 1 BLOCK (x=105 ~ 275) -->
+              <!-- Top Path: F1(x0) -->
+              <path d="M 105 123 L 105 48 L 125 48" stroke="var(--primary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              
+              <!-- Stacked 3D Layer Plates Group (Stage 1) -->
+              <g transform="translate(128, 12)">
+                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--primary)" stroke-width="1"/>
+                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
+                <!-- 3D Layer Plates -->
+                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+
+                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(56, 189, 248, 0.25)" stroke="var(--primary)" stroke-width="1.2"/>
+                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--primary)" font-weight="700">3x3</text>
+
+                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              </g>
+
+              <path d="M 253 48 L 275 48 L 275 105" stroke="var(--primary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+
+              <!-- Bottom Shortcut Path 1 -->
+              <path d="M 105 123 L 105 195 L 275 195 L 275 141" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="190" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--primary)">🚀 Skip Connection</text>
+
+              <!-- Addition 1 Circle -->
+              <circle cx="275" cy="123" r="14" fill="rgba(56, 189, 248, 0.2)" stroke="var(--primary)" stroke-width="2"/>
+              <text x="275" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--primary)">+</text>
+              <text x="275" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
+
+              <!-- Split 1 Line -->
+              <circle cx="315" cy="123" r="4" fill="var(--amber)"/>
+              <line x1="289" y1="123" x2="315" y2="123" stroke="var(--amber)" stroke-width="2"/>
+
+              <!-- STAGE 2 BLOCK (x=315 ~ 485) -->
+              <!-- Top Path: F2(x1) -->
+              <path d="M 315 123 L 315 48 L 335 48" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              
+              <!-- Stacked 3D Layer Plates Group (Stage 2) -->
+              <g transform="translate(338, 12)">
+                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--amber)" stroke-width="1"/>
+                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
+                <!-- 3D Layer Plates -->
+                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+
+                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(245, 158, 11, 0.25)" stroke="var(--amber)" stroke-width="1.2"/>
+                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--amber)" font-weight="700">3x3</text>
+
+                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              </g>
+
+              <path d="M 463 48 L 485 48 L 485 105" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+
+              <!-- Bottom Shortcut Path 2 -->
+              <path d="M 315 123 L 315 195 L 485 195 L 485 141" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="400" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--amber)">🚀 Skip Connection</text>
+
+              <!-- Addition 2 Circle -->
+              <circle cx="485" cy="123" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
+              <text x="485" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--amber)">+</text>
+              <text x="485" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
+
+              <!-- Split 2 Line -->
+              <circle cx="525" cy="123" r="4" fill="var(--secondary)"/>
+              <line x1="499" y1="123" x2="525" y2="123" stroke="var(--secondary)" stroke-width="2"/>
+
+              <!-- STAGE 3 BLOCK (x=525 ~ 675) -->
+              <!-- Top Path: F3(x2) -->
+              <path d="M 525 123 L 525 48 L 545 48" stroke="var(--secondary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              
+              <!-- Stacked 3D Layer Plates Group (Stage 3) -->
+              <g transform="translate(548, 12)">
+                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--secondary)" stroke-width="1"/>
+                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
+                <!-- 3D Layer Plates -->
+                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+
+                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(168, 85, 247, 0.25)" stroke="var(--secondary)" stroke-width="1.2"/>
+                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--secondary)" font-weight="700">3x3</text>
+
+                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              </g>
+
+              <path d="M 673 48 L 685 48 L 685 105" stroke="var(--secondary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+
+              <!-- Bottom Shortcut Path 3 -->
+              <path d="M 525 123 L 525 195 L 685 195 L 685 141" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="605" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--secondary)">🚀 Skip Connection</text>
+
+              <!-- Addition 3 Circle -->
+              <circle cx="685" cy="123" r="14" fill="rgba(168, 85, 247, 0.2)" stroke="var(--secondary)" stroke-width="2"/>
+              <text x="685" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--secondary)">+</text>
+              <text x="685" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
+
+              <!-- Line to Final Output -->
+              <line x1="699" y1="123" x2="715" y2="123" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
+
+              <!-- Output Node (Classifier) -->
+              <g transform="translate(717, 88)">
+                <rect x="0" y="0" width="38" height="70" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="var(--accent)" stroke-width="1.5"/>
+                <text x="19" y="32" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--accent)">🏆</text>
+                <text x="19" y="48" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--accent)">판다</text>
+                <text x="19" y="60" text-anchor="middle" font-family="monospace" font-size="7" fill="var(--text-muted)">99%</text>
+              </g>
+            </svg>
+          </div>
         </div>
       </div>
+
+
+      <!-- 3. ResNet-50 3-Step Process Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔄</div>
+          <div class="card-title">ResNet-50의 핵심 작동 과정 3단계</div>
+        </div>
+        <div class="steps-container">
+          <div class="step-card-dark">
+            <div class="step-num-badge">1</div>
+            <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">계층적 특징 추출 (Feature Pyramid)</div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
+              낮은 층에서는 점, 선, 질감 등 국소적(Local) 특징을 다루고, 깊은 층으로 갈수록 사물의 부분 및 전체 형상 등 고차원 시각 특징을 계층적으로 추출합니다.
+            </p>
+          </div>
+          <div class="step-card-dark">
+            <div class="step-num-badge">2</div>
+            <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">잔차 합산 (Residual Addition)</div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
+              Bottleneck 블록 내부의 1×1, 3×3, 1×1 컨볼루션을 통과한 연산 결과 \(F(x)\)에 입력 \(x\)를 덧셈하여 기울기 전달 경로를 최단거리로 보장합니다.
+            </p>
+          </div>
+          <div class="step-card-dark">
+            <div class="step-num-badge">3</div>
+            <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">Global Avg Pooling & 클래스 분류</div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
+              특징 맵 전체 공간을 1×1로 축약(GAP)하여 파라미터 수를 대폭 줄인 뒤, FC 레이어를 거쳐 <strong>ImageNet 1,000개 클래스 확률</strong>을 출력합니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. ResNet-50 Code Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">💻</div>
+          <div class="card-title">ResNet-50 핵심 실행 코드 예제</div>
+        </div>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 0.75rem;">
+          PyTorch `torchvision.models`를 이용해 ImageNet 사전학습 ResNet-50을 로드하고 이미지를 분류하는 표준 소스 코드입니다.
+          <br><br>
+          <a href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet50.html" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.08); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); transition: all 0.2s;">
+            🔗 PyTorch Official Docs - ResNet-50 가이드 바로가기
+          </a>
+        </p>
+
+        <pre style="margin-top:0.5rem; font-size: 12.5px; padding: 1rem;"><span class="code-keyword">import</span> torch
+<span class="code-keyword">from</span> PIL <span class="code-keyword">import</span> Image
+<span class="code-keyword">from</span> torchvision.models <span class="code-keyword">import</span> resnet50, ResNet50_Weights
+
+<span class="code-comment"># 1. ImageNet 최신 권장 가중치(Weights) 및 ResNet-50 로드</span>
+weights = ResNet50_Weights.DEFAULT
+model = resnet50(weights=weights).eval()
+
+<span class="code-comment"># 2. 모델 전용 이미지 전처리 파이프라인 가져오기 (Resize, Crop, Normalize)</span>
+preprocess = weights.transforms()
+
+<span class="code-comment"># 3. 이미지 로드 및 전처리 (배치 차원 배치 [1, 3, 224, 224])</span>
+img = Image.open(<span class="code-string">"sample_fox.jpg"</span>)
+batch = preprocess(img).unsqueeze(<span class="code-num">0</span>)
+
+<span class="code-comment"># 4. 모델 추론 및 소프트맥스 확률 연산</span>
+<span class="code-keyword">with</span> torch.no_grad():
+    logits = model(batch)
+    probs = logits.softmax(dim=<span class="code-num">1</span>)
+
+<span class="code-comment"># 5. Top-1 및 Top-5 예측 클래스 확인</span>
+top_prob, top_idx = probs.topk(<span class="code-num">5</span>)
+category_name = weights.meta[<span class="code-string">"categories"</span>][top_idx[<span class="code-num">0</span>][<span class="code-num">0</span>].item()]
+<span class="code-func">print</span>(<span class="code-string">f"Top-1 예측 결과: {category_name} ({top_prob[0][0].item()*100:.2f}%)"</span>)</pre>
+      </div>
+
+      <!-- 5. CLIP vs ResNet-50 Comparison Card -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <div class="card-icon">⚔️</div>
+          <div class="card-title">CLIP vs ResNet-50 (전통 CNN) 모델 특성 상세 비교</div>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">
+          동일한 이미지(수채화 여우 그림 / 1960년대 클래식 카)를 처리할 때 지도학습 기반 ResNet-50과 멀티모달 대조학습 기반 CLIP 모델은 완전히 다른 패러다임을 보여줍니다.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 20%;">비교 항목</th>
+              <th style="width: 40%;">ResNet-50 (전통 지도학습 CNN)</th>
+              <th style="width: 40%;">CLIP (멀티모달 파운데이션 모델)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>학습 방식</strong></td>
+              <td>ImageNet-1K 고정 1,000개 클래스 단일 라벨 지도학습</td>
+              <td>4억 개 이미지-텍스트 대조학습 (Contrastive Learning)</td>
+            </tr>
+            <tr>
+              <td><strong>분류 방식</strong></td>
+              <td>사전 정의된 1,000개 범주 중 하나 정적 출력 (Fixed Logits)</td>
+              <td>임의로 작성한 텍스트 문장과의 임베딩 유사도 계산 (Zero-Shot)</td>
+            </tr>
+            <tr>
+              <td><strong>화풍 / 스타일 인식</strong></td>
+              <td><span style="color:var(--rose); font-weight:700;">불가</span> (클래스가 "red fox" 형태 종류뿐임)</td>
+              <td><span style="color:var(--accent); font-weight:700;">가능</span> ("watercolor" vs "oil painting" vs "photo" 세부 구분)</td>
+            </tr>
+            <tr>
+              <td><strong>유연성 (Zero-shot)</strong></td>
+              <td>새 클래스 등장 시 수천 장 데이터 및 FC 레이어 재학습 필수</td>
+              <td>텍스트 레이블만 수정하면 코드 변경 및 재학습 없이 즉시 분류</td>
+            </tr>
+            <tr>
+              <td><strong>예시 결과 (여우 수채화)</strong></td>
+              <td><code>red fox (85.2%)</code>, <code>kit fox (10.1%)</code></td>
+              <td><code>a watercolor painting of a fox (92.4%)</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="grid-2" style="margin-top:1.5rem;">
+          <div class="card" style="background:#090d16;">
+            <h4 style="color:var(--primary); margin-bottom:0.5rem;">ResNet-50의 핵심 관점</h4>
+            <p style="font-size:0.9rem; color:var(--text-muted);">
+              객체의 <strong>시각적 국소 형태(주둥이, 귀, 털 색상 패턴)</strong>에 집중하여 사물의 고정 분류 종류를 좁힙니다. 화풍(수채화/유화/사진)은 클래스 정의에 포함되어 있지 않으므로 무시되거나 분류 노이즈로 작용합니다.
+            </p>
+          </div>
+          <div class="card" style="background:#090d16;">
+            <h4 style="color:var(--secondary); margin-bottom:0.5rem;">CLIP의 핵심 관점</h4>
+            <p style="font-size:0.9rem; color:var(--text-muted);">
+              이미지 전체의 <strong>의미적 맥락(Semantic Context)</strong>을 파악합니다. 객체 명칭뿐만 아니라 화풍, 미술 스타일, 배경 분위기, 시간대, 사물의 상태(새 차 vs 녹슨 폐차)까지 텍스트 임베딩 차원에서 완벽 대조합니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1778,6 +2100,23 @@ optimizer = optim.Adam(model.fc.parameters(), lr=<span class="code-num">0.001</s
     window.onload = function() {
       updateExplainerStep(0);
     };
+  </script>
+  <script>
+    function sendHeight() {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ height: height }, "*");
+    }
+    window.onload = function() {
+      updateExplainerStep(0);
+      sendHeight();
+    };
+    [50, 200, 500, 1000, 2000].forEach(function(delay) {
+      setTimeout(sendHeight, delay);
+    });
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(sendHeight);
+      ro.observe(document.body);
+    }
   </script>
 </body>
 </html>
