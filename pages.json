@@ -35,6 +35,10 @@
             "path": "ai/langchain/agent.html"
           },
           {
+            "label": "LangChain &amp; LangGraph + Langfuse Tracing Guide",
+            "path": "ai/langchain/lanfuse.html"
+          },
+          {
             "label": "LangChain 소개",
             "path": "ai/langchain/langchain.html"
           },
