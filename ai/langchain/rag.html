@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RAG(검색 증강 생성) 기술 소개</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
   :root{
     --bg: #FAFAF8;
@@ -171,6 +171,9 @@
     text-align:center; padding:40px 0 0;
     font-size:12.5px; color:var(--ink-soft);
     font-family:'JetBrains Mono',monospace;
+  }
+  #sim-text:focus {
+    border-color: var(--indigo) !important;
   }
 </style>
 </head>
@@ -413,7 +416,7 @@
 
       <!-- 테스트 입력 텍스트 -->
       <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px; color:var(--ink-soft);">테스트용 문장 입력창</label>
-      <textarea id="sim-text" style="width:100%; height:90px; padding:12px; border:1px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; line-height:1.5; resize:none; margin-bottom:18px; outline:none; focus:border-color:var(--indigo);" placeholder="시뮬레이션할 본문 텍스트를 입력한다.">Yes24 총알배송 서비스는 서울/수도권 지역을 대상으로 당일 혹은 익일 오전까지 상품을 배송하는 서비스입니다. 당일 배송은 평일 오전 11시 이전 주문 건에 한해 가능하며, 익일 배송은 오후 6시 이전 주문 건까지 적용됩니다. 단, 도서 산간 지역이나 일부 상품은 서비스 대상에서 제외될 수 있습니다. 주문 금액이 1만원 이상일 경우 배송 혜택을 온전히 누릴 수 있다.</textarea>
+      <textarea id="sim-text" style="width:100%; height:90px; padding:12px; border:1px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; line-height:1.5; resize:none; margin-bottom:18px; outline:none;" placeholder="시뮬레이션할 본문 텍스트를 입력한다.">Yes24 총알배송 서비스는 서울/수도권 지역을 대상으로 당일 혹은 익일 오전까지 상품을 배송하는 서비스입니다. 당일 배송은 평일 오전 11시 이전 주문 건에 한해 가능하며, 익일 배송은 오후 6시 이전 주문 건까지 적용됩니다. 단, 도서 산간 지역이나 일부 상품은 서비스 대상에서 제외될 수 있습니다. 주문 금액이 1만원 이상일 경우 배송 혜택을 온전히 누릴 수 있다.</textarea>
 
       <!-- 시뮬레이션 결과 렌더링 영역 -->
       <label style="font-size:12px; font-weight:700; display:block; margin-bottom:8px; color:var(--ink-soft);">분할된 청크 목록 (Chunks Output)</label>
