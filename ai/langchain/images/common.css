@@ -69,6 +69,18 @@ p {
   margin-bottom: 16px;
 }
 
+/* ===== 인라인 코드 (inline code) 스타일 ===== */
+code:not(.code-viewer code) {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--indigo-soft);
+  color: var(--indigo);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  display: inline;
+  word-break: break-all;
+}
+
 /* ===== 인용구 (Blockquote) ===== */
 blockquote {
   border-left: 4px solid var(--line);
@@ -79,6 +91,15 @@ blockquote {
   font-size: 15px;
   line-height: 1.7;
 }
+
+/* ===== 공통 그리드 시스템 ===== */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media(max-width:840px){ .grid-4{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:480px){ .grid-4{grid-template-columns:1fr;} }
 
 /* ===== 공통 카드 컴포넌트 ===== */
 .comp-card {
@@ -187,6 +208,15 @@ blockquote {
   font-weight: 700;
 }
 
+/* ===== 코드 비교용 그리드 시스템 ===== */
+.code-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+@media(max-width: 768px) { .code-compare-grid { grid-template-columns: 1fr; } }
+
 /* ===== 팁 및 경고 컴포넌트 ===== */
 .aside-box {
   border: 1px solid var(--line);
@@ -218,8 +248,8 @@ blockquote {
   line-height: 1.7;
 }
 
-.danger-zone strong {
+.danger-zone .danger-title {
   color: var(--red);
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }

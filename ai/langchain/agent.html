@@ -471,11 +471,8 @@ response = agent.invoke({<span style="color: #CE9178;">"messages"</span>: [(<spa
       
       <!-- 임포트 패키지 경고 아사이드 -->
       <div class="danger-zone" style="margin-top: 12px; font-size: 14px; padding: 12px 16px;">
-        <strong style="color: var(--red); display: block; margin-bottom: 4px;">⚠️ 패키지 임포트 주의 (Import Warning)</strong>
-        <span style="color: var(--ink-soft); line-height: 1.5;">
-          기존 구형 LangChain의 <code>from langchain.agents import create_react_agent</code>는 전면 <strong>Deprecated(비권장)</strong> 되었습니다. 
-          반드시 <strong><code>from langgraph.prebuilt import create_react_agent</code></strong> 경로로부터 가져와야 정상적으로 노드/엣지 기반의 견고한 최신 그래프 에이전트가 빌드됩니다.
-        </span>
+        <strong class="danger-title">⚠️ 패키지 임포트 주의 (Import Warning)</strong>
+        <span style="color: var(--ink-soft); line-height: 1.5;">기존 구형 LangChain의 <code>from langchain.agents import create_react_agent</code>는 전면 <strong>Deprecated(비권장)</strong> 되었으므로, 반드시 <strong><code>from langgraph.prebuilt import create_react_agent</code></strong> 경로로부터 가져와야 정상적으로 노드/엣지 기반의 견고한 최신 그래프 에이전트가 빌드된다.</span>
       </div>
     </div>
   </section>
