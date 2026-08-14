@@ -1507,7 +1507,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
             <div style="font-weight: 700; color: var(--accent); font-size: 13.5px; margin-bottom: 0.75rem; align-self: flex-start; display: flex; align-items: center; gap: 6px;">
               🚀 2. ResNet-50 3-Stage 직렬 잔차 블록 (Serial Bottleneck Layers) 통합 파이프라인
             </div>
-            <svg width="100%" viewBox="0 0 760 235" xmlns="http://www.w3.org/2000/svg">
+            <svg width="100%" viewBox="0 0 830 220" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <marker id="master-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                   <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1515,123 +1515,162 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               </defs>
 
               <!-- 0. Input Node (x0) -->
-              <g transform="translate(10, 88)">
-                <rect x="0" y="0" width="75" height="70" rx="10" fill="rgba(56, 189, 248, 0.1)" stroke="var(--primary)" stroke-width="1.5"/>
-                <text x="37" y="32" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="var(--primary)">📥 입력</text>
-                <text x="37" y="50" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="var(--text-main)">x₀</text>
+              <g transform="translate(10, 56)">
+                <rect x="0" y="0" width="65" height="68" rx="10" fill="rgba(56, 189, 248, 0.1)" stroke="var(--primary)" stroke-width="1.5"/>
+                <text x="32" y="30" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="var(--primary)">📥 입력</text>
+                <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="var(--text-main)">x₀</text>
               </g>
 
-              <!-- Split 0 Line -->
-              <circle cx="105" cy="123" r="4" fill="var(--primary)"/>
-              <line x1="85" y1="123" x2="105" y2="123" stroke="var(--primary)" stroke-width="2"/>
+              <!-- Split 0 Line & Point -->
+              <line x1="75" y1="90" x2="90" y2="90" stroke="var(--primary)" stroke-width="2"/>
+              <circle cx="90" cy="90" r="4" fill="var(--primary)"/>
 
-              <!-- STAGE 1 BLOCK (x=105 ~ 275) -->
-              <!-- Top Path: F1(x0) -->
-              <path d="M 105 123 L 105 48 L 125 48" stroke="var(--primary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              <!-- STAGE 1 BLOCK (Middle Inline Flow x=105 ~ 240) -->
+              <!-- Stage 1 Role Badge -->
+              <rect x="105" y="24" width="135" height="20" rx="10" fill="rgba(56, 189, 248, 0.15)" stroke="var(--primary)" stroke-width="0.8"/>
+              <text x="172.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--primary)">🔍 [저수준] 에지·질감 추출</text>
+
+              <line x1="90" y1="90" x2="103" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
-              <!-- Stacked 3D Layer Plates Group (Stage 1) -->
-              <g transform="translate(128, 12)">
-                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--primary)" stroke-width="1"/>
-                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
-                <!-- 3D Layer Plates -->
-                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              <g transform="translate(105, 52)">
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--primary)" stroke-width="1.2"/>
+                <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
+                
+                <!-- 1x1 Plate (Dimension Reduction) -->
+                <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원축소</text>
+                
+                <line x1="36" y1="45" x2="43" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(56, 189, 248, 0.25)" stroke="var(--primary)" stroke-width="1.2"/>
-                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--primary)" font-weight="700">3x3</text>
+                <!-- 3x3 Plate (Feature Extraction) -->
+                <rect x="45" y="20" width="45" height="50" rx="3" fill="rgba(56, 189, 248, 0.25)" stroke="var(--primary)" stroke-width="1.2"/>
+                <text x="67" y="42" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--primary)" font-weight="700">3x3</text>
+                <text x="67" y="55" text-anchor="middle" font-family="system-ui" font-size="7" fill="var(--primary)" font-weight="600">특징추출</text>
 
-                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <line x1="90" y1="45" x2="97" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                <!-- 1x1 Plate (Dimension Expansion) -->
+                <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원확장</text>
               </g>
 
-              <path d="M 253 48 L 275 48 L 275 105" stroke="var(--primary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
-
-              <!-- Bottom Shortcut Path 1 -->
-              <path d="M 105 123 L 105 195 L 275 195 L 275 141" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="190" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--primary)">🚀 Skip Connection</text>
+              <!-- Main Flow line to Addition Node 1 -->
+              <line x1="240" y1="90" x2="269" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 1 Circle -->
-              <circle cx="275" cy="123" r="14" fill="rgba(56, 189, 248, 0.2)" stroke="var(--primary)" stroke-width="2"/>
-              <text x="275" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--primary)">+</text>
-              <text x="275" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
+              <circle cx="285" cy="90" r="14" fill="rgba(56, 189, 248, 0.2)" stroke="var(--primary)" stroke-width="2"/>
+              <text x="285" y="95" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--primary)">+</text>
+              <text x="285" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
 
-              <!-- Split 1 Line -->
-              <circle cx="315" cy="123" r="4" fill="var(--amber)"/>
-              <line x1="289" y1="123" x2="315" y2="123" stroke="var(--amber)" stroke-width="2"/>
+              <!-- Bottom Skip Connection 1 -->
+              <path d="M 90 90 L 90 170 L 285 170 L 285 107" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="187.5" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--primary)">🚀 Skip Connection</text>
 
-              <!-- STAGE 2 BLOCK (x=315 ~ 485) -->
-              <!-- Top Path: F2(x1) -->
-              <path d="M 315 123 L 315 48 L 335 48" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              <!-- Split 1 Line & Point -->
+              <line x1="299" y1="90" x2="315" y2="90" stroke="var(--amber)" stroke-width="2"/>
+              <circle cx="315" cy="90" r="4" fill="var(--amber)"/>
+
+              <!-- STAGE 2 BLOCK (Middle Inline Flow x=330 ~ 465) -->
+              <!-- Stage 2 Role Badge -->
+              <rect x="330" y="24" width="135" height="20" rx="10" fill="rgba(245, 158, 11, 0.15)" stroke="var(--amber)" stroke-width="0.8"/>
+              <text x="397.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--amber)">🧩 [중수준] 부위·패턴 합성</text>
+
+              <line x1="315" y1="90" x2="328" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
-              <!-- Stacked 3D Layer Plates Group (Stage 2) -->
-              <g transform="translate(338, 12)">
-                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--amber)" stroke-width="1"/>
-                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
-                <!-- 3D Layer Plates -->
-                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              <g transform="translate(330, 52)">
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--amber)" stroke-width="1.2"/>
+                <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
+                
+                <!-- 1x1 Plate (Dimension Reduction) -->
+                <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원축소</text>
+                
+                <line x1="36" y1="45" x2="43" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(245, 158, 11, 0.25)" stroke="var(--amber)" stroke-width="1.2"/>
-                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--amber)" font-weight="700">3x3</text>
+                <!-- 3x3 Plate (Feature Extraction) -->
+                <rect x="45" y="20" width="45" height="50" rx="3" fill="rgba(245, 158, 11, 0.25)" stroke="var(--amber)" stroke-width="1.2"/>
+                <text x="67" y="42" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--amber)" font-weight="700">3x3</text>
+                <text x="67" y="55" text-anchor="middle" font-family="system-ui" font-size="7" fill="var(--amber)" font-weight="600">특징추출</text>
 
-                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <line x1="90" y1="45" x2="97" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                <!-- 1x1 Plate (Dimension Expansion) -->
+                <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원확장</text>
               </g>
 
-              <path d="M 463 48 L 485 48 L 485 105" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
-
-              <!-- Bottom Shortcut Path 2 -->
-              <path d="M 315 123 L 315 195 L 485 195 L 485 141" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="400" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--amber)">🚀 Skip Connection</text>
+              <!-- Main Flow line to Addition Node 2 -->
+              <line x1="465" y1="90" x2="494" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 2 Circle -->
-              <circle cx="485" cy="123" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
-              <text x="485" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--amber)">+</text>
-              <text x="485" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
+              <circle cx="510" cy="90" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
+              <text x="510" y="95" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--amber)">+</text>
+              <text x="510" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
 
-              <!-- Split 2 Line -->
-              <circle cx="525" cy="123" r="4" fill="var(--secondary)"/>
-              <line x1="499" y1="123" x2="525" y2="123" stroke="var(--secondary)" stroke-width="2"/>
+              <!-- Bottom Skip Connection 2 -->
+              <path d="M 315 90 L 315 170 L 510 170 L 510 107" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="412.5" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--amber)">🚀 Skip Connection</text>
 
-              <!-- STAGE 3 BLOCK (x=525 ~ 675) -->
-              <!-- Top Path: F3(x2) -->
-              <path d="M 525 123 L 525 48 L 545 48" stroke="var(--secondary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
+              <!-- Split 2 Line & Point -->
+              <line x1="524" y1="90" x2="540" y2="90" stroke="var(--secondary)" stroke-width="2"/>
+              <circle cx="540" cy="90" r="4" fill="var(--secondary)"/>
+
+              <!-- STAGE 3 BLOCK (Middle Inline Flow x=555 ~ 690) -->
+              <!-- Stage 3 Role Badge -->
+              <rect x="555" y="24" width="135" height="20" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="0.8"/>
+              <text x="622.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--secondary)">🎯 [고수준] 객체 형상 완성</text>
+
+              <line x1="540" y1="90" x2="553" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
-              <!-- Stacked 3D Layer Plates Group (Stage 3) -->
-              <g transform="translate(548, 12)">
-                <rect x="0" y="0" width="125" height="68" rx="8" fill="#1e293b" stroke="var(--secondary)" stroke-width="1"/>
-                <text x="62" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
-                <!-- 3D Layer Plates -->
-                <rect x="15" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="26" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+              <g transform="translate(555, 52)">
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--secondary)" stroke-width="1.2"/>
+                <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
+                
+                <!-- 1x1 Plate (Dimension Reduction) -->
+                <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원축소</text>
+                
+                <line x1="36" y1="45" x2="43" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <rect x="42" y="20" width="40" height="44" rx="3" fill="rgba(168, 85, 247, 0.25)" stroke="var(--secondary)" stroke-width="1.2"/>
-                <text x="62" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--secondary)" font-weight="700">3x3</text>
+                <!-- 3x3 Plate (Feature Extraction) -->
+                <rect x="45" y="20" width="45" height="50" rx="3" fill="rgba(168, 85, 247, 0.25)" stroke="var(--secondary)" stroke-width="1.2"/>
+                <text x="67" y="42" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--secondary)" font-weight="700">3x3</text>
+                <text x="67" y="55" text-anchor="middle" font-family="system-ui" font-size="7" fill="var(--secondary)" font-weight="600">특징추출</text>
 
-                <rect x="87" y="24" width="22" height="36" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="98" y="46" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <line x1="90" y1="45" x2="97" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                <!-- 1x1 Plate (Dimension Expansion) -->
+                <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
+                <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="7.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="6" fill="var(--rose)" font-weight="600">차원확장</text>
               </g>
 
-              <path d="M 673 48 L 685 48 L 685 105" stroke="var(--secondary)" stroke-width="1.5" fill="none" marker-end="url(#master-arrow)"/>
-
-              <!-- Bottom Shortcut Path 3 -->
-              <path d="M 525 123 L 525 195 L 685 195 L 685 141" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="605" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--secondary)">🚀 Skip Connection</text>
+              <!-- Main Flow line to Addition Node 3 -->
+              <line x1="690" y1="90" x2="719" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 3 Circle -->
-              <circle cx="685" cy="123" r="14" fill="rgba(168, 85, 247, 0.2)" stroke="var(--secondary)" stroke-width="2"/>
-              <text x="685" y="128" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--secondary)">+</text>
-              <text x="685" y="96" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
+              <circle cx="735" cy="90" r="14" fill="rgba(168, 85, 247, 0.2)" stroke="var(--secondary)" stroke-width="2"/>
+              <text x="735" y="95" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--secondary)">+</text>
+              <text x="735" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
+
+              <!-- Bottom Skip Connection 3 -->
+              <path d="M 540 90 L 540 170 L 735 170 L 735 107" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="637.5" y="188" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--secondary)">🚀 Skip Connection</text>
 
               <!-- Line to Final Output -->
-              <line x1="699" y1="123" x2="715" y2="123" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
+              <line x1="749" y1="90" x2="773" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
 
               <!-- Output Node (Classifier) -->
-              <g transform="translate(717, 88)">
-                <rect x="0" y="0" width="38" height="70" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="var(--accent)" stroke-width="1.5"/>
-                <text x="19" y="32" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--accent)">🏆</text>
-                <text x="19" y="48" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--accent)">판다</text>
-                <text x="19" y="60" text-anchor="middle" font-family="monospace" font-size="7" fill="var(--text-muted)">99%</text>
+              <g transform="translate(775, 56)">
+                <rect x="0" y="0" width="38" height="68" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="var(--accent)" stroke-width="1.5"/>
+                <text x="19" y="30" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--accent)">🏆</text>
+                <text x="19" y="46" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--accent)">판다</text>
+                <text x="19" y="58" text-anchor="middle" font-family="monospace" font-size="7" fill="var(--text-muted)">99%</text>
               </g>
             </svg>
           </div>
