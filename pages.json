@@ -139,6 +139,10 @@
           {
             "label": "Spring AI — MCP 완전 가이드",
             "path": "ai/spring/mcp.html"
+          },
+          {
+            "label": "Spring AI 기반 Custom Agent 설계: Planner-Worker 패턴",
+            "path": "ai/spring/spring_ai.html"
           }
         ]
       }
