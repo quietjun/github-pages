@@ -20,9 +20,11 @@
       font-size: 15px;
       line-height: 1.7;
     }
+    .wrap{max-width:1024px; margin:0 auto;}
   </style>
 </head>
 <body>
+<div class="wrap">
 
   <!-- 포스트 타이틀 -->
   <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:900; letter-spacing:-0.5px; color:var(--ink); margin-bottom:8px; border-bottom:2px solid var(--line); padding-bottom:12px;">
@@ -44,38 +46,146 @@
       개발자가 복잡한 업무 도메인 로직이나 예외 처리를 정밀 제어하기 위해서는 그래프의 노드와 조건부 엣지를 직접 매핑하여 흐름을 통제해야 한다. LLM이 반환하는 도구 호출 정보 유무에 기반해 분기를 결정하는 설계 구성요소는 다음과 같다.
     </p>
 
-    <div class="grid-4" style="margin-bottom: 32px;">
-      <!-- Conditional Edge -->
-      <div class="comp-card">
-        <div class="icon">🔄</div>
-        <h4>Conditional Edge <span class="sub-title">(조건부 분기)</span></h4>
-        <p class="desc">
-          라우터 함수의 실행 결과를 수신하여 다음에 호출할 그래프 노드 경로를 런타임에 동적으로 결정함.
-        </p>
+    <!-- [1층] 프레임워크 코어 백본 (2열 하이라이트 구조) -->
+    <div style="margin-top: 20px; margin-bottom: 28px;">
+      <span style="font-size: 14px; font-weight: 700; color: var(--indigo); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 12px;">🛡️ Framework Core Backbone (양대 핵심 뼈대)</span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
+        <!-- StateGraph -->
+        <div class="comp-card" style="border: 2px solid var(--indigo); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="font-size: 24px;">🗺️</span>
+            <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--indigo);">StateGraph <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">상태 그래프 오케스트레이터</span></h4>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
+            에이전트의 전체 비즈니스 흐름을 노드(Node)와 엣지(Edge)의 결합으로 구조화하고, 스텝마다 누적 및 갱신되는 <strong>상태(State) 객체</strong>의 데이터 연결망을 총괄 제어하는 프레임워크의 중심 뼈대 클래스이다.
+          </p>
+        </div>
+        <!-- Conditional Edge -->
+        <div class="comp-card" style="border: 2px solid var(--orange); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="font-size: 24px;">🔄</span>
+            <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--orange);">Conditional Edge <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">조건부 의사결정 분기</span></h4>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
+            라우터 함수의 판별 결과를 수신하여 다음에 호출할 그래프 노드 경로(예: 다음 도구 노드 구동 또는 최종 종결 END)를 런타임에 동적으로 결정한다.
+          </p>
+        </div>
       </div>
-      <!-- Router Function -->
-      <div class="comp-card">
-        <div class="icon">🧭</div>
-        <h4>Router Function <span class="sub-title">(should_continue)</span></h4>
-        <p class="desc">
-          에이전트의 현재 상태(State)를 파싱하여 도구 호출 지시 유무에 따라 다음 행선지 이름을 반환함.
-        </p>
+    </div>
+
+    <!-- [시각자료] LangGraph 커스텀 빌드 아키텍처 및 자율 순환 흐름 -->
+    <div class="aside-box" style="margin-top: 24px; margin-bottom: 32px; padding: 24px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px;">
+      <span style="font-size: 15px; font-weight: 700; color: var(--indigo); display: block; margin-bottom: 16px;">🗺️ LangGraph 커스텀 빌드 아키텍처 및 자율 순환 흐름</span>
+      
+      <div style="display: flex; flex-direction: column; gap: 24px; align-items: center;">
+        <!-- 상단: 전체 폭 SVG 다이어그램 -->
+        <div style="width: 100%; max-width: 600px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line);">
+          <svg viewBox="0 0 540 210" width="100%" height="auto" style="aspect-ratio: 540/210; height: auto; display: block;">
+            <defs>
+              <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
+              </marker>
+              <marker id="cond-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="var(--orange)"/>
+              </marker>
+            </defs>
+            
+            <!-- START 노드 -->
+            <rect x="15" y="30" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+            <text x="45" y="49" font-family="'Noto Sans KR', sans-serif" font-size="10.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
+            
+            <!-- START -> agent 화살표 -->
+            <line x1="75" y1="45" x2="105" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            
+            <!-- agent Node -->
+            <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+            <text x="150" y="49" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent</text>
+            
+            <!-- agent -> should_continue 화살표 -->
+            <line x1="190" y1="45" x2="225" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            
+            <!-- should_continue (Router Function) -->
+            <polygon points="280,15 330,45 280,75 230,45" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
+            <text x="280" y="40" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">should_continue</text>
+            <text x="280" y="52" font-family="'Noto Sans KR', sans-serif" font-size="8.5" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(Router)</text>
+            
+            <!-- should_continue -> END 화살표 (Conditional Edge - "END") -->
+            <line x1="330" y1="45" x2="415" y2="45" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#cond-arrow)"/>
+            <text x="372.5" y="35" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"END"</text>
+            
+            <!-- END 노드 -->
+            <rect x="425" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <text x="455" y="49" font-family="'Noto Sans KR', sans-serif" font-size="10.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
+            
+            <!-- should_continue -> tools 화살표 (Conditional Edge - "tools") -->
+            <line x1="280" y1="75" x2="280" y2="125" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#cond-arrow)"/>
+            <text x="288" y="100" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--orange)" dominant-baseline="central">"tools"</text>
+            
+            <!-- tools Node -->
+            <rect x="240" y="130" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+            <text x="280" y="149" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
+            
+            <!-- tools -> agent 회귀 루프 선로 -->
+            <path d="M 240 145 L 150 145 L 150 68" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="142" y="105" font-family="'Noto Sans KR', sans-serif" font-size="9" text-anchor="end" fill="var(--ink-soft)" dominant-baseline="central">피드백 루프</text>
+          </svg>
+        </div>
+        
+        <!-- 하단: 3열 핵심 명세 정의 -->
+        <div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; border-top: 1px solid var(--line); padding-top: 20px;">
+          <!-- Router Function -->
+          <div style="font-size: 14px; line-height: 1.7;">
+            <strong style="color: var(--orange); font-size: 14.5px; display: block; margin-bottom: 6px;">• Router (should_continue)</strong>
+            <span style="color: var(--ink-soft);">LLM이 반환한 도구 호출 정보 유무를 해석하여 <strong>"tools"</strong> 또는 <strong>"END"</strong> 경로 문자열을 반환하는 제어 함수이다.</span>
+          </div>
+          <!-- Conditional Edge -->
+          <div style="font-size: 14px; line-height: 1.7;">
+            <strong style="color: var(--orange); font-size: 14.5px; display: block; margin-bottom: 6px;">• Conditional Edge (조건부 분기선)</strong>
+            <span style="color: var(--ink-soft);">라우터의 반환값에 매핑되는 노드로 실행 제어권을 즉각 점프시켜 주는 유동적 조건 분기 링크이다.</span>
+          </div>
+          <!-- State Feedback Loop -->
+          <div style="font-size: 14px; line-height: 1.7;">
+            <strong style="color: var(--indigo); font-size: 14.5px; display: block; margin-bottom: 6px;">• State Feedback Loop (순환 루프)</strong>
+            <span style="color: var(--ink-soft);">도구 노드(tools)의 실행 결과를 상태에 업데이트한 뒤, <strong>다시 agent 노드로 회귀</strong>해 지속 판별하게 만드는 피드백 추론 고리이다.</span>
+          </div>
+        </div>
       </div>
-      <!-- Control Flow -->
-      <div class="comp-card">
-        <div class="icon">🕹️</div>
-        <h4>Control Flow <span class="sub-title">(제어 구조 설계)</span></h4>
-        <p class="desc">
-          하드코딩된 단방향 체인을 탈피하여, 에러 복구 및 피드백 롤백 루프를 그래프 상에 유연하게 구현함.
-        </p>
-      </div>
-      <!-- State Transition -->
-      <div class="comp-card">
-        <div class="icon">📥</div>
-        <h4>State Transition <span class="sub-title">(의사결정 반영)</span></h4>
-        <p class="desc">
-          분기 결정이 종료된 후 갱신된 메시지 내역 및 상태값을 다음 노드로 누락 없이 온전하게 이전함.
-        </p>
+    </div>
+
+    <!-- [2층] 비즈니스 작동 동작 (3열 서브 그리드 구조) -->
+    <div style="margin-bottom: 32px;">
+      <span style="font-size: 14px; font-weight: 700; color: var(--forest); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 12px;">⚙️ Operational Mechanics (실제 작동 동작)</span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+        <!-- Router Function -->
+        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">🧭</span>
+            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">Router Function <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">should_continue</span></h5>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
+            에이전트의 현재 상태를 파싱해 도구 호출 지시 유무에 따라 다음 행선지 노드 이름을 판별해 반환하는 라우팅 함수이다.
+          </p>
+        </div>
+        <!-- Control Flow -->
+        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">🕹️</span>
+            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">Control Flow <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">제어 구조 설계</span></h5>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
+            단방향 체인을 탈피하여 에러 발생 시 피드백 및 롤백 루프를 그래프 선로 위에 유연하게 탑재하는 순환 제어 흐름이다.
+          </p>
+        </div>
+        <!-- State Transition -->
+        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">📥</span>
+            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">State Transition <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">의사결정 상태 전이</span></h5>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
+            분기 결정이 종료된 후 갱신된 메시지 정보와 상태값을 다음 타겟 노드로 누락 없이 전송하는 상태 업데이트 전이이다.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -204,6 +314,8 @@ workflow.add_conditional_edges(
       </table>
     </div>
   </section>
+
+</div>
 
 <!-- iframe 높이 자동 조절 스크립트 (AGENTS.md 규칙 필수 준수) -->
 <script>
