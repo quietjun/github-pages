@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>에이전트 신뢰성 및 가드레일 설계 (Part 3)</title>
+  <!-- Google Fonts Outfit & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <!-- 공통 CSS 스타일시트 연동 -->
+  <link rel="stylesheet" href="images/common.css">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      margin: 0;
+      padding: 24px;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 포스트 타이틀 -->
+  <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:900; letter-spacing:-0.5px; color:var(--ink); margin-bottom:8px; border-bottom:2px solid var(--line); padding-bottom:12px;">
+    Agent Trustworthiness & Guardrails <span style="font-size:18px; color:var(--ink-soft); font-weight:400; display:block; margin-top:4px;">Part 3: 에이전트 신뢰성 및 가드레일 설계</span>
+  </h1>
+
+  <!-- 도입부 blockquote -->
+  <blockquote style="margin: 20px 0; padding: 16px 20px; background: var(--bg-soft); border-left: 4px solid var(--orange); border-radius: 4px; font-style: italic; color: var(--ink-soft); font-size:14.5px;">
+    "이번 포스트에서는 실무 상용 에이전트 배포의 최우선 고려 조건인 신뢰성(Trustworthiness) 확보와 다중 가드레일 필터링 아키텍처 설계를 알아본다."
+  </blockquote>
+
+  <!-- 01. Trustworthiness (신뢰성 및 가드레일) 아키텍처 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h3>Trustworthiness (신뢰성 및 가드레일) 아키텍처</h3>
+    </div>
+    <p>
+      자율성이 부여된 AI 에이전트는 예기치 못한 도구 호출 및 오동작을 일으킬 수 있다. 따라서 실무에 상용 에이전트를 안전하게 배포하기 위해서는 <strong>보안 정책 강제 검증</strong> 및 <strong>입출력 단계별 다중 필터 차단 가드레일</strong> 설계가 필수적이다.
+    </p>
+
+    <div class="aside-box" style="border: 1px solid var(--forest); background: var(--bg);">
+      <p style="font-size:15px; font-weight:700; color:var(--forest); margin-bottom:12px;">🛡️ 안전하고 신뢰할 수 있는 에이전트 파이프라인 설계</p>
+
+      <div style="background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:16px;">
+        <span style="font-size:14px; font-weight:700; color:var(--forest); display:block; margin-bottom:8px;">에이전트 보호 레이어 흐름도</span>
+        <div style="font-family:'JetBrains Mono', monospace; font-size:14px; color:var(--ink); display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; text-align:center;">
+          <span style="border:1.5px solid var(--line); padding:6px 10px; border-radius:6px; background:var(--bg);">사용자 입력</span>
+          <span style="color:var(--ink-soft);">➡️</span>
+          <span style="border:1.5px solid var(--red); color:var(--red); padding:6px 10px; border-radius:6px; background:var(--red-soft); font-weight:700;">입력 가드레일</span>
+          <span style="color:var(--ink-soft);">➡️</span>
+          <span style="border:1.5px solid var(--indigo); color:var(--indigo); padding:6px 10px; border-radius:6px; background:var(--indigo-soft); font-weight:700;">Agent / ReAct</span>
+          <span style="color:var(--ink-soft);">➡️</span>
+          <span style="border:1.5px solid var(--bronze); color:var(--bronze); padding:6px 10px; border-radius:6px; background:var(--bronze-soft); font-weight:700;">도구 실행 전 검증</span>
+          <span style="color:var(--ink-soft);">➡️</span>
+          <span style="border:1.5px solid var(--forest); color:var(--forest); padding:6px 10px; border-radius:6px; background:var(--forest-soft); font-weight:700;">출력 가드레일</span>
+          <span style="color:var(--ink-soft);">➡️</span>
+          <span style="border:1.5px solid var(--line); padding:6px 10px; border-radius:6px; background:var(--bg);">최종 출력</span>
+        </div>
+      </div>
+
+      <table class="map-table" style="margin-top:16px;">
+        <thead>
+          <tr><th>보호 계층</th><th>주요 역할 및 작동 방식</th><th>검증 예시</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tech" style="color:var(--red);">입력 가드레일</td>
+            <td class="desc">에이전트 실행 전, 위험하거나 부적절한 사용자 입력을 선제 차단함.</td>
+            <td class="desc">"시스템 해킹", "비밀번호 탈취" 시도 차단</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--bronze);">도구 실행 전 검증</td>
+            <td class="desc">도구(API) 실행 직전, 비즈니스 요건 및 정책 준수 여부를 강제 검증함.</td>
+            <td class="desc">발급 금액 정책 한도(최대 2만원) 체크, 주문번호 존재 유무 확인</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--forest);">출력 가드레일</td>
+            <td class="desc">응답 반환 직전, 개인정보 및 민감 데이터의 외부 유출을 필터링함.</td>
+            <td class="desc">주민등록번호, 계좌번호, 상세 주소 정보 마스킹</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+<!-- iframe 높이 자동 조절 스크립트 (AGENTS.md 규칙 필수 준수) -->
+<script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+  window.onload = sendHeight;
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
+</script>
+</body>
+</html>

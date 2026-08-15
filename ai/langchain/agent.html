@@ -353,7 +353,7 @@
     </div>
   </section>
 
-  <!-- 3. ReAct 프레임워크와 작동 파이프라인 -->
+  <!-- 3. ReAct (Reasoning + Acting) 프레임워크 -->
   <section>
     <div class="sec-head">
       <span class="sec-num">03</span>
@@ -465,7 +465,7 @@ tools = [get_order_status, search_policy]
 <span style="color: #6A9955;"># 2. ReAct 에이전트 생성 (CompiledStateGraph 객체 반환)</span>
 agent = create_react_agent(model, tools)
 
-<span style="color: #6A9955;"># 3. 에이전트 실행</span>
+<span style="color: #6A9955;"># 3. 에이전트 실행 (단발성 실행)</span>
 response = agent.invoke({<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"ORD001 주문 상태를 확인하고 지연 시 조치 정책을 조회해줘."</span>)]})
       </div>
       
@@ -477,136 +477,115 @@ response = agent.invoke({<span style="color: #CE9178;">"messages"</span>: [(<spa
     </div>
   </section>
 
-  <!-- 4. 에이전트 구현 및 설계 패턴 비교 -->
+  <!-- 4. 메모리(Memory)를 활용한 대화 맥락(Context) 유지 -->
   <section>
     <div class="sec-head">
       <span class="sec-num">04</span>
-      <h3>에이전트 구현 및 설계 패턴 비교</h3>
+      <h3>메모리(Memory)를 활용한 대화 맥락(Context) 유지</h3>
     </div>
-    <p>문제 요구사항의 복잡도에 따라 채택할 수 있는 그래프 아키텍처 패턴 분석이다.</p>
-    
-    <div class="aside-box">
-      <div class="aside-tag">// Direct Graph vs ReAct Graph 패턴 시각화</div>
-      
-      <!-- 패턴 비교 그래픽 -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; text-align: center;">
-        <div style="background: var(--bg); border: 1px solid var(--line); padding: 16px; border-radius: 10px;">
-          <strong style="font-size: 14px; display: block; margin-bottom: 10px; color: var(--ink);">Direct Graph 패턴 (선형 체인)</strong>
-          <svg viewBox="0 0 300 70" width="100%" height="50px">
-            <rect x="10" y="15" width="60" height="30" rx="4" fill="#fff" stroke="var(--indigo)" stroke-width="1.5"/>
-            <text x="40" y="34" font-size="10" text-anchor="middle" font-weight="700">Agent</text>
-            
-            <line x1="70" y1="30" x2="105" y2="30" stroke="var(--ink-soft)" stroke-width="1.2" marker-end="url(#arrow)"/>
-            
-            <rect x="115" y="15" width="60" height="30" rx="4" fill="#fff" stroke="var(--bronze)" stroke-width="1.5"/>
-            <text x="145" y="34" font-size="10" text-anchor="middle" font-weight="700">Tools</text>
-            
-            <line x1="175" y1="30" x2="210" y2="30" stroke="var(--ink-soft)" stroke-width="1.2" marker-end="url(#arrow)"/>
-            
-            <rect x="220" y="15" width="60" height="30" rx="4" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
-            <text x="250" y="34" font-size="10" text-anchor="middle" font-weight="700">END</text>
-          </svg>
-          <span style="font-size: 13px; color: var(--ink-soft);">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
-        </div>
-        <div style="background: var(--bg); border: 1px solid var(--line); padding: 16px; border-radius: 10px;">
-          <strong style="font-size: 14px; display: block; margin-bottom: 10px; color: var(--ink);">ReAct Graph 패턴 (순환 루프)</strong>
-          <svg viewBox="0 0 300 70" width="100%" height="50px">
-            <rect x="50" y="15" width="60" height="30" rx="4" fill="#fff" stroke="var(--indigo)" stroke-width="1.5"/>
-            <text x="80" y="34" font-size="10" text-anchor="middle" font-weight="700">Agent</text>
-            
-            <path d="M 110,25 C 130,10 140,10 160,25" fill="none" stroke="var(--ink-soft)" stroke-width="1.2" marker-end="url(#arrow)"/>
-            <text x="135" y="18" font-size="8" text-anchor="middle">Call Tool</text>
-            
-            <rect x="170" y="15" width="60" height="30" rx="4" fill="#fff" stroke="var(--bronze)" stroke-width="1.5"/>
-            <text x="200" y="34" font-size="10" text-anchor="middle" font-weight="700">Tools</text>
-            
-            <path d="M 170,35 C 150,50 140,50 110,35" fill="none" stroke="var(--ink-soft)" stroke-dasharray="3 2" stroke-width="1.2" marker-end="url(#arrow)"/>
-            <text x="135" y="48" font-size="8" text-anchor="middle">Feedback</text>
-            
-            <line x1="80" y1="45" x2="80" y2="60" stroke="var(--forest)" stroke-width="1.2"/>
-            <line x1="80" y1="60" x2="250" y2="60" stroke="var(--forest)" stroke-width="1.2"/>
-            <line x1="250" y1="60" x2="250" y2="45" stroke="var(--forest)" stroke-width="1.2" marker-end="url(#arrow)"/>
-            <text x="165" y="58" font-size="8" fill="var(--forest)" text-anchor="middle">No More Tools</text>
-            <rect x="220" y="15" width="60" height="30" rx="4" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
-            <text x="250" y="34" font-size="10" text-anchor="middle" font-weight="700">END</text>
-          </svg>
-          <span style="font-size: 13px; color: var(--ink-soft);">Thought 결과에 따라 경로를 유기적으로 반복 판단</span>
+    <p>멀티턴 대화 세션에서 사용자의 이전 발화와 도구 실행 결과를 기억하여 연속성 있는 답변을 생성하는 메모리 아키텍처이다.</p>
+
+    <div class="grid-4" style="margin-bottom: 32px;">
+      <!-- MemorySaver -->
+      <div class="comp-card">
+        <div class="icon">💾</div>
+        <h4>MemorySaver <span class="sub-title">(단기 세션)</span></h4>
+        <p class="desc">
+          애플리케이션의 메모리 내에 체크포인트를 저장하여 단일 세션 동안 대화 맥락을 유지함.
+        </p>
+        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
+          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 프로세스 재시작 시 메모리 정보 유실.
         </div>
       </div>
+      <!-- SqliteSaver -->
+      <div class="comp-card">
+        <div class="icon">🗄️</div>
+        <h4>SqliteSaver <span class="sub-title">(디스크 영속)</span></h4>
+        <p class="desc">
+          로컬 SQLite DB 파일에 체크포인트를 저장하여 애플리케이션 재시작 후에도 상태를 보존함.
+        </p>
+        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
+          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 영속적인 멀티 세션 히스토리 보존 가능.
+        </div>
+      </div>
+      <!-- thread_id -->
+      <div class="comp-card">
+        <div class="icon">🔑</div>
+        <h4>thread_id <span class="sub-title">(세션 구분자)</span></h4>
+        <p class="desc">
+          동일한 대화 스레드를 그룹화하여 고유 세션 간 대화 내역이 섞이지 않도록 격리함.
+        </p>
+        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
+          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 설정(config) 키에 세션 ID 매핑 수행.
+        </div>
+      </div>
+      <!-- Checkpoint -->
+      <div class="comp-card">
+        <div class="icon">📌</div>
+        <h4>State Checkpoint <span class="sub-title">(상태 보존)</span></h4>
+        <p class="desc">
+          에이전트의 이전 실행 노드 시점 상태를 스냅샷으로 백업하여 에러 복구 및 롤백을 제어함.
+        </p>
+        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
+          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 노드 전파 및 실행의 물리적 시점 저장.
+        </div>
+      </div>
+    </div>
 
-      <p>
-        단순 고정형 파이프라인에는 <strong>Direct Graph</strong>가 구조적으로 가볍고 예측이 명확하며, 비정형 태스크나 조건부 롤백 처리가 동적으로 필요한 경우에는 <strong>ReAct Graph</strong>가 견고한 대안이다.
-      </p>
-      <table class="map-table">
-        <thead>
-          <tr><th>비교 항목</th><th>Direct Graph 패턴</th><th>ReAct Graph 패턴</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="tech">동작 모델</td><td>선형 체인 (DAG, 순차적인 단방향 흐름)</td><td>순환 그래프 (Node &amp; Edge 기반 순환)</td></tr>
-          <tr><td class="tech">실행 경로</td><td>사전에 정해진 순서대로 실행 (A ➡️ B ➡️ 끝)</td><td>Thought-Action 결과에 따라 경로가 동적으로 결정</td></tr>
-          <tr><td class="tech">복잡한 요청 대응</td><td>불가 (예상 밖의 시나리오 대응의 한계)</td><td>가능 (오류 복구 및 조건부 루프 처리 최적화)</td></tr>
-          <tr><td class="tech">구현 복잡도</td><td>낮음 (구현 및 직관적 예측 용이)</td><td>높음 (Edge 설계 및 상태 관리 튜닝 필요)</td></tr>
-          <tr><td class="tech">권장 상황</td><td>단순 서류 추출, 정형화된 ETL 파이프라인</td><td>고객 상담 챗봇, 문제 해결형 분석 에이전트</td></tr>
-        </tbody>
-      </table>
+    <!-- 메모리 에이전트 생성 실전 코드 -->
+    <div>
+      <span style="font-size:15px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 메모리 체크포인터(MemorySaver)를 활용한 대화 맥락 유지 실전 코드</span>
+      <div class="code-viewer" data-lang="PYTHON">
+<span style="color: #569CD6;">from</span> langgraph.prebuilt <span style="color: #569CD6;">import</span> create_react_agent
+<span style="color: #569CD6;">from</span> langchain_openai <span style="color: #569CD6;">import</span> ChatOpenAI
+<span style="color: #569CD6;">from</span> langgraph.checkpoint.memory <span style="color: #569CD6;">import</span> MemorySaver  <span style="color: #6A9955;"># 메모리 체크포인터 임포트</span>
+
+<span style="color: #6A9955;"># 1. 모델, 도구 목록 및 체크포인터 메모리 세이버 생성</span>
+model = ChatOpenAI(model=<span style="color: #CE9178;">"gpt-4o"</span>)
+tools = [get_order_status, search_policy]
+memory = MemorySaver()  <span style="color: #6A9955;"># 메모리 인스턴스 초기화</span>
+
+<span style="color: #6A9955;"># 2. 에이전트 빌드 시 checkpointer 매개변수 바인딩</span>
+agent = create_react_agent(model, tools, checkpointer=memory)
+
+<span style="color: #6A9955;"># 3. 고유 세션 ID(thread_id) 설정</span>
+config = {<span style="color: #CE9178;">"configurable"</span>: {<span style="color: #CE9178;">"thread_id"</span>: <span style="color: #CE9178;">"user_session_001"</span>}}
+
+<span style="color: #6A9955;"># 첫 번째 대화 수행 (주문 상태 요청)</span>
+agent.invoke(
+    {<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"ORD001 주문 상태를 확인해줘."</span>)]},
+    config=config
+)
+
+<span style="color: #6A9955;"># 두 번째 대화 수행 (메모리에 기록된 ORD001의 맥락을 이어서 보상 정책 조회)</span>
+response = agent.invoke(
+    {<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"그럼 지연 건에 대한 보상 조치를 진행해줘."</span>)]},
+    config=config
+)
+      </div>
     </div>
   </section>
 
-  <!-- 5. Trustworthiness (신뢰성 확보) -->
+  <!-- 5. Plan - 의사결정 구조 만들기 -->
   <section>
     <div class="sec-head">
       <span class="sec-num">05</span>
-      <h3>Trustworthiness (신뢰성 및 가드레일) 아키텍처</h3>
+      <h3>Plan - 의사결정 구조 만들기</h3>
     </div>
-    <p>실무 상용 에이전트 배포의 최우선 고려 조건인 검증과 다중 필터링 설계이다.</p>
+    <p>목표를 달성하기 위해 에이전트가 수행할 작업 단계와 도구 호출 계획을 LLM 스스로 판단하여 결정하는 논리 아키텍처이다.</p>
 
-    <div class="aside-box" style="border: 1px solid var(--forest); background: var(--bg);">
-      <p style="font-size:15px; font-weight:700; color:var(--forest); margin-bottom:12px;">🛡️ 안전하고 신뢰할 수 있는 에이전트 파이프라인 설계</p>
-      <p style="line-height:1.7; margin-bottom:20px;">
-        자율성이 부여된 AI 에이전트는 예기치 못한 도구 호출 및 오동작을 일으킬 수 있다. 따라서 <strong>보안 정책 강제 검증</strong> 및 <strong>입출력 단계별 다중 필터 차단 가드레일</strong> 설계가 필수적이다.
+    <div class="aside-box" style="border-left: 5px solid var(--indigo); background: var(--bg); margin-bottom: 24px;">
+      <p style="font-size: 15px; font-weight: 700; color: var(--indigo); margin-bottom: 8px;">🧭 ReAct 프레임워크가 곧 Plan의 동작 실체이다</p>
+      <p style="line-height: 1.7; font-size: 14px;">
+        에이전트에게 수동으로 세부 경로를 하드코딩하지 않고, 제공된 도구(Tools) 목록을 활용해 스스로 다음 단계를 계획(Thought)하고 실행(Action)한 후 피드백을 받는 <strong>ReAct 순환 아키텍처가 곧 Plan의 구체적인 구현 방식</strong>이다.
       </p>
-
-      <div style="background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:16px;">
-        <span style="font-size:14px; font-weight:700; color:var(--forest); display:block; margin-bottom:8px;">에이전트 보호 레이어 흐름도</span>
-        <div style="font-family:'JetBrains Mono', monospace; font-size:14px; color:var(--ink); display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; text-align:center;">
-          <span style="border:1.5px solid var(--line); padding:6px 10px; border-radius:6px; background:var(--bg);">사용자 입력</span>
-          <span style="color:var(--ink-soft);">➡️</span>
-          <span style="border:1.5px solid var(--red); color:var(--red); padding:6px 10px; border-radius:6px; background:var(--red-soft); font-weight:700;">입력 가드레일</span>
-          <span style="color:var(--ink-soft);">➡️</span>
-          <span style="border:1.5px solid var(--indigo); color:var(--indigo); padding:6px 10px; border-radius:6px; background:var(--indigo-soft); font-weight:700;">Agent / ReAct</span>
-          <span style="color:var(--ink-soft);">➡️</span>
-          <span style="border:1.5px solid var(--bronze); color:var(--bronze); padding:6px 10px; border-radius:6px; background:var(--bronze-soft); font-weight:700;">도구 실행 전 검증</span>
-          <span style="color:var(--ink-soft);">➡️</span>
-          <span style="border:1.5px solid var(--forest); color:var(--forest); padding:6px 10px; border-radius:6px; background:var(--forest-soft); font-weight:700;">출력 가드레일</span>
-          <span style="color:var(--ink-soft);">➡️</span>
-          <span style="border:1.5px solid var(--line); padding:6px 10px; border-radius:6px; background:var(--bg);">최종 출력</span>
-        </div>
-      </div>
-
-      <table class="map-table" style="margin-top:16px;">
-        <thead>
-          <tr><th>보호 계층</th><th>주요 역할 및 작동 방식</th><th>검증 예시</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="tech" style="color:var(--red);">입력 가드레일</td>
-            <td class="desc">에이전트 실행 전, 위험하거나 부적절한 사용자 입력을 선제 차단함.</td>
-            <td class="desc">"시스템 해킹", "비밀번호 탈취" 시도 차단</td>
-          </tr>
-          <tr>
-            <td class="tech" style="color:var(--bronze);">도구 실행 전 검증</td>
-            <td class="desc">도구(API) 실행 직전, 비즈니스 요건 및 정책 준수 여부를 강제 검증함.</td>
-            <td class="desc">발급 금액 정책 한도(최대 2만원) 체크, 주문번호 존재 유무 확인</td>
-          </tr>
-          <tr>
-            <td class="tech" style="color:var(--forest);">출력 가드레일</td>
-            <td class="desc">응답 반환 직전, 개인정보 및 민감 데이터의 외부 유출을 필터링함.</td>
-            <td class="desc">주민등록번호, 계좌번호, 상세 주소 정보 마스킹</td>
-          </tr>
-        </tbody>
-      </table>
+      <p style="line-height: 1.7; font-size: 14px; margin-top: 10px;">
+        LangGraph에서는 기성품 헬퍼 함수인 <code>create_react_agent</code>를 사용하는 것만으로도 이 Plan 의사결정 루프가 내장되어 복잡한 멀티 스텝 태스크를 자율적으로 계획해 해결할 수 있다.
+      </p>
     </div>
   </section>
+
+
 
   <footer>AI Agent 개념 및 ReAct 아키텍처 · 교육용 시각화</footer>
 </div>
