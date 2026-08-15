@@ -48,7 +48,7 @@
 
     <!-- Direct Graph 설명 및 다이어그램 카드 -->
     <div class="aside-box" style="margin-top: 20px; margin-bottom: 24px;">
-      <div class="aside-tag">// Direct Graph 패턴 (선형 체인) 시각화</div>
+      <div class="aside-tag">🗺️ Direct Graph 패턴 (선형 체인) 시각화</div>
       <p style="margin-top: 0; margin-bottom: 16px; font-size: 14.5px; line-height: 1.7; color: var(--ink);">
         LLM의 판단 결과에 따른 동적 루핑이나 조건부 분기 없이, <code>START</code> 진입 후 <code>Agent</code>가 동작하고 무조건 지정된 <code>Tools</code>를 실행한 뒤 작업이 종료(<code>END</code>)되는 구조이다.
       </p>
@@ -63,21 +63,21 @@
           </defs>
           <!-- START 노드 -->
           <rect x="15" y="30" width="60" height="35" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
-          <text x="45" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="900" fill="var(--indigo)" dominant-baseline="central">START</text>
+          <text x="45" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="900" fill="var(--indigo)" dominant-baseline="central">START</text>
           
           <!-- START -> Agent 화살표 -->
           <line x1="75" y1="47" x2="105" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
           
           <rect x="110" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="147.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Agent</text>
+          <text x="147.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Agent</text>
           
           <line x1="185" y1="47" x2="235" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
           <rect x="240" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="277.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Tools</text>
+          <text x="277.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Tools</text>
           
           <line x1="315" y1="47" x2="365" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
           <rect x="370" y="30" width="75" height="35" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
-          <text x="407.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)" dominant-baseline="central">END</text>
+          <text x="407.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)" dominant-baseline="central">END</text>
         </svg>
         <span style="font-size: 12.5px; color: var(--ink-soft); display: block; margin-top: 6px;">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
       </div>
