@@ -96,7 +96,10 @@
             
             <!-- START -> agent 화살표 -->
             <line x1="75" y1="45" x2="125" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <text x="100" y="33" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
+            
+            <!-- START -> State 파선 화살표 (90도 꺾인 상태 초기 설정 흐름) -->
+            <path d="M 45 60 L 45 145 L 125 145" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+            <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="10" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
             
             <!-- agent Node -->
             <rect x="130" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
