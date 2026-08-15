@@ -82,6 +82,20 @@
         <span style="font-size: 12.5px; color: var(--ink-soft); display: block; margin-top: 6px;">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
       </div>
 
+      <!-- StateGraph 핵심 뼈대 정의 -->
+      <div style="margin-top: 24px; margin-bottom: 24px;">
+        <span style="font-size: 14.5px; font-weight: 700; color: var(--indigo); display: block; margin-bottom: 12px;">🗺️ StateGraph &amp; State (공통 상태 오케스트레이터)</span>
+        <div class="comp-card" style="border: 2px solid var(--indigo); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="font-size: 24px;">🗺️</span>
+            <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--indigo);">StateGraph <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">상태 그래프 오케스트레이터</span></h4>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
+            에이전트의 전체 비즈니스 흐름을 노드(Node)와 엣지(Edge)의 결합으로 구조화하고, 스텝마다 누적 및 갱신되는 <strong>상태(State) 객체</strong>의 데이터 연결망을 총괄 제어하는 프레임워크의 중심 뼈대 클래스이다. Direct Graph를 포함한 모든 LangGraph 아키텍처는 이 StateGraph 기반 위에서 동일하게 상태를 공유하며 동작한다.
+          </p>
+        </div>
+      </div>
+
       <!-- Direct Graph 구현 예시 코드 -->
       <div style="margin-top:24px;">
         <span style="font-size:14.5px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 Direct Graph (단순 선형 체인) 구현 예시 코드</span>
@@ -116,30 +130,17 @@ app = workflow.compile()
       개발자가 복잡한 업무 도메인 로직이나 예외 처리를 정밀 제어하기 위해서는 그래프의 노드와 조건부 엣지를 직접 매핑하여 흐름을 통제해야 한다. LLM이 반환하는 도구 호출 정보 유무에 기반해 분기를 결정하는 설계 구성요소는 다음과 같다.
     </p>
 
-    <!-- [1층] 프레임워크 코어 백본 (2열 하이라이트 구조) -->
+    <!-- [코어 개념] Conditional Edge (조건부 의사결정 분기) -->
     <div style="margin-top: 20px; margin-bottom: 28px;">
-      <span style="font-size: 14px; font-weight: 700; color: var(--indigo); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 12px;">🛡️ Framework Core Backbone (양대 핵심 뼈대)</span>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
-        <!-- StateGraph -->
-        <div class="comp-card" style="border: 2px solid var(--indigo); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span style="font-size: 24px;">🗺️</span>
-            <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--indigo);">StateGraph <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">상태 그래프 오케스트레이터</span></h4>
-          </div>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
-            에이전트의 전체 비즈니스 흐름을 노드(Node)와 엣지(Edge)의 결합으로 구조화하고, 스텝마다 누적 및 갱신되는 <strong>상태(State) 객체</strong>의 데이터 연결망을 총괄 제어하는 프레임워크의 중심 뼈대 클래스이다.
-          </p>
+      <span style="font-size: 14px; font-weight: 700; color: var(--orange); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 12px;">🛡️ Conditional Edge (조건부 의사결정 분기 뼈대)</span>
+      <div class="comp-card" style="border: 2px solid var(--orange); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">🔄</span>
+          <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--orange);">Conditional Edge <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">조건부 의사결정 분기</span></h4>
         </div>
-        <!-- Conditional Edge -->
-        <div class="comp-card" style="border: 2px solid var(--orange); background: var(--bg-soft); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span style="font-size: 24px;">🔄</span>
-            <h4 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--orange);">Conditional Edge <span style="font-size: 14px; color: var(--ink-soft); font-weight: 400; display: block; margin-top: 2px;">조건부 의사결정 분기</span></h4>
-          </div>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
-            라우터 함수의 판별 결과를 수신하여 다음에 호출할 그래프 노드 경로(예: 다음 도구 노드 구동 또는 최종 종결 END)를 런타임에 동적으로 결정한다.
-          </p>
-        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
+          라우터 함수의 판별 결과를 수신하여 다음에 호출할 그래프 노드 경로(예: 다음 도구 노드 구동 또는 최종 종결 END)를 런타임에 동적으로 결정한다. ReAct Graph 패턴의 자율적인 순환과 분기 제어를 가능하게 만드는 핵심 중추이다.
+        </p>
       </div>
     </div>
 
