@@ -115,7 +115,7 @@
       <span style="font-size: 15px; font-weight: 700; color: var(--indigo); display: block; margin-bottom: 16px;">🛡️ 글로벌 가드레일 래퍼 및 개별 안전 도구의 상호보완적 보호 흐름</span>
       
       <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 0 auto 16px auto;">
-        <svg viewBox="0 0 650 220" width="100%" height="auto" style="aspect-ratio: 650/220; height: auto; display: block;">
+        <svg viewBox="0 0 710 220" width="100%" height="auto" style="aspect-ratio: 710/220; height: auto; display: block;">
           <defs>
             <marker id="arrow-guard" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
               <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
@@ -125,56 +125,56 @@
             </marker>
           </defs>
           
-          <!-- TrustedAgentExecutor 글로벌 래퍼 영역 표시 (fill="none" 처리하여 검은색 배경 유입 전면 차단) -->
-          <rect x="65" y="25" width="520" height="175" rx="10" fill="none" stroke="var(--forest)" stroke-dasharray="4,4" stroke-width="1.8"/>
+          <!-- TrustedAgentExecutor 글로벌 래퍼 영역 표시 -->
+          <rect x="65" y="25" width="550" height="175" rx="10" fill="none" stroke="var(--forest)" stroke-dasharray="4,4" stroke-width="1.8"/>
           <text x="75" y="18" font-family="'Noto Sans KR', sans-serif" font-size="11.5" font-weight="900" fill="var(--forest)">TrustedAgentExecutor (글로벌 가드레일 실행기)</text>
           
-          <!-- User 노드 (외부) -->
+          <!-- User 노드 -->
           <rect x="10" y="85" width="45" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
           <text x="32.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">User</text>
           
-          <!-- User -> 입력 가드레일 화살표 -->
-          <line x1="55" y1="100" x2="75" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
+          <!-- User -> 입력 가드레일 -->
+          <line x1="55" y1="100" x2="80" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
           
-          <!-- 입력 가드레일 노드 -->
-          <rect x="80" y="85" width="95" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.5"/>
-          <text x="127.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">입력 가드레일</text>
+          <!-- 입력 가드레일 노드 (TrustedAgentExecutor 관할 구역 강조 색상 부여) -->
+          <rect x="80" y="85" width="95" height="30" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
+          <text x="127.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--forest)" text-anchor="middle" dominant-baseline="central">입력 가드레일</text>
           
-          <!-- 입력 가드레일 -> agent 화살표 -->
-          <line x1="175" y1="100" x2="205" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
-          <text x="190" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">통과</text>
+          <!-- 입력 가드레일 -> agent -->
+          <line x1="175" y1="100" x2="210" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
+          <text x="192.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">통과</text>
           
           <!-- agent 노드 -->
           <rect x="210" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
           <text x="250" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent (LLM)</text>
           
-          <!-- agent -> tools 화살표 -->
-          <line x1="290" y1="100" x2="315" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
-          <text x="302.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">호출</text>
+          <!-- agent -> tools -->
+          <line x1="290" y1="100" x2="320" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
+          <text x="305" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">호출</text>
           
           <!-- tools 노드 (Safe Tool) -->
           <rect x="320" y="85" width="120" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
           <text x="380" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools (안전 검증)</text>
           
-          <!-- tools -> agent 환류 화살표 (세로 간격 확보로 하단 라벨 겹침 차단) -->
+          <!-- tools -> agent 환류 -->
           <path d="M 380 115 L 380 155 L 250 155 L 250 122" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
           <text x="315" y="168" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">검증완료 결과 반환 (Observation)</text>
           
-          <!-- agent -> 출력 가드레일 (아치 조절점을 높여 상단 타이틀과의 물리적 겹침을 근본적으로 제거) -->
-          <path d="M 250 85 C 250 45, 517.5 45, 517.5 80" fill="none" stroke="var(--forest)" stroke-dasharray="3,3" stroke-width="1.5" marker-end="url(#arrow-forest)"/>
-          <text x="383.75" y="38" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--forest)" dominant-baseline="central">최종 답변 송출 (의사결정 완료 시)</text>
+          <!-- agent -> 출력 가드레일 (우회 아치) -->
+          <path d="M 250 85 C 250 45, 497.5 45, 497.5 80" fill="none" stroke="var(--forest)" stroke-dasharray="3,3" stroke-width="1.5" marker-end="url(#arrow-forest)"/>
+          <text x="373.75" y="38" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--forest)" dominant-baseline="central">최종 답변 송출 (의사결정 완료 시)</text>
           
-          <!-- 출력 가드레일 노드 -->
-          <rect x="470" y="85" width="95" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.5"/>
-          <text x="517.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">출력 가드레일</text>
+          <!-- 출력 가드레일 노드 (TrustedAgentExecutor 관할 구역 강조 색상 부여) -->
+          <rect x="450" y="85" width="95" height="30" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
+          <text x="497.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--forest)" text-anchor="middle" dominant-baseline="central">출력 가드레일</text>
           
           <!-- 출력 가드레일 -> 응답 화살표 -->
-          <line x1="565" y1="100" x2="590" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
-          <text x="577.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">필터완료</text>
+          <line x1="545" y1="100" x2="640" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-guard)"/>
+          <text x="592.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">필터완료</text>
           
           <!-- Response 노드 (외부) -->
-          <rect x="595" y="85" width="45" height="30" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
-          <text x="617.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--forest)" text-anchor="middle" dominant-baseline="central">응답</text>
+          <rect x="640" y="85" width="45" height="30" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5"/>
+          <text x="662.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--forest)" text-anchor="middle" dominant-baseline="central">응답</text>
         </svg>
       </div>
     </div>
