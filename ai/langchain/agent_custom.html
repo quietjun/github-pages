@@ -36,85 +36,44 @@
     "이번 포스트에서는 Prebuilt 헬퍼(create_react_agent)를 사용하지 않고, StateGraph와 Conditional Edge를 활용하여 의사결정 뼈대(Plan)를 100% 직접 커스터마이징 설계하는 방법을 실습한다."
   </blockquote>
 
-  <!-- 01. 에이전트 설계 패턴: Direct Graph vs ReAct Graph -->
+  <!-- 01. 에이전트 설계 패턴: Direct Graph -->
   <section>
     <div class="sec-head">
       <span class="sec-num">01</span>
-      <h3>에이전트 설계 패턴: Direct Graph vs ReAct Graph</h3>
+      <h3>에이전트 설계 패턴: Direct Graph</h3>
     </div>
     <p>
-      LangGraph 환경에서 요구사항의 복잡도에 따라 채택할 수 있는 두 가지 대표적인 그래프 아키텍처 패턴인 단순 고정형 흐름(Direct Graph)과 자율 순환형 흐름(ReAct Graph)의 비교 분석이다.
+      LangGraph를 활용해 구축할 수 있는 가장 단순한 형태인 <strong>Direct Graph (선형 체인)</strong> 패턴이다. 사전에 정의된 노드들을 조건부 분기 없이 일직선으로 순차 실행하고 마치는 구조이다.
     </p>
-    
-    <div class="aside-box" style="margin-top: 20px;">
-      <div class="aside-tag">// Direct Graph vs ReAct Graph 패턴 시각화</div>
-      
-      <!-- 패턴 비교 그래픽 -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; text-align: center;">
-        <div style="background: var(--bg); border: 1px solid var(--line); padding: 16px; border-radius: 10px;">
-          <strong style="font-size: 14px; display: block; margin-bottom: 10px; color: var(--ink);">Direct Graph 패턴 (선형 체인)</strong>
-          <svg viewBox="0 0 380 100" width="100%" height="90px" style="display: block; margin: 0 auto;">
-            <defs>
-              <marker id="arrow-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
-              </marker>
-            </defs>
-            <rect x="20" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-            <text x="57.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Agent</text>
-            <line x1="95" y1="47" x2="145" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-            <rect x="150" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--bronze)" stroke-width="1.8"/>
-            <text x="187.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Tools</text>
-            <line x1="225" y1="47" x2="275" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-            <rect x="280" y="30" width="75" height="35" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
-            <text x="317.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)">END</text>
-          </svg>
-          <span style="font-size: 13px; color: var(--ink-soft);">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
-        </div>
-        <div style="background: var(--bg); border: 1px solid var(--line); padding: 16px; border-radius: 10px;">
-          <strong style="font-size: 14px; display: block; margin-bottom: 10px; color: var(--ink);">ReAct Graph 패턴 (순환 루프)</strong>
-          <svg viewBox="0 0 380 100" width="100%" height="90px" style="display: block; margin: 0 auto;">
-            <defs>
-              <marker id="arrow-react" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
-              </marker>
-              <marker id="arrow-forest" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="var(--forest)"/>
-              </marker>
-            </defs>
-            <rect x="20" y="15" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-            <text x="57.5" y="37" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Agent</text>
-            <path d="M 95,27 C 112,12 133,12 150,27" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-react)"/>
-            <text x="122.5" y="9" font-family="'Noto Sans KR', sans-serif" font-size="9.5" text-anchor="middle" font-weight="700" fill="var(--ink-soft)">Call Tool</text>
-            <rect x="155" y="15" width="75" height="35" rx="6" fill="#fff" stroke="var(--bronze)" stroke-width="1.8"/>
-            <text x="192.5" y="37" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Tools</text>
-            <path d="M 155,38 C 138,53 117,53 100,38" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arrow-react)"/>
-            <text x="127.5" y="63" font-family="'Noto Sans KR', sans-serif" font-size="9.5" text-anchor="middle" font-weight="700" fill="var(--ink-soft)">Feedback</text>
-            <path d="M 57.5,50 L 57.5,80 L 322.5,80 L 322.5,55" fill="none" stroke="var(--forest)" stroke-width="1.5" marker-end="url(#arrow-forest)"/>
-            <text x="190" y="75" font-family="'Noto Sans KR', sans-serif" font-size="9.5" text-anchor="middle" font-weight="700" fill="var(--forest)">No More Tools</text>
-            <rect x="285" y="15" width="75" height="35" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
-            <text x="322.5" y="37" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)">END</text>
-          </svg>
-          <span style="font-size: 13px; color: var(--ink-soft);">Thought 결과에 따라 경로를 유기적으로 반복 판단</span>
-        </div>
-      </div>
-      
-      <p>
-        단순 고정형 파이프라인에는 <strong>Direct Graph</strong>가 구조적으로 가볍고 예측이 명확하며, 비정형 태스크나 조건부 롤백 처리가 동적으로 필요한 경우에는 <strong>ReAct Graph</strong>가 견고한 대안이다.
-      </p>
-      <table class="map-table" style="margin-top:16px;">
-        <thead>
-          <tr><th>비교 항목</th><th>Direct Graph 패턴</th><th>ReAct Graph 패턴</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="tech">동작 모델</td><td>선형 체인 (DAG, 순차적인 단방향 흐름)</td><td>순환 그래프 (Node &amp; Edge 기반 순환)</td></tr>
-          <tr><td class="tech">실행 경로</td><td>사전에 정해진 순서대로 실행 (A ➡️ B ➡️ 끝)</td><td>Thought-Action 결과에 따라 경로가 동적으로 결정</td></tr>
-          <tr><td class="tech">복잡한 요청 대응</td><td>불가 (예상 밖의 시나리오 대응의 한계)</td><td>가능 (오류 복구 및 조건부 루프 처리 최적화)</td></tr>
-          <tr><td class="tech">구현 복잡도</td><td>낮음 (구현 및 직관적 예측 용이)</td><td>높음 (Edge 설계 및 상태 관리 튜닝 필요)</td></tr>
-          <tr><td class="tech">권장 상황</td><td>단순 서류 추출, 정형화된 ETL 파이프라인</td><td>고객 상담 챗봇, 문제 해결형 분석 에이전트</td></tr>
-        </tbody>
-      </table>
 
-      <!-- Direct Graph 구현 예시 코드 추가 -->
+    <!-- Direct Graph 설명 및 다이어그램 카드 -->
+    <div class="aside-box" style="margin-top: 20px; margin-bottom: 24px;">
+      <div class="aside-tag">// Direct Graph 패턴 (선형 체인) 시각화</div>
+      <p style="margin-top: 0; margin-bottom: 16px; font-size: 14.5px; line-height: 1.7; color: var(--ink);">
+        LLM의 판단 결과에 따른 동적 루핑이나 조건부 분기 없이, <code>START</code> 진입 후 <code>Agent</code>가 동작하고 무조건 지정된 <code>Tools</code>를 실행한 뒤 작업이 종료(<code>END</code>)되는 구조이다.
+      </p>
+      
+      <div style="width: 100%; max-width: 420px; margin: 0 auto 16px auto; background: var(--bg); border: 1px solid var(--line); padding: 12px; border-radius: 10px; text-align: center;">
+        <strong style="font-size: 13.5px; display: block; margin-bottom: 10px; color: var(--ink);">Direct Graph 패턴 (선형 체인)</strong>
+        <svg viewBox="0 0 380 100" width="100%" height="90px" style="display: block; margin: 0 auto;">
+          <defs>
+            <marker id="arrow-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
+            </marker>
+          </defs>
+          <rect x="20" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+          <text x="57.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Agent</text>
+          <line x1="95" y1="47" x2="145" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <rect x="150" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--bronze)" stroke-width="1.8"/>
+          <text x="187.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)">Tools</text>
+          <line x1="225" y1="47" x2="275" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <rect x="280" y="30" width="75" height="35" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
+          <text x="317.5" y="52" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)">END</text>
+        </svg>
+        <span style="font-size: 12.5px; color: var(--ink-soft); display: block; margin-top: 6px;">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
+      </div>
+
+      <!-- Direct Graph 구현 예시 코드 -->
       <div style="margin-top:24px;">
         <span style="font-size:14.5px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 Direct Graph (단순 선형 체인) 구현 예시 코드</span>
         <div class="code-viewer" data-lang="PYTHON">
@@ -133,6 +92,30 @@ workflow.add_edge(<span style="color: #CE9178;">"tools"</span>, END)        <spa
 <span style="color: #6A9955;"># 3. 그래프 컴파일</span>
 app = workflow.compile()
         </div>
+      </div>
+    </div>
+
+    <!-- ReAct Graph 확장 비교 -->
+    <div style="margin-top: 32px; margin-bottom: 12px;">
+      <span style="font-size: 15px; font-weight: 700; color: var(--orange); display: block; margin-bottom: 8px;">🔄 자율 순환을 위한 ReAct Graph 패턴의 필요성</span>
+      <p style="margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--ink);">
+        단순 고정형 파이프라인에는 <strong>Direct Graph</strong>가 구조적으로 가볍고 예측이 명확하지만, 비정형 요청이나 에러 상황에서 LLM이 스스로 판단하여 동적으로 도구를 다시 구동하는 환류 루프(Feedback Loop) 처리를 하려면 조건부 엣지가 결합된 <strong>ReAct Graph 패턴</strong>이 필수적이다.
+      </p>
+      
+      <div class="aside-box" style="margin-top: 18px;">
+        <div class="aside-tag">// 두 아키텍처의 핵심 속성 비교</div>
+        <table class="map-table" style="margin-top: 12px;">
+          <thead>
+            <tr><th>비교 항목</th><th>Direct Graph 패턴</th><th>ReAct Graph 패턴</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="tech">동작 모델</td><td>선형 체인 (DAG, 순차적인 단방향 흐름)</td><td>순환 그래프 (Node &amp; Edge 기반 순환)</td></tr>
+            <tr><td class="tech">실행 경로</td><td>사전에 정해진 순서대로 실행 (A ➡️ B ➡️ 끝)</td><td>Thought-Action 결과에 따라 경로가 동적으로 결정</td></tr>
+            <tr><td class="tech">복잡한 요청 대응</td><td>불가 (예상 밖의 시나리오 대응의 한계)</td><td>가능 (오류 복구 및 조건부 루프 처리 최적화)</td></tr>
+            <tr><td class="tech">구현 복잡도</td><td>낮음 (구현 및 직관적 예측 용이)</td><td>높음 (Edge 설계 및 상태 관리 튜닝 필요)</td></tr>
+            <tr><td class="tech">권장 상황</td><td>단순 서류 추출, 정형화된 ETL 파이프라인</td><td>고객 상담 챗봇, 문제 해결형 분석 에이전트</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
