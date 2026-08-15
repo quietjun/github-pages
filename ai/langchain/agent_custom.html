@@ -152,42 +152,7 @@
       </div>
     </div>
 
-    <!-- [2층] 비즈니스 작동 동작 (3열 서브 그리드 구조) -->
-    <div style="margin-bottom: 32px;">
-      <span style="font-size: 14px; font-weight: 700; color: var(--forest); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 12px;">⚙️ Operational Mechanics (실제 작동 동작)</span>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
-        <!-- Router Function -->
-        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">🧭</span>
-            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">Router Function <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">should_continue</span></h5>
-          </div>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
-            에이전트의 현재 상태를 파싱해 도구 호출 지시 유무에 따라 다음 행선지 노드 이름을 판별해 반환하는 라우팅 함수이다.
-          </p>
-        </div>
-        <!-- Control Flow -->
-        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">🕹️</span>
-            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">Control Flow <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">제어 구조 설계</span></h5>
-          </div>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
-            단방향 체인을 탈피하여 에러 발생 시 피드백 및 롤백 루프를 그래프 선로 위에 유연하게 탑재하는 순환 제어 흐름이다.
-          </p>
-        </div>
-        <!-- State Transition -->
-        <div class="comp-card" style="border: 1px solid var(--line); padding: 16px; border-radius: 8px; background: var(--bg); box-shadow: none;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">📥</span>
-            <h5 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--ink);">State Transition <span style="font-size: 14px; color: var(--ink-soft); display: block; font-weight: 400; margin-top: 1px;">의사결정 상태 전이</span></h5>
-          </div>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft);">
-            분기 결정이 종료된 후 갱신된 메시지 정보와 상태값을 다음 타겟 노드로 누락 없이 전송하는 상태 업데이트 전이이다.
-          </p>
-        </div>
-      </div>
-    </div>
+
   </section>
 
   <!-- 02. should_continue 라우터 및 조건부 엣지 구현 -->
