@@ -96,6 +96,7 @@
             
             <!-- START -> agent 화살표 -->
             <line x1="75" y1="45" x2="105" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="90" y="33" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">초기 State</text>
             
             <!-- agent Node -->
             <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
@@ -103,6 +104,7 @@
             
             <!-- agent -> should_continue 화살표 -->
             <line x1="190" y1="45" x2="225" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="207.5" y="33" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
             
             <!-- should_continue (Router Function) -->
             <polygon points="280,15 330,45 280,75 230,45" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
@@ -125,9 +127,17 @@
             <rect x="240" y="130" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
             <text x="280" y="145" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
             
-            <!-- tools -> agent 회귀 루프 선로 -->
-            <path d="M 240 145 L 150 145 L 150 68" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <text x="142" y="105" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="end" fill="var(--ink-soft)" dominant-baseline="central">피드백 루프</text>
+            <!-- State (공유 상태 객체 저장소) -->
+            <rect x="110" y="130" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
+            <text x="150" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
+            
+            <!-- tools -> State 화살표 (상태 갱신) -->
+            <line x1="240" y1="145" x2="197" y2="145" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="218.5" y="135" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">상태 갱신</text>
+            
+            <!-- State -> agent 화살표 (피드백 환류) -->
+            <line x1="150" y1="130" x2="150" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="142" y="98" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="end" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
           </svg>
         </div>
         
