@@ -104,29 +104,6 @@ app = workflow.compile()
       </div>
     </div>
 
-    <!-- ReAct Graph 확장 비교 -->
-    <div style="margin-top: 32px; margin-bottom: 12px;">
-      <span style="font-size: 15px; font-weight: 700; color: var(--orange); display: block; margin-bottom: 8px;">🔄 자율 순환을 위한 ReAct Graph 패턴의 필요성</span>
-      <p style="margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--ink);">
-        단순 고정형 파이프라인에는 <strong>Direct Graph</strong>가 구조적으로 가볍고 예측이 명확하지만, 비정형 요청이나 에러 상황에서 LLM이 스스로 판단하여 동적으로 도구를 다시 구동하는 환류 루프(Feedback Loop) 처리를 하려면 조건부 엣지가 결합된 <strong>ReAct Graph 패턴</strong>이 필수적이다.
-      </p>
-      
-      <div class="aside-box" style="margin-top: 18px;">
-        <div class="aside-tag">// 두 아키텍처의 핵심 속성 비교</div>
-        <table class="map-table" style="margin-top: 12px;">
-          <thead>
-            <tr><th>비교 항목</th><th>Direct Graph 패턴</th><th>ReAct Graph 패턴</th></tr>
-          </thead>
-          <tbody>
-            <tr><td class="tech">동작 모델</td><td>선형 체인 (DAG, 순차적인 단방향 흐름)</td><td>순환 그래프 (Node &amp; Edge 기반 순환)</td></tr>
-            <tr><td class="tech">실행 경로</td><td>사전에 정해진 순서대로 실행 (A ➡️ B ➡️ 끝)</td><td>Thought-Action 결과에 따라 경로가 동적으로 결정</td></tr>
-            <tr><td class="tech">복잡한 요청 대응</td><td>불가 (예상 밖의 시나리오 대응의 한계)</td><td>가능 (오류 복구 및 조건부 루프 처리 최적화)</td></tr>
-            <tr><td class="tech">구현 복잡도</td><td>낮음 (구현 및 직관적 예측 용이)</td><td>높음 (Edge 설계 및 상태 관리 튜닝 필요)</td></tr>
-            <tr><td class="tech">권장 상황</td><td>단순 서류 추출, 정형화된 ETL 파이프라인</td><td>고객 상담 챗봇, 문제 해결형 분석 에이전트</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
   </section>
 
   <!-- 02. 커스텀 의사결정 분기 메커니즘 -->
@@ -308,7 +285,32 @@ workflow.add_conditional_edges(
     </div>
   </section>
 
-
+  <!-- 04. 설계 패턴 비교: Direct Graph vs ReAct Graph -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h3>설계 패턴 비교: Direct Graph vs ReAct Graph</h3>
+    </div>
+    <p>
+      단순 고정형 파이프라인에는 <strong>Direct Graph</strong>가 구조적으로 가볍고 예측이 명확하지만, 비정형 요청이나 에러 상황에서 LLM이 스스로 판단하여 동적으로 도구를 다시 구동하는 환류 루프(Feedback Loop) 처리를 하려면 조건부 엣지가 결합된 <strong>ReAct Graph 패턴</strong>이 필수적이다.
+    </p>
+    
+    <div class="aside-box" style="margin-top: 20px;">
+      <div class="aside-tag">⚖️ 두 아키텍처의 핵심 속성 비교</div>
+      <table class="map-table" style="margin-top: 16px;">
+        <thead>
+          <tr><th>비교 항목</th><th>Direct Graph 패턴</th><th>ReAct Graph 패턴</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="tech">동작 모델</td><td>선형 체인 (DAG, 순차적인 단방향 흐름)</td><td>순환 그래프 (Node &amp; Edge 기반 순환)</td></tr>
+          <tr><td class="tech">실행 경로</td><td>사전에 정해진 순서대로 실행 (A ➡️ B ➡️ 끝)</td><td>Thought-Action 결과에 따라 경로가 동적으로 결정</td></tr>
+          <tr><td class="tech">복잡한 요청 대응</td><td>불가 (예상 밖의 시나리오 대응의 한계)</td><td>가능 (오류 복구 및 조건부 루프 처리 최적화)</td></tr>
+          <tr><td class="tech">구현 복잡도</td><td>낮음 (구현 및 직관적 예측 용이)</td><td>높음 (Edge 설계 및 상태 관리 튜닝 필요)</td></tr>
+          <tr><td class="tech">권장 상황</td><td>단순 서류 추출, 정형화된 ETL 파이프라인</td><td>고객 상담 챗봇, 문제 해결형 분석 에이전트</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
 </div>
 
