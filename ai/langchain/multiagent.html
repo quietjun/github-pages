@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Agent 협업 디자인 패턴 (Part 4)</title>
+  <!-- Google Fonts Outfit & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&family=Outfit:wght=100..900&display=swap" rel="stylesheet">
+  <!-- 공통 CSS 스타일시트 연동 -->
+  <link rel="stylesheet" href="images/common.css">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      margin: 0;
+      padding: 24px;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .wrap{max-width:1024px; margin:0 auto;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 포스트 타이틀 -->
+  <h1 style="font-family:'Outfit', sans-serif; font-size:28px; font-weight:900; letter-spacing:-0.5px; color:var(--ink); margin-bottom:8px; border-bottom:2px solid var(--line); padding-bottom:12px;">
+    Multi-Agent Collaboration Patterns <span style="font-size:18px; color:var(--ink-soft); font-weight:400; display:block; margin-top:4px;">Part 4: Multi-Agent 시스템 협업 및 대표 패턴</span>
+  </h1>
+
+  <!-- 도입부 blockquote -->
+  <blockquote style="margin: 20px 0; padding: 16px 20px; background: var(--bg-soft); border-left: 4px solid var(--indigo); border-radius: 4px; font-style: italic; color: var(--ink-soft); font-size:14.5px;">
+    "복잡하고 방대한 테스크를 마주했을 때, 단일 에이전트는 성능 한계와 정보 누락을 보입니다. 이번 포스트에서는 LangGraph를 기반으로 계획과 실행을 이원화하는 Planner-Worker 패턴 및 결과의 완결성을 높이는 Reflection 패턴을 학습합니다."
+  </blockquote>
+
+  <!-- 01. 단일 Agent의 한계와 Multi-Agent 시스템의 필요성 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h3>단일 Agent의 한계와 Multi-Agent 시스템의 필요성</h3>
+    </div>
+    <p>
+      단일 에이전트(Single Agent)는 페르소나와 도구(Tool) 목록이 복잡해질수록 다음과 같은 치명적인 성능 저하를 겪는다.
+    </p>
+    <ul style="margin: 12px 0 20px 20px; padding: 0; color: var(--ink); line-height: 1.8;">
+      <li><strong>콘텍스트 과부하</strong>: 너무 많은 도구 명세와 긴 프롬프트가 주입되어 LLM이 중요한 지시 사항을 누락하는 현상 발생</li>
+      <li><strong>집중도 분산</strong>: 계획 수립, 예산 연산, 결과 텍스트 구체화 등 다양한 테스크를 한 번에 하려다 보니 결과물의 디테일 저하</li>
+      <li><strong>오작동 및 무한루프</strong>: 단일 추론 루프 안에서 도구 호출 판단이 꼬였을 때 스스로 정상 경로를 이탈하는 현상 심화</li>
+    </ul>
+
+    <p>
+      이에 대한 해결책이 <strong>Multi-Agent(다중 에이전트) 시스템</strong>이다. 복잡한 문제를 여러 개의 작은 역할(Role)로 세분화하고, 각 역할을 전담하는 에이전트들을 <code>StateGraph</code> 상의 노드로 정의하여 협업 구조로 풀어낸다.
+    </p>
+
+    <!-- 대표 패턴 aside-box -->
+    <div class="aside-box" style="margin-top: 16px; margin-bottom: 24px;">
+      <div class="aside-tag">💡 Multi-Agent 대표 디자인 패턴</div>
+      <ul style="margin: 8px 0 0 20px; padding: 0; font-size: 14px; line-height: 1.7; color: var(--ink);">
+        <li><strong>Planner-Worker</strong>: 계획 수립자(Planner)가 일의 절차를 정하면, 실행자(Worker)가 각 단계를 개별 완료하는 선형 구조</li>
+        <li><strong>Reflection</strong>: 생성자(Worker)의 출력물을 검토자(Reflection)가 정교하게 채점하고, 피드백을 통해 품질 기준을 만족할 때까지 재수행하는 순환 루프 구조</li>
+        <li><strong>Supervisor</strong>: 중앙의 조정자(Supervisor)가 다음으로 실행될 적절한 에이전트를 동적으로 매핑 및 호출하는 구조</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 02. Planner-Worker 패턴 구현 (Thought ➡️ Action) -->
+  <section style="margin-top: 36px;">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h3>Planner-Worker 패턴 구현 (Thought ➡️ Action)</h3>
+    </div>
+    <p>
+      계획 수립과 세부 실행을 물리적으로 분리하는 패턴이다. Planner는 상위 레벨의 마일스톤(Plan)만 정의하고, Worker는 오직 그 계획 내용에 집중하여 디테일한 정보를 서술하므로 결과의 완결성이 향상된다.
+    </p>
+
+    <!-- Planner-Worker 다이어그램 -->
+    <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
+      <svg viewBox="0 0 460 210" width="100%" height="auto" style="aspect-ratio: 460/210; height: auto; display: block;">
+        <defs>
+          <marker id="arrow-pw" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
+          </marker>
+        </defs>
+        <!-- START 노드 -->
+        <rect x="15" y="30" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+        <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
+        
+        <!-- START -> Planner 화살표 -->
+        <line x1="75" y1="45" x2="105" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        
+        <!-- Planner Node -->
+        <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="150" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">planner</text>
+        
+        <!-- Planner -> Worker 화살표 -->
+        <line x1="190" y1="45" x2="235" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="212.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">Plan 작성</text>
+        
+        <!-- Worker Node -->
+        <rect x="240" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="280" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">worker</text>
+        
+        <!-- Worker -> END 화살표 -->
+        <line x1="320" y1="45" x2="365" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="342.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">최종 실행</text>
+        
+        <!-- END 노드 -->
+        <rect x="370" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+        <text x="400" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
+        
+        <!-- 공유 상태 객체 (AgentState) -->
+        <rect x="130" y="130" width="220" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
+        <text x="240" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">AgentState (공유 상태)</text>
+        
+        <!-- State 참조 화살표들 -->
+        <line x1="150" y1="130" x2="150" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="158" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">계획 저장</text>
+        
+        <line x1="280" y1="130" x2="280" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="288" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">계획 참조</text>
+      </svg>
+    </div>
+
+    <!-- 파이썬 코드 구현 부 -->
+    <div style="margin-top:24px;">
+      <span style="font-size:15px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 Planner-Worker 패턴 상태(State) 및 노드 파이썬 코드</span>
+      <div class="code-viewer" data-lang="PYTHON">
+<span style="color: #569CD6;">from</span> langgraph.graph <span style="color: #569CD6;">import</span> StateGraph, START, END
+<span style="color: #569CD6;">from</span> typing <span style="color: #569CD6;">import</span> TypedDict, List
+
+<span style="color: #6A9955;"># 1. 협업 노드들이 공유할 상태구조 정의</span>
+<span style="color: #569CD6;">class</span> <span style="color: #4EC9B0;">AgentState</span>(TypedDict):
+    user_request: <span style="color: #4EC9B0;">str</span>     <span style="color: #6A9955;"># 사용자 질문</span>
+    plan: <span style="color: #4EC9B0;">str</span>             <span style="color: #6A9955;"># Planner의 수립 계획</span>
+    result: <span style="color: #4EC9B0;">str</span>           <span style="color: #6A9955;"># Worker의 실행 결과물</span>
+    reflection: <span style="color: #4EC9B0;">str</span>       <span style="color: #6A9955;"># Reflection 검토 피드백</span>
+    final_result: <span style="color: #4EC9B0;">str</span>     <span style="color: #6A9955;"># 최종 출력물</span>
+    reflection_count: <span style="color: #4EC9B0;">int</span> <span style="color: #6A9955;"># 피드백 반복 횟수</span>
+    messages: List[<span style="color: #4EC9B0;">dict</span>]  <span style="color: #6A9955;"># 에이전트 간 대화 기록</span>
+
+<span style="color: #6A9955;"># 2. Planner Node 구현</span>
+<span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">planner_node</span>(state: AgentState) -> AgentState:
+    user_request = state[<span style="color: #CE9178;">"user_request"</span>]
+    planner_prompt = <span style="color: #CE9178;">f"사용자 요청 {user_request}에 대해 실행 가능한 단계별 계획(Step 1, Step 2...)만 세워주세요."</span>
+    
+    response = llm.invoke(planner_prompt)
+    plan = response.content
+    
+    messages = state.get(<span style="color: #CE9178;">"messages"</span>, [])
+    messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Planner"</span>, <span style="color: #CE9178;">"content"</span>: plan})
+    <span style="color: #C586C0;">return</span> {**state, <span style="color: #CE9178;">"plan"</span>: plan, <span style="color: #CE9178;">"messages"</span>: messages}
+
+<span style="color: #6A9955;"># 3. Worker Node 구현</span>
+<span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">worker_node</span>(state: AgentState) -> AgentState:
+    plan = state[<span style="color: #CE9178;">"plan"</span>]
+    user_request = state[<span style="color: #CE9178;">"user_request"</span>]
+    worker_prompt = <span style="color: #CE9178;">f"계획:\n{plan}\n\n위 계획의 각 단계를 구체적으로 실행하여 상세 결과를 도출하세요."</span>
+    
+    response = llm.invoke(worker_prompt)
+    result = response.content
+    
+    messages = state.get(<span style="color: #CE9178;">"messages"</span>, [])
+    messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Worker"</span>, <span style="color: #CE9178;">"content"</span>: result})
+    <span style="color: #C586C0;">return</span> {**state, <span style="color: #CE9178;">"result"</span>: result, <span style="color: #CE9178;">"messages"</span>: messages}
+
+<span style="color: #6A9955;"># 4. Planner-Worker 그래프 빌드</span>
+workflow = StateGraph(AgentState)
+workflow.add_node(<span style="color: #CE9178;">"planner"</span>, planner_node)
+workflow.add_node(<span style="color: #CE9178;">"worker"</span>, worker_node)
+
+workflow.add_edge(START, <span style="color: #CE9178;">"planner"</span>)
+workflow.add_edge(<span style="color: #CE9178;">"planner"</span>, <span style="color: #CE9178;">"worker"</span>)
+workflow.add_edge(<span style="color: #CE9178;">"worker"</span>, END)
+
+app = workflow.compile()
+      </div>
+    </div>
+  </section>
+
+  <!-- 03. Reflection 패턴 추가 (Thought ➡️ Action ➡️ Observation) -->
+  <section style="margin-top: 36px;">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h3>Reflection 패턴 추가 (Thought ➡️ Action ➡️ Observation)</h3>
+    </div>
+    <p>
+      Worker가 완료한 결과물을 검토 노드(`Reflection`)로 라우팅하여 자율적으로 교정 피드백을 주는 구조이다. 의사결정 라우터 함수가 검토 결과를 보고 통과시키거나, 보완이 요구되면 다시 Worker로 돌려보내는 루프를 형성한다.
+    </p>
+
+    <!-- Reflection 다이어그램 -->
+    <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
+      <svg viewBox="0 0 710 220" width="100%" height="auto" style="aspect-ratio: 710/220; height: auto; display: block;">
+        <defs>
+          <marker id="arrow-ref" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
+          </marker>
+          <marker id="arrow-cond" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="var(--orange)"/>
+          </marker>
+        </defs>
+        <!-- START 노드 -->
+        <rect x="15" y="85" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+        <text x="45" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
+        
+        <!-- START -> planner -->
+        <line x1="75" y1="100" x2="105" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        
+        <!-- planner -->
+        <rect x="110" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="150" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">planner</text>
+        
+        <!-- planner -> worker -->
+        <line x1="190" y1="100" x2="225" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        <text x="207.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">계획 수립</text>
+        
+        <!-- worker -->
+        <rect x="230" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="270" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">worker</text>
+        
+        <!-- worker -> reflection -->
+        <line x1="310" y1="100" x2="345" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        <text x="327.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">결과 작성</text>
+        
+        <!-- reflection -->
+        <rect x="350" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="390" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">reflection</text>
+        
+        <!-- reflection -> router -->
+        <line x1="430" y1="100" x2="455" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        
+        <!-- Router (should_continue_reflection) -->
+        <polygon points="495,65 540,100 495,135 450,100" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
+        <text x="495" y="94" font-family="'Noto Sans KR', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">Router</text>
+        <text x="495" y="107" font-family="'Noto Sans KR', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(품질 검사)</text>
+        
+        <!-- router -> END (조건부 분기: "end") -->
+        <line x1="540" y1="100" x2="635" y2="100" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
+        <text x="587.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"end"</text>
+        
+        <!-- END 노드 -->
+        <rect x="640" y="85" width="45" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+        <text x="662.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--ink-soft)" text-anchor="middle" dominant-baseline="central">END</text>
+        
+        <!-- router -> worker 환류 엣지 (조건부 분기: "worker") -->
+        <path d="M 495 135 L 495 175 L 270 175 L 270 122" fill="none" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
+        <text x="382.5" y="188" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">개선 필요 시 피드백과 함께 재실행 ("worker")</text>
+      </svg>
+    </div>
+
+    <!-- 파이썬 코드 구현 부 -->
+    <div style="margin-top:24px;">
+      <span style="font-size:15px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 Reflection Node 및 조건 분기 워크플로우 파이썬 코드</span>
+      <div class="code-viewer" data-lang="PYTHON">
+<span style="color: #6A9955;"># 1. Reflection Node 구현</span>
+<span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">reflection_node</span>(state: AgentState) -> AgentState:
+    user_request = state[<span style="color: #CE9178;">"user_request"</span>]
+    plan = state[<span style="color: #CE9178;">"plan"</span>]
+    result = state[<span style="color: #CE9178;">"result"</span>]
+    count = state.get(<span style="color: #CE9178;">"reflection_count"</span>, <span style="color: #B5CEA8;">0</span>)
+    
+    reflection_prompt = <span style="color: #CE9178;">f"""
+    원본 요청: {user_request}
+    실행 계획: {plan}
+    Worker의 실행 결과: {result}
+    
+    위 결과가 원본 요청을 충족하는지 검토하고 개선 필요 항목을 정리하세요.
+    최종 결과 보완 텍스트도 함께 기재하세요.
+    [형식]
+    ## 검토 결과
+    - 충족 여부: [충족/부분 충족/미충족]
+    - 개선 필요: [피드백 내용]
+    
+    ## 최종 개선 결과
+    [개선 보완된 최종 결과]
+    """</span>
+    
+    response = llm.invoke(reflection_prompt)
+    reflection = response.content
+    
+    messages = state.get(<span style="color: #CE9178;">"messages"</span>, [])
+    messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Reflection"</span>, <span style="color: #CE9178;">"content"</span>: reflection})
+    
+    <span style="color: #C586C0;">return</span> {
+        **state,
+        <span style="color: #CE9178;">"reflection"</span>: reflection,
+        <span style="color: #CE9178;">"final_result"</span>: reflection,
+        <span style="color: #CE9178;">"reflection_count"</span>: count + <span style="color: #B5CEA8;">1</span>,
+        <span style="color: #CE9178;">"messages"</span>: messages
+    }
+
+<span style="color: #6A9955;"># 2. 루핑 제어용 조건부 분기 함수 정의</span>
+<span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">should_continue_reflection</span>(state: AgentState) -> <span style="color: #4EC9B0;">str</span>:
+    count = state.get(<span style="color: #CE9178;">"reflection_count"</span>, <span style="color: #B5CEA8;">0</span>)
+    reflection = state.get(<span style="color: #CE9178;">"reflection"</span>, <span style="color: #CE9178;">""</span>)
+    
+    <span style="color: #569CD6;">if</span> count >= <span style="color: #B5CEA8;">1</span>: <span style="color: #6A9955;"># 무한루프 방지를 위해 1회 검토 제한 설정</span>
+        <span style="color: #C586C0;">return</span> <span style="color: #CE9178;">"end"</span>
+    <span style="color: #569CD6;">if</span> <span style="color: #CE9178;">"충족 여부: 충족"</span> <span style="color: #569CD6;">in</span> reflection:
+        <span style="color: #C586C0;">return</span> <span style="color: #CE9178;">"end"</span>
+    <span style="color: #C586C0;">return</span> <span style="color: #CE9178;">"worker"</span>
+
+<span style="color: #6A9955;"># 3. Reflection 패턴 워크플로우 구성 및 엣지 바인딩</span>
+workflow_reflection = StateGraph(AgentState)
+workflow_reflection.add_node(<span style="color: #CE9178;">"planner"</span>, planner_node)
+workflow_reflection.add_node(<span style="color: #CE9178;">"worker"</span>, worker_node)
+workflow_reflection.add_node(<span style="color: #CE9178;">"reflection"</span>, reflection_node)
+
+workflow_reflection.add_edge(START, <span style="color: #CE9178;">"planner"</span>)
+workflow_reflection.add_edge(<span style="color: #CE9178;">"planner"</span>, <span style="color: #CE9178;">"worker"</span>)
+workflow_reflection.add_edge(<span style="color: #CE9178;">"worker"</span>, <span style="color: #CE9178;">"reflection"</span>)
+
+<span style="color: #6A9955;"># 조건부 엣지 등록: 검토 결과에 따라 Worker 재구동 또는 완료</span>
+workflow_reflection.add_conditional_edges(
+    <span style="color: #CE9178;">"reflection"</span>,
+    should_continue_reflection,
+    {
+        <span style="color: #CE9178;">"end"</span>: END,
+        <span style="color: #CE9178;">"worker"</span>: <span style="color: #CE9178;">"worker"</span>
+    }
+)
+
+app_reflection = workflow_reflection.compile()
+      </div>
+    </div>
+  </section>
+
+  <!-- 04. Planner-Worker vs Reflection 패턴 비교 -->
+  <section style="margin-top: 36px; margin-bottom: 24px;">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h3>Planner-Worker vs Reflection 패턴 비교</h3>
+    </div>
+    <p>
+      프로젝트 아키텍처 요구 조건에 가장 적합한 멀티에이전트 패턴 구성을 판단하기 위한 기술적 대조 지표이다.
+    </p>
+
+    <!-- 비교 테이블 -->
+    <div class="table-wrap" style="margin-top:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:25%;">비교 항목</th>
+            <th style="width:37.5%;">Planner-Worker 패턴</th>
+            <th style="width:37.5%;">Reflection 패턴</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">의사결정 흐름</td>
+            <td class="desc">사용자 질문 ➡️ 계획(Plan) 수립 ➡️ 전체 실행 및 종료 (선형)</td>
+            <td class="desc">계획 수립 ➡️ 실행 ➡️ 자율 평가(피드백) ➡️ 재실행 루프 (순환형)</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">제어 분기 메커니즘</td>
+            <td class="desc">조건부 분기 없음 (무조건 순차 제어)</td>
+            <td class="desc">라우터(`should_continue`) 함수에 의거한 조건부 분기 판단 필수</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">최대 장점</td>
+            <td class="desc">역할의 분담으로 단일 LLM의 콘텍스트 부하 방지 및 속도 향상</td>
+            <td class="desc">자기 검토를 통한 피드백 환류로 최종 출력물의 품질 극대화</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">적합 테스크</td>
+            <td class="desc">절차가 명확하고 복잡하지만, 자율적 교정이 필수적이지 않은 작업</td>
+            <td class="desc">보고서 작성, 프로그래밍 코드 작성, 법률 검토 등 엄격한 교정이 핵심인 작업</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- iframe 높이 자동 조절 스크립트 (AGENTS.md 규칙 필수 준수) -->
+<script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+  window.onload = sendHeight;
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
+</script>
+</body>
+</html>

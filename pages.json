@@ -55,6 +55,10 @@
             "path": "ai/langchain/langgraph.html"
           },
           {
+            "label": "Multi-Agent 협업 디자인 패턴 (Part 4)",
+            "path": "ai/langchain/multiagent.html"
+          },
+          {
             "label": "RAG(검색 증강 생성) 기술 소개",
             "path": "ai/langchain/rag.html"
           }
