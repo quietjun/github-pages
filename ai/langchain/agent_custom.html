@@ -53,31 +53,55 @@
         LLM의 판단 결과에 따른 동적 루핑이나 조건부 분기 없이, <code>START</code> 진입 후 <code>Agent</code>가 동작하고 무조건 지정된 <code>Tools</code>를 실행한 뒤 작업이 종료(<code>END</code>)되는 구조이다.
       </p>
       
-      <div style="width: 100%; max-width: 420px; margin: 0 auto 16px auto; background: var(--bg); border: 1px solid var(--line); padding: 12px; border-radius: 10px; text-align: center;">
-        <strong style="font-size: 13.5px; display: block; margin-bottom: 10px; color: var(--ink);">Direct Graph 패턴 (선형 체인)</strong>
-        <svg viewBox="0 0 460 100" width="100%" height="90px" style="display: block; margin: 0 auto;">
+      <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 0 auto 16px auto;">
+        <svg viewBox="0 0 460 210" width="100%" height="auto" style="aspect-ratio: 460/210; height: auto; display: block;">
           <defs>
             <marker id="arrow-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
               <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
             </marker>
           </defs>
           <!-- START 노드 -->
-          <rect x="15" y="30" width="60" height="35" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
-          <text x="45" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="900" fill="var(--indigo)" dominant-baseline="central">START</text>
+          <rect x="15" y="30" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
+          <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
           
           <!-- START -> Agent 화살표 -->
-          <line x1="75" y1="47" x2="105" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <line x1="75" y1="45" x2="105" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
           
-          <rect x="110" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="147.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Agent</text>
+          <!-- START -> State 파선 화살표 (90도 꺾인 상태 초기 설정 흐름) -->
+          <path d="M 45 60 L 45 145 L 125 145" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-direct)"/>
+          <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="10" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
           
-          <line x1="185" y1="47" x2="235" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <rect x="240" y="30" width="75" height="35" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="277.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--ink)" dominant-baseline="central">Tools</text>
+          <!-- Agent Node -->
+          <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+          <text x="150" y="45" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">Agent</text>
           
-          <line x1="315" y1="47" x2="365" y2="47" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <rect x="370" y="30" width="75" height="35" rx="6" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.8"/>
-          <text x="407.5" y="47.5" font-family="'Noto Sans KR', sans-serif" font-size="12" text-anchor="middle" font-weight="700" fill="var(--forest)" dominant-baseline="central">END</text>
+          <!-- Agent -> Tools 화살표 -->
+          <line x1="190" y1="45" x2="235" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <text x="212.5" y="33" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
+          
+          <!-- Tools Node -->
+          <rect x="240" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+          <text x="280" y="45" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">Tools</text>
+          
+          <!-- Tools -> END 화살표 -->
+          <line x1="320" y1="45" x2="365" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <text x="342.5" y="33" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
+          
+          <!-- END 노드 -->
+          <rect x="370" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+          <text x="400" y="45" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
+          
+          <!-- State (공유 상태 객체 저장소) -->
+          <rect x="130" y="130" width="220" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
+          <text x="240" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
+          
+          <!-- State -> Agent 화살표 (State 참조) -->
+          <line x1="150" y1="130" x2="150" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <text x="158" y="98" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
+          
+          <!-- State -> Tools 화살표 (State 참조) -->
+          <line x1="280" y1="130" x2="280" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
+          <text x="288" y="98" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
         </svg>
         <span style="font-size: 12.5px; color: var(--ink-soft); display: block; margin-top: 6px;">사전에 배치된 순서대로 일직선 동작 후 즉시 종료</span>
       </div>
