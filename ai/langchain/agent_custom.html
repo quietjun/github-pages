@@ -71,46 +71,46 @@
           </defs>
           <!-- START 노드 -->
           <rect x="15" y="30" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
-          <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
+          <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
           
           <!-- START -> Agent 화살표 -->
           <line x1="75" y1="45" x2="105" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
           
           <!-- START -> State 파선 화살표 (90도 꺾인 상태 초기 설정 흐름) -->
           <path d="M 45 60 L 45 145 L 125 145" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-direct)"/>
-          <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
+          <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
           
           <!-- Agent Node -->
           <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="150" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent</text>
+          <text x="150" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent</text>
           
           <!-- Agent -> Tools 화살표 -->
           <line x1="190" y1="45" x2="235" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <text x="212.5" y="22" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
+          <text x="212.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
           
           <!-- Tools Node -->
           <rect x="240" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-          <text x="280" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
+          <text x="280" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
           
           <!-- Tools -> END 화살표 -->
           <line x1="320" y1="45" x2="365" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <text x="342.5" y="22" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
+          <text x="342.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
           
           <!-- END 노드 -->
           <rect x="370" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
-          <text x="400" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
+          <text x="400" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
           
           <!-- State (공유 상태 객체 저장소) -->
           <rect x="130" y="130" width="220" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
-          <text x="240" y="145" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
+          <text x="240" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
           
           <!-- State -> Agent 화살표 (State 참조) -->
           <line x1="150" y1="130" x2="150" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <text x="158" y="98" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
+          <text x="158" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
           
           <!-- State -> Tools 화살표 (State 참조) -->
           <line x1="280" y1="130" x2="280" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-direct)"/>
-          <text x="288" y="98" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
+          <text x="288" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
         </svg>
       </div>
 
@@ -183,55 +183,55 @@ app = workflow.compile()
             
             <!-- START 노드 -->
             <rect x="15" y="30" width="60" height="30" rx="6" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
-            <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
+            <text x="45" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
             
             <!-- START -> agent 화살표 -->
             <line x1="75" y1="45" x2="125" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
             
             <!-- START -> State 파선 화살표 (90도 꺾인 상태 초기 설정 흐름) -->
             <path d="M 45 60 L 45 145 L 125 145" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
-            <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
+            <text x="52" y="102.5" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">초기 State 설정</text>
             
             <!-- agent Node -->
             <rect x="130" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-            <text x="170" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent</text>
+            <text x="170" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">agent</text>
             
             <!-- agent -> should_continue 화살표 -->
             <line x1="210" y1="45" x2="265" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <text x="237.5" y="22" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
+            <text x="237.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">State 전달</text>
             
             <!-- should_continue (Router Function) -->
             <polygon points="340,5 410,45 340,85 270,45" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
-            <text x="340" y="36" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">Router</text>
-            <text x="340" y="52" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(should_continue)</text>
+            <text x="340" y="36" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">Router</text>
+            <text x="340" y="52" font-family="'Noto Sans KR', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(should_continue)</text>
             
             <!-- should_continue -> END 화살표 (Conditional Edge - "END") -->
             <line x1="410" y1="45" x2="475" y2="45" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#cond-arrow)"/>
-            <text x="442.5" y="26" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"END"</text>
+            <text x="442.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"END"</text>
             
             <!-- END 노드 -->
             <rect x="485" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
-            <text x="515" y="45" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
+            <text x="515" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
             
             <!-- should_continue -> tools 화살표 (Conditional Edge - "tools") -->
             <line x1="340" y1="85" x2="340" y2="125" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#cond-arrow)"/>
-            <text x="348" y="105" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--orange)" dominant-baseline="central">"tools"</text>
+            <text x="348" y="105" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--orange)" dominant-baseline="central">"tools"</text>
             
             <!-- tools Node -->
             <rect x="300" y="130" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-            <text x="340" y="145" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
+            <text x="340" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">tools</text>
             
             <!-- State (공유 상태 객체 저장소) -->
             <rect x="130" y="130" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
-            <text x="170" y="145" font-family="'Noto Sans KR', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
+            <text x="170" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">State (상태)</text>
             
             <!-- tools -> State 화살표 (상태 갱신) -->
             <line x1="300" y1="145" x2="217" y2="145" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <text x="258.5" y="132" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">상태 갱신</text>
+            <text x="258.5" y="135" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">상태 갱신</text>
             
             <!-- State -> agent 화살표 (피드백 환류) -->
             <line x1="170" y1="130" x2="170" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <text x="178" y="98" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
+            <text x="178" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">State 참조</text>
           </svg>
         </div>
         
