@@ -204,8 +204,8 @@ app = workflow.compile()
     </p>
 
     <!-- Reflection 다이어그램 -->
-    <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
-      <svg viewBox="0 0 710 220" width="100%" height="auto" style="aspect-ratio: 710/220; height: auto; display: block;">
+    <div style="width: 100%; max-width: 820px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
+      <svg viewBox="0 0 820 220" width="100%" height="auto" style="aspect-ratio: 820/220; height: auto; display: block;">
         <defs>
           <marker id="arrow-ref" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
             <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-soft)"/>
@@ -219,47 +219,48 @@ app = workflow.compile()
         <text x="45" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">START</text>
         
         <!-- START -> planner -->
-        <line x1="75" y1="100" x2="105" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        <line x1="75" y1="100" x2="120" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
         
         <!-- planner -->
-        <rect x="110" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-        <text x="150" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">planner</text>
+        <rect x="120" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="160" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">planner</text>
+        <text x="160" y="70" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">계획 수립</text>
         
         <!-- planner -> worker -->
-        <line x1="190" y1="100" x2="225" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
-        <text x="207.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">계획 수립</text>
+        <line x1="200" y1="100" x2="260" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
         
         <!-- worker -->
-        <rect x="230" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-        <text x="270" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">worker</text>
+        <rect x="260" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="300" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">worker</text>
+        <text x="300" y="70" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">결과 작성</text>
         
         <!-- worker -> reflection -->
-        <line x1="310" y1="100" x2="345" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
-        <text x="327.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">결과 작성</text>
+        <line x1="340" y1="100" x2="400" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
         
         <!-- reflection -->
-        <rect x="350" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
-        <text x="390" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">reflection</text>
+        <rect x="400" y="85" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
+        <text x="440" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">reflection</text>
+        <text x="440" y="70" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">결과 평가</text>
         
         <!-- reflection -> router -->
-        <line x1="430" y1="100" x2="455" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
+        <line x1="480" y1="100" x2="540" y2="100" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-ref)"/>
         
         <!-- Router (should_continue_reflection) -->
-        <polygon points="495,65 540,100 495,135 450,100" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
-        <text x="495" y="94" font-family="'Noto Sans KR', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">Router</text>
-        <text x="495" y="107" font-family="'Noto Sans KR', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(품질 검사)</text>
+        <polygon points="585,65 630,100 585,135 540,100" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8"/>
+        <text x="585" y="94" font-family="'Noto Sans KR', sans-serif" font-size="11.5" font-weight="900" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">Router</text>
+        <text x="585" y="107" font-family="'Noto Sans KR', sans-serif" font-size="8.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">(품질 검사)</text>
         
         <!-- router -> END (조건부 분기: "end") -->
-        <line x1="540" y1="100" x2="635" y2="100" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
-        <text x="587.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"end"</text>
+        <line x1="630" y1="100" x2="740" y2="100" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
+        <text x="685" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">"end"</text>
         
         <!-- END 노드 -->
-        <rect x="640" y="85" width="45" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
-        <text x="662.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--ink-soft)" text-anchor="middle" dominant-baseline="central">END</text>
+        <rect x="740" y="85" width="45" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+        <text x="762.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--ink-soft)" text-anchor="middle" dominant-baseline="central">END</text>
         
         <!-- router -> worker 환류 엣지 (조건부 분기: "worker") -->
-        <path d="M 495 135 L 495 175 L 270 175 L 270 122" fill="none" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
-        <text x="382.5" y="188" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">개선 필요 시 피드백과 함께 재실행 ("worker")</text>
+        <path d="M 585 135 L 585 175 L 300 175 L 300 122" fill="none" stroke="var(--orange)" stroke-width="1.5" marker-end="url(#arrow-cond)"/>
+        <text x="442.5" y="188" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--orange)" dominant-baseline="central">개선 필요 시 피드백과 함께 재실행 ("worker")</text>
       </svg>
     </div>
 
