@@ -1656,10 +1656,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
                 
-                <!-- 1x1 Plate (Filter Reduction) -->
+                <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터축소</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널축소</text>
                 
                 <line x1="36" y1="45" x2="43" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
@@ -1670,10 +1670,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
                 <line x1="90" y1="45" x2="97" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <!-- 1x1 Plate (Filter Expansion) -->
+                <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터확장</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 1 -->
@@ -1703,10 +1703,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--amber)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
                 
-                <!-- 1x1 Plate (Filter Reduction) -->
+                <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터축소</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널축소</text>
                 
                 <line x1="36" y1="45" x2="43" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
@@ -1717,10 +1717,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
                 <line x1="90" y1="45" x2="97" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <!-- 1x1 Plate (Filter Expansion) -->
+                <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터확장</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 2 -->
@@ -1750,10 +1750,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--secondary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
                 
-                <!-- 1x1 Plate (Filter Reduction) -->
+                <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="24" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터축소</text>
+                <text x="24" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널축소</text>
                 
                 <line x1="36" y1="45" x2="43" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
@@ -1764,10 +1764,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
                 <line x1="90" y1="45" x2="97" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
-                <!-- 1x1 Plate (Filter Expansion) -->
+                <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="99" y="24" width="24" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
                 <text x="111" y="42" text-anchor="middle" font-family="monospace" font-size="8.5" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">필터확장</text>
+                <text x="111" y="54" text-anchor="middle" font-family="system-ui" font-size="8" fill="var(--rose)" font-weight="600">채널확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 3 -->
