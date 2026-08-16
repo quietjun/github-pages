@@ -1637,8 +1637,8 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <!-- 0. Input Node (x0) -->
               <g transform="translate(20, 56)">
                 <rect x="0" y="0" width="65" height="68" rx="10" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="1.5"/>
-                <text x="32" y="30" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--primary)">📥 입력</text>
-                <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="var(--text-main)">x₀</text>
+                <text x="32" y="30" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">📥 입력</text>
+                <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="9.5" font-weight="700" fill="var(--text-main)">x₀</text>
               </g>
 
               <!-- Split 0 Line & Point -->
@@ -1648,34 +1648,34 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <!-- STAGE 1 BLOCK (Middle Inline Flow x=120 ~ 285) -->
               <!-- Stage 1 Role Badge -->
               <rect x="120" y="24" width="165" height="20" rx="10" fill="rgba(56, 189, 248, 0.15)" stroke="var(--primary)" stroke-width="0.8"/>
-              <text x="202.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--primary)">🔍 [저수준] 에지·질감 추출</text>
+              <text x="202.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">🔍 [저수준] 에지·질감 추출</text>
 
               <line x1="102" y1="90" x2="118" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(120, 52)">
                 <rect x="0" y="0" width="165" height="76" rx="8" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="1.2"/>
-                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
+                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
                 
                 <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">축소</text>
+                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">축소</text>
                 
                 <line x1="48" y1="45" x2="59" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 3x3 Plate (Feature Extraction) -->
                 <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(61, 79, 196, 0.15)" stroke="var(--primary)" stroke-width="1.2"/>
-                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--primary)" font-weight="700">3x3</text>
-                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--primary)" font-weight="600">특징추출</text>
+                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--primary)" font-weight="700">3x3</text>
+                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--primary)" font-weight="600">특징추출</text>
 
                 <line x1="115" y1="45" x2="120" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">확장</text>
+                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 1 -->
@@ -1683,12 +1683,12 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- Addition 1 Circle -->
               <circle cx="320" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="2"/>
-              <text x="320" y="95" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="800" fill="var(--primary)">+</text>
-              <text x="320" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
+              <text x="320" y="95" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="800" fill="var(--primary)">+</text>
+              <text x="320" y="64" text-anchor="middle" font-family="monospace" font-size="9.5" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
 
               <!-- Bottom Skip Connection 1 -->
               <path d="M 102 90 L 102 170 L 320 170 L 320 107" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="211" y="188" text-anchor="middle" font-family="system-ui" font-size="14" fill="var(--primary)">🚀 Skip Connection</text>
+              <text x="211" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--primary)">🚀 Skip Connection</text>
 
               <!-- Split 1 Line & Point -->
               <line x1="334" y1="90" x2="351" y2="90" stroke="var(--amber)" stroke-width="2"/>
@@ -1697,34 +1697,34 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <!-- STAGE 2 BLOCK (Middle Inline Flow x=370 ~ 535) -->
               <!-- Stage 2 Role Badge -->
               <rect x="370" y="24" width="165" height="20" rx="10" fill="rgba(245, 158, 11, 0.15)" stroke="var(--amber)" stroke-width="0.8"/>
-              <text x="452.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--amber)">🧩 [중수준] 부위·패턴 합성</text>
+              <text x="452.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">🧩 [중수준] 부위·패턴 합성</text>
 
               <line x1="351" y1="90" x2="368" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(370, 52)">
                 <rect x="0" y="0" width="165" height="76" rx="8" fill="var(--bg-card)" stroke="var(--amber)" stroke-width="1.2"/>
-                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
+                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
                 
                 <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">축소</text>
+                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">축소</text>
                 
                 <line x1="48" y1="45" x2="59" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 3x3 Plate (Feature Extraction) -->
                 <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(245, 158, 11, 0.25)" stroke="var(--amber)" stroke-width="1.2"/>
-                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--amber)" font-weight="700">3x3</text>
-                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--amber)" font-weight="600">특징추출</text>
+                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--amber)" font-weight="700">3x3</text>
+                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--amber)" font-weight="600">특징추출</text>
 
                 <line x1="115" y1="45" x2="120" y2="45" stroke="var(--amber)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">확장</text>
+                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 2 -->
@@ -1732,12 +1732,12 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- Addition 2 Circle -->
               <circle cx="570" cy="90" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
-              <text x="570" y="95" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="800" fill="var(--amber)">+</text>
-              <text x="570" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
+              <text x="570" y="95" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="800" fill="var(--amber)">+</text>
+              <text x="570" y="64" text-anchor="middle" font-family="monospace" font-size="9.5" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
 
               <!-- Bottom Skip Connection 2 -->
               <path d="M 351 90 L 351 170 L 570 170 L 570 107" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="460.5" y="188" text-anchor="middle" font-family="system-ui" font-size="14" fill="var(--amber)">🚀 Skip Connection</text>
+              <text x="460.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--amber)">🚀 Skip Connection</text>
 
               <!-- Split 2 Line & Point -->
               <line x1="584" y1="90" x2="601" y2="90" stroke="var(--secondary)" stroke-width="2"/>
@@ -1746,34 +1746,34 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <!-- STAGE 3 BLOCK (Middle Inline Flow x=620 ~ 785) -->
               <!-- Stage 3 Role Badge -->
               <rect x="620" y="24" width="165" height="20" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="0.8"/>
-              <text x="702.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--secondary)">🎯 [고수준] 객체 형상 완성</text>
+              <text x="702.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">🎯 [고수준] 객체 형상 완성</text>
 
               <line x1="601" y1="90" x2="618" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(620, 52)">
                 <rect x="0" y="0" width="165" height="76" rx="8" fill="var(--bg-card)" stroke="var(--secondary)" stroke-width="1.2"/>
-                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
+                <text x="82.5" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
                 
                 <!-- 1x1 Plate (Channel Reduction) -->
                 <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">축소</text>
+                <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="30" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="30" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">축소</text>
                 
                 <line x1="48" y1="45" x2="59" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 3x3 Plate (Feature Extraction) -->
                 <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(168, 85, 247, 0.25)" stroke="var(--secondary)" stroke-width="1.2"/>
-                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--secondary)" font-weight="700">3x3</text>
-                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--secondary)" font-weight="600">특징추출</text>
+                <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--secondary)" font-weight="700">3x3</text>
+                <text x="87.5" y="55" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--secondary)" font-weight="600">특징추출</text>
 
                 <line x1="115" y1="45" x2="120" y2="45" stroke="var(--secondary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 1x1 Plate (Channel Expansion) -->
                 <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="var(--rose)" stroke-width="1"/>
-                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--rose)" font-weight="700">1x1</text>
-                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">채널</text>
-                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="13" fill="var(--rose)" font-weight="600">확장</text>
+                <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="10.5" fill="var(--rose)" font-weight="700">1x1</text>
+                <text x="139" y="49" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">채널</text>
+                <text x="139" y="60" text-anchor="middle" font-family="system-ui" font-size="8.5" fill="var(--rose)" font-weight="600">확장</text>
               </g>
 
               <!-- Main Flow line to Addition Node 3 -->
@@ -1781,12 +1781,12 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- Addition 3 Circle -->
               <circle cx="820" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--secondary)" stroke-width="2"/>
-              <text x="820" y="95" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="800" fill="var(--secondary)">+</text>
-              <text x="820" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
+              <text x="820" y="95" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="800" fill="var(--secondary)">+</text>
+              <text x="820" y="64" text-anchor="middle" font-family="monospace" font-size="9.5" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
 
               <!-- Bottom Skip Connection 3 -->
               <path d="M 601 90 L 601 170 L 820 170 L 820 107" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="710.5" y="188" text-anchor="middle" font-family="system-ui" font-size="14" fill="var(--secondary)">🚀 Skip Connection</text>
+              <text x="710.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--secondary)">🚀 Skip Connection</text>
 
               <!-- Line to Final Output -->
               <line x1="834" y1="90" x2="849" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
@@ -1794,9 +1794,9 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <!-- Output Node (Classifier) -->
               <g transform="translate(850, 56)">
                 <rect x="0" y="0" width="38" height="68" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="var(--accent)" stroke-width="1.5"/>
-                <text x="19" y="30" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--accent)">🏆</text>
-                <text x="19" y="46" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="var(--accent)">판다</text>
-                <text x="19" y="58" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--text-muted)">99%</text>
+                <text x="19" y="30" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--accent)">🏆</text>
+                <text x="19" y="46" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--accent)">판다</text>
+                <text x="19" y="58" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--text-muted)">99%</text>
               </g>
             </svg>
 
