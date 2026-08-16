@@ -908,20 +908,99 @@ pip install transformers diffusers huggingface_hub accelerate</pre>
         </div>
 
         <!-- Naming Rules -->
-        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.5rem;">
+        <div class="card" style="background: var(--bg-card); border-color: var(--border-color); padding: 1.5rem; margin-top: 1.5rem;">
           <h4 class="algo-ex-title" style="color: var(--secondary); margin-bottom: 0.75rem; font-size: 15px !important; display: flex; align-items: center; gap: 0.5rem;">
             <span>📛</span> 모델 이름 명명 규칙 (Naming Conventions)
           </h4>
-          <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7;">
-            Hugging Face의 모든 모델은 고유한 저장소 식별자인 <code>{개발 조직 또는 작성자}/{모델 아키텍처 명칭}</code> 포맷의 Model ID를 가집니다. 
-            이 이름을 구성하는 요소를 뜯어보면 모델의 속성을 바로 파악할 수 있습니다.
-          </p>
-          <ul style="margin-top: 0.75rem; margin-left: 1.5rem; color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
-            <li style="margin-bottom: 0.4rem;"><code>facebook/detr-resnet-50</code>: <strong>Facebook (Meta)</strong> 연구소에서 공개한 <strong>DETR</strong> 객체 감지 모델이며, 백본(뼈대) 특징 추출기로 <strong>ResNet-50</strong>을 결합해 학습했음을 알 수 있습니다.</li>
-            <li style="margin-bottom: 0.4rem;"><code>microsoft/resnet-50</code>: <strong>Microsoft</strong> 팀이 사전 학습하여 공유한 표준 <strong>ResNet-50</strong> 이미지 분류 모델입니다.</li>
-            <li style="margin-bottom: 0.4rem;"><code>stabilityai/stable-diffusion-2-1</code>: <strong>Stability AI</strong>가 릴리즈한 대표적인 디퓨전 기반 이미지 생성 모델 <strong>Stable Diffusion 버전 2.1</strong>입니다.</li>
-          </ul>
-          <p class="algo-desc" style="color: var(--accent); font-weight: 600; font-size: 13.5px !important; margin-top: 0.75rem;">
+          
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: stretch;">
+            <!-- Left Side: Table of naming conventions -->
+            <div style="flex: 1.2; min-width: 300px; display: flex; flex-direction: column;">
+              <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7; margin-bottom: 0.5rem;">
+                Hugging Face의 모든 모델은 고유한 저장소 식별자인 <code>{개발 조직 또는 작성자}/{모델 아키텍처 명칭}</code> 포맷의 Model ID를 가집니다. 
+                이 이름을 구성하는 요소를 뜯어보면 모델의 속성을 바로 파악할 수 있습니다.
+              </p>
+              
+              <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 13.5px; text-align: left; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+                <thead>
+                  <tr style="background: rgba(255, 255, 255, 0.03); border-bottom: 1.5px solid var(--border-color);">
+                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main);">구성 요소</th>
+                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main);">설명 및 의미</th>
+                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main);">주요 예시</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 10px 12px; font-weight: 600; color: var(--primary);">조직 / 작성자</td>
+                    <td style="padding: 10px 12px; color: var(--text-muted);">모델을 공개하고 유지 보수하는 기관 또는 개인 계정</td>
+                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main);"><code>openai</code>, <code>meta</code>, <code>google</code></td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 10px 12px; font-weight: 600; color: var(--secondary);">모델 / 아키텍처</td>
+                    <td style="padding: 10px 12px; color: var(--text-muted);">핵심 신경망 모델의 고유 알고리즘 명칭</td>
+                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main);"><code>resnet-50</code>, <code>detr</code>, <code>sana</code></td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 10px 12px; font-weight: 600; color: var(--accent);">백본망 / 뼈대</td>
+                    <td style="padding: 10px 12px; color: var(--text-muted);">복합 모델에서 내부 특징 추출용으로 쓰인 결합 모델</td>
+                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main);"><code>resnet-50</code> (detr의 백본)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 12px; font-weight: 600; color: var(--rose);">경량화 / 정밀도</td>
+                    <td style="padding: 10px 12px; color: var(--text-muted);">파라미터 수량(B) 및 정밀도 포맷(양자화 여부)</td>
+                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main);"><code>1.6B</code>, <code>fp16</code>, <code>GGUF</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Right Side: Examples visualized in identical filter image aspect ratio -->
+            <div style="flex: 0.8; min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
+              <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">실제 Model ID 매칭 구조 예시</div>
+                
+                <!-- Example 1 -->
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 2px; flex-wrap: wrap;">
+                    <span style="background: rgba(61, 79, 196, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px;">facebook</span>
+                    <span style="color: var(--text-muted);">/</span>
+                    <span style="background: rgba(168, 85, 247, 0.15); color: var(--secondary); padding: 2px 6px; border-radius: 4px;">detr</span>
+                    <span style="color: var(--text-muted);">-</span>
+                    <span style="background: rgba(245, 158, 11, 0.15); color: var(--amber); padding: 2px 6px; border-radius: 4px;">resnet-50</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; padding-left: 2px;">
+                    <strong>Meta</strong>가 배포한 <strong>DETR</strong> 객체 감지 모델이며, 백본망으로 <strong>ResNet-50</strong>을 사용함
+                  </div>
+                </div>
+
+                <!-- Example 2 -->
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 2px; flex-wrap: wrap;">
+                    <span style="background: rgba(61, 79, 196, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px;">microsoft</span>
+                    <span style="color: var(--text-muted);">/</span>
+                    <span style="background: rgba(168, 85, 247, 0.15); color: var(--secondary); padding: 2px 6px; border-radius: 4px;">resnet-50</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; padding-left: 2px;">
+                    <strong>Microsoft</strong>가 제공하는 표준 <strong>ResNet-50</strong> 사전학습 이미지 분류 모델
+                  </div>
+                </div>
+
+                <!-- Example 3 -->
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 2px; flex-wrap: wrap;">
+                    <span style="background: rgba(61, 79, 196, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px;">stabilityai</span>
+                    <span style="color: var(--text-muted);">/</span>
+                    <span style="background: rgba(168, 85, 247, 0.15); color: var(--secondary); padding: 2px 6px; border-radius: 4px;">stable-diffusion-2-1</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; padding-left: 2px;">
+                    <strong>Stability AI</strong>가 배포한 <strong>Stable Diffusion 버전 2.1</strong> 이미지 생성 모델
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="algo-desc" style="color: var(--accent); font-weight: 600; font-size: 13.5px !important; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
             💡 <strong>실무 팁:</strong> 모델 이름 뒤에 <code>-fp16</code>, <code>-int8</code>, <code>-GGUF</code> 혹은 <code>1.6B</code>, <code>8B</code> 등의 명칭이 붙는 경우, 이는 소수점 정밀도(양자화 경량화 여부)와 파라미터 크기(용량)를 대변하므로 사용할 GPU의 메모리(VRAM) 허용량에 따라 알맞은 모델을 판단하는 명확한 척도가 됩니다.
           </p>
         </div>
