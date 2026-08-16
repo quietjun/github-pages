@@ -391,21 +391,21 @@
     }
 
     .note-info {
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: #7dd3fc;
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      color: #0369a1;
     }
 
     .note-warning {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: #fde047;
+      background: rgba(217, 119, 6, 0.08);
+      border: 1px solid rgba(217, 119, 6, 0.25);
+      color: #b45309;
     }
 
     .note-success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #6ee7b7;
+      background: rgba(22, 163, 74, 0.08);
+      border: 1px solid rgba(22, 163, 74, 0.25);
+      color: #15803d;
     }
 
     /* Progress bar for CLIP probabilities */
@@ -896,6 +896,49 @@ results = detector(image)
 <span class="code-comment"># 3. 예측 경계 상자(Bounding Box)와 레이블 출력</span>
 <span class="code-keyword">for</span> prediction <span class="code-keyword">in</span> results:
     <span class="code-func">print</span>(<span class="code-string">f"검출 객체: {prediction['label']}, 신뢰도: {prediction['score']:.4f}"</span>)</pre>
+    </div>
+
+    <!-- New Card: Hugging Face Model Discovery Tips (4, 5, 6) -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">허깅페이스에서 모델과 관련된 정보 알아보기</div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1.5rem;">
+        Hugging Face Hub에서 필요한 최적의 모델을 탐색하고 검토할 때 유용하게 활용할 수 있는 핵심 구성 요소와 명명 규칙 가이드라인입니다.
+      </p>
+
+      <div class="grid-3">
+        <!-- 4. Category -->
+        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.25rem;">
+          <h4 class="algo-ex-title" style="color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🗂️</span> 4. 태스크 카테고리 (Tasks)
+          </h4>
+          <p class="algo-desc" style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
+            허깅페이스의 <strong>Tasks</strong> 페이지에서 Computer Vision(이미지 분류, 객체 감지, 이미지 생성 등), NLP, 오디오 등 기능별로 정렬된 수많은 모델을 탐색할 수 있습니다. 각 태스크별 표준화된 입력/출력 인터페이스가 제공됩니다.
+          </p>
+        </div>
+
+        <!-- 5. Naming Rules -->
+        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.25rem;">
+          <h4 class="algo-ex-title" style="color: var(--secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📛</span> 5. 모델 이름 명명 규칙
+          </h4>
+          <p class="algo-desc" style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
+            Hugging Face의 모델 아이디는 <code>{조직 또는 개발자}/{모델 아키텍처}-{백본 사양}</code> 형식(예: <code>facebook/detr-resnet-50</code>, <code>microsoft/resnet-50</code>)을 따릅니다. 이를 통해 배포처와 백본 모델 사양을 직관적으로 유추할 수 있습니다.
+          </p>
+        </div>
+
+        <!-- 6. Detailed Info -->
+        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.25rem;">
+          <h4 class="algo-ex-title" style="color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📑</span> 6. 모델 상세 정보 (Model Card)
+          </h4>
+          <p class="algo-desc" style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
+            모델 상세 페이지(Model Card)에서는 학습 데이터셋, 사용법 예시 코드, 한 달간의 다운로드 수, 모델의 파라미터 크기, 성능 벤치마크 및 라이선스 정보 등의 메타데이터를 통합 확인하여 연구와 프로덕션 적합성을 정밀하게 검토할 수 있습니다.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 
