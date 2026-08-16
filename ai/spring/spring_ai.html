@@ -146,14 +146,15 @@
           <!-- PlannerAgent (Spring Service) -->
           <rect x="80" y="85" width="110" height="30" rx="6" fill="var(--spring-light)" stroke="var(--spring-green)" stroke-width="1.8"/>
           <text x="135" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">PlannerAgent</text>
+          <text x="135" y="70" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">Plan 작성</text>
           
           <!-- Planner -> Worker -->
           <line x1="190" y1="100" x2="225" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="207.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--muted)" dominant-baseline="central">Plan 전달</text>
           
           <!-- WorkerAgent -->
           <rect x="230" y="85" width="110" height="30" rx="6" fill="var(--spring-light)" stroke="var(--spring-green)" stroke-width="1.8"/>
           <text x="285" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">WorkerAgent</text>
+          <text x="285" y="70" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">최종 실행</text>
           
           <!-- Worker -> END -->
           <line x1="340" y1="100" x2="640" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
@@ -167,9 +168,19 @@
           <rect x="130" y="150" width="380" height="30" rx="6" fill="var(--bg)" stroke="var(--spring-green)" stroke-dasharray="3,3" stroke-width="1.5"/>
           <text x="320" y="165" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">AgentState (Java Record)</text>
           
-          <!-- State 연결선들 -->
-          <path d="M 135 115 L 135 150" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2,2"/>
-          <path d="M 285 115 L 285 150" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <!-- Planner 데이터 흐름선 (Read request / Write plan) -->
+          <line x1="120" y1="150" x2="120" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
+          <text x="113" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">요청 읽기</text>
+          
+          <line x1="150" y1="117" x2="150" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
+          <text x="157" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="start" fill="var(--muted)" dominant-baseline="central">계획 저장</text>
+          
+          <!-- Worker 데이터 흐름선 (Read request & plan / Write result) -->
+          <line x1="270" y1="150" x2="270" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
+          <text x="263" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">계획/요청 읽기</text>
+          
+          <line x1="300" y1="117" x2="300" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
+          <text x="307" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="start" fill="var(--muted)" dominant-baseline="central">결과 저장</text>
         </svg>
       </div>
     </div>

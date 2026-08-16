@@ -94,33 +94,40 @@
         <!-- Planner Node -->
         <rect x="110" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
         <text x="150" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">planner</text>
+        <text x="150" y="15" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">Plan 작성</text>
         
         <!-- Planner -> Worker 화살표 -->
         <line x1="190" y1="45" x2="235" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
-        <text x="212.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">Plan 작성</text>
         
         <!-- Worker Node -->
         <rect x="240" y="30" width="80" height="30" rx="6" fill="#fff" stroke="var(--indigo)" stroke-width="1.8"/>
         <text x="280" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)" dominant-baseline="central">worker</text>
+        <text x="280" y="15" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">최종 실행</text>
         
         <!-- Worker -> END 화살표 -->
         <line x1="320" y1="45" x2="365" y2="45" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
-        <text x="342.5" y="30" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">최종 실행</text>
         
         <!-- END 노드 -->
         <rect x="370" y="30" width="60" height="30" rx="6" fill="var(--line)" stroke="var(--ink-soft)" stroke-width="1.5"/>
         <text x="400" y="45" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="var(--ink-soft)" dominant-baseline="central">END</text>
         
         <!-- 공유 상태 객체 (AgentState) -->
-        <rect x="130" y="130" width="220" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
-        <text x="240" y="145" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">AgentState (공유 상태)</text>
+        <rect x="130" y="135" width="220" height="30" rx="6" fill="var(--bg)" stroke="var(--indigo)" stroke-dasharray="3,3" stroke-width="1.5"/>
+        <text x="240" y="150" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--indigo)" dominant-baseline="central">AgentState (공유 상태)</text>
         
-        <!-- State 참조 화살표들 -->
-        <line x1="150" y1="130" x2="150" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
-        <text x="158" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">계획 저장</text>
+        <!-- Planner 데이터 흐름선 (Read user_request / Write plan) -->
+        <line x1="140" y1="135" x2="140" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="133" y="101" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--ink-soft)" dominant-baseline="central">요청 읽기</text>
         
-        <line x1="280" y1="130" x2="280" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
-        <text x="288" y="98" font-family="'Noto Sans KR', sans-serif" font-size="9.5" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">계획 참조</text>
+        <line x1="165" y1="67" x2="165" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="172" y="101" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">계획 저장</text>
+        
+        <!-- Worker 데이터 흐름선 (Read request & plan / Write result) -->
+        <line x1="280" y1="135" x2="280" y2="67" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="273" y="101" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--ink-soft)" dominant-baseline="central">계획/요청 읽기</text>
+        
+        <line x1="305" y1="67" x2="305" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow-pw)"/>
+        <text x="312" y="101" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="start" fill="var(--ink-soft)" dominant-baseline="central">결과 저장</text>
       </svg>
     </div>
 
