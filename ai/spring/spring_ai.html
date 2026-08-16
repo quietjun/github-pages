@@ -165,8 +165,8 @@
           <text x="662.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">응답</text>
           
           <!-- Java AgentState Record (상태 보관소) -->
-          <rect x="130" y="150" width="380" height="30" rx="6" fill="var(--bg)" stroke="var(--spring-green)" stroke-dasharray="3,3" stroke-width="1.5"/>
-          <text x="320" y="165" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">AgentState (Java Record)</text>
+          <rect x="70" y="150" width="280" height="30" rx="6" fill="var(--bg)" stroke="var(--spring-green)" stroke-dasharray="3,3" stroke-width="1.5"/>
+          <text x="210" y="165" font-family="'Noto Sans KR', sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">AgentState (Java Record)</text>
           
           <!-- Planner 데이터 흐름선 (Read request / Write plan) -->
           <line x1="120" y1="150" x2="120" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
@@ -177,7 +177,10 @@
           
           <!-- Worker 데이터 흐름선 (Read request & plan / Write result) -->
           <line x1="270" y1="150" x2="270" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="263" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">계획/요청 읽기</text>
+          <text x="263" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">
+            <tspan x="263" dy="-6">계획/요청</tspan>
+            <tspan x="263" dy="12">읽기</tspan>
+          </text>
           
           <line x1="300" y1="117" x2="300" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
           <text x="307" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="9" font-weight="700" text-anchor="start" fill="var(--muted)" dominant-baseline="central">결과 저장</text>
