@@ -883,23 +883,28 @@ pip install transformers diffusers huggingface_hub accelerate</pre>
       <!-- Vertical layout container -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         
-        <!-- Category -->
-        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.5rem;">
-          <h4 class="algo-ex-title" style="color: var(--primary); margin-bottom: 0.75rem; font-size: 15px !important; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🗂️</span> 태스크 카테고리 (Tasks) - 작업 유형 분류
-          </h4>
-          <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7;">
-            허깅페이스는 모델이 해결하려는 문제의 도메인(태스크)에 따라 엄격히 카테고리를 나누어 둡니다. 
-            내가 구현하고자 하는 서비스 시나리오에 맞는 정확한 카테고리를 파악하고 탐색을 시작하는 것이 기본입니다.
-          </p>
-          <ul style="margin-top: 0.75rem; margin-left: 1.5rem; color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
-            <li style="margin-bottom: 0.4rem;"><strong>Computer Vision</strong>: <code>Image Classification</code>(이미지 분류 - 예: ResNet-50), <code>Object Detection</code>(사물 검출 - 예: DETR), <code>Text-to-Image</code>(텍스트 기반 이미지 생성 - 예: SANA)</li>
-            <li style="margin-bottom: 0.4rem;"><strong>Natural Language Processing (NLP)</strong>: <code>Text Classification</code>(감성 분석 등), <code>Translation</code>(기계 번역), <code>Question Answering</code>(질의응답)</li>
-            <li style="margin-bottom: 0.4rem;"><strong>Multimodal</strong>: <code>Zero-Shot Image Classification</code>(텍스트와 이미지 간 매칭 및 분류 - 예: CLIP)</li>
-          </ul>
-          <p class="algo-desc" style="color: var(--accent); font-weight: 600; font-size: 13.5px !important; margin-top: 0.75rem;">
-            💡 <strong>실무 팁:</strong> 허깅페이스 웹사이트 좌측의 'Tasks' 메뉴에서 각 항목을 클릭하면, 작업별 대표 모델 리스트와 함께 웹 브라우저에서 결과값을 즉시 주입해 볼 수 있는 <strong>Inference API 테스트 위젯</strong>을 활용할 수 있습니다.
-          </p>
+        <!-- Category (모델 검색) -->
+        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.5rem; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+          <div style="flex: 1.2; min-width: 300px;">
+            <h4 class="algo-ex-title" style="color: var(--primary); margin-bottom: 0.75rem; font-size: 15px !important; display: flex; align-items: center; gap: 0.5rem;">
+              <span>🗂️</span> 모델 검색
+            </h4>
+            <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7;">
+              허깅페이스는 다양한 기준에 따라 최적의 모델을 쉽고 빠르게 찾을 수 있도록 강력한 검색 및 필터링 시스템을 제공합니다. 
+              <strong>Tasks</strong>(해결하려는 도메인 작업), <strong>Parameters</strong>(모델 파라미터 크기), <strong>Libraries</strong>(지원하는 학습/추론 라이브러리), <strong>Languages</strong>(지원 언어) 등의 다차원 필터를 복합적으로 선택하여 최적의 모델을 직관적으로 탐색할 수 있습니다.
+            </p>
+            <ul style="margin-top: 0.75rem; margin-left: 1.5rem; color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
+              <li style="margin-bottom: 0.4rem;"><strong>Computer Vision</strong>: <code>Image Classification</code>(이미지 분류), <code>Object Detection</code>(사물 검출), <code>Text-to-Image</code>(텍스트 기반 이미지 생성 - 예: SANA)</li>
+              <li style="margin-bottom: 0.4rem;"><strong>Natural Language Processing (NLP)</strong>: <code>Text Generation</code>(텍스트 생성), <code>Translation</code>(기계 번역), <code>Question Answering</code>(질의응답)</li>
+              <li style="margin-bottom: 0.4rem;"><strong>Multimodal</strong>: <code>Zero-Shot Image Classification</code>(텍스트와 이미지 간 매칭 및 분류 - 예: CLIP), <code>Image-to-Text</code></li>
+            </ul>
+            <p class="algo-desc" style="color: var(--accent); font-weight: 600; font-size: 13.5px !important; margin-top: 0.75rem;">
+              💡 <strong>실무 팁:</strong> 허깅페이스 웹사이트 좌측 및 상단의 필터 패널에서 다차원 검색 조건을 조합하여 서비스 요구사항 및 로컬 하드웨어(GPU VRAM) 리소스에 정확히 부합하는 모델을 즉시 스크리닝할 수 있습니다.
+            </p>
+          </div>
+          <div style="flex: 0.8; min-width: 250px; display: flex; justify-content: center; align-items: center;">
+            <img src="sana_tasks.png" alt="Hugging Face Model Search Filters" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);" />
+          </div>
         </div>
 
         <!-- Naming Rules -->
