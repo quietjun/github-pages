@@ -66,15 +66,27 @@
     </div>
   </section>
 
-  <!-- 02. Planner-Worker 패턴 구현 (Thought ➡️ Action) -->
+  <!-- 02. Multi-Agent 핵심 패턴 설계 및 구현 -->
   <section style="margin-top: 36px;">
     <div class="sec-head">
       <span class="sec-num">02</span>
-      <h3>Planner-Worker 패턴 구현 (Thought ➡️ Action)</h3>
+      <h3>Multi-Agent 핵심 패턴 설계 및 구현</h3>
     </div>
     <p>
-      계획 수립과 세부 실행을 물리적으로 분리하는 패턴이다. Planner는 상위 레벨의 마일스톤(Plan)만 정의하고, Worker는 오직 그 계획 내용에 집중하여 디테일한 정보를 서술하므로 결과의 완결성이 향상된다.
+      복잡하고 방대한 테스크를 마주했을 때 활용되는 대표적인 두 가지 멀티에이전트 패턴(Planner-Worker, Reflection)의 상세 구조와 구현 코드를 탭을 통해 대조해 본다.
     </p>
+
+    <!-- 탭 네비게이션 -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(event, 'planner-worker-panel')">Planner-Worker 패턴 (선형 실행)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'reflection-panel')">Reflection 패턴 (자기 피드백 루프)</button>
+    </div>
+
+    <!-- Planner-Worker 탭 패널 -->
+    <div id="planner-worker-panel" class="tab-panel active">
+      <p>
+        계획 수립과 세부 실행을 물리적으로 분리하는 패턴이다. Planner는 상위 레벨의 마일스톤(Plan)만 정의하고, Worker는 오직 그 계획 내용에 집중하여 디테일한 정보를 서술하므로 결과의 완결성이 향상된다.
+      </p>
 
     <!-- Planner-Worker 다이어그램 -->
     <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
@@ -191,17 +203,13 @@ workflow.add_edge(<span style="color: #CE9178;">"worker"</span>, END)
 app = workflow.compile()
       </div>
     </div>
-  </section>
-
-  <!-- 03. Reflection 패턴 추가 (Thought ➡️ Action ➡️ Observation) -->
-  <section style="margin-top: 36px;">
-    <div class="sec-head">
-      <span class="sec-num">03</span>
-      <h3>Reflection 패턴 추가 (Thought ➡️ Action ➡️ Observation)</h3>
     </div>
-    <p>
-      Worker가 완료한 결과물을 검토 노드(`Reflection`)로 라우팅하여 자율적으로 교정 피드백을 주는 구조이다. 의사결정 라우터 함수가 검토 결과를 보고 통과시키거나, 보완이 요구되면 다시 Worker로 돌려보내는 루프를 형성한다.
-    </p>
+
+    <!-- Reflection 탭 패널 -->
+    <div id="reflection-panel" class="tab-panel">
+      <p>
+        Worker가 완료한 결과물을 검토 노드(<code>Reflection</code>)로 라우팅하여 자율적으로 교정 피드백을 주는 구조이다. 의사결정 라우터 함수가 검토 결과를 보고 통과시키거나, 보완이 요구되면 다시 Worker로 돌려보내는 루프를 형성한다.
+      </p>
 
     <!-- Reflection 다이어그램 -->
     <div style="width: 100%; max-width: 820px; display: flex; justify-content: center; background: var(--bg-soft); border-radius: 8px; padding: 20px; border: 1px solid var(--line); margin: 20px auto 24px auto;">
@@ -339,6 +347,7 @@ workflow_reflection.add_conditional_edges(
 app_reflection = workflow_reflection.compile()
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 04. Planner-Worker vs Reflection 패턴 비교 -->
@@ -402,6 +411,21 @@ app_reflection = workflow_reflection.compile()
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(sendHeight);
     ro.observe(document.body);
+  }
+
+  // 탭 스위칭 제어 로직
+  function switchTab(evt, tabId) {
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(function(p) { p.classList.remove('active'); });
+    
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(function(b) { b.classList.remove('active'); });
+    
+    document.getElementById(tabId).classList.add('active');
+    evt.currentTarget.classList.add('active');
+    
+    // 탭 변동에 맞추어 스크롤 높이 즉시 동기화
+    sendHeight();
   }
 </script>
 </body>
