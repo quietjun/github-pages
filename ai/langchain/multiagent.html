@@ -393,6 +393,45 @@ workflow_reflection.add_conditional_edges(
 app_reflection = workflow_reflection.compile()
       </div>
     </div>
+    
+    <!-- Planner-Worker vs Reflection 패턴 비교 테이블 -->
+    <h4 style="margin-top: 32px; color: var(--indigo); border-left: 5px solid var(--indigo); padding-left: 12px; line-height: 1.4;">Planner-Worker vs Reflection 패턴 비교</h4>
+    <p style="margin-top: 8px;">
+      프로젝트 아키텍처 요구 조건에 가장 적합한 멀티에이전트 패턴 구성을 판단하기 위한 기술적 대조 지표이다.
+    </p>
+    <div class="table-wrap" style="margin-top:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:25%;">비교 항목</th>
+            <th style="width:37.5%;">Planner-Worker 패턴</th>
+            <th style="width:37.5%;">Reflection 패턴</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">의사결정 흐름</td>
+            <td class="desc">사용자 질문 ➡️ 계획(Plan) 수립 ➡️ 전체 실행 및 종료 (선형)</td>
+            <td class="desc">계획 수립 ➡️ 실행 ➡️ 자율 평가(피드백) ➡️ 재실행 루프 (순환형)</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">제어 분기 메커니즘</td>
+            <td class="desc">조건부 분기 없음 (무조건 순차 제어)</td>
+            <td class="desc">라우터(`should_continue`) 함수에 의거한 조건부 분기 판단 필수</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">최대 장점</td>
+            <td class="desc">역할의 분담으로 단일 LLM의 콘텍스트 부하 방지 및 속도 향상</td>
+            <td class="desc">자기 검토를 통한 피드백 환류로 최종 출력물의 품질 극대화</td>
+          </tr>
+          <tr>
+            <td class="tech" style="color:var(--indigo);">적합 테스크</td>
+            <td class="desc">절차가 명확하고 복잡하지만, 자율적 교정이 필수적이지 않은 작업</td>
+            <td class="desc">보고서 작성, 프로그래밍 코드 작성, 법률 검토 등 엄격한 교정이 핵심인 작업</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     </div>
 
     <!-- 고급 협업 패턴 탭 패널 (Supervisor, Debate, Hierarchical) -->
@@ -593,51 +632,7 @@ app_reflection = workflow_reflection.compile()
     </div>
   </section>
 
-  <!-- 04. Planner-Worker vs Reflection 패턴 비교 -->
-  <section style="margin-top: 36px; margin-bottom: 24px;">
-    <div class="sec-head">
-      <span class="sec-num">04</span>
-      <h3>Planner-Worker vs Reflection 패턴 비교</h3>
-    </div>
-    <p>
-      프로젝트 아키텍처 요구 조건에 가장 적합한 멀티에이전트 패턴 구성을 판단하기 위한 기술적 대조 지표이다.
-    </p>
 
-    <!-- 비교 테이블 -->
-    <div class="table-wrap" style="margin-top:16px;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:25%;">비교 항목</th>
-            <th style="width:37.5%;">Planner-Worker 패턴</th>
-            <th style="width:37.5%;">Reflection 패턴</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="tech" style="color:var(--indigo);">의사결정 흐름</td>
-            <td class="desc">사용자 질문 ➡️ 계획(Plan) 수립 ➡️ 전체 실행 및 종료 (선형)</td>
-            <td class="desc">계획 수립 ➡️ 실행 ➡️ 자율 평가(피드백) ➡️ 재실행 루프 (순환형)</td>
-          </tr>
-          <tr>
-            <td class="tech" style="color:var(--indigo);">제어 분기 메커니즘</td>
-            <td class="desc">조건부 분기 없음 (무조건 순차 제어)</td>
-            <td class="desc">라우터(`should_continue`) 함수에 의거한 조건부 분기 판단 필수</td>
-          </tr>
-          <tr>
-            <td class="tech" style="color:var(--indigo);">최대 장점</td>
-            <td class="desc">역할의 분담으로 단일 LLM의 콘텍스트 부하 방지 및 속도 향상</td>
-            <td class="desc">자기 검토를 통한 피드백 환류로 최종 출력물의 품질 극대화</td>
-          </tr>
-          <tr>
-            <td class="tech" style="color:var(--indigo);">적합 테스크</td>
-            <td class="desc">절차가 명확하고 복잡하지만, 자율적 교정이 필수적이지 않은 작업</td>
-            <td class="desc">보고서 작성, 프로그래밍 코드 작성, 법률 검토 등 엄격한 교정이 핵심인 작업</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
 
 </div>
 
