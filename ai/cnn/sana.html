@@ -818,18 +818,91 @@
       ⚡ 1. Hugging Face 소개 & 사용법
     </button>
     <button class="tab-btn" onclick="switchTab('tab2')">
-      🧩 2. [비전 1] CLIP Zero-shot 분류
+      🎨 2. [비전 1] SANA 이미지 생성
     </button>
     <button class="tab-btn" onclick="switchTab('tab3')">
-      ⚔️ 3. [비전 2] ResNet-50 이미지 분류
+      🧩 3. [비전 2] CLIP Zero-shot 분류
     </button>
     <button class="tab-btn" onclick="switchTab('tab4')">
-      🎨 4. [비전 3] SANA 이미지 생성
+      ⚔️ 4. [비전 3] ResNet-50 이미지 분류
     </button>
   </div>
 
-  <!-- TAB 4: SANA & Parameter Simulator (Originally TAB 1) -->
-  <div id="tab4" class="tab-content">
+  <!-- TAB 1: Hugging Face 소개 & 사용법 -->
+
+  <div id="tab1" class="tab-content active">
+    <div class="grid-2">
+      <!-- Left Card: Hugging Face Hub & Ecosystem -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Hugging Face 생태계 & 모델 허브 개요</div>
+        </div>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
+          <strong>Hugging Face</strong>는 전 세계 AI 엔지니어들이 100만 개 이상의 오픈소스 사전학습 모델(Pre-trained Models)과 데이터셋을 공유하는 최대의 머신러닝 커뮤니티이자 플랫폼이다. 
+          비전(Vision), 자연어 처리(NLP), 오디오 등 다양한 분야의 최첨단 모델들을 코드 단 몇 줄로 즉시 연동해 로드하고 실험할 수 있는 강력한 파이프라인 API를 제공한다.
+        </p>
+        
+        <div class="note-box note-warning" style="margin-top: 1rem;">
+          <span>💡</span>
+          <div>
+            <strong>Hugging Face의 핵심 가치:</strong><br>
+            독자적으로 방대한 컴퓨팅 리소스를 들여 거대 비전/언어 모델을 직접 사전학습시킬 필요 없이, 검증된 가중치(Weights)와 아키텍처 설정을 허브로부터 API 기반으로 즉시 호출 및 전이학습(Transfer Learning)을 수행할 수 있게 도와준다.
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Card: Getting Started & Installation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">⚙️</div>
+          <div class="card-title">Hugging Face 환경 구축 및 설치</div>
+        </div>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
+          Hugging Face Hub의 사전학습 모델들을 사용하기 위해 터미널에서 아래의 필수 패키지들을 사전에 설치해야 한다.
+        </p>
+        
+        <!-- Installation Code Block -->
+        <pre style="margin-top:0.5rem; font-size: 13.5px; padding: 1rem;"><span class="code-comment"># pip를 통한 핵심 Hugging Face 라이브러리 설치</span>
+pip install transformers diffusers huggingface_hub accelerate</pre>
+        
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-top: 1rem; margin-bottom: 0.5rem;">
+          이 가이드에서는 <strong>transformers</strong> 라이브러리를 통해 CLIP 및 ResNet-50 비전 모델을, <strong>diffusers</strong> 라이브러리를 통해 SANA 이미지 생성 모델을 실습해 본다.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom Card: Pipeline Quickstart -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">추론의 핵심: pipeline 모듈을 활용한 초간단 비전 실습</div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
+        Hugging Face <code>transformers</code> 라이브러리는 복잡한 모델 아키텍처 정의와 토크나이저/프로세서 설정 과정을 캡슐화한 <code>pipeline()</code> 모듈을 제공한다.
+        아래 코드는 단 3줄의 코드로 이미지의 객체를 감지(Object Detection)하는 초간단 Hugging Face 비전 파이프라인 예제이다.
+      </p>
+
+      <pre style="margin-top:0.5rem; font-size: 13.5px; padding: 1.2rem;"><span class="code-keyword">from</span> transformers <span class="code-keyword">import</span> pipeline
+<span class="code-keyword">from</span> PIL <span class="code-keyword">import</span> Image
+
+<span class="code-comment"># 1. 객체 감지(Object Detection) 파이프라인 원클릭 초기화</span>
+detector = pipeline(<span class="code-string">"object-detection"</span>, model=<span class="code-string">"facebook/detr-resnet-50"</span>)
+
+<span class="code-comment"># 2. 이미지 입력 및 감지 실행</span>
+image = Image.open(<span class="code-string">"sample.jpg"</span>)
+results = detector(image)
+
+<span class="code-comment"># 3. 예측 경계 상자(Bounding Box)와 레이블 출력</span>
+<span class="code-keyword">for</span> prediction <span class="code-keyword">in</span> results:
+    <span class="code-func">print</span>(<span class="code-string">f"검출 객체: {prediction['label']}, 신뢰도: {prediction['score']:.4f}"</span>)</pre>
+    </div>
+  </div>
+
+
+<!-- TAB 2: SANA 이미지 생성 -->
+
+  <div id="tab2" class="tab-content">
     <div class="grid-2">
       <!-- Left Card: SANA Architecture -->
       <div class="card">
@@ -1035,78 +1108,10 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
     </div>
   </div>
 
-  <!-- TAB 1: Hugging Face 소개 & 사용법 -->
-  <div id="tab1" class="tab-content active">
-    <div class="grid-2">
-      <!-- Left Card: Hugging Face Hub & Ecosystem -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon">⚡</div>
-          <div class="card-title">Hugging Face 생태계 & 모델 허브 개요</div>
-        </div>
-        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
-          <strong>Hugging Face</strong>는 전 세계 AI 엔지니어들이 100만 개 이상의 오픈소스 사전학습 모델(Pre-trained Models)과 데이터셋을 공유하는 최대의 머신러닝 커뮤니티이자 플랫폼이다. 
-          비전(Vision), 자연어 처리(NLP), 오디오 등 다양한 분야의 최첨단 모델들을 코드 단 몇 줄로 즉시 연동해 로드하고 실험할 수 있는 강력한 파이프라인 API를 제공한다.
-        </p>
-        
-        <div class="note-box note-warning" style="margin-top: 1rem;">
-          <span>💡</span>
-          <div>
-            <strong>Hugging Face의 핵심 가치:</strong><br>
-            독자적으로 방대한 컴퓨팅 리소스를 들여 거대 비전/언어 모델을 직접 사전학습시킬 필요 없이, 검증된 가중치(Weights)와 아키텍처 설정을 허브로부터 API 기반으로 즉시 호출 및 전이학습(Transfer Learning)을 수행할 수 있게 도와준다.
-          </div>
-        </div>
-      </div>
-      
-      <!-- Right Card: Getting Started & Installation -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon">⚙️</div>
-          <div class="card-title">Hugging Face 환경 구축 및 설치</div>
-        </div>
-        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
-          Hugging Face Hub의 사전학습 모델들을 사용하기 위해 터미널에서 아래의 필수 패키지들을 사전에 설치해야 한다.
-        </p>
-        
-        <!-- Installation Code Block -->
-        <pre style="margin-top:0.5rem; font-size: 13.5px; padding: 1rem;"><span class="code-comment"># pip를 통한 핵심 Hugging Face 라이브러리 설치</span>
-pip install transformers diffusers huggingface_hub accelerate</pre>
-        
-        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-top: 1rem; margin-bottom: 0.5rem;">
-          이 가이드에서는 <strong>transformers</strong> 라이브러리를 통해 CLIP 및 ResNet-50 비전 모델을, <strong>diffusers</strong> 라이브러리를 통해 SANA 이미지 생성 모델을 실습해 본다.
-        </p>
-      </div>
-    </div>
 
-    <!-- Bottom Card: Pipeline Quickstart -->
-    <div class="card" style="margin-top: 1.5rem;">
-      <div class="card-header">
-        <div class="card-icon">🚀</div>
-        <div class="card-title">추론의 핵심: pipeline 모듈을 활용한 초간단 비전 실습</div>
-      </div>
-      <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1rem;">
-        Hugging Face <code>transformers</code> 라이브러리는 복잡한 모델 아키텍처 정의와 토크나이저/프로세서 설정 과정을 캡슐화한 <code>pipeline()</code> 모듈을 제공한다.
-        아래 코드는 단 3줄의 코드로 이미지의 객체를 감지(Object Detection)하는 초간단 Hugging Face 비전 파이프라인 예제이다.
-      </p>
+<!-- TAB 3: CLIP Zero-shot 분류 -->
 
-      <pre style="margin-top:0.5rem; font-size: 13.5px; padding: 1.2rem;"><span class="code-keyword">from</span> transformers <span class="code-keyword">import</span> pipeline
-<span class="code-keyword">from</span> PIL <span class="code-keyword">import</span> Image
-
-<span class="code-comment"># 1. 객체 감지(Object Detection) 파이프라인 원클릭 초기화</span>
-detector = pipeline(<span class="code-string">"object-detection"</span>, model=<span class="code-string">"facebook/detr-resnet-50"</span>)
-
-<span class="code-comment"># 2. 이미지 입력 및 감지 실행</span>
-image = Image.open(<span class="code-string">"sample.jpg"</span>)
-results = detector(image)
-
-<span class="code-comment"># 3. 예측 경계 상자(Bounding Box)와 레이블 출력</span>
-<span class="code-keyword">for</span> prediction <span class="code-keyword">in</span> results:
-    <span class="code-func">print</span>(<span class="code-string">f"검출 객체: {prediction['label']}, 신뢰도: {prediction['score']:.4f}"</span>)</pre>
-    </div>
-  </div>
-
-  <!-- TAB 2: CLIP Similarity Calculator -->
-  <div id="tab2" class="tab-content">
+  <div id="tab3" class="tab-content">
     <div class="grid-2">
       <!-- TL;DR & Problem/Solution Card -->
       <div class="card">
@@ -1461,8 +1466,10 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
     </div>
   </div>
 
-  <!-- TAB 3: ResNet-50 CNN 모델 소개 & CLIP 비교 -->
-  <div id="tab3" class="tab-content">
+
+<!-- TAB 4: ResNet-50 이미지 분류 -->
+
+  <div id="tab4" class="tab-content">
     <div class="grid-2">
       <!-- 1. TL;DR & Problem/Solution Card -->
       <div class="card">
