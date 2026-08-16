@@ -1635,24 +1635,24 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               </defs>
 
               <!-- 0. Input Node (x0) -->
-              <g transform="translate(20, 56)">
+              <g transform="translate(25, 56)">
                 <rect x="0" y="0" width="65" height="68" rx="10" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="1.5"/>
                 <text x="32" y="30" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--primary)">📥 입력</text>
                 <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--text-main)">x₀</text>
               </g>
 
               <!-- Split 0 Line & Point -->
-              <line x1="85" y1="90" x2="100" y2="90" stroke="var(--primary)" stroke-width="2"/>
-              <circle cx="100" cy="90" r="4" fill="var(--primary)"/>
+              <line x1="90" y1="90" x2="105" y2="90" stroke="var(--primary)" stroke-width="2"/>
+              <circle cx="105" cy="90" r="4" fill="var(--primary)"/>
 
-              <!-- STAGE 1 BLOCK (Middle Inline Flow x=115 ~ 250) -->
+              <!-- STAGE 1 BLOCK (Middle Inline Flow x=120 ~ 255) -->
               <!-- Stage 1 Role Badge -->
-              <rect x="115" y="24" width="135" height="20" rx="10" fill="rgba(56, 189, 248, 0.15)" stroke="var(--primary)" stroke-width="0.8"/>
-              <text x="182.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--primary)">🔍 [저수준] 에지·질감 추출</text>
+              <rect x="120" y="24" width="135" height="20" rx="10" fill="rgba(56, 189, 248, 0.15)" stroke="var(--primary)" stroke-width="0.8"/>
+              <text x="187.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--primary)">🔍 [저수준] 에지·질감 추출</text>
 
-              <line x1="100" y1="90" x2="113" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="105" y1="90" x2="118" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
-              <g transform="translate(115, 52)">
+              <g transform="translate(120, 52)">
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
                 
@@ -1677,27 +1677,27 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               </g>
 
               <!-- Main Flow line to Addition Node 1 -->
-              <line x1="250" y1="90" x2="269" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="255" y1="90" x2="270" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 1 Circle -->
-              <circle cx="285" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="2"/>
-              <text x="285" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--primary)">+</text>
-              <text x="285" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
+              <circle cx="284" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="2"/>
+              <text x="284" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--primary)">+</text>
+              <text x="284" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
 
               <!-- Bottom Skip Connection 1 -->
-              <path d="M 100 90 L 100 170 L 285 170 L 285 107" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="192.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--primary)">🚀 Skip Connection</text>
+              <path d="M 105 90 L 105 170 L 284 170 L 284 107" stroke="var(--primary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="194.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--primary)">🚀 Skip Connection</text>
 
               <!-- Split 1 Line & Point -->
-              <line x1="299" y1="90" x2="315" y2="90" stroke="var(--amber)" stroke-width="2"/>
-              <circle cx="315" cy="90" r="4" fill="var(--amber)"/>
+              <line x1="298" y1="90" x2="313" y2="90" stroke="var(--amber)" stroke-width="2"/>
+              <circle cx="313" cy="90" r="4" fill="var(--amber)"/>
 
               <!-- STAGE 2 BLOCK (Middle Inline Flow x=330 ~ 465) -->
               <!-- Stage 2 Role Badge -->
               <rect x="330" y="24" width="135" height="20" rx="10" fill="rgba(245, 158, 11, 0.15)" stroke="var(--amber)" stroke-width="0.8"/>
               <text x="397.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--amber)">🧩 [중수준] 부위·패턴 합성</text>
 
-              <line x1="315" y1="90" x2="328" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="313" y1="90" x2="328" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(330, 52)">
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--amber)" stroke-width="1.2"/>
@@ -1724,29 +1724,29 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               </g>
 
               <!-- Main Flow line to Addition Node 2 -->
-              <line x1="465" y1="90" x2="494" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="465" y1="90" x2="480" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 2 Circle -->
-              <circle cx="510" cy="90" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
-              <text x="510" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--amber)">+</text>
-              <text x="510" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
+              <circle cx="494" cy="90" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="var(--amber)" stroke-width="2"/>
+              <text x="494" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--amber)">+</text>
+              <text x="494" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--amber)">x₂=x₁+F₂</text>
 
               <!-- Bottom Skip Connection 2 -->
-              <path d="M 315 90 L 315 170 L 510 170 L 510 107" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="412.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--amber)">🚀 Skip Connection</text>
+              <path d="M 313 90 L 313 170 L 494 170 L 494 107" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="403.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--amber)">🚀 Skip Connection</text>
 
               <!-- Split 2 Line & Point -->
-              <line x1="524" y1="90" x2="540" y2="90" stroke="var(--secondary)" stroke-width="2"/>
-              <circle cx="540" cy="90" r="4" fill="var(--secondary)"/>
+              <line x1="508" y1="90" x2="523" y2="90" stroke="var(--secondary)" stroke-width="2"/>
+              <circle cx="523" cy="90" r="4" fill="var(--secondary)"/>
 
-              <!-- STAGE 3 BLOCK (Middle Inline Flow x=555 ~ 690) -->
+              <!-- STAGE 3 BLOCK (Middle Inline Flow x=540 ~ 675) -->
               <!-- Stage 3 Role Badge -->
-              <rect x="555" y="24" width="135" height="20" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="0.8"/>
-              <text x="622.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--secondary)">🎯 [고수준] 객체 형상 완성</text>
+              <rect x="540" y="24" width="135" height="20" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="0.8"/>
+              <text x="607.5" y="37.5" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="var(--secondary)">🎯 [고수준] 객체 형상 완성</text>
 
-              <line x1="540" y1="90" x2="553" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="523" y1="90" x2="538" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
-              <g transform="translate(555, 52)">
+              <g transform="translate(540, 52)">
                 <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--secondary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
                 
@@ -1771,22 +1771,22 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               </g>
 
               <!-- Main Flow line to Addition Node 3 -->
-              <line x1="690" y1="90" x2="719" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+              <line x1="675" y1="90" x2="690" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 3 Circle -->
-              <circle cx="735" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--secondary)" stroke-width="2"/>
-              <text x="735" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--secondary)">+</text>
-              <text x="735" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
+              <circle cx="704" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--secondary)" stroke-width="2"/>
+              <text x="704" y="95" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="800" fill="var(--secondary)">+</text>
+              <text x="704" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
 
               <!-- Bottom Skip Connection 3 -->
-              <path d="M 540 90 L 540 170 L 735 170 L 735 107" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
-              <text x="637.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--secondary)">🚀 Skip Connection</text>
+              <path d="M 523 90 L 523 170 L 704 170 L 704 107" stroke="var(--secondary)" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+              <text x="613.5" y="188" text-anchor="middle" font-family="system-ui" font-size="9.5" fill="var(--secondary)">🚀 Skip Connection</text>
 
               <!-- Line to Final Output -->
-              <line x1="749" y1="90" x2="773" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
+              <line x1="718" y1="90" x2="733" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#master-arrow)"/>
 
               <!-- Output Node (Classifier) -->
-              <g transform="translate(775, 56)">
+              <g transform="translate(735, 56)">
                 <rect x="0" y="0" width="38" height="68" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="var(--accent)" stroke-width="1.5"/>
                 <text x="19" y="30" text-anchor="middle" font-family="system-ui" font-size="8.5" font-weight="700" fill="var(--accent)">🏆</text>
                 <text x="19" y="46" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--accent)">판다</text>
