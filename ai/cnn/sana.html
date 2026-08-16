@@ -1793,6 +1793,27 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <text x="19" y="58" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--text-muted)">99%</text>
               </g>
             </svg>
+
+            <!-- Bottleneck Architecture Explanation -->
+            <div class="note-box note-info" style="margin-top: 1.25rem; font-size: 13.5px; width: 100%; box-sizing: border-box; line-height: 1.7;">
+              <div>
+                <strong style="font-size: 14.5px; color: #0369a1; display: flex; align-items: center; gap: 4px; margin-bottom: 0.4rem;">
+                  💡 Bottleneck (병목) 아키텍처와 채널 압축 원리
+                </strong>
+                <p style="color: var(--text-muted); margin-bottom: 0.6rem;">
+                  ResNet-50의 잔차 블록은 연산량과 컴퓨터 메모리를 아끼기 위해 <strong>채널 축소 ➔ 특징 추출 ➔ 채널 확장</strong> 단계로 설계된 <strong>Bottleneck(병목) 구조</strong>를 채택했습니다.
+                </p>
+                <ul style="margin-left: 1.25rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                  <li style="margin-bottom: 0.2rem;"><strong>1x1 채널축소</strong>: 값비싼 3x3 연산의 비용을 절감하기 위해 입력 채널 수(예: 256)를 작은 규모(예: 64)로 압축시킵니다.</li>
+                  <li style="margin-bottom: 0.2rem;"><strong>3x3 특징추출</strong>: 압축되어 가벼워진 소규모 채널 위에서만 공간적 이미지 특징을 효율적으로 연산합니다.</li>
+                  <li style="margin-bottom: 0.2rem;"><strong>1x1 채널확장</strong>: 특징 추출이 완료된 데이터를 원래 신경망의 깊이(256 채널)로 다시 확장하여 복원합니다.</li>
+                </ul>
+                <p style="color: var(--accent); font-weight: 600;">
+                  🏫 <strong>쉽게 배우는 비전 비유:</strong> 
+                  무거운 짐(256 채널)을 들고 비좁고 꼬불꼬불한 길(3x3 연산)을 통과하는 것보다, 일단 압축 팩(1x1 채널축소)으로 부피를 64로 줄여서 가볍게 통과한 뒤, 넓은 곳에 도착해서 다시 본래 부피(1x1 채널확장)로 부풀리는 고도의 다이어트 연산 전략입니다.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
