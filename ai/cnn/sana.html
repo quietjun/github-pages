@@ -370,13 +370,13 @@
     }
 
     th {
-      background: rgba(15, 23, 42, 0.6);
+      background: var(--primary-glow);
       color: var(--primary);
       font-weight: 600;
     }
 
     tr:hover {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(0, 0, 0, 0.015);
     }
 
     /* Alert / Note Boxes */
@@ -956,7 +956,7 @@
         <div class="grid-side-by-side" style="margin-top: 1rem;">
           
           <!-- Left: SANA Python Code Card -->
-          <div class="card" style="background: #0f172a; border-color: rgba(255,255,255,0.05);">
+          <div class="card">
             <div class="card-header">
               <div class="card-icon">💻</div>
               <div class="card-title">SANA 파이프라인 생성 핵심 코드</div>
@@ -989,13 +989,13 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
           </div>
 
           <!-- Right: Parameter Guide Card -->
-          <div class="card" style="background: #0f172a; border-color: rgba(255,255,255,0.05);">
+          <div class="card">
             <div class="card-header">
               <div class="card-icon">📊</div>
               <div class="card-title">SANA 생성 하이퍼파라미터 가이드</div>
             </div>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1.25rem;">
-              디퓨전 기반 이미지 생성 시 튜닝하는 핵심 매개변수 값에 따른 특징 요약입니다.
+              디퓨전 기반 이미지 생성 시 튜닝하는 핵심 매개변수 값에 따른 특징 요약이다.
             </p>
 
             <table>
@@ -1015,7 +1015,7 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
                   <span style="color: var(--amber); font-weight: 700;">8.0 ~ 15.0</span> (과대비)
                 </td>
                 <td style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
-                  프롬프트 준수 강도. 너무 낮으면 조건 불일치, 너무 높으면 색상 과포화 및 화질 저하가 발생합니다.
+                  프롬프트 준수 강도. 너무 낮으면 조건 불일치, 너무 높으면 색상 과포화 및 화질 저하가 발생한다.
                 </td>
               </tr>
               <tr>
@@ -1026,7 +1026,7 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
                   <span style="color: var(--amber); font-weight: 700;">45 ~ 60</span> (비효율)
                 </td>
                 <td style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
-                  노이즈 제거 단계 수. 약 20스텝 근처에서 완성도가 급격히 향상되며, 30스텝 초과 시 품질 대비 시간 낭비가 심합니다.
+                  노이즈 제거 단계 수. 약 20스텝 근처에서 완성도가 급격히 향상되며, 30스텝 초과 시 품질 대비 시간 낭비가 심하다.
                 </td>
               </tr>
               </tbody>
