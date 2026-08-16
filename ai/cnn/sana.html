@@ -16,18 +16,18 @@
 
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --bg-card: #1e293b;
-      --bg-card-hover: #334155;
-      --border-color: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #38bdf8;       /* Cyan */
-      --primary-glow: rgba(56, 189, 248, 0.25);
-      --secondary: #a855f7;     /* Purple */
-      --accent: #10b981;        /* Emerald */
-      --amber: #f59e0b;         /* Amber */
-      --rose: #f43f5e;          /* Rose */
+      --bg-dark: #FAF9F6;       /* 백아이보리 바탕 */
+      --bg-card: #FFFFFF;       /* 흰색 카드 */
+      --bg-card-hover: #F1EFEA;
+      --border-color: #E4E2DC;  /* 부드러운 회색 경계선 */
+      --text-main: #1A1D23;     /* 어두운 본문 글씨 */
+      --text-muted: #565C66;    /* 소프트 그레이 보조 글씨 */
+      --primary: #3D4FC4;       /* 인디고 블루 */
+      --primary-glow: rgba(61, 79, 196, 0.12);
+      --secondary: #EA580C;     /* 오렌지 */
+      --accent: #2D6A4F;        /* 숲속 초록 */
+      --amber: #D97706;         /* 호박색 */
+      --rose: #C43D3D;          /* 적갈색 */
       --font-sans: 'Inter', system-ui, sans-serif;
       --font-heading: 'Outfit', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
@@ -64,18 +64,18 @@
       text-align: center;
       margin-bottom: 2.5rem;
       padding: 2.5rem 1.5rem;
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
       backdrop-filter: blur(12px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
     .badge {
       display: inline-block;
       padding: 0.35rem 1rem;
-      background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(168, 85, 247, 0.15));
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: var(--primary-glow);
+      border: 1px solid rgba(61, 79, 196, 0.3);
       color: var(--primary);
       border-radius: 9999px;
       font-size: 0.85rem;
@@ -88,7 +88,7 @@
       font-family: var(--font-heading);
       font-size: 2.5rem;
       font-weight: 800;
-      background: linear-gradient(135deg, #ffffff 0%, var(--primary) 50%, var(--secondary) 100%);
+      background: linear-gradient(135deg, var(--text-main) 0%, var(--primary) 70%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 0.75rem;
@@ -132,10 +132,10 @@
     }
 
     .tab-btn.active {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2));
+      background: var(--primary-glow);
       color: var(--primary);
       border-color: var(--primary);
-      box-shadow: 0 0 15px var(--primary-glow);
+      box-shadow: 0 0 10px var(--primary-glow);
     }
 
     /* Tab Content Sections */
@@ -173,7 +173,7 @@
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 1.75rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
     }
 
     .card-header {
@@ -181,7 +181,7 @@
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 0.75rem;
     }
 
@@ -189,7 +189,7 @@
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(56, 189, 248, 0.15);
+      background: var(--primary-glow);
       color: var(--primary);
       display: flex;
       align-items: center;
@@ -226,7 +226,7 @@
     input[type="range"] {
       width: 100%;
       height: 6px;
-      background: #334155;
+      background: var(--border-color);
       border-radius: 3px;
       outline: none;
       -webkit-appearance: none;
@@ -239,12 +239,12 @@
       border-radius: 50%;
       background: var(--primary);
       cursor: pointer;
-      box-shadow: 0 0 10px var(--primary);
+      box-shadow: 0 2px 8px var(--primary-glow);
     }
 
     .sim-output-box {
-      background: #090d16;
-      border: 1px solid #1e293b;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 1.25rem;
       margin-top: 1rem;
@@ -271,7 +271,7 @@
       width: 100%;
       height: 240px;
       border-radius: 12px;
-      background: #020617;
+      background: var(--bg-dark);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -295,10 +295,10 @@
     .preview-canvas .canvas-info {
       position: relative;
       z-index: 2;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(255, 255, 255, 0.95);
       padding: 0.75rem 1.25rem;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       text-align: center;
       backdrop-filter: blur(8px);
     }
@@ -509,7 +509,7 @@
 
     /* Supplementary CLIP Styles */
     .tldr-dark {
-      background: rgba(16, 185, 129, 0.08);
+      background: rgba(45, 106, 79, 0.05);
       border-left: 4px solid var(--accent);
       border-radius: 8px;
       padding: 1.25rem;
@@ -530,19 +530,19 @@
       align-items: stretch;
     }
     .prob-card-dark {
-      background: rgba(244, 63, 94, 0.08);
-      border: 1px solid rgba(244, 63, 94, 0.25);
+      background: rgba(196, 61, 61, 0.04);
+      border: 1px solid rgba(196, 61, 61, 0.18);
       border-radius: 12px;
       padding: 1.25rem;
     }
     .sol-card-dark {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(45, 106, 79, 0.04);
+      border: 1px solid rgba(45, 106, 79, 0.18);
       border-radius: 12px;
       padding: 1.25rem;
     }
     .prob-card-dark h4 {
-      color: #f43f5e;
+      color: var(--rose);
       font-size: 13.5px;
       font-weight: 700;
       margin-bottom: 0.5rem;
@@ -561,7 +561,7 @@
       margin-bottom: 1.5rem;
     }
     .step-card-dark {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(61, 79, 196, 0.03);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 1.25rem;
@@ -577,12 +577,12 @@
       font-weight: 700;
       margin-bottom: 0.75rem;
     }
-    .step-card-dark:nth-child(1) .step-num-badge { background: rgba(168, 85, 247, 0.2); color: var(--secondary); }
-    .step-card-dark:nth-child(2) .step-num-badge { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
-    .step-card-dark:nth-child(3) .step-num-badge { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+    .step-card-dark:nth-child(1) .step-num-badge { background: var(--primary-glow); color: var(--primary); }
+    .step-card-dark:nth-child(2) .step-num-badge { background: var(--primary-glow); color: var(--primary); }
+    .step-card-dark:nth-child(3) .step-num-badge { background: rgba(45, 106, 79, 0.15); color: var(--accent); }
 
     .zeroshot-wrap-dark {
-      background: rgba(255, 255, 255, 0.01);
+      background: rgba(0, 0, 0, 0.015);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 1.25rem;
@@ -598,7 +598,7 @@
       width: 52px;
       height: 52px;
       border-radius: 10px;
-      background: #090d16;
+      background: var(--bg-dark);
       border: 1px solid var(--border-color);
       display: flex;
       align-items: center;
@@ -623,7 +623,7 @@
       font-size: 12.5px;
       border: 1px solid var(--border-color);
       color: var(--text-muted);
-      background: #0f172a;
+      background: var(--bg-card);
     }
     .zs-tag-dark.winner {
       background: var(--accent);
@@ -633,7 +633,7 @@
     }
     .zs-divider-dark {
       border: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--border-color);
       margin: 0.75rem 0;
     }
 
@@ -643,7 +643,7 @@
       gap: 1.25rem;
     }
     .why-card-dark {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 1.25rem;
@@ -841,7 +841,7 @@
           <div class="card-title">SANA (Linear DiT) 모델 개요</div>
         </div>
         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
-          NVIDIA NVlabs에서 개발한 <strong>SANA</strong>는 기존 Stable Diffusion/DiT 대비 초고속 추론과 1024×1024 고해상도 생성을 제공하는 1.6B 파라미터 경량 모델입니다.
+          NVIDIA NVlabs에서 개발한 <strong>Sana</strong>는 기존 Stable Diffusion/DiT 대비 초고속 추론과 1024×1024 고해상도 생성을 제공하는 1.6B 파라미터 경량 모델이다.
         </p>
 
         <!-- Interactive Diffusion Explainer -->
@@ -850,8 +850,8 @@
             🎨 SANA 텍스트-투-이미지 생성 시뮬레이터 (Diffusion Explainer)
           </h3>
           <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
-            아래 시뮬레이터는 사용자의 텍스트 프롬프트 입력부터 SANA의 디노이징 루프를 거쳐 최종 이미지가 생성되기까지의 메커니즘을 보여줍니다. 
-            <strong>재생(▶)</strong> 버튼을 누르거나 <strong>타임스텝 슬라이더</strong>를 조절해 보세요!
+            아래 시뮬레이터는 사용자의 텍스트 프롬프트 입력부터 Sana의 디노이징 루프를 거쳐 최종 이미지가 생성되기까지의 메커니즘을 시각화한다. 
+            <strong>재생(▶)</strong> 버튼을 누르거나 <strong>타임스텝 슬라이더</strong>를 조절하여 직접 확인할 수 있다.
           </p>
 
           <div class="explainer-pipeline">
@@ -945,9 +945,9 @@
           <div class="card-title">SANA 실행 리소스 및 파라미터 가이드</div>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1.25rem;">
-          SANA 공식 모델 페이지를 통해 세부 정보를 확인할 수 있으며, 아래 제공된 핵심 소스 코드와 매개변수 가이드를 활용해 실습을 수행할 수 있습니다.
+          Sana 공식 모델 페이지를 통해 세부 정보를 확인할 수 있으며, 아래 제공된 핵심 소스 코드와 매개변수 가이드를 활용해 실습을 수행한다.
           <br><br>
-          <a href="https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_diffusers" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.08); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); transition: all 0.2s;">
+          <a href="https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_diffusers" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: var(--primary-glow); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(61, 79, 196, 0.25); transition: all 0.2s;">
             🔗 Hugging Face - Sana_1600M_1024px_diffusers 모델 페이지 바로가기
           </a>
         </p>
@@ -962,7 +962,7 @@
               <div class="card-title">SANA 파이프라인 생성 핵심 코드</div>
             </div>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 0.75rem;">
-              PyTorch 및 Diffusers를 이용한 모델 로드와 추론 코드 스니펫입니다.
+              PyTorch 및 Diffusers를 이용한 모델 로드와 추론 코드 스니펫이다.
             </p>
 
             <div style="font-weight: 700; font-size: 13px; color: var(--primary); margin-bottom: 0.25rem;">1. 파이프라인 로드 (Pipeline Load)</div>
@@ -1048,20 +1048,20 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
           <div class="card-title">CLIP 핵심 요약 & 접근 방식</div>
         </div>
         <div class="tldr-dark">
-          <strong>한 줄 요약 :</strong> 사람처럼 이미지와 텍스트를 동시에 이해하여, <strong>"이 사진은 고양이야"</strong> 같은 관계를 스스로 학습한 멀티모달(Multimodal) AI 모델입니다.
+          <strong>한 줄 요약 :</strong> 사람처럼 이미지와 텍스트를 동시에 이해하여, <strong>"이 사진은 고양이야"</strong> 같은 관계를 스스로 학습한 멀티모달(Multimodal) AI 모델이다.
         </div>
 
         <div class="problem-col-container">
           <div class="prob-card-dark">
             <h4>❌ 기존 방식의 한계 (정통 CNN)</h4>
             <p class="algo-desc" style="color: var(--text-muted);">
-              이미지 분류 AI는 사전에 지정된 고정 카테고리(예: ImageNet 1,000개 클래스)만 분류할 수 있었습니다. 새로운 카테고리를 인식하려면 수천 장의 데이터 수집과 레이어 재학습이 필수적이었습니다.
+              이미지 분류 AI는 사전에 지정된 고정 카테고리(예: ImageNet 1,000개 클래스)만 분류할 수 있었다. 새로운 카테고리를 인식하려면 수천 장의 데이터 수집과 레이어 재학습이 필수적이었다.
             </p>
           </div>
           <div class="sol-card-dark">
             <h4>✅ CLIP의 해결책 (멀티모달 대조 학습)</h4>
             <p class="algo-desc" style="color: var(--text-muted);">
-              이미지와 텍스트 설명을 <strong>동일한 차원의 공통 공간(Embedding Space)</strong>에 투영하여 학습시켰습니다. 덕분에 새로운 카테고리도 텍스트로 설명만 적어주면 재학습 없이 즉시 분류(Zero-Shot)가 가능합니다.
+              이미지와 텍스트 설명을 <strong>동일한 차원의 공통 공간(Embedding Space)</strong>에 투영하여 학습시켰다. 덕분에 새로운 카테고리도 텍스트로 설명만 적어주면 재학습 없이 즉시 분류(Zero-Shot)가 가능하다.
             </p>
           </div>
         </div>
@@ -1074,11 +1074,11 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
           <div class="card-title">CLIP 멀티모달 평가 원리 및 임베딩 공간</div>
         </div>
         <p class="algo-desc" style="color: var(--text-muted); margin-bottom: 1rem;">
-          CLIP은 4억 개의 이미지-텍스트 쌍 대조학습(Contrastive Learning)을 거쳐, <strong>이미지 인코더</strong>와 <strong>텍스트 인코더</strong>가 각각 독립된 입력들을 받더라도 서로 연관된 개념들은 공통 공간 상에서 밀접하게 뭉치도록 유도합니다.
+          CLIP은 4억 개의 이미지-텍스트 쌍 대조학습(Contrastive Learning)을 거쳐, <strong>이미지 인코더</strong>와 <strong>텍스트 인코더</strong>가 각각 독립된 입력들을 받더라도 서로 연관된 개념들은 공통 공간 상에서 밀접하게 뭉치도록 유도한다.
         </p>
 
         <!-- Embedding Space SVG Map -->
-        <div style="background: #090d16; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: center;">
+        <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: center;">
           <svg width="100%" viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1100,9 +1100,9 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
             <!-- 텍스트 인코더 -->
             <rect x="520" y="20" width="130" height="270" rx="12" fill="rgba(56, 189, 248, 0.08)" stroke="var(--primary)" stroke-width="1"/>
             <text x="585" y="44" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="var(--primary)">텍스트 입력</text>
-            <rect x="538" y="58" width="94" height="24" rx="5" fill="#0f172a" stroke="var(--primary)" stroke-width="0.5"/>
+            <rect x="538" y="58" width="94" height="24" rx="5" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="0.5"/>
             <text x="585" y="74" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--text-main)">"고양이 사진"</text>
-            <rect x="538" y="148" width="94" height="24" rx="5" fill="#0f172a" stroke="var(--primary)" stroke-width="0.5"/>
+            <rect x="538" y="148" width="94" height="24" rx="5" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="0.5"/>
             <text x="585" y="164" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--text-main)">"자동차 사진"</text>
             <line x1="536" y1="135" x2="634" y2="135" stroke="var(--primary)" stroke-width="0.5" stroke-dasharray="3 2" opacity="0.4"/>
             <text x="585" y="130" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--primary)">[0.3, 0.8, 0.2…]</text>
@@ -1215,7 +1215,7 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
           </div>
         </div>
         <p style="font-size: 13px; line-height: 1.6; color: var(--text-muted);">
-          ※ 사용자가 분류 레이블 리스트만 변경해주면 모델 파라미터의 파인튜닝 없이 즉시 유연한 분류가 가능합니다.
+          ※ 사용자가 분류 레이블 리스트만 변경해주면 모델 파라미터의 파인튜닝 없이 즉시 유연하게 분류할 수 있다.
         </p>
       </div>
 
@@ -1228,9 +1228,9 @@ image[<span class="code-num">0</span>].save(<span class="code-string">"sana.png"
           <div class="card-title">CLIP 핵심 실행 코드 예제</div>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 0.75rem;">
-          Hugging Face `transformers` 라이브러리를 사용해 CLIP 모델을 로드하고 이미지-텍스트 유사도 및 확률을 연산하는 기본 파이썬 소스 코드입니다.
+          Hugging Face `transformers` 라이브러리를 사용해 CLIP 모델을 로드하고 이미지-텍스트 유사도 및 확률을 연산하는 기본 파이썬 소스 코드이다.
           <br><br>
-          <a href="https://huggingface.co/openai/clip-vit-base-patch32" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.08); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); transition: all 0.2s;">
+          <a href="https://huggingface.co/openai/clip-vit-base-patch32" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: var(--primary-glow); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(61, 79, 196, 0.25); transition: all 0.2s;">
             🔗 Hugging Face - openai/clip-vit-base-patch32 모델 페이지 바로가기
           </a>
         </p>
@@ -1270,29 +1270,29 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
           <div class="card-title">소프트맥스 차원(dim) 설정에 따른 결과 분석 시각화</div>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 1.25rem;">
-          CLIP 출력 텐서 <code>logits_per_image</code> (Shape: <code>[이미지 수, 텍스트 수]</code>)에서 <strong>dim</strong> 옵션을 지정하는 방향에 따라 비전 태스크의 목적이 완전히 바뀝니다.
+          CLIP 출력 텐서 <code>logits_per_image</code> (Shape: <code>[이미지 수, 텍스트 수]</code>)에서 <strong>dim</strong> 옵션을 지정하는 방향에 따라 비전 태스크의 목적이 완전히 바뀐다.
         </p>
 
         <!-- Raw Similarity Matrix (overall dimension) -->
-        <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 1.5rem;">
+        <div style="background: var(--bg-dark); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
           <div style="font-weight: 700; font-size: 13.5px; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
             🧮 1단계: 원본 코사인 유사도 행렬 (Raw Similarity Matrix)
           </div>
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6;">
-            이미지 벡터와 텍스트 벡터 간의 <strong>코사인 유사도(Cosine Similarity)</strong> 원본 값입니다. 1에 가까울수록 매칭률이 높고, 0이나 음수에 가까울수록 낮습니다.
+            이미지 벡터와 텍스트 벡터 간의 <strong>코사인 유사도(Cosine Similarity)</strong> 원본 값이다. 1에 가까울수록 매칭률이 높고, 0이나 음수에 가까울수록 낮다.
           </p>
-          <div style="max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; text-align: center; align-items: center; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; text-align: center; align-items: center; background: var(--bg-card); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
             <div></div>
             <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">"고양이" (Text 1)</div>
             <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">"개" (Text 2)</div>
             
             <div style="font-size: 12px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 8px;">Image 1 (🐱)</div>
-            <div style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--accent); font-weight: 700;">0.88</div>
-            <div style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--text-muted);">0.12</div>
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--accent); font-weight: 700;">0.88</div>
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--text-muted);">0.12</div>
             
             <div style="font-size: 12px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 8px;">Image 2 (🐶)</div>
-            <div style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--text-muted);">0.08</div>
-            <div style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--accent); font-weight: 700;">0.85</div>
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--text-muted);">0.08</div>
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12.5px; color: var(--accent); font-weight: 700;">0.85</div>
           </div>
         </div>
 
@@ -1302,13 +1302,13 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
         <div class="grid-side-by-side" style="margin-top: 0.75rem;">
           <!-- Left: dim=0 (세로축 기준: 이미지 검색) -->
-          <div class="card" style="background: #0f172a; border-color: rgba(255,255,255,0.05); min-height: 290px;">
+          <div class="card" style="background: var(--bg-card); border-color: var(--border-color); min-height: 290px;">
             <div class="card-header">
               <div class="card-icon">↕️</div>
               <div class="card-title" style="font-size: 14px;">dim=0 (세로축 기준: 이미지 검색)</div>
             </div>
             <p style="font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 1rem;">
-              <strong>각 텍스트별</strong>로 세로 방향(이미지들) 확률을 연산합니다. <code>(유사도 ➔ 확률%)</code> 형태로 세로 칸들의 합이 <strong>100% (1.0)</strong>가 됩니다.
+              <strong>각 텍스트별</strong>로 세로 방향(이미지들) 확률을 연산한다. <code>(유사도 ➔ 확률%)</code> 형태로 세로 칸들의 합이 <strong>100% (1.0)</strong>가 된다.
             </p>
 
             <!-- Visual Matrix for dim=0 -->
@@ -1325,38 +1325,38 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <!-- Col 1 Group -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 1.5px dashed rgba(244, 63, 94, 0.4); padding: 6px; border-radius: 8px; background: rgba(244, 63, 94, 0.02);">
                   <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">"고양이"</div>
-                  <div style="width: 100%; text-align: center; background: rgba(244, 63, 94, 0.2); border: 1px solid var(--rose); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--rose); font-weight: 700;">0.88 ➔ 95%</div>
-                  <div style="width: 100%; text-align: center; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.08 ➔ 5%</div>
+                  <div style="width: 100%; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--rose); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--rose); font-weight: 700;">0.88 ➔ 95%</div>
+                  <div style="width: 100%; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.08 ➔ 5%</div>
                 </div>
                 
                 <!-- Col 2 Group -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 1.5px dashed rgba(244, 63, 94, 0.4); padding: 6px; border-radius: 8px; background: rgba(244, 63, 94, 0.02);">
                   <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">"개"</div>
-                  <div style="width: 100%; text-align: center; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.12 ➔ 2%</div>
-                  <div style="width: 100%; text-align: center; background: rgba(244, 63, 94, 0.2); border: 1px solid var(--rose); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--rose); font-weight: 700;">0.85 ➔ 98%</div>
+                  <div style="width: 100%; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.12 ➔ 2%</div>
+                  <div style="width: 100%; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--rose); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--rose); font-weight: 700;">0.85 ➔ 98%</div>
                 </div>
               </div>
               
               <div style="text-align: left; font-size: 11px; color: var(--rose); margin-top: 0.75rem; font-weight: 700; padding-left: 33%;">↓ 세로 방향 합계 = 1.0 (100%)</div>
             </div>
 
-            <div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.5; color: var(--text-main);">
+            <div style="background: var(--primary-glow); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.5; color: var(--text-main);">
               <strong>예시 질문:</strong> "전체 이미지 후보(1번, 2번) 중 '고양이' 텍스트 설명에 가장 가까운 이미지는 몇 번일까?"
             </div>
           </div>
 
           <!-- Right: dim=1 (가로축 기준: 이미지 분류) -->
-          <div class="card" style="background: #0f172a; border-color: rgba(255,255,255,0.05); min-height: 290px;">
+          <div class="card" style="background: var(--bg-card); border-color: var(--border-color); min-height: 290px;">
             <div class="card-header">
               <div class="card-icon">↔️</div>
               <div class="card-title" style="font-size: 14px;">dim=1 (가로축 기준: 이미지 분류)</div>
             </div>
             <p style="font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 1rem;">
-              <strong>각 이미지별</strong>로 가로 방향(텍스트들) 확률을 연산합니다. <code>(유사도 ➔ 확률%)</code> 형태로 가로 칸들의 합이 <strong>100% (1.0)</strong>가 됩니다.
+              <strong>각 이미지별</strong>로 가로 방향(텍스트들) 확률을 연산한다. <code>(유사도 ➔ 확률%)</code> 형태로 가로 칸들의 합이 <strong>100% (1.0)</strong>가 된다.
             </p>
 
             <!-- Visual Matrix for dim=1 -->
-            <div style="background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <div style="background: rgba(0, 0, 0, 0.015); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
               <div style="font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 0.75rem; text-align: center;">가로 방향 소프트맥스 (합 = 1.0)</div>
               
               <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center;">
@@ -1370,22 +1370,22 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <!-- Row 1 Group -->
                 <div style="font-size: 12px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 6px; min-width: 80px;">Image 1 (🐱)</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 1.5px dashed rgba(16, 185, 129, 0.4); padding: 6px; border-radius: 8px; background: rgba(16, 185, 129, 0.02);">
-                  <div style="text-align: center; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--accent); font-weight: 700;">0.88 ➔ 99%</div>
-                  <div style="text-align: center; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.12 ➔ 1%</div>
+                  <div style="text-align: center; background: rgba(45, 106, 79, 0.1); border: 1px solid var(--accent); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--accent); font-weight: 700;">0.88 ➔ 99%</div>
+                  <div style="text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.12 ➔ 1%</div>
                 </div>
                 
                 <!-- Row 2 Group -->
                 <div style="font-size: 12px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 6px;">Image 2 (🐶)</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 1.5px dashed rgba(16, 185, 129, 0.4); padding: 6px; border-radius: 8px; background: rgba(16, 185, 129, 0.02);">
-                  <div style="text-align: center; background: #1e293b; border: 1px solid rgba(255,255,255,0.08); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.08 ➔ 10%</div>
-                  <div style="text-align: center; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--accent); font-weight: 700;">0.85 ➔ 90%</div>
+                  <div style="text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--text-muted);">0.08 ➔ 10%</div>
+                  <div style="text-align: center; background: rgba(45, 106, 79, 0.1); border: 1px solid var(--accent); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--accent); font-weight: 700;">0.85 ➔ 90%</div>
                 </div>
               </div>
               
               <div style="text-align: right; font-size: 11px; color: var(--accent); margin-top: 0.75rem; font-weight: 700;">➔ 가로 방향 합계 = 1.0 (100%)</div>
             </div>
 
-            <div style="background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.5; color: var(--text-main);">
+            <div style="background: var(--primary-glow); border-left: 3px solid var(--primary); padding: 0.75rem; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.5; color: var(--text-main);">
               <strong>예시 질문:</strong> "1번 이미지(🐱)는 텍스트 후보 중 '고양이'일 확률이 높을까, '개'일 확률이 높을까?"
             </div>
           </div>
@@ -1404,35 +1404,35 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
           <div class="card-title">ResNet-50 핵심 요약 & 접근 방식</div>
         </div>
         <div class="tldr-dark">
-          <strong>한 줄 요약 :</strong> 층이 깊어져도 기울기 소실(Vanishing Gradient) 없이 안정적으로 학습할 수 있도록 <strong>잔차 학습(Residual Learning: Skip Connection)</strong>을 도입한 대표적 50계층 CNN 아키텍처입니다.
+          <strong>한 줄 요약 :</strong> 층이 깊어져도 기울기 소실(Vanishing Gradient) 없이 안정적으로 학습할 수 있도록 <strong>잔차 학습(Residual Learning: Skip Connection)</strong>을 도입한 대표적 50계층 CNN 아키텍처이다.
         </div>
 
         <div class="problem-col-container">
           <div class="prob-card-dark">
             <h4>❌ 기존 심층 CNN의 한계 (Degradation Problem)</h4>
             <p class="algo-desc" style="color: var(--text-muted);">
-              신경망 층을 더 깊게 쌓을수록 기울기 소실/폭발 현상이 발생하여, 오버피팅이 아님에도 불구하고 50층 이상의 단순 CNN(Plain Net)은 오히려 20층 모델보다 학습 및 검증 에러율이 높아지는 성능 저하 문제가 존재했습니다.
+              신경망 층을 더 깊게 쌓을수록 기울기 소실/폭발 현상이 발생하여, 오버피팅이 아님에도 불구하고 50층 이상의 단순 CNN(Plain Net)은 오히려 20층 모델보다 학습 및 검증 에러율이 높아지는 성능 저하 문제가 존재했다.
             </p>
           </div>
           <div class="sol-card-dark">
             <h4>✅ ResNet의 해결책 (Skip Connection / 잔차 학습)</h4>
             <p class="algo-desc" style="color: var(--text-muted);">
-              입력 데이터를 뒤쪽 레이어로 100% 직통 전달하는 <strong>지름길(Shortcut Connection)</strong>을 뚫어주어, 레이어가 처음부터 다 그리지 않고 미세한 차이점(잔차)만 배우도록 만들어 100층 이상의 초심층 모델도 안정적으로 수렴시켰습니다.
+              입력 데이터를 뒤쪽 레이어로 100% 직통 전달하는 <strong>지름길(Shortcut Connection)</strong>을 뚫어주어, 레이어가 처음부터 다 그리지 않고 미세한 차이점(잔차)만 배우도록 만들어 100층 이상의 초심층 모델도 안정적으로 수렴시켰다.
             </p>
           </div>
         </div>
 
         <!-- In-Between: Master Integrated ResNet-50 Residual Visualization Block -->
-        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1rem;">
           <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
             📐 ResNet-50 잔차 학습 (Residual Learning & Skip Connection) 시각화
           </h3>
           <p class="algo-desc" style="color: var(--text-muted); margin-bottom: 1.25rem;">
-            아래 자료는 <strong>1) 이미지 처리 관점에서의 잔차(Residual) 개념</strong>과 <strong>2) 3-Stage 직렬 잔차 블록(Skip Connection) 아키텍처 연산</strong>을 함께 보여줍니다.
+            아래 자료는 <strong>1) 이미지 처리 관점에서의 잔차(Residual) 개념</strong>과 <strong>2) 3-Stage 직렬 잔차 블록(Skip Connection) 아키텍처 연산</strong>을 함께 보여준다.
           </p>
 
           <!-- Panel 1: Image & Feature Processing Residual Concept Visualizer -->
-          <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+          <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
             <div style="font-weight: 700; color: var(--primary); font-size: 13.5px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
               🖼️ 1. 특징 추출 관점에서의 '잔차(Residual)' 매핑 개념
             </div>
@@ -1446,16 +1446,16 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- 1. Blur Input (x) -->
               <g transform="translate(10, 10)">
-                <rect x="0" y="0" width="165" height="115" rx="10" fill="#0f172a" stroke="var(--primary)" stroke-width="1"/>
+                <rect x="0" y="0" width="165" height="115" rx="10" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="1"/>
                 <text x="82" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--primary)">1. 입력 특징 맵 (x)</text>
                 
                 <!-- Blurred Shapes -->
                 <g filter="url(#blurFilter)">
                   <circle cx="82" cy="62" r="22" fill="#f8fafc"/>
-                  <circle cx="65" cy="47" r="9" fill="#334155"/>
-                  <circle cx="99" cy="47" r="9" fill="#334155"/>
-                  <ellipse cx="74" cy="61" rx="5" ry="7" fill="#334155"/>
-                  <ellipse cx="90" cy="61" rx="5" ry="7" fill="#334155"/>
+                  <circle cx="65" cy="47" r="9" fill="var(--border-color)"/>
+                  <circle cx="99" cy="47" r="9" fill="var(--border-color)"/>
+                  <ellipse cx="74" cy="61" rx="5" ry="7" fill="var(--border-color)"/>
+                  <ellipse cx="90" cy="61" rx="5" ry="7" fill="var(--border-color)"/>
                 </g>
                 <text x="82" y="102" text-anchor="middle" font-family="system-ui" font-size="9" fill="var(--text-muted)">이전 층의 개략 형체 특징</text>
               </g>
@@ -1465,7 +1465,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- 2. Residual Edge Map (F(x)) -->
               <g transform="translate(225, 10)">
-                <rect x="0" y="0" width="165" height="115" rx="10" fill="#020617" stroke="var(--accent)" stroke-width="1.5"/>
+                <rect x="0" y="0" width="165" height="115" rx="10" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="1.5"/>
                 <text x="82" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--accent)">2. 잔차 특징 맵 F(x)</text>
                 
                 <!-- Sharp Edge Wireframe -->
@@ -1485,7 +1485,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- 3. Final Combined Clear Image (H(x)) -->
               <g transform="translate(440, 10)">
-                <rect x="0" y="0" width="210" height="115" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="var(--secondary)" stroke-width="1.5"/>
+                <rect x="0" y="0" width="210" height="115" rx="10" fill="var(--primary-glow)" stroke="var(--secondary)" stroke-width="1.5"/>
                 <text x="105" y="22" text-anchor="middle" font-family="system-ui" font-size="10.5" font-weight="700" fill="var(--secondary)">3. 누적 특징 맵 H(x)=F(x)+x</text>
                 
                 <!-- Clear Panda -->
@@ -1503,7 +1503,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
           </div>
 
           <!-- Panel 2: Master Integrated Serial Skip Connection Pipeline -->
-          <div style="background: #090d16; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem 1rem; display: flex; flex-direction: column; align-items: center;">
+          <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem 1rem; display: flex; flex-direction: column; align-items: center;">
             <div style="font-weight: 700; color: var(--accent); font-size: 13.5px; margin-bottom: 0.75rem; align-self: flex-start; display: flex; align-items: center; gap: 6px;">
               🚀 2. ResNet-50 3-Stage 직렬 잔차 블록 (Serial Bottleneck Layers) 통합 파이프라인
             </div>
@@ -1516,7 +1516,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
 
               <!-- 0. Input Node (x0) -->
               <g transform="translate(10, 56)">
-                <rect x="0" y="0" width="65" height="68" rx="10" fill="rgba(56, 189, 248, 0.1)" stroke="var(--primary)" stroke-width="1.5"/>
+                <rect x="0" y="0" width="65" height="68" rx="10" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="1.5"/>
                 <text x="32" y="30" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="var(--primary)">📥 입력</text>
                 <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="var(--text-main)">x₀</text>
               </g>
@@ -1533,7 +1533,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <line x1="90" y1="90" x2="103" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(105, 52)">
-                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--primary)" stroke-width="1.2"/>
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--primary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--primary)">Stage 1 F₁(x₀)</text>
                 
                 <!-- 1x1 Plate (Dimension Reduction) -->
@@ -1544,7 +1544,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
                 <line x1="36" y1="45" x2="43" y2="45" stroke="var(--primary)" stroke-width="1" marker-end="url(#master-arrow)"/>
 
                 <!-- 3x3 Plate (Feature Extraction) -->
-                <rect x="45" y="20" width="45" height="50" rx="3" fill="rgba(56, 189, 248, 0.25)" stroke="var(--primary)" stroke-width="1.2"/>
+                <rect x="45" y="20" width="45" height="50" rx="3" fill="rgba(61, 79, 196, 0.15)" stroke="var(--primary)" stroke-width="1.2"/>
                 <text x="67" y="42" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--primary)" font-weight="700">3x3</text>
                 <text x="67" y="55" text-anchor="middle" font-family="system-ui" font-size="7" fill="var(--primary)" font-weight="600">특징추출</text>
 
@@ -1560,7 +1560,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <line x1="240" y1="90" x2="269" y2="90" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 1 Circle -->
-              <circle cx="285" cy="90" r="14" fill="rgba(56, 189, 248, 0.2)" stroke="var(--primary)" stroke-width="2"/>
+              <circle cx="285" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--primary)" stroke-width="2"/>
               <text x="285" y="95" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--primary)">+</text>
               <text x="285" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--primary)">x₁=x₀+F₁</text>
 
@@ -1580,7 +1580,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <line x1="315" y1="90" x2="328" y2="90" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(330, 52)">
-                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--amber)" stroke-width="1.2"/>
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--amber)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--amber)">Stage 2 F₂(x₁)</text>
                 
                 <!-- 1x1 Plate (Dimension Reduction) -->
@@ -1627,7 +1627,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <line x1="540" y1="90" x2="553" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
               
               <g transform="translate(555, 52)">
-                <rect x="0" y="0" width="135" height="76" rx="8" fill="#1e293b" stroke="var(--secondary)" stroke-width="1.2"/>
+                <rect x="0" y="0" width="135" height="76" rx="8" fill="var(--bg-card)" stroke="var(--secondary)" stroke-width="1.2"/>
                 <text x="67" y="16" text-anchor="middle" font-family="system-ui" font-size="9.5" font-weight="700" fill="var(--secondary)">Stage 3 F₃(x₂)</text>
                 
                 <!-- 1x1 Plate (Dimension Reduction) -->
@@ -1654,7 +1654,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <line x1="690" y1="90" x2="719" y2="90" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#master-arrow)"/>
 
               <!-- Addition 3 Circle -->
-              <circle cx="735" cy="90" r="14" fill="rgba(168, 85, 247, 0.2)" stroke="var(--secondary)" stroke-width="2"/>
+              <circle cx="735" cy="90" r="14" fill="var(--primary-glow)" stroke="var(--secondary)" stroke-width="2"/>
               <text x="735" y="95" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="800" fill="var(--secondary)">+</text>
               <text x="735" y="64" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="var(--secondary)">x₃=x₂+F₃</text>
 
@@ -1689,21 +1689,21 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
             <div class="step-num-badge">1</div>
             <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">계층적 특징 추출 (Feature Pyramid)</div>
             <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
-              낮은 층에서는 점, 선, 질감 등 국소적(Local) 특징을 다루고, 깊은 층으로 갈수록 사물의 부분 및 전체 형상 등 고차원 시각 특징을 계층적으로 추출합니다.
+              낮은 층에서는 점, 선, 질감 등 국소적(Local) 특징을 다루고, 깊은 층으로 갈수록 사물의 부분 및 전체 형상 등 고차원 시각 특징을 계층적으로 추출한다.
             </p>
           </div>
           <div class="step-card-dark">
             <div class="step-num-badge">2</div>
             <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">잔차 합산 (Residual Addition)</div>
             <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
-              Bottleneck 블록 내부의 1×1, 3×3, 1×1 컨볼루션을 통과한 연산 결과 \(F(x)\)에 입력 \(x\)를 덧셈하여 기울기 전달 경로를 최단거리로 보장합니다.
+              Bottleneck 블록 내부의 1×1, 3×3, 1×1 컨볼루션을 통과한 연산 결과 \(F(x)\)에 입력 \(x\)를 덧셈하여 기울기 전달 경로를 최단거리로 보장한다.
             </p>
           </div>
           <div class="step-card-dark">
             <div class="step-num-badge">3</div>
             <div class="algo-ex-title" style="color: var(--text-main); margin-bottom: 0.5rem;">Global Avg Pooling & 클래스 분류</div>
             <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
-              특징 맵 전체 공간을 1×1로 축약(GAP)하여 파라미터 수를 대폭 줄인 뒤, FC 레이어를 거쳐 <strong>ImageNet 1,000개 클래스 확률</strong>을 출력합니다.
+              특징 맵 전체 공간을 1×1로 축약(GAP)하여 파라미터 수를 대폭 줄인 뒤, FC 레이어를 거쳐 <strong>ImageNet 1,000개 클래스 확률</strong>을 출력한다.
             </p>
           </div>
         </div>
@@ -1716,9 +1716,9 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
           <div class="card-title">ResNet-50 핵심 실행 코드 예제</div>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 0.75rem;">
-          PyTorch `torchvision.models`를 이용해 ImageNet 사전학습 ResNet-50을 로드하고 이미지를 분류하는 표준 소스 코드입니다.
+          PyTorch `torchvision.models`를 이용해 ImageNet 사전학습 ResNet-50을 로드하고 이미지를 분류하는 표준 소스 코드이다.
           <br><br>
-          <a href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet50.html" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.08); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); transition: all 0.2s;">
+          <a href="https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet50.html" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: var(--primary-glow); padding: 0.5rem 0.85rem; border-radius: 8px; border: 1px solid rgba(61, 79, 196, 0.25); transition: all 0.2s;">
             🔗 PyTorch Official Docs - ResNet-50 가이드 바로가기
           </a>
         </p>
@@ -1756,7 +1756,7 @@ category_name = weights.meta[<span class="code-string">"categories"</span>][top_
           <div class="card-title">CLIP vs ResNet-50 (전통 CNN) 모델 특성 상세 비교</div>
         </div>
         <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">
-          동일한 이미지(수채화 여우 그림 / 1960년대 클래식 카)를 처리할 때 지도학습 기반 ResNet-50과 멀티모달 대조학습 기반 CLIP 모델은 완전히 다른 패러다임을 보여줍니다.
+          동일한 이미지(수채화 여우 그림 / 1960년대 클래식 카)를 처리할 때 지도학습 기반 ResNet-50과 멀티모달 대조학습 기반 CLIP 모델은 완전히 다른 패러다임을 보여준다.
         </p>
 
         <table>
@@ -1797,16 +1797,16 @@ category_name = weights.meta[<span class="code-string">"categories"</span>][top_
         </table>
 
         <div class="grid-2" style="margin-top:1.5rem;">
-          <div class="card" style="background:#090d16;">
+          <div class="card" style="background:var(--bg-dark); border-color:var(--border-color);">
             <h4 style="color:var(--primary); margin-bottom:0.5rem;">ResNet-50의 핵심 관점</h4>
             <p style="font-size:0.9rem; color:var(--text-muted);">
-              객체의 <strong>시각적 국소 형태(주둥이, 귀, 털 색상 패턴)</strong>에 집중하여 사물의 고정 분류 종류를 좁힙니다. 화풍(수채화/유화/사진)은 클래스 정의에 포함되어 있지 않으므로 무시되거나 분류 노이즈로 작용합니다.
+              객체의 <strong>시각적 국소 형태(주둥이, 귀, 털 색상 패턴)</strong>에 집중하여 사물의 고정 분류 종류를 좁힌다. 화풍(수채화/유화/사진)은 클래스 정의에 포함되어 있지 않으므로 무시되거나 분류 노이즈로 작용한다.
             </p>
           </div>
-          <div class="card" style="background:#090d16;">
+          <div class="card" style="background:var(--bg-dark); border-color:var(--border-color);">
             <h4 style="color:var(--secondary); margin-bottom:0.5rem;">CLIP의 핵심 관점</h4>
             <p style="font-size:0.9rem; color:var(--text-muted);">
-              이미지 전체의 <strong>의미적 맥락(Semantic Context)</strong>을 파악합니다. 객체 명칭뿐만 아니라 화풍, 미술 스타일, 배경 분위기, 시간대, 사물의 상태(새 차 vs 녹슨 폐차)까지 텍스트 임베딩 차원에서 완벽 대조합니다.
+              이미지 전체의 <strong>의미적 맥락(Semantic Context)</strong>을 파악한다. 객체 명칭뿐만 아니라 화풍, 미술 스타일, 배경 분위기, 시간대, 사물의 상태(새 차 vs 녹슨 폐차)까지 텍스트 임베딩 차원에서 완벽 대조한다.
             </p>
           </div>
         </div>
@@ -1825,7 +1825,7 @@ category_name = weights.meta[<span class="code-string">"categories"</span>][top_
           <div class="card-title">Step 4: 합성 데이터 기반 전이학습 (Linear Probing)</div>
         </div>
         <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:1rem;">
-          SANA / SD로 직접 만든 <strong>합성 데이터(Synthetic Dataset)</strong>로 사전학습된 ResNet-18을 새로운 분류기로 재학습합니다.
+          SANA / SD로 직접 만든 <strong>합성 데이터(Synthetic Dataset)</strong>로 사전학습된 ResNet-18을 새로운 분류기로 재학습한다.
         </p>
 
         <div class="arch-flow">
@@ -1855,7 +1855,7 @@ category_name = weights.meta[<span class="code-string">"categories"</span>][top_
           <div class="card-title">Step 5 (과제 심화): Knowledge Distillation (지식 증류)</div>
         </div>
         <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:1rem;">
-          무거운 <strong>Teacher (ResNet-50)</strong>의 소프트 확률 분포(Soft Label)를 경량 <strong>Student (ResNet-18)</strong>에 전수합니다.
+          무거운 <strong>Teacher (ResNet-50)</strong>의 소프트 확률 분포(Soft Label)를 경량 <strong>Student (ResNet-18)</strong>에 전수한다.
         </p>
 
         <div class="arch-flow">
@@ -1894,7 +1894,7 @@ category_name = weights.meta[<span class="code-string">"categories"</span>][top_
         <div class="card-title">실습 3-2 & 과제 3-2 TODO 정답 파이프라인 가이드</div>
       </div>
       <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:1.25rem;">
-        클릭하여 각 Step별 정답 구현 코드와 핵심 포인트를 확인하세요.
+        클릭하여 각 Step별 정답 구현 코드와 핵심 포인트를 확인한다.
       </p>
 
       <div class="todo-accordion">
@@ -2136,11 +2136,6 @@ optimizer = optim.Adam(model.fc.parameters(), lr=<span class="code-num">0.001</s
     }
 
     // Initialize page
-    window.onload = function() {
-      updateExplainerStep(0);
-    };
-  </script>
-  <script>
     function sendHeight() {
       const height = document.body.scrollHeight;
       window.parent.postMessage({ height: height }, "*");
