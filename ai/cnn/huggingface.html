@@ -104,10 +104,28 @@
     /* Navigation Tabs */
     .nav-tabs {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 0.75rem;
       margin-bottom: 2rem;
-      flex-wrap: wrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 0.5rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    @media (min-width: 768px) {
+      .nav-tabs {
+        justify-content: center;
+      }
+    }
+    
+    .nav-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .nav-tabs::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
     }
 
     .tab-btn {
@@ -123,6 +141,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-shrink: 0;
     }
 
     .tab-btn:hover {
@@ -816,13 +835,13 @@
       ⚡ 1. Hugging Face 소개 & 사용법
     </button>
     <button class="tab-btn" onclick="switchTab('tab2')">
-      🎨 2. [비전 1] SANA 이미지 생성
+      🎨 2. SANA 이미지 생성
     </button>
     <button class="tab-btn" onclick="switchTab('tab3')">
-      🧩 3. [비전 2] CLIP Zero-shot 분류
+      🧩 3. CLIP Zero-shot 분류
     </button>
     <button class="tab-btn" onclick="switchTab('tab4')">
-      ⚔️ 4. [비전 3] ResNet-50 이미지 분류
+      ⚔️ 4. ResNet-50 이미지 분류
     </button>
   </div>
 
