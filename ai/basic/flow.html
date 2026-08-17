@@ -849,40 +849,65 @@
 
           <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
-            <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
-              <!-- Input image -->
-              <rect x="25" y="55" width="85" height="85" fill="#e1f5ff" stroke="#1d9e75" stroke-width="2" rx="3"/>
-              <text x="67" y="97" font-size="14" font-weight="700" text-anchor="middle" fill="#085041" dominant-baseline="central">이미지</text>
+            <svg width="420" height="380" viewBox="0 0 420 380" xmlns="http://www.w3.org/2000/svg">
+              <!-- Input Image -->
+              <rect x="160" y="20" width="100" height="50" fill="#e1f5ff" stroke="#1d9e75" stroke-width="2" rx="4"/>
+              <text x="210" y="45" font-size="14" font-weight="700" text-anchor="middle" fill="#085041" dominant-baseline="central">입력 이미지</text>
               
-              <!-- Convolution filters -->
-              <rect x="145" y="32" width="75" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
-              <text x="182" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#8b2c2c" dominant-baseline="central">3×3 필터1</text>
+              <!-- Input -> Conv Arrow -->
+              <line x1="210" y1="70" x2="210" y2="105" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow_cnn_v)"/>
+              <text x="222" y="88" font-size="13" font-weight="700" fill="#64748b" dominant-baseline="central">3×3 Conv 합성곱</text>
               
-              <rect x="145" y="118" width="75" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
-              <text x="182" y="142" font-size="14" font-weight="700" text-anchor="middle" fill="#8b2c2c" dominant-baseline="central">3×3 필터2</text>
+              <!-- Feature Maps (Stacked 3D-like Rectangles) -->
+              <rect x="180" y="110" width="70" height="45" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.5" rx="3"/>
+              <rect x="175" y="115" width="70" height="45" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.5" rx="3"/>
+              <rect x="170" y="120" width="70" height="45" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.5" rx="3"/>
+              <text x="205" y="142.5" font-size="14" font-weight="700" text-anchor="middle" fill="#8b2c2c" dominant-baseline="central">특징맵</text>
               
-              <!-- Feature maps -->
-              <rect x="245" y="32" width="70" height="48" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
-              <text x="280" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">특징맵1</text>
+              <!-- Conv -> Pooling Arrow -->
+              <line x1="205" y1="165" x2="205" y2="195" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow_cnn_v)"/>
+              <text x="217" y="180" font-size="13" font-weight="700" fill="#64748b" dominant-baseline="central">Max Pooling (압축)</text>
               
-              <rect x="245" y="118" width="70" height="48" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
-              <text x="280" y="142" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">특징맵2</text>
+              <!-- Pooled Maps (Stacked smaller Rectangles) -->
+              <rect x="190" y="200" width="45" height="35" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.5" rx="2"/>
+              <rect x="185" y="204" width="45" height="35" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.5" rx="2"/>
+              <rect x="180" y="208" width="45" height="35" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.5" rx="2"/>
+              <text x="202.5" y="225.5" font-size="13" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">풀링맵</text>
               
-              <!-- Pooling -->
-              <rect x="335" y="45" width="70" height="105" fill="#f0f7ff" stroke="#378add" stroke-width="2" rx="4"/>
-              <text x="370" y="90" font-size="14" font-weight="700" text-anchor="middle" fill="#185fa5" dominant-baseline="central">Pooling</text>
-              <text x="370" y="112" font-size="14" text-anchor="middle" fill="#185fa5" dominant-baseline="central">(압축)</text>
+              <!-- Pooling -> FC Arrow -->
+              <line x1="202" y1="243" x2="202" y2="280" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow_cnn_v)"/>
+              <text x="214" y="261" font-size="13" font-weight="700" fill="#64748b" dominant-baseline="central">Flatten (평탄화)</text>
               
-              <!-- Arrows -->
-              <line x1="115" y1="85" x2="142" y2="65" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow4)"/>
-              <line x1="115" y1="110" x2="142" y2="135" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow4)"/>
-              <line x1="220" y1="56" x2="242" y2="56" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="220" y1="142" x2="242" y2="142" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="315" y1="56" x2="332" y2="75" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="315" y1="142" x2="332" y2="115" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
+              <!-- Fully Connected Layer Box -->
+              <rect x="105" y="282" width="195" height="84" fill="none" stroke="#378add" stroke-width="1.5" stroke-dasharray="3 2" rx="4"/>
+              <text x="202" y="294" font-size="13" font-weight="800" text-anchor="middle" fill="#185fa5" dominant-baseline="central">Fully Connected Layer</text>
               
+              <!-- Flat Nodes (Left) -->
+              <circle cx="130" cy="312" r="3.5" fill="#378add"/>
+              <circle cx="130" cy="327" r="3.5" fill="#378add"/>
+              <circle cx="130" cy="342" r="3.5" fill="#378add"/>
+              <circle cx="130" cy="357" r="3.5" fill="#378add"/>
+              
+              <!-- Output Nodes (Right) -->
+              <circle cx="260" cy="320" r="4.5" fill="#1d9e75"/>
+              <circle cx="260" cy="349" r="4.5" fill="#1d9e75"/>
+              <text x="272" y="334.5" font-size="13" font-weight="700" fill="#1d9e75" dominant-baseline="central">출력</text>
+              
+              <!-- FC Lines -->
+              <line x1="134" y1="312" x2="256" y2="320" stroke="#cbd5e1" stroke-width="0.8"/>
+              <line x1="134" y1="312" x2="256" y2="349" stroke="#cbd5e1" stroke-width="0.8"/>
+              
+              <line x1="134" y1="327" x2="256" y2="320" stroke="#cbd5e1" stroke-width="0.8"/>
+              <line x1="134" y1="327" x2="256" y2="349" stroke="#cbd5e1" stroke-width="0.8"/>
+              
+              <line x1="134" y1="342" x2="256" y2="320" stroke="#cbd5e1" stroke-width="0.8"/>
+              <line x1="134" y1="342" x2="256" y2="349" stroke="#cbd5e1" stroke-width="0.8"/>
+              
+              <line x1="134" y1="357" x2="256" y2="320" stroke="#cbd5e1" stroke-width="0.8"/>
+              <line x1="134" y1="357" x2="256" y2="349" stroke="#cbd5e1" stroke-width="0.8"/>
+
               <defs>
-                <marker id="arrow4" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <marker id="arrow_cnn_v" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                   <path d="M 0 1 L 10 5 L 0 9 z" fill="#b4c6d8"/>
                 </marker>
               </defs>
