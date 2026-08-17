@@ -201,45 +201,93 @@
       font-weight: 600;
     }
 
-    .connector-banner {
-      grid-column: span 2;
-      background: #fffbeb;
-      border: 1.5px dashed #fde68a;
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 700;
-      color: #b45309;
-      margin-top: 1.5rem;
-      max-width: 985px;
-      width: 100%;
+    /* ── ROADMAP NAVIGATION ── */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    .stage {
+      scroll-margin-top: 30px;
     }
 
-    .insight-box {
-      grid-column: span 2;
-      background: linear-gradient(135deg, #e8f5e9 0%, #e0f2f1 100%);
-      border-left: 5px solid #137333;
+    .flow-roadmap {
+      background: #ffffff;
+      border: 1.5px solid #e8edf3;
+      border-radius: 16px;
       padding: 1.5rem;
-      margin-top: 1.5rem;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.8;
-      color: #137333;
-      max-width: 985px;
-      width: 100%;
+      margin: 2.2rem 2.5rem 0.5rem 2.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .insight-label {
-      font-weight: 800;
-      font-size: 12.5px;
-      color: #0f5128;
-      margin-bottom: 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .roadmap-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.3px;
+    }
+
+    .roadmap-svg-container {
+      width: 100%;
+      max-width: 960px;
+      overflow-x: auto;
+    }
+
+    .roadmap-node-rect {
+      fill: #f8fafc;
+      stroke: #e2e8f0;
+      stroke-width: 1.8;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .roadmap-node-text {
+      fill: #1e293b;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+    }
+
+    .roadmap-node-circle {
+      fill: #378add;
+      transition: all 0.25s ease;
+    }
+
+    .roadmap-node-num {
+      fill: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .roadmap-link:hover .roadmap-node-rect {
+      fill: #378add;
+      stroke: #378add;
+      filter: drop-shadow(0 4px 8px rgba(55, 138, 221, 0.25));
+    }
+
+    .roadmap-link:hover .roadmap-node-text {
+      fill: #ffffff;
+    }
+
+    .roadmap-link:hover .roadmap-node-circle {
+      fill: #ffffff;
+    }
+
+    .roadmap-link:hover .roadmap-node-num {
+      fill: #378add;
+    }
+
+    .roadmap-path {
+      fill: none;
+      stroke: #cbd5e1;
+      stroke-width: 2.5;
+    }
+
+    .roadmap-path-highlight {
+      stroke: #8b5cf6; /* CNN -> ViT 하이라이트 곡선선 (보라색 포인트) */
     }
 
     /* ── SUMMARY SECTION ── */
@@ -319,16 +367,6 @@
         order: 1;
         max-width: 100%;
       }
-      .connector-banner {
-        grid-column: auto;
-        order: 3;
-        max-width: 100%;
-      }
-      .insight-box {
-        grid-column: auto;
-        order: 3;
-        max-width: 100%;
-      }
       .stage {
         padding: 2rem 1.5rem;
       }
@@ -337,107 +375,6 @@
       }
       .header h1 {
         font-size: 25px;
-      }
-    }
-
-    /* ── ROADMAP NAVIGATION ── */
-    html {
-      scroll-behavior: smooth;
-    }
-    
-    .stage {
-      scroll-margin-top: 30px;
-    }
-
-    .flow-roadmap {
-      background: #ffffff;
-      border: 1.5px solid #e8edf3;
-      border-radius: 16px;
-      padding: 1.8rem;
-      margin: 2.2rem 2.5rem 0.5rem 2.5rem;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-      text-align: center;
-    }
-
-    .roadmap-title {
-      font-size: 14.5px;
-      font-weight: 700;
-      color: #64748b;
-      margin-bottom: 1.2rem;
-      letter-spacing: -0.3px;
-    }
-
-    .roadmap-nodes {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .roadmap-node {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 30px;
-      text-decoration: none;
-      color: #1e293b;
-      font-weight: 700;
-      font-size: 14.5px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-    }
-
-    .roadmap-node:hover {
-      background: #378add;
-      border-color: #378add;
-      color: #ffffff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(55, 138, 221, 0.25);
-    }
-
-    .roadmap-node:hover .node-num {
-      background: #ffffff;
-      color: #378add;
-    }
-
-    .node-num {
-      width: 24px;
-      height: 24px;
-      background: #378add;
-      color: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      transition: all 0.25s ease;
-    }
-
-    .roadmap-arrow {
-      font-size: 16px;
-      color: #94a3b8;
-      font-weight: 700;
-    }
-
-    @media (max-width: 768px) {
-      .flow-roadmap {
-        margin: 1.5rem 1.5rem 0.5rem 1.5rem;
-        padding: 1.2rem;
-      }
-      .roadmap-nodes {
-        gap: 8px;
-      }
-      .roadmap-node {
-        padding: 8px 14px;
-        font-size: 13px;
-      }
-      .roadmap-arrow {
-        display: none;
       }
     }
   </style>
@@ -449,39 +386,101 @@
       <p>Linear에서 ViT까지: 정보 연결 방식의 역사</p>
     </div>
 
-    <!-- 아키텍처 진화 로드맵 네비게이션 -->
+    <!-- 아키텍처 진화 로드맵 네비게이션 (2차원 네트워크 구조) -->
     <div class="flow-roadmap">
       <div class="roadmap-title">🗺️ 아키텍처 진화 로드맵 (클릭 시 상세 영역으로 부드럽게 이동)</div>
-      <div class="roadmap-nodes">
-        <a href="#stage-1" class="roadmap-node">
-          <span class="node-num">1</span>
-          <span class="node-name">Linear</span>
-        </a>
-        <div class="roadmap-arrow">→</div>
-        <a href="#stage-2" class="roadmap-node">
-          <span class="node-num">2</span>
-          <span class="node-name">MLP</span>
-        </a>
-        <div class="roadmap-arrow">→</div>
-        <a href="#stage-3" class="roadmap-node">
-          <span class="node-num">3</span>
-          <span class="node-name">RNN</span>
-        </a>
-        <div class="roadmap-arrow">→</div>
-        <a href="#stage-4" class="roadmap-node">
-          <span class="node-num">4</span>
-          <span class="node-name">CNN</span>
-        </a>
-        <div class="roadmap-arrow">→</div>
-        <a href="#stage-5" class="roadmap-node">
-          <span class="node-num">5</span>
-          <span class="node-name">Attention</span>
-        </a>
-        <div class="roadmap-arrow">→</div>
-        <a href="#stage-6" class="roadmap-node">
-          <span class="node-num">6</span>
-          <span class="node-name">ViT</span>
-        </a>
+      <div class="roadmap-svg-container">
+        <svg width="960" height="160" viewBox="0 0 960 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- Connection Paths (배경 연결선) -->
+          <!-- Linear -> MLP -->
+          <line x1="140" y1="77" x2="175" y2="77" class="roadmap-path"/>
+          
+          <!-- MLP -> RNN (NLP 분기) -->
+          <path d="M 285 77 L 320 42" class="roadmap-path"/>
+          <!-- MLP -> CNN (비전 분기) -->
+          <path d="M 285 77 L 320 117" class="roadmap-path"/>
+          
+          <!-- RNN -> Attention -->
+          <line x1="430" y1="42" x2="475" y2="42" class="roadmap-path"/>
+          <!-- Attention -> Transformer -->
+          <line x1="585" y1="42" x2="630" y2="42" class="roadmap-path"/>
+          <!-- Transformer -> ViT -->
+          <path d="M 740 42 L 810 77" class="roadmap-path"/>
+          
+          <!-- CNN -> ViT (비전 진화의 통합 곡선 연결선) -->
+          <path d="M 430 117 Q 620 135, 810 77" class="roadmap-path roadmap-path-highlight" stroke-dasharray="4 2"/>
+
+          <!-- Interactive Node Groups -->
+          <!-- Node 1: Linear -->
+          <a href="#stage-1" class="roadmap-link">
+            <g>
+              <rect x="30" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="50" cy="77" r="10" class="roadmap-node-circle"/>
+              <text x="50" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">1</text>
+              <text x="100" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Linear</text>
+            </g>
+          </a>
+
+          <!-- Node 2: MLP -->
+          <a href="#stage-2" class="roadmap-link">
+            <g>
+              <rect x="175" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="195" cy="77" r="10" class="roadmap-node-circle"/>
+              <text x="195" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">2</text>
+              <text x="245" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">MLP</text>
+            </g>
+          </a>
+
+          <!-- Node 3: RNN -->
+          <a href="#stage-3" class="roadmap-link">
+            <g>
+              <rect x="320" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="340" cy="42" r="10" class="roadmap-node-circle"/>
+              <text x="340" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">3</text>
+              <text x="390" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">RNN</text>
+            </g>
+          </a>
+
+          <!-- Node 4: CNN -->
+          <a href="#stage-4" class="roadmap-link">
+            <g>
+              <rect x="320" y="95" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="340" cy="117" r="10" class="roadmap-node-circle"/>
+              <text x="340" y="117" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">4</text>
+              <text x="390" y="117" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">CNN</text>
+            </g>
+          </a>
+
+          <!-- Node 5: Attention -->
+          <a href="#stage-5" class="roadmap-link">
+            <g>
+              <rect x="475" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="495" cy="42" r="10" class="roadmap-node-circle"/>
+              <text x="495" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">5</text>
+              <text x="545" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Attention</text>
+            </g>
+          </a>
+
+          <!-- Node 6: Transformer -->
+          <a href="#stage-6" class="roadmap-link">
+            <g>
+              <rect x="630" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="650" cy="42" r="10" class="roadmap-node-circle"/>
+              <text x="650" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">6</text>
+              <text x="700" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Transformer</text>
+            </g>
+          </a>
+
+          <!-- Node 7: ViT -->
+          <a href="#stage-7" class="roadmap-link">
+            <g>
+              <rect x="810" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
+              <circle cx="830" cy="77" r="10" class="roadmap-node-circle"/>
+              <text x="830" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">7</text>
+              <text x="875" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">ViT</text>
+            </g>
+          </a>
+        </svg>
       </div>
     </div>
 
@@ -583,7 +582,7 @@
               <h4 class="info-title">✗ 문제점 및 한계</h4>
               <div class="bullet">입력 데이터의 가로 너비(길이)가 고정되어야 함</div>
               <div class="bullet">시간의 흐름이나 선후 관계를 모르는 독립 데이터 처리 형태</div>
-              <div class="bullet">텍스트나 오디오와 같은 시퀀(Sequence) 처리 불가</div>
+              <div class="bullet">텍스트나 오디오와 같은 시퀀스(Sequence) 처리 불가</div>
             </div>
           </div>
 
@@ -790,11 +789,11 @@
         </div>
       </div>
 
-      <!-- Stage 5: Attention & Transformer -->
+      <!-- Stage 5: Attention -->
       <div class="stage" id="stage-5">
         <div class="stage-title">
           <div class="stage-number">5</div>
-          <div>Attention / Transformer - 전역 동적 가중치</div>
+          <div>Attention - 전역 동적 가중치 연산</div>
         </div>
 
         <div class="stage-content">
@@ -802,23 +801,22 @@
           <div class="info-card">
             <div class="info-section why">
               <h4 class="info-title">💡 왜 나왔는가?</h4>
-              <div class="bullet">데이터 소스 내 모든 위치 간의 직접적인 상호작용 모델링 필요</div>
-              <div class="bullet">문장 문맥에 따라 동적으로 가중치가 변하는 스마트 연결 요구</div>
+              <div class="bullet">시퀀스 데이터 내 모든 위치 간의 직접적인 상호작용 모델링 필요</div>
+              <div class="bullet">고정된 필터 범위에 얽매이지 않는 동적인 전역 문맥 매핑 필요</div>
               <div class="bullet">순차 종속성을 없애 초거대 병렬 계산 학습이 가능하도록 유도</div>
             </div>
 
             <div class="info-section how">
               <h4 class="info-title">⚙️ 어떻게 작동하는가?</h4>
-              <div class="bullet">Query(질의)와 Key(후보 열쇠) 벡터 간의 연산을 통해 유사도 획득</div>
-              <div class="bullet">유사도 점수를 Softmax 처리하여 정규화된 주의(Attention) 가중치 결정</div>
-              <div class="bullet">Value(후보 실제 정보) 벡터들에 가중치를 곱해 합산하여 출력 벡터 생성</div>
+              <div class="bullet">Query(질의)와 Key(후보) 벡터 간의 내적 연산으로 유사도 계산</div>
+              <div class="bullet">유사도 점수를 Softmax 처리하여 확률적 주의(Attention) 가중치 획득</div>
+              <div class="bullet">Value(실제 정보) 벡터들에 가중치를 곱해 가중합하여 출력 벡터 생성</div>
             </div>
 
             <div class="info-section solution">
               <h4 class="info-title">✓ 해결된 포인트 및 강점</h4>
               <div class="bullet">✓ 거리에 무관하게 한 번에 문맥 정보 추출 (소실 없는 장거리 학습)</div>
-              <div class="bullet">✓ 시퀀스 의존성을 완전 탈피하여 대규모 분산/병렬 고속 학습 성립</div>
-              <div class="bullet">✓ 고정 필터가 아닌, 들어온 입력에 따라 변하는 전역 동적 가중치 적용</div>
+              <div class="bullet">✓ 고정 필터가 아닌, 들어온 입력에 따라 실시간으로 변하는 가중치 적용</div>
             </div>
           </div>
 
@@ -859,10 +857,74 @@
         </div>
       </div>
 
-      <!-- Stage 6: ViT (Vision Transformer) -->
+      <!-- Stage 6: Transformer -->
       <div class="stage" id="stage-6">
         <div class="stage-title">
           <div class="stage-number">6</div>
+          <div>Transformer - Attention 기반 전역 아키텍처</div>
+        </div>
+
+        <div class="stage-content">
+          <!-- 좌측: 하나의 통합된 설명 카드 -->
+          <div class="info-card">
+            <div class="info-section why">
+              <h4 class="info-title">💡 왜 나왔는가?</h4>
+              <div class="bullet">RNN을 완전히 제거하여 병렬 처리가 극대화된 통합 번역 아키텍처 구현</div>
+              <div class="bullet">초거대 파라미터 학습 환경(LLM)을 견인할 초석 아키텍처 필요</div>
+              <div class="bullet">문맥을 입체적으로 쪼개 해석하는 Multi-Head 방식 적용</div>
+            </div>
+
+            <div class="info-section how">
+              <h4 class="info-title">⚙️ 어떻게 작동하는가?</h4>
+              <div class="bullet">순서 정보를 명시하기 위해 입력에 포지셔널 인코딩(Positional Encoding) 결합</div>
+              <div class="bullet">Multi-Head Self-Attention 및 Feed-Forward 연산을 스택으로 적층</div>
+              <div class="bullet">인코더-디코더 교차 어텐션을 통해 고화질 번역 및 생성 연산 실행</div>
+            </div>
+
+            <div class="info-section problem">
+              <h4 class="info-title">✗ 문제점 및 한계</h4>
+              <div class="bullet">입력 길이(N)의 제곱에 비례하는 연산 복잡도 <span class="code-inline">O(N²)</span>로 리소스 급증</div>
+              <div class="bullet">텍스트 외 2차원 고해상도 이미지 공간 정보의 효율적 처리에 미흡</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
+          <div class="diagram-box">
+            <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Encoder Block -->
+              <rect x="25" y="45" width="120" height="110" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" rx="6"/>
+              <text x="85" y="80" font-size="13" font-weight="700" text-anchor="middle" fill="#6d28d9">Encoder</text>
+              <text x="85" y="98" font-size="11" text-anchor="middle" fill="#6d28d9">Self-Attention</text>
+              
+              <!-- Decoder Block -->
+              <rect x="275" y="45" width="120" height="110" fill="#fffbeb" stroke="#d97706" stroke-width="2" rx="6"/>
+              <text x="335" y="80" font-size="13" font-weight="700" text-anchor="middle" fill="#b45309">Decoder</text>
+              <text x="335" y="98" font-size="11" text-anchor="middle" fill="#b45309">Cross-Attention</text>
+              
+              <!-- Connecting Arrows -->
+              <line x1="145" y1="100" x2="275" y2="100" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arrow_trans)"/>
+              <text x="210" y="88" font-size="11" font-weight="700" text-anchor="middle" fill="#7c3aed">MHA</text>
+              
+              <!-- Input / Output pointers -->
+              <line x1="85" y1="15" x2="85" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
+              <line x1="335" y1="15" x2="335" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
+              <text x="85" y="10" font-size="10" text-anchor="middle" fill="#64748b">입력토큰 + PE</text>
+              <text x="335" y="10" font-size="10" text-anchor="middle" fill="#64748b">타겟토큰 + PE</text>
+
+              <defs>
+                <marker id="arrow_trans" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b5cf6"/>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 7: ViT (Vision Transformer) -->
+      <div class="stage" id="stage-7">
+        <div class="stage-title">
+          <div class="stage-number">7</div>
           <div>ViT (Vision Transformer) - 컴퓨터 비전의 Transformer 대통합</div>
         </div>
 
@@ -952,27 +1014,32 @@
         <span class="summary-key">2 ➔ 3 진화:</span>
         고정 너비 처리의 한계 해결 ➔ 시간축 이전 맥락 전달용 순환 상태 메모리 추가
       </div>
-      
+
       <div class="summary-item">
-        <span class="summary-key">3 ➔ 4 진화:</span>
-        순차 처리 병렬화 한계 ➔ 공간 정보 학습용 지역 합성곱 필터 도입
+        <span class="summary-key">2 ➔ 4 진화:</span>
+        공간 기하학적 형태 무시 해결 ➔ 2차원 지역 가중치 공유 필터(CNN) 도입
       </div>
       
       <div class="summary-item">
-        <span class="summary-key">4 ➔ 5 진화:</span>
-        필터 크기 고정 및 거리적 한계 해결 ➔ 전역 동적 주의 가중치(Attention) 연결
+        <span class="summary-key">3 ➔ 5 진화:</span>
+        순차 처리 병렬화 한계 ➔ 전역 동적 가중치 기법(Attention) 수립
+      </div>
+      
+      <div class="summary-item">
+        <span class="summary-key">5 ➔ 6 진화:</span>
+        메모리 보조 역할 탈피 ➔ Attention을 핵심 스택으로 전형화(Transformer)
       </div>
 
       <div class="summary-item">
-        <span class="summary-key">5 ➔ 6 진화:</span>
-        자연어 전용 아키텍처의 한계 극복 ➔ 비전 영역 대통합 및 범용 인코더(ViT) 실현
+        <span class="summary-key">6 &amp; 4 ➔ 7 진화:</span>
+        CNN의 공간적 필터 한계 격파 ➔ 비전 영역을 Transformer로 통일(ViT)
       </div>
 
       <div class="summary-insight">
         <strong>🔑 아키텍처 진화의 통찰:</strong><br/>
         각 세대의 신경망 아키텍처 진화는 근본적으로 <strong>"정보를 서로 어떻게 연결하고 전달할 것인가?"</strong>에 대한 한계를 격파해 온 여정입니다.
         <br/><br/>
-        <span style="color: #378add; font-weight: 700;">Linear</span>(직접 1대1 매핑) ➔ <span style="color: #378add; font-weight: 700;">MLP</span>(계층 간 매핑) ➔ <span style="color: #378add; font-weight: 700;">RNN</span>(시간 축 순차 매핑) ➔ <span style="color: #378add; font-weight: 700;">CNN</span>(공간 지역 공유 매핑) ➔ <span style="color: #378add; font-weight: 700;">Attention</span>(전역 맥락 동적 가중합 매핑) ➔ <span style="color: #378add; font-weight: 700;">ViT</span>(비전 영역 전역 어텐션 대통합)로 끊임없이 유연성과 구조적 한계를 보완하며 발전해 왔습니다.
+        <span style="color: #378add; font-weight: 700;">Linear</span>(직접 1대1 매핑) ➔ <span style="color: #378add; font-weight: 700;">MLP</span>(계층 간 매핑) ➔ <span style="color: #378add; font-weight: 700;">RNN</span>(시간 축 순차 매핑) / <span style="color: #378add; font-weight: 700;">CNN</span>(공간 지역 공유 매핑) ➔ <span style="color: #378add; font-weight: 700;">Attention</span>(전역 맥락 동적 가중합) ➔ <span style="color: #378add; font-weight: 700;">Transformer</span>(전역 어텐션 스택 아키텍처) ➔ <span style="color: #378add; font-weight: 700;">ViT</span>(비전 영역 전역 어텐션 대통합)로 끊임없이 유연성과 구조적 한계를 보완하며 발전해 왔습니다.
       </div>
     </div>
 
