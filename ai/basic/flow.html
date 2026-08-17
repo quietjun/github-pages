@@ -741,9 +741,9 @@
               <!-- RNN Cell -->
               <rect x="160" y="32" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
               <text x="210" y="50" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
-              <!-- 출력 h(t-1) -->
+              <!-- 출력 y(t-1) -->
               <circle cx="340" cy="50" r="7" fill="#1d9e75"/>
-              <text x="350" y="50" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t-1)</text>
+              <text x="350" y="50" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t-1)</text>
               
               <!-- Time step t (중앙) -->
               <!-- 입력 x(t) -->
@@ -752,9 +752,9 @@
               <!-- RNN Cell -->
               <rect x="160" y="102" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
               <text x="210" y="120" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
-              <!-- 출력 h(t) -->
+              <!-- 출력 y(t) -->
               <circle cx="340" cy="120" r="7" fill="#1d9e75"/>
-              <text x="350" y="120" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t)</text>
+              <text x="350" y="120" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t)</text>
 
               <!-- Time step t+1 (하단) -->
               <!-- 입력 x(t+1) -->
@@ -763,9 +763,9 @@
               <!-- RNN Cell -->
               <rect x="160" y="172" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
               <text x="210" y="190" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
-              <!-- 출력 h(t+1) -->
+              <!-- 출력 y(t+1) -->
               <circle cx="340" cy="190" r="7" fill="#1d9e75"/>
-              <text x="350" y="190" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t+1)</text>
+              <text x="350" y="190" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t+1)</text>
 
               <!-- Horizontal flow arrows -->
               <line x1="92" y1="50" x2="155" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
@@ -782,8 +782,8 @@
               <line x1="210" y1="138" x2="210" y2="167" stroke="#d85a30" stroke-width="2.5" marker-end="url(#arrow_rnn_orange)"/>
               
               <!-- Recurrent state labels -->
-              <text x="222" y="85" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">은닉 전송</text>
-              <text x="222" y="155" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">은닉 전송</text>
+              <text x="222" y="85" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t-1) 전송</text>
+              <text x="222" y="155" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t) 전송</text>
 
               <defs>
                 <marker id="arrow_rnn_v" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
