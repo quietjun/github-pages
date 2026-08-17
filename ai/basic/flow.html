@@ -89,8 +89,8 @@
 
     .stage-content {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 2rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
       align-items: start;
     }
 
@@ -214,10 +214,11 @@
     }
 
     .connector-banner {
+      grid-column: span 2;
       background: #fffbeb;
       border: 1.5px dashed #fde68a;
       border-radius: 10px;
-      padding: 12px;
+      padding: 14px;
       text-align: center;
       font-size: 14px;
       font-weight: 700;
@@ -226,6 +227,7 @@
     }
 
     .insight-box {
+      grid-column: span 2;
       background: linear-gradient(135deg, #e8f5e9 0%, #e0f2f1 100%);
       border-left: 5px solid #137333;
       padding: 1.5rem;
@@ -313,10 +315,23 @@
     @media (max-width: 900px) {
       .stage-content {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
       }
       .diagram-box {
         min-height: 180px;
         padding: 1.2rem;
+        order: 2;
+      }
+      .description {
+        order: 1;
+      }
+      .connector-banner {
+        grid-column: auto;
+        order: 3;
+      }
+      .insight-box {
+        grid-column: auto;
+        order: 3;
       }
       .stage {
         padding: 2rem 1.5rem;
@@ -347,6 +362,30 @@
         </div>
 
         <div class="stage-content">
+          <!-- 좌측: 설명 텍스트 카드 -->
+          <div class="description">
+            <div class="desc-card why">
+              <span class="desc-card-label">왜 나왔는가?</span>
+              <div class="bullet">입출력 데이터 간의 매핑 연결 필요</div>
+              <div class="bullet">기본적인 선형 차원 변환 수행</div>
+              <div class="bullet">가중치(Weight)와 편향(Bias) 자동 학습 가능</div>
+            </div>
+
+            <div class="desc-card how">
+              <span class="desc-card-label">어떻게 작동하는가?</span>
+              <div class="bullet">수식: <span class="code-inline">y = Wx + b</span></div>
+              <div class="bullet">입력 벡터에 가중치 가중 합산(행렬 곱셈) 수행</div>
+              <div class="bullet">최종 가중합에 편향을 더해 출력 노드로 전달</div>
+            </div>
+
+            <div class="desc-card problem">
+              <span class="desc-card-label">문제점 및 한계</span>
+              <div class="bullet">선형 변환만 표현할 수 있어 복잡한 관계 학습 한계</div>
+              <div class="bullet">아무리 깊게 쌓아도 결국 하나의 Linear Layer와 수학적으로 동일</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
             <svg width="280" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
               <!-- Input -->
@@ -381,30 +420,9 @@
             </svg>
           </div>
 
-          <div class="description">
-            <div class="desc-card why">
-              <span class="desc-card-label">왜 나왔는가?</span>
-              <div class="bullet">입출력 데이터 간의 매핑 연결 필요</div>
-              <div class="bullet">기본적인 선형 차원 변환 수행</div>
-              <div class="bullet">가중치(Weight)와 편향(Bias) 자동 학습 가능</div>
-            </div>
-
-            <div class="desc-card how">
-              <span class="desc-card-label">어떻게 작동하는가?</span>
-              <div class="bullet">수식: <span class="code-inline">y = Wx + b</span></div>
-              <div class="bullet">입력 벡터에 가중치 가중 합산(행렬 곱셈) 수행</div>
-              <div class="bullet">최종 가중합에 편향을 더해 출력 노드로 전달</div>
-            </div>
-
-            <div class="desc-card problem">
-              <span class="desc-card-label">문제점 및 한계</span>
-              <div class="bullet">선형 변환만 표현할 수 있어 복잡한 관계 학습 한계</div>
-              <div class="bullet">아무리 깊게 쌓아도 결국 하나의 Linear Layer와 수학적으로 동일</div>
-            </div>
-
-            <div class="connector-banner">
-              ⚡ 발전 방향: 단순 선형성을 타파할 비선형 활성화 함수 필요
-            </div>
+          <!-- 하단 Cell 병합: 발전방향 배너 -->
+          <div class="connector-banner">
+            ⚡ 발전 방향: 단순 선형성을 타파할 비선형 활성화 함수 필요
           </div>
         </div>
       </div>
@@ -417,6 +435,31 @@
         </div>
 
         <div class="stage-content">
+          <!-- 좌측: 설명 텍스트 카드 -->
+          <div class="description">
+            <div class="desc-card why">
+              <span class="desc-card-label">왜 나왔는가?</span>
+              <div class="bullet">선형 모델의 결정적 표현 한계 극복</div>
+              <div class="bullet">고차원 및 비선형 경계면을 갖는 복잡한 함수 표현 가능</div>
+              <div class="bullet">계층화된 층을 통한 데이터의 유용한 특징 자동 추출</div>
+            </div>
+
+            <div class="desc-card how">
+              <span class="desc-card-label">어떻게 작동하는가?</span>
+              <div class="bullet">Linear Layer와 활성화 함수(<span class="code-inline">ReLU</span> 등)를 교대로 적층</div>
+              <div class="bullet">층을 깊게 쌓아 모델의 수용력(Capacity)을 비약적으로 확장</div>
+              <div class="bullet">역전파(Backpropagation) 알고리즘을 이용해 가중치 업데이트</div>
+            </div>
+
+            <div class="desc-card problem">
+              <span class="desc-card-label">문제점 및 한계</span>
+              <div class="bullet">입력 데이터의 가로 너비(길이)가 고정되어야 함</div>
+              <div class="bullet">시간의 흐름이나 선후 관계를 모르는 독립 데이터 처리 형태</div>
+              <div class="bullet">텍스트나 오디오와 같은 시퀀스(Sequence) 처리 불가</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
             <svg width="300" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
               <!-- Input Layer -->
@@ -465,31 +508,9 @@
             </svg>
           </div>
 
-          <div class="description">
-            <div class="desc-card why">
-              <span class="desc-card-label">왜 나왔는가?</span>
-              <div class="bullet">선형 모델의 결정적 표현 한계 극복</div>
-              <div class="bullet">고차원 및 비선형 경계면을 갖는 복잡한 함수 표현 가능</div>
-              <div class="bullet">계층화된 층을 통한 데이터의 유용한 특징 자동 추출</div>
-            </div>
-
-            <div class="desc-card how">
-              <span class="desc-card-label">어떻게 작동하는가?</span>
-              <div class="bullet">Linear Layer와 활성화 함수(<span class="code-inline">ReLU</span> 등)를 교대로 적층</div>
-              <div class="bullet">층을 깊게 쌓아 모델의 수용력(Capacity)을 비약적으로 확장</div>
-              <div class="bullet">역전파(Backpropagation) 알고리즘을 이용해 가중치 업데이트</div>
-            </div>
-
-            <div class="desc-card problem">
-              <span class="desc-card-label">문제점 및 한계</span>
-              <div class="bullet">입력 데이터의 가로 너비(길이)가 고정되어야 함</div>
-              <div class="bullet">시간의 흐름이나 선후 관계를 모르는 독립 데이터 처리 형태</div>
-              <div class="bullet">텍스트나 오디오와 같은 시퀀스(Sequence) 처리 불가</div>
-            </div>
-
-            <div class="connector-banner">
-              ⚡ 발전 방향: 문맥과 역사를 기억할 수 있는 메모리 구조 필요
-            </div>
+          <!-- 하단 Cell 병합: 발전방향 배너 -->
+          <div class="connector-banner">
+            ⚡ 발전 방향: 문맥과 역사를 기억할 수 있는 메모리 구조 필요
           </div>
         </div>
       </div>
@@ -502,6 +523,30 @@
         </div>
 
         <div class="stage-content">
+          <!-- 좌측: 설명 텍스트 카드 -->
+          <div class="description">
+            <div class="desc-card why">
+              <span class="desc-card-label">왜 나왔는가?</span>
+              <div class="bullet">텍스트, 시각 프레임 등 가변 길이 시퀀스 처리 필요</div>
+              <div class="bullet">시간 경과에 따른 맥락과 역사적 과거 정보 보존 요구</div>
+              <div class="bullet">시계열, 자연어 등 순서가 핵심인 데이터의 구조 학습</div>
+            </div>
+
+            <div class="desc-card how">
+              <span class="desc-card-label">어떻게 작동하는가?</span>
+              <div class="bullet">수식: <span class="code-inline">h(t) = f(x(t), h(t-1))</span></div>
+              <div class="bullet">시간 축에 따라 데이터를 순차적으로 연산 처리</div>
+              <div class="bullet">이전 타임스텝의 은닉 상태(Hidden State)를 다음 연산의 입력으로 반복 수용</div>
+            </div>
+
+            <div class="desc-card problem">
+              <span class="desc-card-label">문제점 및 한계</span>
+              <div class="bullet">순차적 연산 특징으로 인해 GPU 대규모 병렬 학습이 불가 (학습 지체)</div>
+              <div class="bullet">시퀀스가 길어질수록 극단적인 기울기 소실(Vanishing Gradient)로 과거 정보를 망각함</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
             <svg width="300" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg">
               <!-- Time step 1 -->
@@ -539,30 +584,9 @@
             </svg>
           </div>
 
-          <div class="description">
-            <div class="desc-card why">
-              <span class="desc-card-label">왜 나왔는가?</span>
-              <div class="bullet">텍스트, 시각 프레임 등 가변 길이 시퀀스 처리 필요</div>
-              <div class="bullet">시간 경과에 따른 맥락과 역사적 과거 정보 보존 요구</div>
-              <div class="bullet">시계열, 자연어 등 순서가 핵심인 데이터의 구조 학습</div>
-            </div>
-
-            <div class="desc-card how">
-              <span class="desc-card-label">어떻게 작동하는가?</span>
-              <div class="bullet">수식: <span class="code-inline">h(t) = f(x(t), h(t-1))</span></div>
-              <div class="bullet">시간 축에 따라 데이터를 순차적으로 연산 처리</div>
-              <div class="bullet">이전 타임스텝의 은닉 상태(Hidden State)를 다음 연산의 입력으로 반복 수용</div>
-            </div>
-
-            <div class="desc-card problem">
-              <span class="desc-card-label">문제점 및 한계</span>
-              <div class="bullet">순차적 연산 특징으로 인해 GPU 대규모 병렬 학습이 불가 (학습 지체)</div>
-              <div class="bullet">시퀀스가 길어질수록 극단적인 기울기 소실(Vanishing Gradient)로 과거 정보를 망각함</div>
-            </div>
-
-            <div class="connector-banner">
-              ⚡ 발전 방향: 순차 종속성을 없애고 전역 연결과 공간 병렬 처리가 가능한 구조 필요
-            </div>
+          <!-- 하단 Cell 병합: 발전방향 배너 -->
+          <div class="connector-banner">
+            ⚡ 발전 방향: 순차 종속성을 없애고 전역 연결과 공간 병렬 처리가 가능한 구조 필요
           </div>
         </div>
       </div>
@@ -575,6 +599,30 @@
         </div>
 
         <div class="stage-content">
+          <!-- 좌측: 설명 텍스트 카드 -->
+          <div class="description">
+            <div class="desc-card why">
+              <span class="desc-card-label">왜 나왔는가?</span>
+              <div class="bullet">이미지 데이터 고유의 2차원 공간 구조 반영이 필요함</div>
+              <div class="bullet">전체 픽셀을 개별 연결(MLP)하면 연산량이 폭증하는 단점 해결</div>
+              <div class="bullet">가까운 이웃 픽셀 간의 물리적 지역 특징 탐지</div>
+            </div>
+
+            <div class="desc-card how">
+              <span class="desc-card-label">어떻게 작동하는가?</span>
+              <div class="bullet">3×3 등의 소형 공유 필터(커널)가 이미지를 훑으며 합성곱(Convolution) 연산 수행</div>
+              <div class="bullet">위치에 상관없이 동일 패턴을 추출해 내는 가중치 공유(Weight Sharing)</div>
+              <div class="bullet">Pooling 레이어를 통해 공간 해상도를 의도적으로 압축/요약</div>
+            </div>
+
+            <div class="desc-card problem">
+              <span class="desc-card-label">문제점 및 한계</span>
+              <div class="bullet">필터 수용장(Receptive Field) 크기가 고정되어 먼 거리 픽셀의 상호 관계를 포착하기 어려움</div>
+              <div class="bullet">자연어와 같은 1차원 순차 구조 데이터에 그대로 적용 시 비자연스러움</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
             <svg width="300" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
               <!-- Input image -->
@@ -618,30 +666,9 @@
             </svg>
           </div>
 
-          <div class="description">
-            <div class="desc-card why">
-              <span class="desc-card-label">왜 나왔는가?</span>
-              <div class="bullet">이미지 데이터 고유의 2차원 공간 구조 반영이 필요함</div>
-              <div class="bullet">전체 픽셀을 개별 연결(MLP)하면 연산량이 폭증하는 단점 해결</div>
-              <div class="bullet">가까운 이웃 픽셀 간의 물리적 지역 특징 탐지</div>
-            </div>
-
-            <div class="desc-card how">
-              <span class="desc-card-label">어떻게 작동하는가?</span>
-              <div class="bullet">3×3 등의 소형 공유 필터(커널)가 이미지를 훑으며 합성곱(Convolution) 연산 수행</div>
-              <div class="bullet">위치에 상관없이 동일 패턴을 추출해 내는 가중치 공유(Weight Sharing)</div>
-              <div class="bullet">Pooling 레이어를 통해 공간 해상도를 의도적으로 압축/요약</div>
-            </div>
-
-            <div class="desc-card problem">
-              <span class="desc-card-label">문제점 및 한계</span>
-              <div class="bullet">필터 수용장(Receptive Field) 크기가 고정되어 먼 거리 픽셀의 상호 관계를 포착하기 어려움</div>
-              <div class="bullet">자연어와 같은 1차원 순차 구조 데이터에 그대로 적용 시 비자연스러움</div>
-            </div>
-
-            <div class="connector-banner">
-              ⚡ 발전 방향: 필터 크기에 구애받지 않고 모든 위치를 한 번에 동적으로 잇는 연결 방식 필요
-            </div>
+          <!-- 하단 Cell 병합: 발전방향 배너 -->
+          <div class="connector-banner">
+            ⚡ 발전 방향: 필터 크기에 구애받지 않고 모든 위치를 한 번에 동적으로 잇는 연결 방식 필요
           </div>
         </div>
       </div>
@@ -654,6 +681,31 @@
         </div>
 
         <div class="stage-content">
+          <!-- 좌측: 설명 텍스트 카드 -->
+          <div class="description">
+            <div class="desc-card why">
+              <span class="desc-card-label">왜 나왔는가?</span>
+              <div class="bullet">데이터 소스 내 모든 위치 간의 직접적인 상호작용 모델링 필요</div>
+              <div class="bullet">문장 문맥에 따라 동적으로 가중치가 변하는 스마트 연결 요구</div>
+              <div class="bullet">순차 종속성을 없애 초거대 병렬 계산 학습이 가능하도록 유도</div>
+            </div>
+
+            <div class="desc-card how">
+              <span class="desc-card-label">어떻게 작동하는가?</span>
+              <div class="bullet">Query(질의)와 Key(후보 열쇠) 벡터 간의 연산을 통해 유사도 획득</div>
+              <div class="bullet">유사도 점수를 Softmax 처리하여 정규화된 주의(Attention) 가중치 결정</div>
+              <div class="bullet">Value(후보 실제 정보) 벡터들에 가중치를 곱해 합산하여 출력 벡터 생성</div>
+            </div>
+
+            <div class="desc-card solution">
+              <span class="desc-card-label">해결된 포인트 및 강점</span>
+              <div class="bullet">✓ 거리에 무관하게 한 번에 문맥 정보 추출 (소실 없는 장거리 학습)</div>
+              <div class="bullet">✓ 시퀀스 의존성을 완전 탈피하여 대규모 분산/병렬 고속 학습 성립</div>
+              <div class="bullet">✓ 고정 필터가 아닌, 들어온 입력에 따라 변하는 전역 동적 가중치 적용</div>
+            </div>
+          </div>
+
+          <!-- 우측: 다이어그램 이미지 -->
           <div class="diagram-box">
             <svg width="300" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Query token -->
@@ -688,32 +740,10 @@
             </svg>
           </div>
 
-          <div class="description">
-            <div class="desc-card why">
-              <span class="desc-card-label">왜 나왔는가?</span>
-              <div class="bullet">데이터 소스 내 모든 위치 간의 직접적인 상호작용 모델링 필요</div>
-              <div class="bullet">문장 문맥에 따라 동적으로 가중치가 변하는 스마트 연결 요구</div>
-              <div class="bullet">순차 종속성을 없애 초거대 병렬 계산 학습이 가능하도록 유도</div>
-            </div>
-
-            <div class="desc-card how">
-              <span class="desc-card-label">어떻게 작동하는가?</span>
-              <div class="bullet">Query(질의)와 Key(후보 열쇠) 벡터 간의 연산을 통해 유사도 획득</div>
-              <div class="bullet">유사도 점수를 Softmax 처리하여 정규화된 주의(Attention) 가중치 결정</div>
-              <div class="bullet">Value(후보 실제 정보) 벡터들에 가중치를 곱해 합산하여 출력 벡터 생성</div>
-            </div>
-
-            <div class="desc-card solution">
-              <span class="desc-card-label">해결된 포인트 및 강점</span>
-              <div class="bullet">✓ 거리에 무관하게 한 번에 문맥 정보 추출 (소실 없는 장거리 학습)</div>
-              <div class="bullet">✓ 시퀀스 의존성을 완전 탈피하여 대규모 분산/병렬 고속 학습 성립</div>
-              <div class="bullet">✓ 고정 필터가 아닌, 들어온 입력에 따라 변하는 전역 동적 가중치 적용</div>
-            </div>
-
-            <div class="insight-box">
-              <span class="insight-label">🎯 게임 체인저 (Game Changer)</span>
-              병렬 학습 가능 + 무제한 장거리 의존성 + 문맥 맞춤 동적 연결 특징의 결합은 현대 수십억 파라미터 규격의 LLM(대형 언어 모델) 스케일링을 가속한 핵심 원동력이 되었습니다.
-            </div>
+          <!-- 하단 Cell 병합: 게임 체인저 인사이트 박스 -->
+          <div class="insight-box">
+            <span class="insight-label">🎯 게임 체인저 (Game Changer)</span>
+            병렬 학습 가능 + 무제한 장거리 의존성 + 문맥 맞춤 동적 연결 특징의 결합은 현대 수십억 파라미터 규격의 LLM(대형 언어 모델) 스케일링을 가속한 핵심 원동력이 되었습니다.
           </div>
         </div>
       </div>
