@@ -9,20 +9,20 @@
 <style>
   /* AGENTS Rule Compliant Typography */
   .algo-desc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
-  .algo-ex-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
+  .algo-ex-title { font-size: 14.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 8px; }
 
-  /* ── Page Specific Visualization & Typography Styles (AGENTS Rule 준수) ── */
+  /* ── Page Specific Typography Styles (AGENTS Rule 준수) ── */
   .intro-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
   .intro-icon { font-size: 24px; margin-bottom: 8px; }
-  .intro-card h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
-  .intro-card p { font-size: 13.5px; color: #64748b; line-height: 1.7; }
+  .intro-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
+  .intro-card p { font-size: 14px; color: #64748b; line-height: 1.7; }
 
   .hbox { border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; border-left: 4px solid; display: flex; gap: 14px; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
   .hbox.blue { background: #eff6ff; border-color: #2563eb; }
   .hbox.green { background: #f0fdf4; border-color: #16a34a; }
   .hbox.orange { background: #fff7ed; border-color: #ea580c; }
   .hbox-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
-  .hbox-title { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
+  .hbox-title { font-size: 14.5px; font-weight: 700; margin-bottom: 6px; }
   .hbox.blue .hbox-title { color: #2563eb; }
   .hbox.green .hbox-title { color: #16a34a; }
   .hbox.orange .hbox-title { color: #ea580c; }
@@ -40,67 +40,67 @@
 
   .block { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
   .block-hd { padding: 16px 20px; border-bottom: 1px solid #eef1f6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .bnum { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 4px; }
-  .bapi { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; }
-  .bname { font-size: 15px; font-weight: 700; color: #1e2a3a; margin-top: 2px; }
+  .bnum { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 4px; }
+  .bapi { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 600; }
+  .bname { font-size: 16px; font-weight: 700; color: #1e2a3a; margin-top: 2px; }
   .block-body { padding: 20px; }
   .bdesc { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 16px; }
   .bdesc strong { color: #1e2a3a; }
 
   .params { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
   .param { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
-  .param-k { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
-  .param-v { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #1e2a3a; font-weight: 700; }
+  .param-k { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+  .param-v { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e2a3a; font-weight: 700; }
 
   .sim { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .sim-top { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
   .sim-ctrl { display: flex; flex-direction: column; flex: 1; min-width: 200px; gap: 14px; }
-  .ctrl-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  .ctrl-label { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
   .btn-grp { display: flex; gap: 6px; flex-wrap: wrap; }
-  .kbtn { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; transition: all .15s; font-weight: 500; }
+  .kbtn { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; transition: all .15s; font-weight: 500; }
   .kbtn:hover { border-color: #2563eb; color: #2563eb; }
   .kbtn.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 700; }
-  .sim-play { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 14px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600; }
+  .sim-play { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; padding: 8px 14px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600; }
   .sim-play:hover { opacity: .9; }
-  .sim-step { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 12px; border: 1.5px solid #2563eb; border-radius: 6px; background: #fff; color: #2563eb; cursor: pointer; font-weight: 600; }
+  .sim-step { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; padding: 8px 12px; border: 1.5px solid #2563eb; border-radius: 6px; background: #fff; color: #2563eb; cursor: pointer; font-weight: 600; }
   .sim-step:hover { background: #eff6ff; }
-  .sim-reset { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; font-weight: 500; }
+  .sim-reset { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; cursor: pointer; font-weight: 500; }
   .sim-reset:hover { background: #f1f5f9; }
 
   .kern-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .kern-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #475569; }
-  .kern-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #ea580c; margin-top: 2px; text-align: center; font-weight: 600; }
+  .kern-label { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #475569; }
+  .kern-name { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #ea580c; margin-top: 2px; text-align: center; font-weight: 600; }
 
   .fbox { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; padding: 14px 16px; min-width: 170px; }
-  .fbox-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
-  .fbox-expr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #1e2a3a; line-height: 1.7; }
+  .fbox-label { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  .fbox-expr { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #1e2a3a; line-height: 1.7; }
   .fbox-result { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #2563eb; margin-top: 4px; }
 
   .sim-grids { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
   .gw { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .glabel { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #475569; font-weight: 500; }
+  .glabel { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #475569; font-weight: 500; }
   .glabel span { color: #1e2a3a; font-weight: 700; }
   .sgrid { display: grid; gap: 3px; }
-  .cell { width: 42px; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #1e2a3a; transition: background .2s, border-color .2s; }
+  .cell { width: 42px; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 600; color: #1e2a3a; transition: background .2s, border-color .2s; }
   .cell.hi { background: #eff6ff; border-color: #2563eb; }
   .cell.kact { background: #fff7ed; border-color: #ea580c; }
   .cell.done { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
   .cell.cur { background: #2563eb; border-color: #2563eb; color: #fff; animation: pop .3s ease; }
-  .cell.pad { background: #f0f7ff; border: 1.5px dashed #93c5fd; color: #93c5fd; font-size: 12px; }
+  .cell.pad { background: #f0f7ff; border: 1.5px dashed #93c5fd; color: #93c5fd; font-size: 13.5px; }
   .cell.pad.hi { background: #eff6ff; border-color: #2563eb; border-style: dashed; color: #2563eb; }
   @keyframes pop { 0%{transform:scale(.8)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
   .cbox { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; }
-  .cbox-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
-  #simCalc { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; color: #1e2a3a; }
-  #simCalcR { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #2563eb; margin-top: 6px; min-height: 20px; }
+  .cbox-title { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+  #simCalc { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.8; color: #1e2a3a; }
+  #simCalcR { font-family: 'JetBrains Mono', monospace; font-size: 14.5px; font-weight: 700; color: #2563eb; margin-top: 6px; min-height: 20px; }
 
   .dots-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .dots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 340px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; transition: background .2s, transform .2s; }
   .dot.done { background: #16a34a; }
   .dot.cur { background: #2563eb; transform: scale(1.3); }
-  #simSteps { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; font-weight: 500; }
+  #simSteps { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #64748b; font-weight: 500; }
 
   .dw { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 16px; overflow-x: auto; }
 
@@ -109,30 +109,30 @@
   .pblock { border: 1.5px solid; border-radius: 8px; padding: 12px 14px; text-align: center; min-width: 96px; flex-shrink: 0; }
   .pblock:hover { opacity: .85; }
   .picon { font-size: 20px; margin-bottom: 4px; }
-  .pname { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1e2a3a; }
-  .psize { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; margin-top: 4px; }
+  .pname { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #1e2a3a; }
+  .psize { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #64748b; margin-top: 4px; }
   .parr { font-size: 18px; color: #94a3b8; flex-shrink: 0; }
-  .pipe-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 13.5px; color: #475569; line-height: 1.7; }
+  .pipe-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #475569; line-height: 1.7; }
 
   .hier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   @media(max-width: 768px){ .hier-grid { grid-template-columns: 1fr; } }
   .hcard { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 18px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-  .hlevel { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; font-weight: 600; }
-  .htitle { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
-  .hdesc { font-size: 13.5px; color: #64748b; line-height: 1.7; }
+  .hlevel { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; font-weight: 600; }
+  .htitle { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #1e2a3a; }
+  .hdesc { font-size: 14px; color: #64748b; line-height: 1.7; }
   .htags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
-  .htag { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
+  .htag { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
 
   /* ── Interactive Feature Component Cards ── */
   .feat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-  .feat-card-title { font-size: 13.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .feat-card-desc { font-size: 13.5px; color: #64748b; line-height: 1.7; margin-bottom: 12px; }
+  .feat-card-title { font-size: 14.5px; font-weight: 700; color: #1e2a3a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .feat-card-desc { font-size: 14px; color: #64748b; line-height: 1.7; margin-bottom: 12px; }
 
   canvas.interactive-canvas { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; display: block; margin: 10px auto; max-width: 100%; height: auto; }
 
   input[type=range] { width: 100px; accent-color: #2563eb; cursor: pointer; }
 
-  footer { text-align: center; padding: 24px; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .05em; border-top: 1px solid #e2e8f0; margin-top: 40px; font-weight: 500; }
+  footer { text-align: center; padding: 24px; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; border-top: 1px solid #e2e8f0; margin-top: 40px; font-weight: 500; }
 </style>
 </head>
 <body>
