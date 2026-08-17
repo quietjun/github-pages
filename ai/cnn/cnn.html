@@ -217,7 +217,8 @@
       <div class="bdesc algo-desc">
         입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 요소별 곱셈 및 합산(Dot Product + Bias)을 수행해 <strong>Feature Map(특징 맵)</strong>을 생성합니다.<br>
         → 필터 하나 = 하나의 특정한 엣지/패턴 감지기<br>
-        → 기본 연산식: <span class="mono" style="font-size:12.5px;color:#1d4ed8;font-weight:600;">output = Σ(input × weight) + bias</span>
+        → 기본 연산식: <span class="mono" style="font-size:12.5px;color:#1d4ed8;font-weight:600;">output = Σ(input × weight) + bias</span><br>
+        <span style="font-size:14px;color:#64748b;">(※ 딥러닝 라이브러리 파라미터명에서 자주 쓰이는 <strong>커널(Kernel)</strong>은 <strong>필터(Filter)</strong>와 완전히 동일한 대상을 지칭하는 동의어이다.)</span>
       </div>
 
       <div class="hbox green" style="margin-bottom:16px;">
@@ -324,7 +325,7 @@
       </div>
 
       <div class="params">
-        <div class="param"><div class="param-k">Kernel Size (K)</div><div class="param-v">3×3 (일반적 사용)</div></div>
+        <div class="param"><div class="param-k">Kernel (필터) Size (K)</div><div class="param-v">3×3 (일반적 사용)</div></div>
         <div class="param"><div class="param-k">Stride (S)</div><div class="param-v">커널 이동 칸 수</div></div>
         <div class="param"><div class="param-k">Padding (P)</div><div class="param-v">입력 외곽 0 채움</div></div>
         <div class="param"><div class="param-k">출력 크기</div><div class="param-v">⌊(N+2P−K)/S⌋ + 1</div></div>
