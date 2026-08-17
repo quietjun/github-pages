@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LoRA — Low-Rank Adaptation 완전 이해</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./images/common.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -18,14 +19,29 @@ body {
   line-height: 1.7;
 }
 
-/* ── SECTION LABEL ── */
-.section-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: #94a3b8;
-  margin: 40px 0 14px;
-  display: flex; align-items: center; gap: 8px;
+/* ── SECTION LABEL (H3) ── */
+h3.section-label {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1a1d2e;
+  border-left: 6px solid #2563eb;
+  padding-left: 12px;
+  margin: 45px 0 20px;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
 }
-.section-label::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+/* ── SUB-TITLE (H4) ── */
+h4.sub-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #953b34;
+  border-left: 10px solid #dbeafe; /* 연한 파스텔톤 블루 세로바 */
+  padding-left: 10px;
+  margin: 25px 0 15px;
+  line-height: 1.3;
+}
 
 /* ── HEADER ── */
 .header { text-align: center; margin-bottom: 44px; }
@@ -60,25 +76,25 @@ body {
 }
 .peft-def-keyword {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; font-weight: 700; color: #2563eb;
+  font-size: 14px; font-weight: 700; color: #2563eb;
   letter-spacing: 2px;
 }
 .peft-def-full {
   font-size: 15px; font-weight: 800; color: #1a1d2e; line-height: 1.4;
 }
 .peft-def-desc {
-  font-size: 13.5px; color: #475569; line-height: 1.8; margin-top: 6px;
+  font-size: 14px; color: #475569; line-height: 1.8; margin-top: 6px;
 }
 .peft-def-desc strong { color: #1a1d2e; }
-
+ 
 /* ── UNIFIED COMPARE TABLE ── */
 .compare-table-unified {
-  width: 100%; border-collapse: collapse; font-size: 13.5px;
+  width: 100%; border-collapse: collapse; font-size: 14px;
 }
 .compare-table-unified thead tr { background: #1a1d2e; }
 .compare-table-unified thead th {
   padding: 14px 18px; text-align: left; font-weight: 700;
-  font-size: 13px; line-height: 1.5;
+  font-size: 14px; line-height: 1.5;
 }
 .compare-table-unified thead th span {
   display: block; font-size: 11px; font-weight: 500;
@@ -93,20 +109,20 @@ body {
   padding: 13px 18px; vertical-align: top; line-height: 1.65;
 }
 .compare-table-unified td small {
-  display: block; font-size: 11.5px; color: #94a3b8; margin-top: 2px;
+  display: block; font-size: 12px; color: #94a3b8; margin-top: 2px;
 }
 .compare-table-unified td.row-label {
-  font-weight: 700; color: #1a1d2e; font-size: 13px; background: #f8fafc;
+  font-weight: 700; color: #1a1d2e; font-size: 14px; background: #f8fafc;
 }
 .compare-table-unified td.val-bad  { color: #dc2626; }
 .compare-table-unified td.val-good { color: #1d4ed8; }
 .compare-table-unified td.val-good strong { font-weight: 800; }
-
+ 
 .red  { color: #dc2626; font-weight: 600; }
 .blue { color: #2563eb; font-weight: 600; }
 /* keep .compare-table-mini for nothing now, just alias */
 .compare-table-mini { display: none; }
-
+ 
 /* ── RANK CONCEPT BOX (핵심 발견 아래) ── */
 .rank-concept-box {
   background: #f5f3ff; border: 1.5px solid #ddd6fe;
@@ -115,19 +131,19 @@ body {
 }
 .rcb-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px; font-weight: 700; color: #7c3aed;
+  font-size: 11px; font-weight: 700; color: #7c3aed;
   letter-spacing: 1.5px; margin-bottom: 4px;
 }
 .rcb-title { font-size: 15px; font-weight: 800; color: #4c1d95; margin-bottom: 8px; }
-.rcb-desc  { font-size: 13px; color: #5b21b6; line-height: 1.75; }
+.rcb-desc  { font-size: 14px; color: #5b21b6; line-height: 1.75; }
 .rcb-desc strong { color: #4c1d95; }
 .rcb-desc em { font-style: normal; color: #6d28d9; font-weight: 600; }
-
+ 
 /* ── RANK BOTTLENECK NOTE ── */
 .rank-bottleneck {
   background: #fefce8; border: 1.5px solid #fde047;
   border-radius: 10px; padding: 11px 16px;
-  font-size: 12.5px; color: #713f12; margin-top: 4px;
+  font-size: 14px; color: #713f12; margin-top: 4px;
   display: flex; align-items: flex-start; gap: 10px;
 }
 .rb-arrow { font-size: 18px; flex-shrink: 0; margin-top: -2px; }
@@ -136,7 +152,7 @@ body {
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border-left: 4px solid #3b82f6;
   border-radius: 10px; padding: 16px 20px;
-  margin-bottom: 24px; font-size: 13.5px; color: #1e40af; line-height: 1.75;
+  margin-bottom: 24px; font-size: 14.5px; color: #1e40af; line-height: 1.75;
 }
 .insight-box strong { font-weight: 800; }
 
@@ -148,7 +164,7 @@ body {
 .matrix-wrap { text-align: center; }
 .matrix-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px; font-weight: 700; margin-bottom: 8px;
+  font-size: 14px; font-weight: 700; margin-bottom: 8px;
 }
 .matrix {
   display: inline-grid; gap: 3px; padding: 10px;
@@ -175,7 +191,7 @@ body {
   font-size: 26px; color: #cbd5e1; font-weight: 300;
   flex-shrink: 0; align-self: center;
 }
-.matrix-sub { font-size: 11.5px; color: #64748b; margin-top: 8px; }
+.matrix-sub { font-size: 14px; color: #64748b; margin-top: 8px; }
 .matrix-sub span { font-weight: 700; }
 
 /* param count box */
@@ -194,8 +210,8 @@ body {
 }
 .param-box.full .param-box-num { color: #dc2626; }
 .param-box.low  .param-box-num { color: #16a34a; }
-.param-box-label { font-size: 12px; color: #64748b; }
-.param-box-desc  { font-size: 12px; font-weight: 700; margin-top: 8px; }
+.param-box-label { font-size: 14px; color: #64748b; }
+.param-box-desc  { font-size: 14px; font-weight: 700; margin-top: 8px; }
 .param-box.full .param-box-desc { color: #dc2626; }
 .param-box.low  .param-box-desc { color: #16a34a; }
 
@@ -210,11 +226,11 @@ body {
 }
 .rank-step-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 700; color: #94a3b8;
+  font-size: 12px; font-weight: 700; color: #94a3b8;
   margin-bottom: 6px;
 }
-.rank-step-title { font-size: 13px; font-weight: 800; color: #1a1d2e; margin-bottom: 8px; }
-.rank-step-desc  { font-size: 12px; color: #64748b; line-height: 1.65; }
+.rank-step-title { font-size: 14px; font-weight: 800; color: #1a1d2e; margin-bottom: 8px; }
+.rank-step-desc  { font-size: 14px; color: #64748b; line-height: 1.65; }
 
 /* ── FORWARD / BACKWARD UNIFIED DIAGRAM ── */
 .fbdiag-wrap {
@@ -226,7 +242,7 @@ body {
   margin-bottom: 18px; padding-bottom: 14px;
   border-bottom: 1px solid #f1f5f9;
 }
-.leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; }
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #64748b; }
 .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .fwd-dot    { background: #3b82f6; }
 .bwd-dot    { background: #f59e0b; }
@@ -242,7 +258,7 @@ body {
 .fbdiag-labels { display: flex; flex-direction: column; padding-top: 4px; }
 .fbd-lrow { display: flex; align-items: center; }
 .fbl {
-  font-size: 11px; font-weight: 700; line-height: 1.3;
+  font-size: 12.5px; font-weight: 700; line-height: 1.3;
   padding: 3px 8px; border-radius: 6px; white-space: nowrap;
 }
 .fwd-lbl  { color: #1d4ed8; background: #eff6ff; }
@@ -253,9 +269,9 @@ body {
 
 .fbdiag-notes { display: flex; flex-direction: column; padding-top: 4px; }
 .fbn-item { display: flex; flex-direction: column; gap: 3px; }
-.fbn-item p { font-size: 11.5px; color: #64748b; line-height: 1.5; }
+.fbn-item p { font-size: 14px; color: #64748b; line-height: 1.5; }
 .fbn-badge {
-  display: inline-block; font-size: 10px; font-weight: 700;
+  display: inline-block; font-size: 12px; font-weight: 700;
   padding: 2px 8px; border-radius: 5px; width: fit-content;
   letter-spacing: 0.5px;
 }
@@ -278,42 +294,43 @@ body {
   background: #fff; border-radius: 14px; padding: 20px; border: 1.5px solid #e2e8f0;
 }
 .attn-block-title {
-  font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 14px;
+  font-size: 14px; font-weight: 700; color: #64748b; margin-bottom: 14px;
   letter-spacing: 0.5px; text-transform: uppercase;
 }
 .proj-row {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 12px; border-radius: 9px; margin-bottom: 6px;
-  font-size: 12.5px;
+  font-size: 14px;
 }
 .proj-name {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px; font-weight: 700; min-width: 70px;
+  font-size: 14px; font-weight: 700; min-width: 70px;
 }
 .proj-row.active { background: #eff6ff; }
 .proj-row.muted  { background: #f8fafc; color: #94a3b8; }
 .proj-row.active .proj-name { color: #2563eb; }
 .proj-row.muted  .proj-name { color: #cbd5e1; }
 .proj-role {
-  font-size: 11px; color: #94a3b8; font-weight: 600;
+  font-size: 12px; color: #94a3b8; font-weight: 600;
   background: #f1f5f9; border-radius: 5px;
   padding: 1px 7px; margin-left: 2px;
 }
 .proj-row.muted .proj-role { color: #94a3b8; }
+.lora-chip {
   margin-left: auto;
   background: #2563eb; color: #fff;
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+  font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
   font-family: 'JetBrains Mono', monospace;
 }
 .opt-chip {
   margin-left: auto;
   background: #f1f5f9; color: #94a3b8;
-  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 5px;
+  font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 5px;
 }
 .tip-box {
   background: #fffbeb; border: 1.5px solid #fde68a;
   border-radius: 10px; padding: 12px 16px;
-  font-size: 12.5px; color: #92400e; margin-top: 14px;
+  font-size: 14px; color: #92400e; margin-top: 14px;
   grid-column: 1 / -1;
 }
 
@@ -327,38 +344,34 @@ body {
   color: #fff; border-radius: 14px; padding: 18px 22px;
   text-align: center; margin-bottom: 20px;
 }
-.base-model-box .bm-label { font-size: 11px; color: #a5b4fc; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.base-model-box .bm-label { font-size: 12px; color: #a5b4fc; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
 .base-model-box .bm-name  { font-size: 18px; font-weight: 800; }
-.base-model-box .bm-sub   { font-size: 12px; color: #c7d2fe; margin-top: 4px; }
-.adapter-cards {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-  margin-bottom: 20px;
-}
+.base-model-box .bm-sub   { font-size: 14px; color: #c7d2fe; margin-top: 4px; }
 .adapter-card {
   border-radius: 12px; padding: 14px 12px; text-align: center;
   border: 1.5px solid #e2e8f0; background: #f8fafc;
-  font-size: 12px;
+  font-size: 14px;
 }
 .adapter-card .ac-icon  { font-size: 22px; margin-bottom: 6px; }
-.adapter-card .ac-title { font-weight: 700; color: #1a1d2e; font-size: 12.5px; margin-bottom: 4px; }
+.adapter-card .ac-title { font-weight: 700; color: #1a1d2e; font-size: 14px; margin-bottom: 4px; }
 .adapter-card .ac-size  {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; color: #2563eb; background: #dbeafe;
+  font-size: 13px; color: #2563eb; background: #dbeafe;
   padding: 1px 7px; border-radius: 5px; display: inline-block;
 }
-.adapter-card .ac-desc  { font-size: 11px; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
+.adapter-card .ac-desc  { font-size: 13px; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
 .merge-row {
   display: flex; align-items: center; gap: 12px;
   background: #f0fdf4; border: 1.5px solid #86efac;
   border-radius: 12px; padding: 14px 18px; flex-wrap: wrap;
 }
-.merge-item { font-size: 13px; font-weight: 700; }
+.merge-item { font-size: 14px; font-weight: 700; }
 .merge-item.base { color: #1e40af; }
 .merge-item.adapter { color: #16a34a; }
 .merge-plus { color: #94a3b8; font-size: 18px; }
 .merge-result {
   margin-left: auto; background: #16a34a; color: #fff;
-  padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 700;
+  padding: 8px 18px; border-radius: 9px; font-size: 14px; font-weight: 700;
 }
 
 /* ── MERGE vs SEPARATE ── */
@@ -372,12 +385,12 @@ body {
 .infer-card.mrg .infer-card-title { color: #059669; }
 .infer-flow {
   background: #f8fafc; border-radius: 10px; padding: 14px;
-  margin-bottom: 14px; font-size: 12.5px; line-height: 2;
+  margin-bottom: 14px; font-size: 14px; line-height: 2;
   font-family: 'JetBrains Mono', monospace;
 }
 .infer-flow .eq { color: #2563eb; font-weight: 700; }
-.infer-flow .note { font-family: 'Noto Sans KR', sans-serif; color: #94a3b8; font-size: 11px; }
-.pro-con { font-size: 12px; color: #64748b; }
+.infer-flow .note { font-family: 'Noto Sans KR', sans-serif; color: #94a3b8; font-size: 13px; }
+.pro-con { font-size: 14px; color: #64748b; }
 .pro-con li { list-style: none; padding: 3px 0 3px 16px; position: relative; }
 .pro-con li::before { position: absolute; left: 0; }
 .pro-con li.pro::before { content: '✔'; color: #16a34a; }
@@ -386,7 +399,7 @@ body {
 /* ── CODE ── */
 .code-tabs  { display:flex; gap:8px; margin-bottom:12px; }
 .code-tab {
-  padding:7px 18px; border-radius:8px; font-size:13px; font-weight:700;
+  padding:7px 18px; border-radius:8px; font-size:14px; font-weight:700;
   cursor:pointer; border:2px solid transparent; transition:all .2s;
   font-family:'JetBrains Mono',monospace;
 }
@@ -399,7 +412,7 @@ body {
 }
 .code-block pre {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px; line-height: 1.8; color: #e2e8f0; white-space: pre;
+  font-size: 13.5px; line-height: 1.8; color: #e2e8f0; white-space: pre;
 }
 .c-comment { color: #64748b; }
 .c-keyword  { color: #c4b5fd; }
@@ -416,13 +429,13 @@ body {
   border-radius: 16px; padding: 24px 28px; color: #fff;
 }
 .summary-box .sum-title {
-  font-size: 13px; font-weight: 700; color: #93c5fd;
+  font-size: 14px; font-weight: 700; color: #93c5fd;
   letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
 }
 .sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .sum-item { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; }
 .sum-item .si-key {
-  font-size: 11px; color: #93c5fd; margin-bottom: 4px; font-weight: 700; letter-spacing: 1px;
+  font-size: 13px; color: #93c5fd; margin-bottom: 4px; font-weight: 700; letter-spacing: 1px;
 }
 .sum-item .si-val { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.4; }
 
@@ -447,9 +460,12 @@ body {
   <p>파인튜닝 기법의 핵심 원리 · Low-Rank 개념 · 동작 방식 · 코드 사용법</p>
 </div>
 
+<p style="font-size: 14.5px; color: #565c66; line-height: 1.8; max-width: 800px; margin: 0 auto 2.5rem; text-align: center;">
+  이번 포스트에서는 파인튜닝 기법의 핵심 원리인 LoRA(Low-Rank Adaptation)의 개념과 동작 방식을 이해하고 실무 코드 적용 방법을 알아본다.
+</p>
 
 <!-- ═══ 01. PEFT란? ═══ -->
-<div class="section-label">01 · PEFT 란?</div>
+<h3 class="section-label">01 · PEFT 란?</h3>
 
 <!-- PEFT 정의 -->
 <div class="peft-def-box">
@@ -509,7 +525,7 @@ body {
 
 
 <!-- ═══ 02. LOW-RANK란? ═══ -->
-<div class="section-label">02 · Low-Rank 란?</div>
+<h3 class="section-label">02 · Low-Rank 란?</h3>
 <div class="lowrank-card">
 
   <div class="insight-box">
@@ -605,7 +621,7 @@ body {
 
 
 <!-- ═══ 03. 순전파 / 역전파 ═══ -->
-<div class="section-label">03 · 순전파 & 역전파 동작 방식</div>
+<h3 class="section-label">03 · 순전파 & 역전파 동작 방식</h3>
 
 <div class="fbdiag-wrap">
 
@@ -757,7 +773,7 @@ body {
 
 
 <!-- ═══ 04. LoRA 적용 위치 ═══ -->
-<div class="section-label">04 · 트랜스포머 내 LoRA 적용 위치</div>
+<h3 class="section-label">04 · 트랜스포머 내 LoRA 적용 위치</h3>
 <div class="attn-grid">
 
   <div class="attn-block">
@@ -815,7 +831,7 @@ body {
 
 
 <!-- ═══ 05. ADAPTER 활용 ═══ -->
-<div class="section-label">05 · LoRA Adapter 활용 방식</div>
+<h3 class="section-label">05 · LoRA Adapter 활용 방식</h3>
 <div class="adapter-diagram">
 
   <div class="base-model-box">
@@ -871,7 +887,7 @@ body {
 
 
 <!-- ═══ 06. 추론 방식 비교 ═══ -->
-<div class="section-label">06 · 추론 방식 — 분리 vs 병합</div>
+<h3 class="section-label">06 · 추론 방식 — 분리 vs 병합</h3>
 <div class="infer-grid">
 
   <div class="infer-card sep">
@@ -907,7 +923,7 @@ body {
 
 
 <!-- ═══ 07. 코드 사용법 ═══ -->
-<div class="section-label">07 · LoRA 코드 사용법</div>
+<h3 class="section-label">07 · LoRA 코드 사용법</h3>
 <div class="code-tabs">
   <button class="code-tab lora-tab active" onclick="switchTab('train')">① 학습</button>
   <button class="code-tab lora-tab" onclick="switchTab('load')">② Adapter 로드 & 추론</button>
@@ -1009,7 +1025,7 @@ print(tokenizer.decode(outputs[<span class="c-num">0</span>], skip_special_token
 
 
 <!-- ═══ SUMMARY ═══ -->
-<div class="section-label" style="margin-top:40px">요약</div>
+<h3 class="section-label" style="margin-top:40px">요약</h3>
 <div class="summary-box">
   <div class="sum-title">LoRA 핵심 정리</div>
   <div class="sum-grid">
