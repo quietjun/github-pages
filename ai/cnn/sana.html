@@ -1023,22 +1023,65 @@
         </div>
 
         <!-- Detailed Info -->
-        <div class="card" style="background: var(--bg-dark); border-color: var(--border-color); padding: 1.5rem;">
+        <div class="card" style="background: var(--bg-card); border-color: var(--border-color); padding: 1.5rem; margin-top: 1.5rem;">
           <h4 class="algo-ex-title" style="color: var(--accent); margin-bottom: 0.75rem; font-size: 15px !important; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📑</span> 모델 상세 정보 (Model Card & Metadata)
+            <span>📑</span> 모델 상세 정보 핵심 검토 항목 (Model Card & Metadata)
           </h4>
-          <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7;">
-            개별 모델의 메인 화면에 로드되는 <strong>Model Card</strong>(README.md)는 모델의 공식 사용설명서입니다. 
-            해당 탭을 포함하여 모델 저장소 내부의 중요한 메타데이터 자원들을 종합적으로 검토해야 합니다.
+          <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7; margin-bottom: 1rem;">
+            허깅페이스의 개별 모델 저장소에 접속했을 때, 실제 프로덕션 도입 및 안정적인 코드 구현을 위해 공통적으로 반드시 점검해야 할 5가지 체크포인트입니다.
           </p>
-          <ul style="margin-top: 0.75rem; margin-left: 1.5rem; color: var(--text-muted); font-size: 13.5px; line-height: 1.6;">
-            <li style="margin-bottom: 0.4rem;"><strong>Model Card 본문</strong>: 모델 개발 백그라운드, 성능 평가 벤치마크 점수표, 학습에 동원된 데이터셋 내역과 사용 시 주의 한계점 명시</li>
-            <li style="margin-bottom: 0.4rem;"><strong>Files and versions 탭</strong>: 모델 로드에 필요한 가중치 파일(<code>.safetensors</code>), 설정값 딕셔너리(<code>config.json</code>) 및 텍스트/이미지 전처리기 메타 파일들의 구조 확인 가능</li>
-            <li style="margin-bottom: 0.4rem;"><strong>인기도 및 사용권 제약</strong>: 월간 다운로드 수(Downloads)와 좋아요 수(Likes)를 통해 커뮤니티 검증도를 판단하며, 상업적 사용 권한을 판단하는 <strong>라이선스(License)</strong> 정보를 반드시 확인해야 함</li>
-          </ul>
-          <p class="algo-desc" style="color: var(--accent); font-weight: 600; font-size: 13.5px !important; margin-top: 0.75rem;">
-            💡 <strong>실무 팁:</strong> 보안 위협과 저장 공간 로딩 성능을 최적화하기 위해, 기존 PyTorch pickle 기반 포맷인 <code>.bin</code> 파일보다 임의의 악성 코드 실행 차단 보안 패치가 적용되고 불러오기 속도가 대폭 향상된 <strong><code>.safetensors</code> 포맷</strong>의 파일이 제공되는 모델을 우선 선택하는 것이 현대 AI 배포 환경의 표준입니다.
-          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.25rem;">
+            <!-- Point 1 -->
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; color: var(--primary); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                <span>1. 📄 Model Card (기본 사용설명서)</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                모델의 개발사, 학습 방법, 평가 성능(Benchmark)을 파악하고, 코드 구현 시 즉시 붙여넣어 실행해 볼 수 있는 <strong>동작 예제 코드(Usage Code)</strong>의 제공 유무를 가장 먼저 점검합니다.
+              </div>
+            </div>
+
+            <!-- Point 2 -->
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; color: var(--secondary); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                <span>2. ⚖️ License (사용 권한 규정)</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                모델을 상업적으로 활용할 수 있는지(예: <code>MIT</code>, <code>Apache-2.0</code>), 혹은 연구용으로 제약되는지(예: <code>CC-BY-NC</code>), 조건부 별도 동의 계약이 요구되는지 검토하여 규제 리스크를 예방합니다.
+              </div>
+            </div>
+
+            <!-- Point 3 -->
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; color: var(--accent); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                <span>3. 📊 Files & Versions (가중치 파일 포맷)</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                보안 위협(Pickle 인젝션 악성코드)이 배제되고 메모리 매핑 로드 성능이 압도적으로 우수한 <strong><code>.safetensors</code> 가중치 포맷 파일</strong>이 업로드되어 있는지 확인하고 우선적으로 채택합니다.
+              </div>
+            </div>
+
+            <!-- Point 4 -->
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; color: var(--rose); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                <span>4. 🚀 Downloads & Likes (신뢰도 지표)</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                최근 30일 다운로드 횟수(Downloads)와 커뮤니티의 추천(Likes) 추이를 비교하여, 해당 모델이 현업 및 업계 개발자들에게 안정적으로 활용되며 신뢰받는 메인스트림 가중치인지 파악합니다.
+              </div>
+            </div>
+
+            <!-- Point 5 -->
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; color: var(--amber); font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                <span>💬 Community & Spaces (생태계 및 데모)</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+                <strong>Community</strong> 탭의 이슈 및 토론을 읽어 잠재적 오류를 검사하고, <strong>Spaces</strong> 탭에서 활성화되어 있는 Gradio 웹 앱을 통해 코딩 전 실 성능을 브라우저에서 미리 테스트해 봅니다.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
