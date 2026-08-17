@@ -339,6 +339,107 @@
         font-size: 25px;
       }
     }
+
+    /* ── ROADMAP NAVIGATION ── */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    .stage {
+      scroll-margin-top: 30px;
+    }
+
+    .flow-roadmap {
+      background: #ffffff;
+      border: 1.5px solid #e8edf3;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin: 2.2rem 2.5rem 0.5rem 2.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+      text-align: center;
+    }
+
+    .roadmap-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.3px;
+    }
+
+    .roadmap-nodes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .roadmap-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 30px;
+      text-decoration: none;
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 14.5px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    }
+
+    .roadmap-node:hover {
+      background: #378add;
+      border-color: #378add;
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(55, 138, 221, 0.25);
+    }
+
+    .roadmap-node:hover .node-num {
+      background: #ffffff;
+      color: #378add;
+    }
+
+    .node-num {
+      width: 24px;
+      height: 24px;
+      background: #378add;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+    }
+
+    .roadmap-arrow {
+      font-size: 16px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .flow-roadmap {
+        margin: 1.5rem 1.5rem 0.5rem 1.5rem;
+        padding: 1.2rem;
+      }
+      .roadmap-nodes {
+        gap: 8px;
+      }
+      .roadmap-node {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+      .roadmap-arrow {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -348,10 +449,46 @@
       <p>Linear에서 ViT까지: 정보 연결 방식의 역사</p>
     </div>
 
+    <!-- 아키텍처 진화 로드맵 네비게이션 -->
+    <div class="flow-roadmap">
+      <div class="roadmap-title">🗺️ 아키텍처 진화 로드맵 (클릭 시 상세 영역으로 부드럽게 이동)</div>
+      <div class="roadmap-nodes">
+        <a href="#stage-1" class="roadmap-node">
+          <span class="node-num">1</span>
+          <span class="node-name">Linear</span>
+        </a>
+        <div class="roadmap-arrow">→</div>
+        <a href="#stage-2" class="roadmap-node">
+          <span class="node-num">2</span>
+          <span class="node-name">MLP</span>
+        </a>
+        <div class="roadmap-arrow">→</div>
+        <a href="#stage-3" class="roadmap-node">
+          <span class="node-num">3</span>
+          <span class="node-name">RNN</span>
+        </a>
+        <div class="roadmap-arrow">→</div>
+        <a href="#stage-4" class="roadmap-node">
+          <span class="node-num">4</span>
+          <span class="node-name">CNN</span>
+        </a>
+        <div class="roadmap-arrow">→</div>
+        <a href="#stage-5" class="roadmap-node">
+          <span class="node-num">5</span>
+          <span class="node-name">Attention</span>
+        </a>
+        <div class="roadmap-arrow">→</div>
+        <a href="#stage-6" class="roadmap-node">
+          <span class="node-num">6</span>
+          <span class="node-name">ViT</span>
+        </a>
+      </div>
+    </div>
+
     <div class="evolution-container">
       
       <!-- Stage 1: Linear Layer -->
-      <div class="stage">
+      <div class="stage" id="stage-1">
         <div class="stage-title">
           <div class="stage-number">1</div>
           <div>Linear Layer - 기본 선형 변환</div>
@@ -419,7 +556,7 @@
       </div>
 
       <!-- Stage 2: MLP (다층 퍼셉트론) -->
-      <div class="stage">
+      <div class="stage" id="stage-2">
         <div class="stage-title">
           <div class="stage-number">2</div>
           <div>MLP - 활성화 함수로 비선형성 추가</div>
@@ -504,7 +641,7 @@
       </div>
 
       <!-- Stage 3: RNN (순환 신경망) -->
-      <div class="stage">
+      <div class="stage" id="stage-3">
         <div class="stage-title">
           <div class="stage-number">3</div>
           <div>RNN - 순환 연결로 시간 메모리 추가</div>
@@ -579,7 +716,7 @@
       </div>
 
       <!-- Stage 4: CNN (합성곱 신경망) -->
-      <div class="stage">
+      <div class="stage" id="stage-4">
         <div class="stage-title">
           <div class="stage-number">4</div>
           <div>CNN - 지역 필터로 공간 구조 인식</div>
@@ -654,7 +791,7 @@
       </div>
 
       <!-- Stage 5: Attention & Transformer -->
-      <div class="stage">
+      <div class="stage" id="stage-5">
         <div class="stage-title">
           <div class="stage-number">5</div>
           <div>Attention / Transformer - 전역 동적 가중치</div>
@@ -723,7 +860,7 @@
       </div>
 
       <!-- Stage 6: ViT (Vision Transformer) -->
-      <div class="stage">
+      <div class="stage" id="stage-6">
         <div class="stage-title">
           <div class="stage-number">6</div>
           <div>ViT (Vision Transformer) - 컴퓨터 비전의 Transformer 대통합</div>
