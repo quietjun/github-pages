@@ -50,7 +50,7 @@ body {
   color: var(--text);
   min-height: 100vh;
   padding: 36px 24px 60px;
-  max-width: 1024px;
+  max-width: 1400px;
   margin: 0 auto;
   line-height: 1.6;
   word-break: keep-all;
@@ -59,7 +59,7 @@ body {
 
 ul { list-style: none; }
 
-.container { width: 100%; max-width: 1024px; margin: 0 auto; }
+.container { width: 100%; max-width: 1400px; margin: 0 auto; }
 
 /* ── Header (App Style) ── */
 header {
