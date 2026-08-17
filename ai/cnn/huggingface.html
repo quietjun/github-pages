@@ -934,108 +934,107 @@
             <span>📛</span> 리포지토리 ID 명명 규칙 (Naming Conventions)
           </h4>
           
-          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: stretch;">
-            <!-- Left Side: Table of naming conventions -->
-            <div style="flex: 1.2; min-width: 300px; display: flex; flex-direction: column;">
-              <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7; margin-bottom: 0.5rem;">
-                허깅페이스의 사전학습 모델들은 <code>네임스페이스/모델명</code> 포맷의 고유한 <strong>리포지토리 ID (Repository ID)</strong>를 가집니다. 모델명 내부에는 크기, 용도, 학습 방식 등의 정보가 접미사(Suffix) 형태로 조립됩니다.
-              </p>
-              
-              <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 14px; text-align: left; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
-                <thead>
-                  <tr style="background: rgba(255, 255, 255, 0.03); border-bottom: 1.5px solid var(--border-color);">
-                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">구분</th>
-                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">설명 및 의미</th>
-                    <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">주요 태그 및 접미사</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--primary); white-space: nowrap;">리포지토리 ID</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">네임스페이스와 모델명을 결합한 고유 식별 주소</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>namespace/model_name</code></td>
-                  </tr>
-                  <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--secondary); white-space: nowrap;">네임스페이스</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">모델 배포 조직 또는 작성자 계정명</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>meta-llama</code>, <code>google</code></td>
-                  </tr>
-                  <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--accent); white-space: nowrap;">모델 크기</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">모델의 매개변수(파라미터) 총규모</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>7B</code>, <code>8B</code>, <code>70B</code></td>
-                  </tr>
-                  <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--rose); white-space: nowrap;">용도 및 목적</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">기본 모델(Base) 및 지시용(Instruct) 구분</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-Base</code>, <code>-Instruct</code>, <code>-Chat</code></td>
-                  </tr>
-                  <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--primary); white-space: nowrap;">학습 기법</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">지도학습 및 강화학습 파인튜닝 방식</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-SFT</code>, <code>-DPO</code>, <code>-RLHF</code></td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px 12px; font-weight: 600; color: var(--accent); white-space: nowrap;">양자화 포맷</td>
-                    <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">로컬 구동용 경량 압축 형식</td>
-                    <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-GGUF</code>, <code>-GPTQ</code>, <code>-AWQ</code></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <p class="algo-desc" style="color: var(--text-muted); font-size: 14px !important; line-height: 1.7; margin-bottom: 0.75rem;">
+            허깅페이스의 사전학습 모델들은 <code>네임스페이스/모델명</code> 포맷의 고유한 <strong>리포지토리 ID (Repository ID)</strong>를 가집니다. 모델명 내부에는 크기, 용도, 학습 방식 등의 정보가 접미사(Suffix) 형태로 조립됩니다.
+          </p>
+
+          <!-- 1. Naming Conventions Table -->
+          <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border-color); border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; min-width: 600px;">
+              <thead>
+                <tr style="background: rgba(255, 255, 255, 0.03); border-bottom: 1.5px solid var(--border-color);">
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">구분</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">설명 및 의미</th>
+                  <th style="padding: 10px 12px; font-weight: 700; color: var(--text-main); white-space: nowrap;">주요 태그 및 접미사</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--primary); white-space: nowrap;">리포지토리 ID</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">네임스페이스와 모델명을 결합한 고유 식별 주소</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>namespace/model_name</code></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--secondary); white-space: nowrap;">네임스페이스</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">모델 배포 조직 또는 작성자 계정명</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>meta-llama</code>, <code>google</code></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--accent); white-space: nowrap;">모델 크기</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">모델의 매개변수(파라미터) 총규모</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>7B</code>, <code>8B</code>, <code>70B</code></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--rose); white-space: nowrap;">용도 및 목적</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">기본 모델(Base) 및 지시용(Instruct) 구분</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-Base</code>, <code>-Instruct</code>, <code>-Chat</code></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--primary); white-space: nowrap;">학습 기법</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">지도학습 및 강화학습 파인튜닝 방식</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-SFT</code>, <code>-DPO</code>, <code>-RLHF</code></td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 12px; font-weight: 600; color: var(--accent); white-space: nowrap;">양자화 포맷</td>
+                  <td style="padding: 10px 12px; color: var(--text-muted); white-space: nowrap;">로컬 구동용 경량 압축 형식</td>
+                  <td style="padding: 10px 12px; font-family: monospace; color: var(--text-main); white-space: nowrap;"><code>-GGUF</code>, <code>-GPTQ</code>, <code>-AWQ</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 2. Actual Visualized Repository ID Analysis Card -->
+          <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">실제 리포지토리 ID 분석 구조 예시</div>
             
-            <!-- Right Side: Examples visualized in identical filter image aspect ratio -->
-            <div style="flex: 0.8; min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
-              <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px;">
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">실제 리포지토리 ID 분석 구조</div>
-                
-                <!-- Main Big Diagram: Meta-Llama-3-8B-Instruct -->
-                <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255, 255, 255, 0.015); padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color);">
-                  <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; flex-wrap: wrap; align-items: center; gap: 2px;">
-                    <span style="background: rgba(61, 79, 196, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px;">meta-llama</span>
-                    <span style="color: var(--text-muted);">/</span>
-                    <span style="background: rgba(168, 85, 247, 0.15); color: var(--secondary); padding: 2px 6px; border-radius: 4px;">Meta-Llama-3</span>
-                    <span style="color: var(--text-muted);">-</span>
-                    <span style="background: rgba(245, 158, 11, 0.15); color: var(--amber); padding: 2px 6px; border-radius: 4px;">8B</span>
-                    <span style="color: var(--text-muted);">-</span>
-                    <span style="background: rgba(244, 63, 94, 0.15); color: var(--rose); padding: 2px 6px; border-radius: 4px;">Instruct</span>
-                  </div>
-                  <div style="font-size: 14px; color: var(--text-muted); line-height: 1.4;">
-                    네임스페이스(<span style="color: var(--primary); font-weight: 600;">meta-llama</span>)와 모델명(<span style="color: var(--secondary); font-weight: 600;">Meta-Llama-3-8B-Instruct</span>)으로 구성되며, 모델명 내부에는 매개변수 크기(<span style="color: var(--amber); font-weight: 600;">8B</span>)와 지시수행용 미세조정(<span style="color: var(--rose); font-weight: 600;">Instruct</span>)이 결합된 형태
-                  </div>
-                </div>
+            <!-- Main Big Diagram: Meta-Llama-3-8B-Instruct -->
+            <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.015); padding: 12px; border-radius: 6px; border: 1px dashed var(--border-color);">
+              <div style="font-family: monospace; font-size: 14.5px; font-weight: 700; color: var(--text-main); display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+                <span style="background: rgba(61, 79, 196, 0.15); color: var(--primary); padding: 2px 8px; border-radius: 4px;">meta-llama</span>
+                <span style="color: var(--text-muted);">/</span>
+                <span style="background: rgba(168, 85, 247, 0.15); color: var(--secondary); padding: 2px 8px; border-radius: 4px;">Meta-Llama-3</span>
+                <span style="color: var(--text-muted);">-</span>
+                <span style="background: rgba(245, 158, 11, 0.15); color: var(--amber); padding: 2px 8px; border-radius: 4px;">8B</span>
+                <span style="color: var(--text-muted);">-</span>
+                <span style="background: rgba(244, 63, 94, 0.15); color: var(--rose); padding: 2px 8px; border-radius: 4px;">Instruct</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-top: 4px;">
+                네임스페이스(<span style="color: var(--primary); font-weight: 600;">meta-llama</span>)와 모델명(<span style="color: var(--secondary); font-weight: 600;">Meta-Llama-3-8B-Instruct</span>)으로 구성되며, 모델명 내부에는 매개변수 크기(<span style="color: var(--amber); font-weight: 600;">8B</span>)와 지시수행용 미세조정(<span style="color: var(--rose); font-weight: 600;">Instruct</span>)이 결합된 형태
+              </div>
+            </div>
 
-                <!-- Parameter Size Example -->
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px;">
-                    <span style="background: rgba(245, 158, 11, 0.15); color: var(--amber); padding: 1px 5px; border-radius: 3px;">7B, 8B, 70B</span>
-                    <span style="color: var(--text-muted);">➔ 모델명 크기 (Parameter Size)</span>
-                  </div>
-                  <div style="font-size: 14px; color: var(--text-muted); padding-left: 2px;">
-                    모델의 매개변수 규모를 표시
-                  </div>
+            <!-- Parameters & Suffixes 3-Column Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+              <!-- Parameter Size Example -->
+              <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.01); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px;">
+                <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                  <span style="background: rgba(245, 158, 11, 0.15); color: var(--amber); padding: 2px 6px; border-radius: 4px;">7B, 8B, 70B</span>
+                  <span style="color: var(--text-muted); font-size: 13.5px;">➔ 매개변수 크기</span>
                 </div>
-
-                <!-- Purpose / Learning Technique Example -->
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                    <span style="background: rgba(244, 63, 94, 0.15); color: var(--rose); padding: 1px 5px; border-radius: 3px;">-Base, -Instruct, -Chat, -DPO</span>
-                    <span style="color: var(--text-muted);">➔ 용도 및 학습 기법</span>
-                  </div>
-                  <div style="font-size: 14px; color: var(--text-muted); padding-left: 2px;">
-                    기본 모델(<code>-Base</code>) 혹은 미세조정(<code>-Instruct</code>, <code>-Chat</code>, <code>-DPO</code>, <code>-SFT</code>) 표시
-                  </div>
+                <div style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-top: 4px;">
+                  모델의 가중치(Parameter) 규모를 표시 (숫자가 클수록 높은 성능과 무거운 사양 요구)
                 </div>
+              </div>
 
-                <!-- Quantization Example -->
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                    <span style="background: rgba(16, 185, 129, 0.15); color: var(--accent); padding: 1px 5px; border-radius: 3px;">-GGUF, -GPTQ, -AWQ</span>
-                    <span style="color: var(--text-muted);">➔ 양자화 및 저장 형식</span>
-                  </div>
-                  <div style="font-size: 14px; color: var(--text-muted); padding-left: 2px;">
-                    경량화 및 로컬 구동용 양자화 형식 표시
-                  </div>
+              <!-- Purpose / Learning Technique Example -->
+              <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.01); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px;">
+                <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <span style="background: rgba(244, 63, 94, 0.15); color: var(--rose); padding: 2px 6px; border-radius: 4px;">-Base, -Instruct, -Chat, -DPO</span>
+                  <span style="color: var(--text-muted); font-size: 13.5px;">➔ 용도 및 학습 기법</span>
+                </div>
+                <div style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-top: 4px;">
+                  사전학습된 기본형(<code>-Base</code>) 혹은 대화 및 정렬 튜닝(<code>-Instruct</code>, <code>-Chat</code>, <code>-DPO</code>, <code>-SFT</code>) 표기
+                </div>
+              </div>
+
+              <!-- Quantization Example -->
+              <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.01); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px;">
+                <div style="font-family: monospace; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <span style="background: rgba(16, 185, 129, 0.15); color: var(--accent); padding: 2px 6px; border-radius: 4px;">-GGUF, -GPTQ, -AWQ</span>
+                  <span style="color: var(--text-muted); font-size: 13.5px;">➔ 양자화 및 저장 형식</span>
+                </div>
+                <div style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-top: 4px;">
+                  로컬 PC나 모바일 등 저사양 환경에서 동작하도록 소수점 정밀도를 압축한 경량 포맷 표기
                 </div>
               </div>
             </div>
