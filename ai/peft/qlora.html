@@ -179,28 +179,37 @@ h4.sub-title {
 .lr-arrow { color:#cbd5e1; font-size:16px; }
 
 /* ── 03 핵심 기술 ── */
+/* ── 03 핵심 기술 ── */
 .tech-grid {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 .tech-card {
-  background:#fff; border-radius:14px; padding:22px 18px;
-  box-shadow:0 1px 4px rgba(0,0,0,.06);
-  border-top:4px solid;
+  background: #fff;
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  border-left: 5px solid;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: start;
 }
-.tech-card:nth-child(1) { border-color:#7c3aed; }
-.tech-card:nth-child(2) { border-color:#0891b2; }
-.tech-card:nth-child(3) { border-color:#059669; }
-.tech-num   { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#94a3b8; margin-bottom:6px; }
-.tech-name  { font-size:14px; font-weight:800; color:#1a1d2e; margin-bottom:4px; }
-.tech-sub   { font-size:13px; font-family:'JetBrains Mono',monospace; color:#94a3b8; margin-bottom:12px; }
+.tech-card:nth-child(1) { border-color: #7c3aed; }
+.tech-card:nth-child(2) { border-color: #0891b2; }
+.tech-card:nth-child(3) { border-color: #059669; }
+.tech-num   { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 4px; }
+.tech-name  { font-size: 17px; font-weight: 800; color: #1a1d2e; margin-bottom: 4px; }
+.tech-sub   { font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #94a3b8; margin-bottom: 12px; }
 .tech-why   {
-  background:#f8fafc; border-radius:8px; padding:10px 12px;
-  font-size:14px; color:#475569; margin-bottom:12px; line-height:1.65;
-  border-left:3px solid #e2e8f0;
+  background: #f8fafc; border-radius: 8px; padding: 12px 14px;
+  font-size: 14px; color: #475569; line-height: 1.65;
+  border-left: 3px solid #e2e8f0;
 }
-.tech-card:nth-child(1) .tech-why { border-color:#ddd6fe; background:#f5f3ff; color:#5b21b6; }
-.tech-card:nth-child(2) .tech-why { border-color:#a5f3fc; background:#ecfeff; color:#0e7490; }
-.tech-card:nth-child(3) .tech-why { border-color:#bbf7d0; background:#f0fdf4; color:#166534; }
+.tech-card:nth-child(1) .tech-why { border-color: #ddd6fe; background: #f5f3ff; color: #5b21b6; }
+.tech-card:nth-child(2) .tech-why { border-color: #a5f3fc; background: #ecfeff; color: #0e7490; }
+.tech-card:nth-child(3) .tech-why { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
 .tech-desc  { font-size:14px; color:#64748b; line-height:1.7; }
 .tech-desc li { list-style:none; padding-left:14px; position:relative; padding-bottom:3px; }
 .tech-desc li::before { content:'→'; position:absolute; left:0; color:#94a3b8; font-size:12px; }
@@ -418,6 +427,7 @@ h4.sub-title {
 @media (max-width:700px) {
   .bit-grid   { grid-template-columns:1fr 1fr; }
   .tech-grid  { grid-template-columns:1fr; }
+  .tech-card  { grid-template-columns:1fr; gap:20px; padding:20px; }
   .flow-steps { flex-direction:column; }
   .flow-step::after { content:'↓'; right:50%; top:auto; bottom:-14px; transform:translateX(50%); }
   .mem-section { grid-template-columns:1fr; }
@@ -615,84 +625,96 @@ h4.sub-title {
 
   <!-- NF4 -->
   <div class="tech-card">
-    <div class="tech-num">01 / NF4</div>
-    <div class="tech-name">NF4 NormalFloat</div>
-    <div class="tech-sub">4-bit 양자화 방식</div>
-    <div class="tech-why">
-      💡 <strong>왜 필요?</strong><br>
-      일반 INT4는 균일 간격으로 값을 배치 → 가중치가 몰려 있는 구간의 정밀도 낭비.<br>
-      NF4는 정규분포를 가정해 <strong>가중치가 많은 구간에 더 촘촘하게</strong> 배치.
-    </div>
-    <div class="nf4-compare">
-      <div class="nf4c-item int4">
-        <div class="nf4c-label">INT4 — 균일 간격</div>
-        <ul class="bit-card-desc">
-          <li>구간 크기 동일</li>
-          <li>중간값 구간 낭비</li>
-          <li>극단값 정밀도 ↓</li>
-        </ul>
+    <div class="tech-info">
+      <div class="tech-num">01 / NF4</div>
+      <div class="tech-name">NF4 NormalFloat</div>
+      <div class="tech-sub">4-bit 양자화 방식</div>
+      <div class="tech-why">
+        💡 <strong>왜 필요?</strong><br>
+        일반 INT4는 균일 간격으로 값을 배치 → 가중치가 몰려 있는 구간의 정밀도 낭비.<br>
+        NF4는 정규분포를 가정해 <strong>가중치가 많은 구간에 더 촘촘하게</strong> 배치.
       </div>
-      <div class="nf4c-item nf4i">
-        <div class="nf4c-label">NF4 — 비균일 간격</div>
-        <ul class="bit-card-desc">
-          <li>정규분포 맞춤 배치</li>
-          <li>중간 밀집 구간 세밀</li>
-          <li>정보 손실 최소화 ★</li>
-        </ul>
+    </div>
+    <div class="tech-visual">
+      <div class="nf4-compare">
+        <div class="nf4c-item int4">
+          <div class="nf4c-label">INT4 — 균일 간격</div>
+          <ul class="bit-card-desc">
+            <li>구간 크기 동일</li>
+            <li>중간값 구간 낭비</li>
+            <li>극단값 정밀도 저하</li>
+          </ul>
+        </div>
+        <div class="nf4c-item nf4i">
+          <div class="nf4c-label">NF4 — 비균일 간격</div>
+          <ul class="bit-card-desc">
+            <li>정규분포 맞춤 배치</li>
+            <li>중간 밀집 구간 세밀</li>
+            <li>정보 손실 최소화</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Double Quantization -->
   <div class="tech-card">
-    <div class="tech-num">02 / DQ</div>
-    <div class="tech-name">Double Quantization</div>
-    <div class="tech-sub">양자화 상수까지 재압축</div>
-    <div class="tech-why">
-      💡 <strong>왜 필요?</strong><br>
-      NF4 양자화 시 각 블록마다 <strong>양자화 상수(scale factor)</strong>가 생성됨.<br>
-      이 상수 자체도 메모리를 차지 → 상수까지 다시 양자화해 추가 절감.
+    <div class="tech-info">
+      <div class="tech-num">02 / DQ</div>
+      <div class="tech-name">Double Quantization</div>
+      <div class="tech-sub">양자화 상수까지 재압축</div>
+      <div class="tech-why">
+        💡 <strong>왜 필요?</strong><br>
+        NF4 양자화 시 각 블록마다 <strong>양자화 상수(scale factor)</strong>가 생성됨.<br>
+        이 상수 자체도 메모리를 차지 → 상수까지 다시 양자화해 추가 절감.
+      </div>
     </div>
-    <div class="dq-flow">
-      <div class="dq-step s1">가중치<br>FP16</div>
-      <div class="dq-arrow">→</div>
-      <div class="dq-step s1">NF4 압축<br>+ 상수 FP32</div>
-      <div class="dq-arrow">→</div>
-      <div class="dq-step s2">상수도<br>FP8 압축</div>
-      <div class="dq-arrow">→</div>
-      <div class="dq-step s3">추가 절감<br>~0.5 GB</div>
-    </div>
-    <div style="margin-top:8px">
-      <span class="dq-save">7B 모델 기준 약 0.5 GB 추가 절감</span>
+    <div class="tech-visual">
+      <div class="dq-flow">
+        <div class="dq-step s1">가중치<br>FP16</div>
+        <div class="dq-arrow">→</div>
+        <div class="dq-step s1">NF4 압축<br>+ 상수 FP32</div>
+        <div class="dq-arrow">→</div>
+        <div class="dq-step s2">상수도<br>FP8 압축</div>
+        <div class="dq-arrow">→</div>
+        <div class="dq-step s3">추가 절감<br>~0.5 GB</div>
+      </div>
+      <div style="margin-top:12px">
+        <span class="dq-save">7B 모델 기준 약 0.5 GB 추가 절감</span>
+      </div>
     </div>
   </div>
 
   <!-- Paged Optimizers -->
   <div class="tech-card">
-    <div class="tech-num">03 / PO</div>
-    <div class="tech-name">Paged Optimizers</div>
-    <div class="tech-sub">GPU → CPU 자동 스왑</div>
-    <div class="tech-why">
-      💡 <strong>왜 필요?</strong><br>
-      학습 중 배치가 클 때 순간적으로 GPU 메모리 부족(OOM) 발생.<br>
-      Optimizer 상태를 CPU RAM으로 <strong>자동 페이징</strong>해 OOM 방지.
-    </div>
-    <div class="mem-compare">
-      <div class="mem-item without">
-        <div class="mem-item-label">✖ 일반 Optimizer</div>
-        <div class="mem-bar-bg"><div class="mem-bar red"></div></div>
-        <div class="mem-item-note">메모리 초과 → OOM 크래시</div>
-      </div>
-      <div class="mem-item with">
-        <div class="mem-item-label">✔ Paged Optimizer</div>
-        <div class="mem-bar-bg"><div class="mem-bar green"></div></div>
-        <div class="mem-item-note">초과분 → CPU RAM 자동 스왑</div>
+    <div class="tech-info">
+      <div class="tech-num">03 / PO</div>
+      <div class="tech-name">Paged Optimizers</div>
+      <div class="tech-sub">GPU → CPU 자동 스왑</div>
+      <div class="tech-why">
+        💡 <strong>왜 필요?</strong><br>
+        학습 중 배치가 클 때 순간적으로 GPU 메모리 부족(OOM) 발생.<br>
+        Optimizer 상태를 CPU RAM으로 <strong>자동 페이징</strong>해 OOM 방지.
       </div>
     </div>
-    <ul class="tech-desc" style="margin-top:10px">
-      <li>NVIDIA 통합 메모리 기반 동작</li>
-      <li>더 큰 배치 사이즈 허용</li>
-    </ul>
+    <div class="tech-visual">
+      <div class="mem-compare">
+        <div class="mem-item without">
+          <div class="mem-item-label">✖ 일반 Optimizer</div>
+          <div class="mem-bar-bg"><div class="mem-bar red"></div></div>
+          <div class="mem-item-note">메모리 초과 → OOM 크래시</div>
+        </div>
+        <div class="mem-item with">
+          <div class="mem-item-label">✔ Paged Optimizer</div>
+          <div class="mem-bar-bg"><div class="mem-bar green"></div></div>
+          <div class="mem-item-note">초과분 → CPU RAM 자동 스왑</div>
+        </div>
+      </div>
+      <ul class="tech-desc" style="margin-top:14px">
+        <li>NVIDIA 통합 메모리 기반 동작</li>
+        <li>더 큰 배치 사이즈 허용</li>
+      </ul>
+    </div>
   </div>
 
 </div>
