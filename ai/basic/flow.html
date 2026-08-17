@@ -732,34 +732,19 @@
           <div class="diagram-box">
             <svg width="420" height="240" viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg">
               <!-- Background Grid or Flow Line -->
-              <line x1="210" y1="10" x2="210" y2="230" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="4 3"/>
-
-              <!-- Vertical Temporal Hidden State Transmission Arrows -->
-              <line x1="210" y1="26" x2="210" y2="32" stroke="#d85a30" stroke-width="2.2" marker-end="url(#arrow_rnn_orange)"/>
-              <line x1="210" y1="68" x2="210" y2="102" stroke="#d85a30" stroke-width="2.2"/>
-              <line x1="210" y1="138" x2="210" y2="172" stroke="#d85a30" stroke-width="2.2"/>
-              <line x1="210" y1="208" x2="210" y2="225" stroke="#d85a30" stroke-width="2.2" marker-end="url(#arrow_rnn_orange)"/>
-
-              <!-- Hidden State (h) Nodes on the vertical flow -->
-              <circle cx="210" cy="18" r="6" fill="#d85a30"/>
-              <text x="222" y="18" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t-2)</text>
-
-              <circle cx="210" cy="85" r="6" fill="#d85a30"/>
-              <text x="222" y="85" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t-1)</text>
-
-              <circle cx="210" cy="155" r="6" fill="#d85a30"/>
-              <text x="222" y="155" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t)</text>
-
-              <circle cx="210" cy="222" r="6" fill="#d85a30"/>
-              <text x="222" y="222" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t+1)</text>
+              <line x1="195" y1="10" x2="195" y2="230" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="4 3"/>
 
               <!-- Time step t-1 (상단) -->
               <!-- 입력 x(t-1) -->
               <circle cx="80" cy="50" r="7" fill="#378add"/>
               <text x="30" y="50" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t-1)</text>
-              <!-- RNN Cell -->
-              <rect x="160" y="32" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="50" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              
+              <!-- RNN Cell 1 -->
+              <rect x="155" y="22" width="110" height="56" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
+              <text x="210" y="36" font-size="13" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              <circle cx="195" cy="56" r="6" fill="#d85a30"/>
+              <text x="207" y="56" font-size="13" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t-1)</text>
+              
               <!-- 출력 y(t-1) -->
               <circle cx="340" cy="50" r="7" fill="#1d9e75"/>
               <text x="350" y="50" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t-1)</text>
@@ -768,9 +753,13 @@
               <!-- 입력 x(t) -->
               <circle cx="80" cy="120" r="7" fill="#378add"/>
               <text x="45" y="120" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t)</text>
-              <!-- RNN Cell -->
-              <rect x="160" y="102" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="120" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              
+              <!-- RNN Cell 2 -->
+              <rect x="155" y="92" width="110" height="56" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
+              <text x="210" y="106" font-size="13" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              <circle cx="195" cy="126" r="6" fill="#d85a30"/>
+              <text x="207" y="126" font-size="13" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t)</text>
+              
               <!-- 출력 y(t) -->
               <circle cx="340" cy="120" r="7" fill="#1d9e75"/>
               <text x="350" y="120" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t)</text>
@@ -779,22 +768,36 @@
               <!-- 입력 x(t+1) -->
               <circle cx="80" cy="190" r="7" fill="#378add"/>
               <text x="30" y="190" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t+1)</text>
-              <!-- RNN Cell -->
-              <rect x="160" y="172" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="190" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              
+              <!-- RNN Cell 3 -->
+              <rect x="155" y="162" width="110" height="56" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
+              <text x="210" y="176" font-size="13" text-anchor="middle" font-weight="800" fill="#633806" dominant-baseline="central">RNN Cell</text>
+              <circle cx="195" cy="196" r="6" fill="#d85a30"/>
+              <text x="207" y="196" font-size="13" font-weight="700" fill="#d85a30" dominant-baseline="central">h(t+1)</text>
+              
               <!-- 출력 y(t+1) -->
               <circle cx="340" cy="190" r="7" fill="#1d9e75"/>
               <text x="350" y="190" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">y(t+1)</text>
 
               <!-- Horizontal flow arrows -->
-              <line x1="92" y1="50" x2="155" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
-              <line x1="265" y1="50" x2="328" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="92" y1="50" x2="150" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="270" y1="50" x2="328" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
               
-              <line x1="92" y1="120" x2="155" y2="120" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
-              <line x1="265" y1="120" x2="328" y2="120" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="92" y1="120" x2="150" y2="120" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="270" y1="120" x2="328" y2="120" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
               
-              <line x1="92" y1="190" x2="155" y2="190" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
-              <line x1="265" y1="190" x2="328" y2="190" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="92" y1="190" x2="150" y2="190" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+              <line x1="270" y1="190" x2="328" y2="190" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
+
+              <!-- Vertical Temporal Hidden State Transmission Arrows (Connects h-nodes) -->
+              <!-- h(t-2) -> h(t-1) -->
+              <line x1="195" y1="10" x2="195" y2="45" stroke="#d85a30" stroke-width="2.2" marker-end="url(#arrow_rnn_orange)"/>
+              <!-- h(t-1) -> h(t) -->
+              <line x1="195" y1="65" x2="195" y2="115" stroke="#d85a30" stroke-width="2.2" marker-end="url(#arrow_rnn_orange)"/>
+              <!-- h(t) -> h(t+1) -->
+              <line x1="195" y1="135" x2="195" y2="185" stroke="#d85a30" stroke-width="2.2" marker-end="url(#arrow_rnn_orange)"/>
+              <!-- h(t+1) -> out -->
+              <line x1="195" y1="205" x2="195" y2="230" stroke="#d85a30" stroke-width="2.2"/>
 
               <defs>
                 <marker id="arrow_rnn_v" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
