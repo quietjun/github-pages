@@ -196,7 +196,7 @@
       background: rgba(0,0,0,0.04);
       padding: 0.2rem 0.4rem;
       border-radius: 4px;
-      font-size: 12.5px;
+      font-size: 14px; /* 최소 폰트 규격 14px 준수 */
       color: #c5382f;
       font-weight: 600;
     }
@@ -233,7 +233,7 @@
 
     .roadmap-svg-container {
       width: 100%;
-      max-width: 960px;
+      max-width: 980px;
       overflow-x: auto;
     }
 
@@ -246,7 +246,7 @@
 
     .roadmap-node-text {
       fill: #1e293b;
-      font-size: 13px;
+      font-size: 14px; /* 최소 폰트 규격 14px 준수 */
       font-weight: 700;
       transition: all 0.25s ease;
     }
@@ -258,7 +258,7 @@
 
     .roadmap-node-num {
       fill: #ffffff;
-      font-size: 11px;
+      font-size: 14px; /* 최소 폰트 규격 14px 준수 */
       font-weight: 700;
     }
 
@@ -287,7 +287,7 @@
     }
 
     .roadmap-path-highlight {
-      stroke: #8b5cf6; /* CNN -> ViT 하이라이트 곡선선 (보라색 포인트) */
+      stroke: #8b5cf6; /* CNN -> ViT 하이라이트 곡선선 */
     }
 
     /* ── SUMMARY SECTION ── */
@@ -310,7 +310,7 @@
       border-left: 3px solid #cbd5e1;
       padding-bottom: 1.2rem;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 14px;
+      font-size: 14px; /* 최소 폰트 규격 14px 준수 */
     }
 
     .summary-item:last-of-type {
@@ -343,7 +343,7 @@
       background: #f8f8f8;
       padding: 2.5rem;
       text-align: center;
-      font-size: 12.5px;
+      font-size: 14px; /* 최소 폰트 규격 14px 준수 */
       color: #94a3b8;
       border-top: 1px solid #e8e8e8;
     }
@@ -390,94 +390,94 @@
     <div class="flow-roadmap">
       <div class="roadmap-title">🗺️ 아키텍처 진화 로드맵 (클릭 시 상세 영역으로 부드럽게 이동)</div>
       <div class="roadmap-svg-container">
-        <svg width="960" height="160" viewBox="0 0 960 160" xmlns="http://www.w3.org/2000/svg">
-          <!-- Connection Paths (배경 연결선) -->
+        <svg width="980" height="160" viewBox="0 0 980 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- Connection Paths -->
           <!-- Linear -> MLP -->
-          <line x1="140" y1="77" x2="175" y2="77" class="roadmap-path"/>
+          <line x1="140" y1="78" x2="165" y2="78" class="roadmap-path"/>
           
           <!-- MLP -> RNN (NLP 분기) -->
-          <path d="M 285 77 L 320 42" class="roadmap-path"/>
+          <path d="M 285 78 L 310 43" class="roadmap-path"/>
           <!-- MLP -> CNN (비전 분기) -->
-          <path d="M 285 77 L 320 117" class="roadmap-path"/>
+          <path d="M 285 78 L 310 118" class="roadmap-path"/>
           
           <!-- RNN -> Attention -->
-          <line x1="430" y1="42" x2="475" y2="42" class="roadmap-path"/>
+          <line x1="430" y1="43" x2="465" y2="43" class="roadmap-path"/>
           <!-- Attention -> Transformer -->
-          <line x1="585" y1="42" x2="630" y2="42" class="roadmap-path"/>
+          <line x1="585" y1="43" x2="620" y2="43" class="roadmap-path"/>
           <!-- Transformer -> ViT -->
-          <path d="M 740 42 L 810 77" class="roadmap-path"/>
+          <path d="M 755 43 L 835 78" class="roadmap-path"/>
           
-          <!-- CNN -> ViT (비전 진화의 통합 곡선 연결선) -->
-          <path d="M 430 117 Q 620 135, 810 77" class="roadmap-path roadmap-path-highlight" stroke-dasharray="4 2"/>
+          <!-- CNN -> ViT (비전 진화의 통합 곡선 연결망) -->
+          <path d="M 430 118 Q 630 135, 835 78" class="roadmap-path roadmap-path-highlight" stroke-dasharray="4 2"/>
 
           <!-- Interactive Node Groups -->
           <!-- Node 1: Linear -->
           <a href="#stage-1" class="roadmap-link">
             <g>
-              <rect x="30" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="50" cy="77" r="10" class="roadmap-node-circle"/>
-              <text x="50" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">1</text>
-              <text x="100" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Linear</text>
+              <rect x="20" y="55" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="43" cy="78" r="11" class="roadmap-node-circle"/>
+              <text x="43" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">1</text>
+              <text x="93" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Linear</text>
             </g>
           </a>
 
           <!-- Node 2: MLP -->
           <a href="#stage-2" class="roadmap-link">
             <g>
-              <rect x="175" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="195" cy="77" r="10" class="roadmap-node-circle"/>
-              <text x="195" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">2</text>
-              <text x="245" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">MLP</text>
+              <rect x="165" y="55" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="188" cy="78" r="11" class="roadmap-node-circle"/>
+              <text x="188" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">2</text>
+              <text x="238" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">MLP</text>
             </g>
           </a>
 
           <!-- Node 3: RNN -->
           <a href="#stage-3" class="roadmap-link">
             <g>
-              <rect x="320" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="340" cy="42" r="10" class="roadmap-node-circle"/>
-              <text x="340" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">3</text>
-              <text x="390" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">RNN</text>
+              <rect x="310" y="20" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="333" cy="43" r="11" class="roadmap-node-circle"/>
+              <text x="333" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">3</text>
+              <text x="383" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">RNN</text>
             </g>
           </a>
 
           <!-- Node 4: CNN -->
           <a href="#stage-4" class="roadmap-link">
             <g>
-              <rect x="320" y="95" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="340" cy="117" r="10" class="roadmap-node-circle"/>
-              <text x="340" y="117" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">4</text>
-              <text x="390" y="117" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">CNN</text>
+              <rect x="310" y="95" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="333" cy="118" r="11" class="roadmap-node-circle"/>
+              <text x="333" y="118" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">4</text>
+              <text x="383" y="118" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">CNN</text>
             </g>
           </a>
 
           <!-- Node 5: Attention -->
           <a href="#stage-5" class="roadmap-link">
             <g>
-              <rect x="475" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="495" cy="42" r="10" class="roadmap-node-circle"/>
-              <text x="495" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">5</text>
-              <text x="545" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Attention</text>
+              <rect x="465" y="20" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="488" cy="43" r="11" class="roadmap-node-circle"/>
+              <text x="488" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">5</text>
+              <text x="538" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Attention</text>
             </g>
           </a>
 
           <!-- Node 6: Transformer -->
           <a href="#stage-6" class="roadmap-link">
             <g>
-              <rect x="630" y="20" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="650" cy="42" r="10" class="roadmap-node-circle"/>
-              <text x="650" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">6</text>
-              <text x="700" y="42" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Transformer</text>
+              <rect x="620" y="20" width="135" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="643" cy="43" r="11" class="roadmap-node-circle"/>
+              <text x="643" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">6</text>
+              <text x="695" y="43" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">Transformer</text>
             </g>
           </a>
 
           <!-- Node 7: ViT -->
           <a href="#stage-7" class="roadmap-link">
             <g>
-              <rect x="810" y="55" width="110" height="45" rx="22" class="roadmap-node-rect"/>
-              <circle cx="830" cy="77" r="10" class="roadmap-node-circle"/>
-              <text x="830" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">7</text>
-              <text x="875" y="77" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">ViT</text>
+              <rect x="835" y="55" width="120" height="46" rx="23" class="roadmap-node-rect"/>
+              <circle cx="858" cy="78" r="11" class="roadmap-node-circle"/>
+              <text x="858" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-num">7</text>
+              <text x="908" y="78" dominant-baseline="central" text-anchor="middle" class="roadmap-node-text">ViT</text>
             </g>
           </a>
         </svg>
@@ -524,17 +524,17 @@
               <circle cx="60" cy="60" r="7" fill="#378add"/>
               <circle cx="60" cy="100" r="7" fill="#378add"/>
               <circle cx="60" cy="140" r="7" fill="#378add"/>
-              <text x="25" y="105" font-size="13" font-weight="500" fill="#666">입력 x</text>
+              <text x="25" y="105" font-size="14" font-weight="500" fill="#666" dominant-baseline="central">입력 x</text>
               
               <!-- Box -->
               <rect x="150" y="45" width="120" height="110" fill="#f0f7ff" stroke="#378add" stroke-width="2" rx="6"/>
-              <text x="210" y="105" font-size="15" font-weight="700" text-anchor="middle" fill="#185fa5">y = Wx + b</text>
+              <text x="210" y="105" font-size="16" font-weight="700" text-anchor="middle" fill="#185fa5" dominant-baseline="central">y = Wx + b</text>
               
               <!-- Output -->
               <circle cx="360" cy="60" r="7" fill="#1d9e75"/>
               <circle cx="360" cy="100" r="7" fill="#1d9e75"/>
               <circle cx="360" cy="140" r="7" fill="#1d9e75"/>
-              <text x="380" y="105" font-size="13" font-weight="500" fill="#666">출력 y</text>
+              <text x="378" y="105" font-size="14" font-weight="500" fill="#666" dominant-baseline="central">출력 y</text>
               
               <!-- Arrows -->
               <line x1="75" y1="60" x2="150" y2="60" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow)"/>
@@ -654,44 +654,44 @@
               <!-- Nodes -->
               <!-- Inputs -->
               <rect x="18" y="32" width="24" height="136" fill="none" stroke="#c5382f" stroke-width="1.5" rx="3"/>
-              <text x="18" y="185" font-size="10.2" font-weight="700" fill="#c5382f" text-anchor="start">고정된 개수 (각 특성은 서로 무관)</text>
+              <text x="18" y="188" font-size="14" font-weight="700" fill="#c5382f" text-anchor="start" dominant-baseline="central">고정된 개수 (각 특성은 서로 무관)</text>
               <circle cx="30" cy="40" r="5" fill="#378add"/>
               <circle cx="30" cy="70" r="5" fill="#378add"/>
               <circle cx="30" cy="100" r="5" fill="#378add"/>
               <circle cx="30" cy="130" r="5" fill="#378add"/>
               <circle cx="30" cy="160" r="5" fill="#378add"/>
-              <text x="30" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#666">Input</text>
+              <text x="30" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#666" dominant-baseline="central">Input</text>
 
               <!-- Linear 1 -->
               <circle cx="110" cy="55" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
               <circle cx="110" cy="85" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
               <circle cx="110" cy="115" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
               <circle cx="110" cy="145" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
-              <text x="110" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#ba7517">Linear 1</text>
+              <text x="110" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#ba7517" dominant-baseline="central">Linear 1</text>
 
               <!-- ReLU 1 -->
               <circle cx="180" cy="55" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
               <circle cx="180" cy="85" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
               <circle cx="180" cy="115" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
               <circle cx="180" cy="145" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
-              <text x="180" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#c5382f">ReLU 1</text>
+              <text x="180" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#c5382f" dominant-baseline="central">ReLU 1</text>
 
               <!-- Linear 2 -->
               <circle cx="250" cy="70" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
               <circle cx="250" cy="100" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
               <circle cx="250" cy="130" r="4.5" fill="#fff3cd" stroke="#ba7517" stroke-width="1.2"/>
-              <text x="250" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#ba7517">Linear 2</text>
+              <text x="250" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#ba7517" dominant-baseline="central">Linear 2</text>
 
               <!-- ReLU 2 -->
               <circle cx="320" cy="70" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
               <circle cx="320" cy="100" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
               <circle cx="320" cy="130" r="4.5" fill="#ffe6e6" stroke="#c5382f" stroke-width="1.2"/>
-              <text x="320" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#c5382f">ReLU 2</text>
+              <text x="320" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#c5382f" dominant-baseline="central">ReLU 2</text>
 
               <!-- Outputs -->
               <circle cx="390" cy="85" r="5" fill="#1d9e75"/>
               <circle cx="390" cy="115" r="5" fill="#1d9e75"/>
-              <text x="390" y="22" font-size="9.5" font-weight="700" text-anchor="middle" fill="#1d9e75">Output</text>
+              <text x="390" y="22" font-size="14" font-weight="700" text-anchor="middle" fill="#1d9e75" dominant-baseline="central">Output</text>
             </svg>
           </div>
         </div>
@@ -737,35 +737,35 @@
               <!-- Time step t-1 (상단) -->
               <!-- 입력 x(t-1) -->
               <circle cx="80" cy="50" r="7" fill="#378add"/>
-              <text x="35" y="54" font-size="12" font-weight="700" fill="#378add">x(t-1)</text>
+              <text x="30" y="50" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t-1)</text>
               <!-- RNN Cell -->
               <rect x="160" y="32" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="55" font-size="12" font-weight="800" text-anchor="middle" fill="#633806">RNN Cell</text>
+              <text x="210" y="50" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
               <!-- 출력 h(t-1) -->
               <circle cx="340" cy="50" r="7" fill="#1d9e75"/>
-              <text x="375" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="#1d9e75">h(t-1)</text>
+              <text x="350" y="50" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t-1)</text>
               
               <!-- Time step t (중앙) -->
               <!-- 입력 x(t) -->
               <circle cx="80" cy="120" r="7" fill="#378add"/>
-              <text x="50" y="124" font-size="12" font-weight="700" fill="#378add">x(t)</text>
+              <text x="45" y="120" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t)</text>
               <!-- RNN Cell -->
               <rect x="160" y="102" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="125" font-size="12" font-weight="800" text-anchor="middle" fill="#633806">RNN Cell</text>
+              <text x="210" y="120" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
               <!-- 출력 h(t) -->
               <circle cx="340" cy="120" r="7" fill="#1d9e75"/>
-              <text x="370" y="124" font-size="12" font-weight="700" text-anchor="middle" fill="#1d9e75">h(t)</text>
+              <text x="350" y="120" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t)</text>
 
               <!-- Time step t+1 (하단) -->
               <!-- 입력 x(t+1) -->
               <circle cx="80" cy="190" r="7" fill="#378add"/>
-              <text x="45" y="194" font-size="12" font-weight="700" fill="#378add">x(t+1)</text>
+              <text x="30" y="190" font-size="14" font-weight="700" fill="#378add" dominant-baseline="central">x(t+1)</text>
               <!-- RNN Cell -->
               <rect x="160" y="172" width="100" height="36" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="6"/>
-              <text x="210" y="195" font-size="12" font-weight="800" text-anchor="middle" fill="#633806">RNN Cell</text>
+              <text x="210" y="190" font-size="14" font-weight="800" text-anchor="middle" fill="#633806" dominant-baseline="central">RNN Cell</text>
               <!-- 출력 h(t+1) -->
               <circle cx="340" cy="190" r="7" fill="#1d9e75"/>
-              <text x="375" y="194" font-size="12" font-weight="700" text-anchor="middle" fill="#1d9e75">h(t+1)</text>
+              <text x="350" y="190" font-size="14" font-weight="700" fill="#1d9e75" dominant-baseline="central">h(t+1)</text>
 
               <!-- Horizontal flow arrows -->
               <line x1="92" y1="50" x2="155" y2="50" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
@@ -778,12 +778,12 @@
               <line x1="265" y1="190" x2="328" y2="190" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrow_rnn_v)"/>
 
               <!-- Vertical Temporal Hidden State Transmission Arrows -->
-               <line x1="210" y1="68" x2="210" y2="97" stroke="#d85a30" stroke-width="2.5" marker-end="url(#arrow_rnn_orange)"/>
-               <line x1="210" y1="138" x2="210" y2="167" stroke="#d85a30" stroke-width="2.5" marker-end="url(#arrow_rnn_orange)"/>
+              <line x1="210" y1="68" x2="210" y2="97" stroke="#d85a30" stroke-width="2.5" marker-end="url(#arrow_rnn_orange)"/>
+              <line x1="210" y1="138" x2="210" y2="167" stroke="#d85a30" stroke-width="2.5" marker-end="url(#arrow_rnn_orange)"/>
               
               <!-- Recurrent state labels -->
-              <text x="222" y="85" font-size="10.5" font-weight="700" fill="#d85a30">은닉 전송</text>
-              <text x="222" y="155" font-size="10.5" font-weight="700" fill="#d85a30">은닉 전송</text>
+              <text x="222" y="85" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">은닉 전송</text>
+              <text x="222" y="155" font-size="14" font-weight="700" fill="#d85a30" dominant-baseline="central">은닉 전송</text>
 
               <defs>
                 <marker id="arrow_rnn_v" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -834,34 +834,34 @@
             <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Input image -->
               <rect x="25" y="55" width="85" height="85" fill="#e1f5ff" stroke="#1d9e75" stroke-width="2" rx="3"/>
-              <text x="67" y="102" font-size="13" font-weight="700" text-anchor="middle" fill="#085041">이미지</text>
+              <text x="67" y="97" font-size="14" font-weight="700" text-anchor="middle" fill="#085041" dominant-baseline="central">이미지</text>
               
               <!-- Convolution filters -->
-              <rect x="145" y="35" width="60" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
-              <text x="175" y="60" font-size="11" font-weight="700" text-anchor="middle" fill="#8b2c2c">3×3 필터1</text>
+              <rect x="145" y="32" width="75" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
+              <text x="182" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#8b2c2c" dominant-baseline="central">3×3 필터1</text>
               
-              <rect x="145" y="115" width="60" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
-              <text x="175" y="140" font-size="11" font-weight="700" text-anchor="middle" fill="#8b2c2c">3×3 필터2</text>
+              <rect x="145" y="118" width="75" height="48" fill="#ffe6e6" stroke="#c5382f" stroke-width="2" rx="3"/>
+              <text x="182" y="142" font-size="14" font-weight="700" text-anchor="middle" fill="#8b2c2c" dominant-baseline="central">3×3 필터2</text>
               
               <!-- Feature maps -->
-              <rect x="235" y="37" width="55" height="42" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
-              <text x="262" y="62" font-size="10" font-weight="700" text-anchor="middle" fill="#27500a">특징맵1</text>
+              <rect x="245" y="32" width="70" height="48" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
+              <text x="280" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">특징맵1</text>
               
-              <rect x="235" y="117" width="55" height="42" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
-              <text x="262" y="142" font-size="10" font-weight="700" text-anchor="middle" fill="#27500a">특징맵2</text>
+              <rect x="245" y="118" width="70" height="48" fill="#e8f5e9" stroke="#3b6d11" stroke-width="1.8" rx="3"/>
+              <text x="280" y="142" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">특징맵2</text>
               
               <!-- Pooling -->
-              <rect x="325" y="45" width="65" height="105" fill="#f0f7ff" stroke="#378add" stroke-width="2" rx="4"/>
-              <text x="357" y="98" font-size="12" font-weight="700" text-anchor="middle" fill="#185fa5">Pooling</text>
-              <text x="357" y="115" font-size="11" text-anchor="middle" fill="#185fa5">(요약/축소)</text>
+              <rect x="335" y="45" width="70" height="105" fill="#f0f7ff" stroke="#378add" stroke-width="2" rx="4"/>
+              <text x="370" y="90" font-size="14" font-weight="700" text-anchor="middle" fill="#185fa5" dominant-baseline="central">Pooling</text>
+              <text x="370" y="112" font-size="14" text-anchor="middle" fill="#185fa5" dominant-baseline="central">(압축)</text>
               
               <!-- Arrows -->
               <line x1="115" y1="85" x2="142" y2="65" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow4)"/>
               <line x1="115" y1="110" x2="142" y2="135" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow4)"/>
-              <line x1="208" y1="58" x2="232" y2="58" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="208" y1="138" x2="232" y2="138" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="293" y1="58" x2="322" y2="75" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
-              <line x1="293" y1="138" x2="322" y2="115" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
+              <line x1="220" y1="56" x2="242" y2="56" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
+              <line x1="220" y1="142" x2="242" y2="142" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
+              <line x1="315" y1="56" x2="332" y2="75" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
+              <line x1="315" y1="142" x2="332" y2="115" stroke="#b4c6d8" stroke-width="1.8" marker-end="url(#arrow4)"/>
               
               <defs>
                 <marker id="arrow4" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -909,14 +909,14 @@
             <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Query -->
               <rect x="25" y="80" width="70" height="40" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="4"/>
-              <text x="60" y="105" font-size="13" font-weight="700" text-anchor="middle" fill="#633806">Query</text>
+              <text x="60" y="100" font-size="14" font-weight="700" text-anchor="middle" fill="#633806" dominant-baseline="central">Query</text>
               
               <!-- Keys / Values -->
               <circle cx="180" cy="40" r="7" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
               <circle cx="180" cy="80" r="7" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
               <circle cx="180" cy="120" r="7" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
               <circle cx="180" cy="160" r="7" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
-              <text x="180" y="190" font-size="11" font-weight="700" text-anchor="middle" fill="#64748b">Keys &amp; Values</text>
+              <text x="180" y="185" font-size="14" font-weight="700" text-anchor="middle" fill="#64748b" dominant-baseline="central">Keys &amp; Values</text>
               
               <!-- Weights (Line Thickness & Opacity) -->
               <line x1="98" y1="92" x2="170" y2="42" stroke="#d85a30" stroke-width="4.5" opacity="0.85" marker-end="url(#arrow5)"/>
@@ -926,7 +926,7 @@
               
               <!-- Output -->
               <rect x="295" y="80" width="70" height="40" fill="#e8f5e9" stroke="#3b6d11" stroke-width="2" rx="4"/>
-              <text x="330" y="105" font-size="13" font-weight="700" text-anchor="middle" fill="#27500a">Output</text>
+              <text x="330" y="100" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">Output</text>
               
               <!-- Main output flow -->
               <line x1="190" y1="100" x2="290" y2="100" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow5)"/>
@@ -977,23 +977,23 @@
             <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Encoder Block -->
               <rect x="25" y="45" width="120" height="110" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" rx="6"/>
-              <text x="85" y="80" font-size="13" font-weight="700" text-anchor="middle" fill="#6d28d9">Encoder</text>
-              <text x="85" y="98" font-size="11" text-anchor="middle" fill="#6d28d9">Self-Attention</text>
+              <text x="85" y="80" font-size="14" font-weight="700" text-anchor="middle" fill="#6d28d9" dominant-baseline="central">Encoder</text>
+              <text x="85" y="105" font-size="14" text-anchor="middle" fill="#6d28d9" dominant-baseline="central">Self-Attn</text>
               
               <!-- Decoder Block -->
               <rect x="275" y="45" width="120" height="110" fill="#fffbeb" stroke="#d97706" stroke-width="2" rx="6"/>
-              <text x="335" y="80" font-size="13" font-weight="700" text-anchor="middle" fill="#b45309">Decoder</text>
-              <text x="335" y="98" font-size="11" text-anchor="middle" fill="#b45309">Cross-Attention</text>
+              <text x="335" y="80" font-size="14" font-weight="700" text-anchor="middle" fill="#b45309" dominant-baseline="central">Decoder</text>
+              <text x="335" y="105" font-size="14" text-anchor="middle" fill="#b45309" dominant-baseline="central">Cross-Attn</text>
               
               <!-- Connecting Arrows -->
               <line x1="145" y1="100" x2="275" y2="100" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arrow_trans)"/>
-              <text x="210" y="88" font-size="11" font-weight="700" text-anchor="middle" fill="#7c3aed">MHA</text>
+              <text x="210" y="88" font-size="14" font-weight="700" text-anchor="middle" fill="#7c3aed" dominant-baseline="central">MHA</text>
               
               <!-- Input / Output pointers -->
-              <line x1="85" y1="15" x2="85" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
-              <line x1="335" y1="15" x2="335" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
-              <text x="85" y="10" font-size="10" text-anchor="middle" fill="#64748b">입력토큰 + PE</text>
-              <text x="335" y="10" font-size="10" text-anchor="middle" fill="#64748b">타겟토큰 + PE</text>
+              <line x1="85" y1="20" x2="85" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
+              <line x1="335" y1="20" x2="335" y2="40" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow_trans)"/>
+              <text x="85" y="10" font-size="14" text-anchor="middle" fill="#64748b" dominant-baseline="central">입력토큰+PE</text>
+              <text x="335" y="10" font-size="14" text-anchor="middle" fill="#64748b" dominant-baseline="central">타겟토큰+PE</text>
 
               <defs>
                 <marker id="arrow_trans" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -1042,36 +1042,36 @@
           <div class="diagram-box">
             <svg width="420" height="200" viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
               <!-- Image Split to Patches -->
-              <rect x="20" y="55" width="55" height="55" fill="#e1f5ff" stroke="#1d9e75" stroke-width="2" rx="3"/>
-              <line x1="20" y1="82" x2="75" y2="82" stroke="#1d9e75" stroke-dasharray="2 2" stroke-width="1.5"/>
-              <line x1="47" y1="55" x2="47" y2="110" stroke="#1d9e75" stroke-dasharray="2 2" stroke-width="1.5"/>
-              <text x="47" y="130" font-size="12" font-weight="700" text-anchor="middle" fill="#085041">격자 패치 분할</text>
+              <rect x="15" y="55" width="55" height="55" fill="#e1f5ff" stroke="#1d9e75" stroke-width="2" rx="3"/>
+              <line x1="15" y1="82" x2="70" y2="82" stroke="#1d9e75" stroke-dasharray="2 2" stroke-width="1.5"/>
+              <line x1="42" y1="55" x2="42" y2="110" stroke="#1d9e75" stroke-dasharray="2 2" stroke-width="1.5"/>
+              <text x="42" y="130" font-size="14" font-weight="700" text-anchor="middle" fill="#085041" dominant-baseline="central">패치분할</text>
               
               <!-- Linear Projection -->
-              <rect x="110" y="45" width="70" height="75" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="4"/>
-              <text x="145" y="80" font-size="12" font-weight="700" text-anchor="middle" fill="#633806">Linear</text>
-              <text x="145" y="97" font-size="12" font-weight="700" text-anchor="middle" fill="#633806">Projection</text>
+              <rect x="100" y="45" width="80" height="75" fill="#fff3cd" stroke="#ba7517" stroke-width="2" rx="4"/>
+              <text x="140" y="70" font-size="14" font-weight="700" text-anchor="middle" fill="#633806" dominant-baseline="central">Linear</text>
+              <text x="140" y="95" font-size="14" font-weight="700" text-anchor="middle" fill="#633806" dominant-baseline="central">Proj.</text>
               
               <!-- Patch Embeddings -->
               <circle cx="225" cy="55" r="6" fill="#378add"/>
               <circle cx="225" cy="82" r="6" fill="#378add"/>
               <circle cx="225" cy="109" r="6" fill="#378add"/>
-              <text x="225" y="130" font-size="11" font-weight="700" text-anchor="middle" fill="#185fa5">임베딩 토큰</text>
+              <text x="225" y="130" font-size="14" font-weight="700" text-anchor="middle" fill="#185fa5" dominant-baseline="central">토큰</text>
               
               <!-- Transformer Encoder -->
-              <rect x="275" y="45" width="115" height="75" fill="#e8f5e9" stroke="#3b6d11" stroke-width="2" rx="4"/>
-              <text x="332" y="80" font-size="12" font-weight="700" text-anchor="middle" fill="#27500a">Transformer</text>
-              <text x="332" y="97" font-size="12" font-weight="700" text-anchor="middle" fill="#27500a">Encoder</text>
+              <rect x="275" y="45" width="125" height="75" fill="#e8f5e9" stroke="#3b6d11" stroke-width="2" rx="4"/>
+              <text x="337" y="70" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">Transformer</text>
+              <text x="337" y="95" font-size="14" font-weight="700" text-anchor="middle" fill="#27500a" dominant-baseline="central">Encoder</text>
 
               <!-- MLP Head -->
-              <rect x="275" y="145" width="115" height="42" fill="#fce7f3" stroke="#db2777" stroke-width="2" rx="4"/>
-              <text x="332" y="171" font-size="12" font-weight="700" text-anchor="middle" fill="#9d174d">MLP Head (분류)</text>
+              <rect x="275" y="145" width="125" height="42" fill="#fce7f3" stroke="#db2777" stroke-width="2" rx="4"/>
+              <text x="337" y="167" font-size="14" font-weight="700" text-anchor="middle" fill="#9d174d" dominant-baseline="central">MLP Head (분류)</text>
               
               <!-- Arrows -->
-              <line x1="78" y1="82" x2="108" y2="82" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
+              <line x1="72" y1="82" x2="98" y2="82" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
               <line x1="182" y1="82" x2="216" y2="82" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
               <line x1="233" y1="82" x2="272" y2="82" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
-              <line x1="332" y1="122" x2="332" y2="142" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
+              <line x1="337" y1="122" x2="337" y2="142" stroke="#b4c6d8" stroke-width="2" marker-end="url(#arrow6)"/>
 
               <defs>
                 <marker id="arrow6" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
