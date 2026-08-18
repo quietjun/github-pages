@@ -3,6 +3,15 @@
     "label": "ai",
     "children": [
       {
+        "label": "basic",
+        "children": [
+          {
+            "label": "신경망 아키텍처의 진화 과정",
+            "path": "ai/basic/flow.html"
+          }
+        ]
+      },
+      {
         "label": "cnn",
         "children": [
           {
