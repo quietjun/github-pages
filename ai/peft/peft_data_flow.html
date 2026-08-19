@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEFT/QLoRA 이원화 학습 시각화 가이드</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR, JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* 글로벌 최소 폰트 크기 14px 강제 적용 및 라이트 테마 변수 */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+            color: #1e293b; /* Slate 800 */
+        }
+        
+        /* 최소 폰트 크기 14px 강제 적용 */
+        body, p, span, div, label, input, select, button, pre, code, li, a {
+            font-size: max(14px, 1rem) !important;
+        }
+        
+        /* 제목 폰트 스케일링 */
+        h1, .text-xl {
+            font-size: 20px !important;
+        }
+        h2, .text-2xl, .text-3xl {
+            font-size: 24px !important;
+        }
+        h3 {
+            font-size: 22px !important;
+        }
+        h4 {
+            font-size: 18px !important;
+        }
+        h5 {
+            font-size: 16px !important;
+        }
+
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .track-btn-active {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important; /* Blue 50 */
+            color: #1d4ed8 !important; /* Blue 700 */
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- Top Navbar -->
+    <header class="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">PEFT / QLoRA 핵심 이론 이원화 시각화</h1>
+                    <p class="text-xs text-slate-500">양자화 메모리 트랙과 데이터 가공 파이프라인 트랙의 명확한 분리</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold border border-blue-200">Chapter 5-1</span>
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-200">개념 분리</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-8 space-y-10">
+        
+        <!-- Track Selection Switcher -->
+        <section class="text-center space-y-4">
+            <div class="max-w-md mx-auto p-1.5 bg-slate-200/60 rounded-2xl border border-slate-300/50 flex gap-2">
+                <button onclick="switchTrack(1)" id="btn-track-1" class="flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 track-btn-active">
+                    <i class="fa-solid fa-microchip"></i>
+                    트랙 1. 양자화 &amp; LoRA
+                </button>
+                <button onclick="switchTrack(2)" id="btn-track-2" class="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-database"></i>
+                    트랙 2. 데이터 처리 &amp; 포맷
+                </button>
+            </div>
+            <p class="text-slate-550 text-sm max-w-xl mx-auto" id="track-desc">
+                [트랙 1] 비트 정밀도 감소, GPU 메모리 소모 원리 및 가중치 저차원 분해 수학적 어댑터 기법에 집중합니다.
+            </p>
+        </section>
+
+        <!-- Track 1: Quantization & LoRA (Hardware/Model Weights) -->
+        <div id="track-section-1" class="space-y-10">
+            
+            <!-- Hero QLoRA Memory -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white p-8 rounded-3xl border border-slate-200 card-shadow relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                <div class="lg:col-span-7 space-y-4">
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">Quantization Concept</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 leading-tight sm:text-4xl">
+                        왜 하필 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">4-bit 양자화 (NF4)</span> 인가요?
+                    </h2>
+                    <p class="text-slate-600 text-base leading-relaxed">
+                        LLM 미세조정 시 가중치와 옵티마이저가 차지하는 막대한 VRAM 소모를 해결하기 위해, 원래 16-bit나 32-bit로 이루어진 모델 매개변수를 4-bit 크기로 압축하여 GPU에 적재하는 메커니즘입니다. 
+                        수치 정밀도가 낮아지지만 연산 및 추론의 오차 손실은 1~3% 내외로 통제되어 극단적인 가성비를 발휘합니다.
+                    </p>
+                </div>
+                
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <span class="text-slate-800 font-bold text-sm block mb-2"><i class="fa-solid fa-chart-simple text-blue-600 mr-2"></i>1B 모델 로딩에 필요한 순수 모델 가중치 VRAM</span>
+                        <div class="space-y-2">
+                            <div>
+                                <div class="flex justify-between text-xs mb-0.5">
+                                    <span>FP32 (전 정밀도, 4 bytes/param)</span>
+                                    <span class="font-bold text-slate-800">4.0 GB</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full"><div class="bg-rose-500/70 h-2 rounded-full" style="width: 100%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-0.5">
+                                    <span>FP16 (반 정밀도, 2 bytes/param)</span>
+                                    <span class="font-bold text-slate-800">2.0 GB</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full"><div class="bg-amber-500/70 h-2 rounded-full" style="width: 50%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-0.5">
+                                    <span>NF4 (QLoRA 4-bit, 0.5 bytes/param)</span>
+                                    <span class="font-bold text-emerald-600">0.5 GB (87.5% 절감!)</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full"><div class="bg-emerald-500 h-2 rounded-full" style="width: 12.5%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LoRA Math and Adapter Concept -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Math Card -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
+                    <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-calculator text-blue-600 mr-2"></i>LoRA: 저차원 분해 가중치 이식</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        기존 가중치 $W$는 완전히 얼려두고(Frozen), 입력 $x$에 대해 초소형 Rank 가로/세로 매트릭스 $A, B$를 우회로(Adapter)로 배치해 $BA$의 조그만 변화량만을 학습시킵니다.
+                    </p>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex justify-center items-center py-6">
+                        <div class="text-center space-y-2">
+                            <span class="text-xs text-slate-400 font-bold uppercase block">LoRA 출력 수식</span>
+                            <div class="text-2xl font-black text-slate-800 font-mono tracking-wide">
+                                h = Wx + <span class="text-blue-600">BAx</span>
+                            </div>
+                            <span class="text-xs text-slate-500">W (고정 ❄️) | A, B (1% 미만 학습 대상 🔥)</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-500 leading-relaxed space-y-1">
+                        <li><strong>Rank (r) = 8</strong>: 분해 행렬 차원의 크기. r이 작을수록 파라미터 수 감소.</li>
+                        <li><strong>lora_alpha = 16</strong>: 스케일러 ($r \times 2$ 권장). 어댑터 출력 비율 조정.</li>
+                    </div>
+                </div>
+
+                <!-- Adapter Saving Card -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
+                    <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-floppy-disk text-indigo-600 mr-2"></i>어댑터(Adapter) 저장 형태 가이드</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        미세조정이 끝나면 가중치를 병합해서 배포할지, 아니면 가벼운 가중치 플러그인만 뽑아낼지 선택할 수 있습니다.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 border border-blue-200 rounded-xl space-y-2">
+                            <div class="font-bold text-blue-700 text-sm"><i class="fa-solid fa-paperclip mr-1.5"></i>1. Adapter만 분리 보관</div>
+                            <p class="text-xs text-slate-500">용량이 단 수십 MB 수준으로 매우 작아 신속한 배포 및 다목적 전환 탑재에 최고입니다.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 border border-emerald-200 rounded-xl space-y-2">
+                            <div class="font-bold text-emerald-700 text-sm"><i class="fa-solid fa-code-merge mr-1.5"></i>2. Base와 완전 병합</div>
+                            <p class="text-xs text-slate-500">추론 속도 향상을 위해 <code class="text-slate-700">merge_and_unload()</code>로 합쳐 단일 모델로 패키징합니다.</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-700">
+                        <i class="fa-solid fa-lightbulb mr-1"></i> 이 실습에서는 <strong>gemma3-lora-chess</strong> 폴더에 Adapter 관련 파라미터와 토크나이저 파일만을 실무 권장 방식으로 분리 저장합니다.
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Track 2: Data Preprocessing & Training Formatting -->
+        <div id="track-section-2" class="space-y-10 hidden">
+            
+            <!-- 3-Stage Preprocessing Block -->
+            <section class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow space-y-6">
+                <div class="flex items-center gap-3">
+                    <span class="bg-emerald-100 text-emerald-700 p-2 rounded-xl"><i class="fa-solid fa-arrows-spin text-xl"></i></span>
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-900">3단계 데이터 처리 가공 파이프라인</h3>
+                        <p class="text-slate-500 text-sm mt-0.5">체스 기보 데이터를 LLM에 적재하기까지 거치는 전처리 메커니즘</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Stage 1 -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase">Stage 01. Raw Data</span>
+                            <h4 class="font-bold text-slate-800">ChessInstruct 데이터</h4>
+                            <p class="text-xs text-slate-500">태스크, 체스 기보 입력, 다음 수 정답이 별도 필드로 파편화되어 존재합니다.</p>
+                        </div>
+                        <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-xs text-slate-600 mt-4 overflow-x-auto overflow-y-hidden">
+{
+  "task": "Predict move...",
+  "input": "1. e4 e5 2. Nf3",
+  "expected_output": "Nc6"
+}</pre>
+                    </div>
+
+                    <!-- Stage 2 -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-blue-100 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-blue-500 uppercase">Stage 02. ChatML Format</span>
+                            <h4 class="font-bold text-slate-800">conversations 변환</h4>
+                            <p class="text-xs text-slate-500">대화형 학습을 위해 system / user / assistant 역할 딕셔너리로 결합합니다.</p>
+                        </div>
+                        <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-xs text-slate-600 mt-4 overflow-x-auto overflow-y-hidden">
+"conversations": [
+  {"role": "system", ...},
+  {"role": "user", ...},
+  {"role": "assistant", ...}
+]</pre>
+                    </div>
+
+                    <!-- Stage 3 -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-emerald-100 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-emerald-600 uppercase">Stage 03. Chat Template</span>
+                            <h4 class="font-bold text-slate-800">Gemma-3 문자열 변환</h4>
+                            <p class="text-xs text-slate-500">토크나이저 템플릿을 거쳐 구분용 시작/끝 특수 지시어 토큰이 삽입됩니다.</p>
+                        </div>
+                        <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-xs text-slate-600 mt-4 overflow-x-auto overflow-y-hidden">
+&lt;start_of_turn&gt;system
+Predict move...&lt;end_of_turn&gt;
+&lt;start_of_turn&gt;user
+1. e4 e5 2. Nf3&lt;end_of_turn&gt;
+&lt;start_of_turn&gt;model
+Nc6&lt;end_of_turn&gt;</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Response-Only & BOS Explainer -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Response-Only Card -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
+                    <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-eye-slash text-rose-500 mr-2"></i>Response-Only Loss 가중치 제한 기법</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        질문이나 시스템 지침 부분은 굳이 모델이 언어 생성 확률을 정렬할 필요가 없습니다. 
+                        자원의 소모를 차단하기 위해 오로지 <strong>모델의 답변 구역(Model Response)</strong>에서만 역전파 Loss 값을 추출해 집중 훈련하는 최첨단 효율 기법입니다.
+                    </p>
+                    
+                    <div class="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-rose-600"><i class="fa-solid fa-ban mr-1"></i>Loss 계산 무시 (가중치 변화 없음 ❄️)</div>
+                        <div class="font-mono text-xs text-slate-450 line-through">&lt;start_of_turn&gt;system ... user 1. e4 e5 ...&lt;end_of_turn&gt;</div>
+                    </div>
+                    <div class="space-y-2 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <div class="text-xs font-bold text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i>Loss 계산 대상 (Gradient 가중치 업데이트 🔥)</div>
+                        <div class="font-mono text-xs text-emerald-800 bg-white p-2 rounded border border-emerald-100">&lt;start_of_turn&gt;model\na6&lt;end_of_turn&gt;</div>
+                    </div>
+                </div>
+
+                <!-- BOS Card -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
+                    <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-scissors text-amber-600 mr-2"></i>BOS (&lt;bos&gt;) 토큰 왜 제거할까요?</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        HuggingFace 템플릿 처리 시 기본적으로 문장의 시작에 `<bos>` 토큰이 생성됩니다. 
+                        그러나 Unsloth나 고급 Trainer 파이프라인 연동 학습 및 추론 문자열 매핑 시, 문장 조각의 중간 결합 부위에 원치 않는 중복 `<bos>` 토큰이 삽입되는 템플릿 충돌 오류가 빈번합니다.
+                    </p>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 space-y-2">
+                        <div class="font-bold"><i class="fa-solid fa-terminal mr-1"></i>실습 핵심 코드 디테일:</div>
+                        <p class="font-mono bg-white p-2 rounded border border-amber-100">
+                            tokenizer.apply_chat_template(...).removeprefix('&lt;bos&gt;')
+                        </p>
+                        <p class="leading-relaxed">
+                            이 코드로 맨 앞의 불필요한 중복 시작 마커를 일괄 삭제하여 데이터 정렬 정밀도를 극대화합니다.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dynamic Live Sandbox Simulator (AMAZING EDUCATIONAL TOOL) -->
+            <section class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 card-shadow">
+                <div>
+                    <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">Live Interactive Simulator</span>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-2"><i class="fa-solid fa-flask-vial text-indigo-600 mr-2"></i>체스 데이터 Chat Template 실시간 샌드박스</h3>
+                    <p class="text-slate-500 text-sm mt-1">데이터셋의 한 행을 직접 입력하고 변환 모드를 전환하여 LLM에 들어가기 전 최종 포맷팅이 어떻게 동적으로 변하는지 눈으로 체험해보세요.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Sandbox Controls -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">1. Task (체스 지시문)</label>
+                            <input type="text" id="sb-task" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white" value="Predict the next move in this chess game.">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">2. Input (체스 진행 기보)</label>
+                            <input type="text" id="sb-input" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white" value="1. e4 e5 2. Nf3 Nc6 3. Bb5">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">3. Expected Output (다음 예상수 정답)</label>
+                            <input type="text" id="sb-output" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white" value="a6">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase">변환 타겟 목적</label>
+                                <select id="sb-mode" onchange="renderSandbox()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none focus:bg-white">
+                                    <option value="train">학습용 (Training)</option>
+                                    <option value="infer">추론용 (Inference)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-505">add_generation_prompt</label>
+                                <div id="sb-prompt-flag" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
+                                    False
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOS Token Control -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-scissors text-amber-600 mr-1.5"></i>BOS (&lt;bos&gt;) 토큰 처리</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="sb-remove-bos" onchange="renderSandbox()" class="sr-only peer" checked>
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+                                </label>
+                            </div>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                <code class="text-amber-700 font-bold">.removeprefix('&lt;bos&gt;')</code> 적용 여부입니다. Unsloth/Gemma-3를 학습하거나 추론 문장을 구성할 때, 중복 BOS 토큰이 들어가거나 템플릿 정렬 오류를 방지하기 위해 관습적으로 제거합니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Sandbox Output Rendering -->
+                    <div class="lg:col-span-7 flex flex-col h-full space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-550 uppercase tracking-wider"><i class="fa-solid fa-rectangle-list text-indigo-600 mr-1.5"></i>최종 가공된 Chat Template 문자열 출력</span>
+                            <span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Gemma-3 Format</span>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 font-mono text-xs overflow-auto h-[320px] relative flex-grow text-emerald-800">
+                            <pre id="sb-rendered-output" class="whitespace-pre-wrap leading-relaxed">로딩 중...</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Before vs After Interactive Showcase (COMMON RESULTS FOR BOTH TRACKS) -->
+        <section class="bg-gradient-to-tr from-white to-slate-50 border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider font-semibold">Showcase</span>
+                <h3 class="text-2xl font-bold text-slate-900">최종 목적지: 단 100 step 학습으로 변하는 도메인 적응 비교</h3>
+                <p class="text-slate-500 text-sm">미터 트레이닝을 마친 QLoRA 모델과 학습 전 베이스 Gemma 모델의 실제 체스 기보 해석력 결과 비교 분석</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                
+                <!-- Baseline Model Result -->
+                <div class="bg-white p-5 rounded-2xl border border-rose-200 space-y-4 shadow-sm">
+                    <div class="flex items-center gap-2 text-rose-600 font-bold text-sm">
+                        <div class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center text-xs text-rose-600"><i class="fa-solid fa-xmark"></i></div>
+                        학습 전 베이스 모델 (Gemma-3-1B-it)
+                    </div>
+                    
+                    <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-[10px] text-slate-400 uppercase font-bold">Input Chess Move:</div>
+                        <div class="font-mono text-xs text-slate-600">1. e4 e5 2. Nf3 Nc6</div>
+                        
+                        <div class="text-[10px] text-rose-500 uppercase font-bold mt-3">Model Response:</div>
+                        <p class="text-xs text-slate-600 italic leading-relaxed">
+                            "As an AI, I can play chess with you. If you moved Nc6, it is black's turn to move. You should explain the board state more carefully..."
+                        </p>
+                    </div>
+                    <div class="text-xs text-rose-600">
+                        ⚠️ <strong class="underline">실패 요인 분석</strong>: 지시사항을 무시하고, 단순히 체스 게임을 하자는 일상 대화성 응답을 출력함.
+                    </div>
+                </div>
+
+                <!-- Finetuned Model Result -->
+                <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-md shadow-emerald-50">
+                    <div class="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-xs text-emerald-600"><i class="fa-solid fa-check"></i></div>
+                        QLoRA 파인튜닝 후 체스 기보 전문화 모델
+                    </div>
+                    
+                    <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-[10px] text-slate-400 uppercase font-bold">Input Chess Move:</div>
+                        <div class="font-mono text-xs text-slate-600">1. e4 e5 2. Nf3 Nc6</div>
+                        
+                        <div class="text-[10px] text-emerald-600 uppercase font-bold mt-3">Model Response:</div>
+                        <p class="text-xs text-emerald-700 font-bold font-mono bg-emerald-50 p-2 rounded border border-emerald-100">
+                            "Bb5"
+                        </p>
+                    </div>
+                    <div class="text-xs text-emerald-600">
+                        ✅ <strong class="underline">성공 요인 분석</strong>: 도메인 지식(Ruy Lopez 오프닝의 다음 예측 수인 Bb5)을 완벽히 이해하고 지시 사항대로 단결하게 출력함.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center text-xs text-slate-400 border-t border-slate-200 pt-8">
+        <p>© 2026 AI 모델 학습 실습 과정 가이드. PEFT &amp; QLoRA 파이프라인 시각화 자료.</p>
+    </footer>
+
+    <!-- Interactive Track Switcher Script -->
+    <script>
+        function switchTrack(trackNum) {
+            const btn1 = document.getElementById('btn-track-1');
+            const btn2 = document.getElementById('btn-track-2');
+            const sec1 = document.getElementById('track-section-1');
+            const sec2 = document.getElementById('track-section-2');
+            const desc = document.getElementById('track-desc');
+
+            if (trackNum === 1) {
+                // Activate Track 1
+                btn1.className = "flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 track-btn-active";
+                btn2.className = "flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2";
+                
+                sec1.classList.remove('hidden');
+                sec2.classList.add('hidden');
+                desc.innerText = "[트랙 1] 비트 정밀도 감소, GPU 메모리 소모 원리 및 가중치 저차원 분해 수학적 어댑터 기법에 집중합니다.";
+            } else {
+                // Activate Track 2
+                btn1.className = "flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2";
+                btn2.className = "flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 track-btn-active";
+                
+                sec1.classList.add('hidden');
+                sec2.classList.remove('hidden');
+                desc.innerText = "[트랙 2] 3단계 포맷팅 변환, 중복 BOS 토큰 탈락 메커니즘 및 훈련 타겟 효율성 샌드박스를 확인합니다.";
+                
+                // Trigger simulator render
+                renderSandbox();
+            }
+        }
+
+        function renderSandbox() {
+            const task = document.getElementById('sb-task').value;
+            const input = document.getElementById('sb-input').value;
+            const output = document.getElementById('sb-output').value;
+            const mode = document.getElementById('sb-mode').value;
+            const removeBos = document.getElementById('sb-remove-bos').checked;
+            const promptFlagDiv = document.getElementById('sb-prompt-flag');
+            const outputArea = document.getElementById('sb-rendered-output');
+
+            let promptFlag = "False";
+            let formattedText = "";
+            let bosToken = removeBos ? "" : `<span class="text-amber-600 font-bold">&lt;bos&gt;</span>`;
+
+            if (mode === "train") {
+                promptFlag = "False";
+                formattedText = `${bosToken}<span class="text-slate-400">&lt;start_of_turn&gt;system</span>
+${task}<span class="text-slate-400">&lt;end_of_turn&gt;</span>
+<span class="text-slate-400">&lt;start_of_turn&gt;user</span>
+${input}<span class="text-slate-400">&lt;end_of_turn&gt;</span>
+<span class="text-slate-400">&lt;start_of_turn&gt;model</span>
+${output}<span class="text-slate-400">&lt;end_of_turn&gt;</span>`;
+            } else {
+                promptFlag = "True";
+                formattedText = `${bosToken}<span class="text-slate-400">&lt;start_of_turn&gt;system</span>
+${task}<span class="text-slate-400">&lt;end_of_turn&gt;</span>
+<span class="text-slate-400">&lt;start_of_turn&gt;user</span>
+${input}<span class="text-slate-400">&lt;end_of_turn&gt;</span>
+<span class="text-slate-400">&lt;start_of_turn&gt;model</span>`;
+            }
+
+            promptFlagDiv.innerText = promptFlag;
+            outputArea.innerHTML = formattedText;
+        }
+
+        // Initialize Sandbox on Load
+        window.onload = function() {
+            renderSandbox();
+            
+            // Add input event listeners
+            document.getElementById('sb-task').addEventListener('input', renderSandbox);
+            document.getElementById('sb-input').addEventListener('input', renderSandbox);
+            document.getElementById('sb-output').addEventListener('input', renderSandbox);
+        }
+    </script>
+</body>
+</html>
