@@ -1530,7 +1530,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
       </div>
 
       <!-- Softmax Dimension Explanation Card -->
-      <div class="card" style="margin-top: 1.5rem;">
+      <!--div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
           <div class="card-icon">💡</div>
           <div class="card-title">소프트맥스 차원(dim) 설정에 따른 결과 분석 시각화</div>
@@ -1539,7 +1539,6 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
           CLIP 출력 텐서 <code>logits_per_image</code> (Shape: <code>[이미지 수, 텍스트 수]</code>)에서 <strong>dim</strong> 옵션을 지정하는 방향에 따라 비전 태스크의 목적이 완전히 바뀐다.
         </p>
 
-        <!-- Raw Similarity Matrix (overall dimension) -->
         <div style="background: var(--bg-dark); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
           <div style="font-weight: 700; font-size: 13.5px; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
             🧮 1단계: 원본 코사인 유사도 행렬 (Raw Similarity Matrix)
@@ -1567,7 +1566,6 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
         </div>
 
         <div class="grid-side-by-side" style="margin-top: 0.75rem;">
-          <!-- Left: dim=0 (세로축 기준: 이미지 검색) -->
           <div class="card" style="background: var(--bg-card); border-color: var(--border-color); min-height: 290px;">
             <div class="card-header">
               <div class="card-icon">↕️</div>
@@ -1577,25 +1575,21 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <strong>각 텍스트별</strong>로 세로 방향(이미지들) 확률을 연산한다. <code>(유사도 ➔ 확률%)</code> 형태로 세로 칸들의 합이 <strong>100% (1.0)</strong>가 된다.
             </p>
 
-            <!-- Visual Matrix for dim=0 -->
             <div style="background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
               <div style="font-size: 14px; font-weight: 700; color: var(--rose); margin-bottom: 0.75rem; text-align: center;">세로 방향 소프트맥스 (합 = 1.0)</div>
               
               <div style="display: flex; gap: 10px; align-items: stretch;">
-                <!-- Row Labels -->
                 <div style="display: flex; flex-direction: column; justify-content: space-around; font-size: 14px; color: var(--text-main); font-weight: 700; padding-top: 24px; padding-bottom: 6px; min-width: 80px; text-align: right;">
                   <div>Image 1 (🐱)</div>
                   <div>Image 2 (🐶)</div>
                 </div>
                 
-                <!-- Col 1 Group -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 1.5px dashed rgba(244, 63, 94, 0.4); padding: 6px; border-radius: 8px; background: rgba(244, 63, 94, 0.02);">
                   <div style="font-size: 14px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">"고양이"</div>
                   <div style="width: 100%; text-align: center; background: rgba(244, 63, 94, 0.1); border: 1px solid var(--rose); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--rose); font-weight: 700;">0.88 ➔ 95%</div>
                   <div style="width: 100%; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--text-muted);">0.08 ➔ 5%</div>
                 </div>
                 
-                <!-- Col 2 Group -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 1.5px dashed rgba(244, 63, 94, 0.4); padding: 6px; border-radius: 8px; background: rgba(244, 63, 94, 0.02);">
                   <div style="font-size: 14px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px;">"개"</div>
                   <div style="width: 100%; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--text-muted);">0.12 ➔ 2%</div>
@@ -1611,7 +1605,6 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
             </div>
           </div>
 
-          <!-- Right: dim=1 (가로축 기준: 이미지 분류) -->
           <div class="card" style="background: var(--bg-card); border-color: var(--border-color); min-height: 290px;">
             <div class="card-header">
               <div class="card-icon">↔️</div>
@@ -1621,26 +1614,22 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
               <strong>각 이미지별</strong>로 가로 방향(텍스트들) 확률을 연산한다. <code>(유사도 ➔ 확률%)</code> 형태로 가로 칸들의 합이 <strong>100% (1.0)</strong>가 된다.
             </p>
 
-            <!-- Visual Matrix for dim=1 -->
             <div style="background: rgba(0, 0, 0, 0.015); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
               <div style="font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 0.75rem; text-align: center;">가로 방향 소프트맥스 (합 = 1.0)</div>
               
               <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center;">
-                <!-- Header row -->
                 <div></div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; text-align: center; padding: 0 6px;">
                   <div style="font-size: 14px; color: var(--text-muted); font-weight: 700;">"고양이"</div>
                   <div style="font-size: 14px; color: var(--text-muted); font-weight: 700;">"개"</div>
                 </div>
                 
-                <!-- Row 1 Group -->
                 <div style="font-size: 14px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 6px; min-width: 80px;">Image 1 (🐱)</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 1.5px dashed rgba(16, 185, 129, 0.4); padding: 6px; border-radius: 8px; background: rgba(16, 185, 129, 0.02);">
                   <div style="text-align: center; background: rgba(45, 106, 79, 0.1); border: 1px solid var(--accent); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--accent); font-weight: 700;">0.88 ➔ 99%</div>
                   <div style="text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--text-muted);">0.12 ➔ 1%</div>
                 </div>
                 
-                <!-- Row 2 Group -->
                 <div style="font-size: 14px; color: var(--text-main); font-weight: 700; text-align: right; padding-right: 6px;">Image 2 (🐶)</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 1.5px dashed rgba(16, 185, 129, 0.4); padding: 6px; border-radius: 8px; background: rgba(16, 185, 129, 0.02);">
                   <div style="text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 4px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--text-muted);">0.08 ➔ 10%</div>
@@ -1656,7 +1645,7 @@ probs = logits_per_image.softmax(dim=<span class="code-num">1</span>)     <span 
             </div>
           </div>
         </div>
-      </div>
+      </div-->
     </div>
   </div>
 
