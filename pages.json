@@ -94,8 +94,16 @@
             "path": "ai/peft/lora.html"
           },
           {
+            "label": "PEFT/QLoRA 이원화 학습 시각화 가이드",
+            "path": "ai/peft/peft_data_flow.html"
+          },
+          {
             "label": "QLoRA — Quantized Low-Rank Adaptation",
             "path": "ai/peft/qlora.html"
+          },
+          {
+            "label": "양자화 동작 원리 시각화",
+            "path": "ai/peft/quantization.html"
           }
         ]
       },
