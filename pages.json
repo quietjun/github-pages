@@ -102,12 +102,8 @@
             "path": "ai/peft/qlora.html"
           },
           {
-            "label": "양자화 동작 원리 시각화",
-            "path": "ai/peft/quantization.html"
-          },
-          {
-            "label": "PTQ & TTP — 추론 양자화와 품질 보정 전략",
-            "path": "ai/peft/ptq.html"
+            "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
+            "path": "ai/peft/quantize.html"
           }
         ]
       },
