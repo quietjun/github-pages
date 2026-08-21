@@ -104,6 +104,10 @@
           {
             "label": "양자화 동작 원리 시각화",
             "path": "ai/peft/quantization.html"
+          },
+          {
+            "label": "PTQ & TTP — 추론 양자화와 품질 보정 전략",
+            "path": "ai/peft/ptq.html"
           }
         ]
       },
