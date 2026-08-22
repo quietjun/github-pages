@@ -240,7 +240,7 @@ trainer = train_on_responses_only(
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <table class="w-full border-collapse border border-slate-200 rounded-xl overflow-hidden">
                     <thead>
                         <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                             <th class="p-3 text-left w-1/4">구분</th>
@@ -261,25 +261,25 @@ trainer = train_on_responses_only(
                         <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">add_generation_prompt</td>
                             <td class="p-3.5 text-slate-700 border-r border-slate-200 font-mono">
-                                <code class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded">False</code> (답변 뒤에 정답 본문을 곧바로 결합)
+                                <code class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-xs md:text-sm">False</code> (답변 뒤에 정답 본문을 곧바로 결합)
                             </td>
                             <td class="p-3.5 text-slate-700 font-mono">
-                                <code class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded">True</code> (문장 끝에 답변 시작 제어 헤더 강제 인젝션)
+                                <code class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded text-xs md:text-sm">True</code> (문장 끝에 답변 시작 제어 헤더 강제 인젝션)
                             </td>
                         </tr>
                         <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">최종 가공 데이터 포맷</td>
                             <td class="p-3.5 border-r border-slate-200">
-                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-[10px] text-blue-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; 정답 답변 &lt;eos&gt;</pre>
+                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-xs text-blue-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; 정답 답변 &lt;eos&gt;</pre>
                             </td>
                             <td>
-                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-[10px] text-purple-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; (답변 대기 상태)</pre>
+                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-xs text-purple-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; (답변 대기 상태)</pre>
                             </td>
                         </tr>
                         <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">손실값 (Loss) 계산 범위</td>
                             <td class="p-3.5 text-slate-600 border-r border-slate-200 leading-relaxed font-semibold">
-                                질문 영역은 <code class="text-rose-600 font-mono bg-rose-50 px-1 rounded">-100</code> 마스킹으로 손실 계산에서 제외, 오직 어시스턴트 정답 답변 토큰만 학습.
+                                질문 영역은 <code class="text-rose-600 font-mono bg-rose-50 px-1 rounded text-xs md:text-sm">-100</code> 마스킹으로 손실 계산에서 제외, 오직 어시스턴트 정답 답변 토큰만 학습.
                             </td>
                             <td class="p-3.5 text-slate-600 leading-relaxed">
                                 모델이 스스로 생성해내는 토큰들을 획득하여 원본 정답 답변 문장과 오차를 대조 및 평가.

@@ -12,47 +12,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- 은서파 블로그 공통 스타일시트 연동 -->
+    <link rel="stylesheet" href="../langchain/images/common.css">
     <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            line-height: 1.7;
-        }
-        
+        /* 블로그 표준 본문 규격 하한선 및 강제 보장 */
         body, p, span, div, label, input, select, button, li, a, th, td {
             font-size: max(14px, 1rem) !important;
-            line-height: 1.6 !important;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            line-height: 1.3 !important;
-        }
-        
-        h1, .text-xl { font-size: 20px !important; }
-        h2, .text-2xl, .text-3xl { font-size: 24px !important; }
-        h3 { font-size: 22px !important; }
-        h4 { font-size: 18px !important; }
-        h5 { font-size: 16px !important; }
-
-        code, pre {
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1.5 !important;
+            line-height: 1.7 !important;
         }
         
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        .gradient-border {
-            border-left: 4px solid #3b82f6;
-        }
     </style>
 </head>
-<body class="min-h-screen pb-16">
+<body class="min-h-screen pb-16 bg-[#FAF9F6]">
 
     <!-- Header Navigation -->
-    <header class="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <header class="border-b border-slate-200 bg-white/85 backdrop-blur sticky top-0 z-50 shadow-sm px-4">
+        <div class="max-w-[1400px] mx-auto py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/20">
                     <i class="fa-solid fa-bolt text-xl"></i>
@@ -69,7 +47,16 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 mt-8 space-y-12">
+    <!-- 블로그 기본 가로폭 1400px 규격 준수 -->
+    <main class="max-w-[1400px] mx-auto px-4 mt-8 space-y-12">
+
+        <!-- 도입부 (Intro): 핵심 목표 제시 -->
+        <section class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow">
+            <p class="text-slate-700 leading-relaxed mb-0 font-medium">
+                이번 포스트에서는 LLM 배포 단계에서 모델의 크기를 극적으로 줄이는 <strong>PTQ(Post-Training Quantization)</strong>의 핵심 원리를 알아본다. 
+                아울러 양자화로 인해 발생하는 경계 입력(Edge Cases)에서의 품질 하락 문제를 추가 학습 없이 회복하는 <strong>TTP(Test-time Prompting)</strong> 보정 전략을 상세히 비교 및 정리한다.
+            </p>
+        </section>
 
         <!-- OVERVIEW / HERO BANNER -->
         <section class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
@@ -78,23 +65,23 @@
             </div>
             <div class="relative z-10 space-y-4 max-w-4xl">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-medium">
-                    <i class="fa-solid fa-star text-yellow-400"></i> 추론 최적화 핵심 이원화 전략
+                    <i class="fa-solid fa-star text-yellow-400"></i> 추론 최적화 이원화 전략
                 </div>
-                <h2 class="text-3xl font-extrabold tracking-tight text-white">"INT4 PTQ로 가볍게 압축하고, TTP 프롬프트로 똑똑하게 보정한다!"</h2>
+                <h2 class="text-3xl font-extrabold tracking-tight text-white leading-tight">INT4 PTQ로 가볍게 압축하고, TTP 프롬프트로 똑똑하게 보정한다!</h2>
                 <p class="text-slate-300 text-base leading-relaxed">
-                    LLM 실무 서비스 배포에서는 모델 크기로 인한 메모리 한계를 극복하는 <strong>PTQ(Post-Training Quantization)</strong>와, 양자화로 취약해진 경계 입력(Edge Cases)에서의 성능 저하를 추가 재학습 없이 회복하는 <strong>TTP(Test-time Prompting)</strong> 전략이 핵심 파이프라인을 이룹니다.
+                    LLM 배포 환경에서는 모델 크기로 인한 메모리 한계를 극복하는 <strong>PTQ</strong> 기법과, 
+                    양자화로 취약해진 입력에 대응해 정답 정밀도를 회복하는 <strong>TTP</strong> 기법이 유기적인 파이프라인을 구축한다.
                 </p>
             </div>
         </section>
 
-        <!-- SECTION 1: PTQ vs QLoRA & CONCEPT -->
+        <!-- SECTION 1: QLoRA vs PTQ -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-diagram-project text-blue-600"></i>
+                <h3 class="flex items-center gap-2">
                     1. QLoRA(학습 시 양자화) vs PTQ(추론 시 양자화) 관점의 차이
                 </h3>
-                <p class="text-slate-500 text-sm mt-1">양자화가 적용되는 시점(학습 단계 vs 추론 단계)에 따라 핵심 역할이 구분됩니다.</p>
+                <p class="text-slate-500 text-sm mt-1">양자화가 실행되는 단계(학습 단계 vs 추론 단계)에 따라 핵심 가치와 아키텍처가 달라진다.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -103,47 +90,47 @@
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
-                            <h4 class="font-bold text-slate-800">학습 시 양자화 (QLoRA)</h4>
+                            <span class="font-bold text-slate-800">학습 시 양자화 (QLoRA)</span>
                         </div>
                         <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-md">Fine-tuning 시점</span>
                     </div>
                     <ul class="space-y-2.5 text-sm text-slate-600">
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-check text-indigo-500 mt-1"></i>
-                            <span><strong>목적:</strong> 제한된 GPU 메모리로 대형 모델 파인튜닝 수행</span>
+                            <span><strong>목적:</strong> 제한된 GPU 자원으로 대형 모델 파인튜닝 수행</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-check text-indigo-500 mt-1"></i>
-                            <span><strong>방식:</strong> Base Model은 4-bit NF4로 고정(Freeze) + LoRA Adapter(FP16)만 학습</span>
+                            <span><strong>방식:</strong> 가중치는 4-bit NF4로 고정하고 LoRA 어댑터(FP16)만 활성화하여 훈련</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-check text-indigo-500 mt-1"></i>
-                            <span><strong>특징:</strong> Gradient 역전파가 LoRA 파라미터에 전달됨</span>
+                            <span><strong>특징:</strong> 가중치 업데이트가 역전파를 거쳐 어댑터 파라미터에만 전달됨</span>
                         </li>
                     </ul>
                 </div>
 
                 <!-- PTQ Card -->
-                <div class="bg-white border border-blue-200 rounded-2xl p-6 card-shadow space-y-4 gradient-border">
+                <div class="bg-white border border-blue-200 rounded-2xl p-6 card-shadow space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-blue-600"></span>
-                            <h4 class="font-bold text-slate-900">추론 시 양자화 (PTQ) ⭐</h4>
+                            <span class="font-bold text-slate-900">추론 시 양자화 (PTQ)</span>
                         </div>
                         <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 text-xs font-bold rounded-md">Inference 시점</span>
                     </div>
                     <ul class="space-y-2.5 text-sm text-slate-700">
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-star text-blue-600 mt-1"></i>
-                            <span><strong>목적:</strong> 서비스 배포 시 추론 속도 향상 및 VRAM 메모리 극대 절감</span>
+                            <span><strong>목적:</strong> 서비스 배포 시 추론 속도 개선 및 VRAM 메모리 소요 절감</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-star text-blue-600 mt-1"></i>
-                            <span><strong>방식:</strong> 학습 완료 후 모델 전체 가중치를 INT4(4-bit)로 양자화하여 로드</span>
+                            <span><strong>방식:</strong> 학습 완료본 모델 전체 가중치를 INT4 또는 FP4 규격으로 양자화하여 로드</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-star text-blue-600 mt-1"></i>
-                            <span><strong>특징:</strong> 재학습 없음(No Gradient), 16GB VRAM에서 7B~70B 모델 추론 가능</span>
+                            <span><strong>특징:</strong> 별도의 재학습 없이 즉각 배포 가능하며 소형 GPU 자원 활용도 극대화</span>
                         </li>
                     </ul>
                 </div>
@@ -153,74 +140,78 @@
         <!-- SECTION 2: PTQ DETAILS & CODE CONFIG -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-microchip text-blue-600"></i>
+                <h3>
                     2. PTQ (Post-Training Quantization) 핵심 원리 &amp; 구현
                 </h3>
-                <p class="text-slate-500 text-sm mt-1">학습이 끝난 모델을 INT4 양자화하여 소비자용 GPU 메모리에 안착시키는 방법입니다.</p>
+                <p class="text-slate-500 text-sm mt-1">학습이 끝난 모델의 가중치를 4-bit 규격으로 압축하여 소비자용 GPU 메모리에 로드하는 방법이다.</p>
             </div>
 
-            <!-- SVG Diagram for Memory Structure -->
+            <!-- SVG Diagram for Memory Structure (100% 원본 크기 고수 규칙 적용) -->
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-memory text-indigo-500"></i>
                     추론 시 메모리 구성 요소 (가중치 vs 활성화/KV 캐시)
                 </h4>
-                <svg viewBox="0 0 800 200" class="w-full h-auto bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                    <!-- FP16 Model Box -->
-                    <g transform="translate(40, 20)">
-                        <rect x="0" y="0" width="320" height="150" fill="#ffffff" stroke="#94a3b8" stroke-width="2" rx="12"/>
-                        <text x="160" y="28" font-weight="bold" fill="#1e293b" text-anchor="middle" font-size="14">FP16 기준 모델 (예: 7B 기준 ~14GB)</text>
-                        
-                        <rect x="20" y="45" width="280" height="55" fill="#f87171" rx="8"/>
-                        <text x="160" y="78" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="13">가중치 (Weights): FP16 (14GB)</text>
-                        
-                        <rect x="20" y="108" width="280" height="30" fill="#60a5fa" rx="6"/>
-                        <text x="160" y="128" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="11">활성화 &amp; KV 캐시: FP16 (~1-2GB)</text>
-                    </g>
+                
+                <!-- 확대 없이 100% 원본 크기 준수 및 반응형 가로 스크롤 대응 -->
+                <div class="max-w-full overflow-x-auto p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <svg width="800" height="200" viewBox="0 0 800 200" class="mx-auto">
+                        <!-- FP16 Model Box -->
+                        <g transform="translate(25, 25)">
+                            <rect x="0" y="0" width="320" height="150" fill="#ffffff" stroke="#94a3b8" stroke-width="2" rx="12"/>
+                            <text x="160" y="28" font-weight="bold" fill="#1e293b" text-anchor="middle" font-size="14" dominant-baseline="central">FP16 기준 모델 (예: 7B 기준 ~14GB)</text>
+                            
+                            <rect x="20" y="55" width="280" height="45" fill="#f87171" rx="8"/>
+                            <text x="160" y="77" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="13" dominant-baseline="central">가중치 (Weights): FP16 (14GB)</text>
+                            
+                            <rect x="20" y="110" width="280" height="25" fill="#60a5fa" rx="6"/>
+                            <text x="160" y="122" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="11" dominant-baseline="central">활성화 &amp; KV 캐시: FP16 (~1-2GB)</text>
+                        </g>
 
-                    <!-- Arrow -->
-                    <g transform="translate(380, 85)">
-                        <path d="M 0 10 L 30 10 M 20 0 L 32 10 L 20 20" stroke="#3b82f6" stroke-width="3" fill="none"/>
-                        <text x="16" y="-5" font-weight="bold" fill="#3b82f6" text-anchor="middle" font-size="11">INT4 PTQ 적용</text>
-                    </g>
+                        <!-- Arrow -->
+                        <g transform="translate(375, 90)">
+                            <path d="M 0 10 L 30 10 M 20 0 L 32 10 L 20 20" stroke="#3b82f6" stroke-width="3" fill="none"/>
+                            <text x="15" y="-12" font-weight="bold" fill="#3b82f6" text-anchor="middle" font-size="11" dominant-baseline="central">INT4 PTQ 적용</text>
+                        </g>
 
-                    <!-- INT4 Model Box -->
-                    <g transform="translate(440, 20)">
-                        <rect x="0" y="0" width="320" height="150" fill="#ffffff" stroke="#3b82f6" stroke-width="2" rx="12"/>
-                        <text x="160" y="28" font-weight="bold" fill="#1e293b" text-anchor="middle" font-size="14">INT4 PTQ 모델 (총 ~5.5GB으로 감축!)</text>
-                        
-                        <rect x="20" y="45" width="280" height="55" fill="#4ade80" rx="8"/>
-                        <text x="160" y="78" fill="#065f46" font-weight="bold" text-anchor="middle" font-size="13">가중치 (Weights): INT4 NF4 (~3.5GB) 75%↓</text>
-                        
-                        <rect x="20" y="108" width="280" height="30" fill="#60a5fa" rx="6"/>
-                        <text x="160" y="128" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="11">활성화 &amp; KV 캐시: FP16 유지 (~1-2GB)</text>
-                    </g>
-                </svg>
+                        <!-- INT4 Model Box -->
+                        <g transform="translate(455, 25)">
+                            <rect x="0" y="0" width="320" height="150" fill="#ffffff" stroke="#3b82f6" stroke-width="2" rx="12"/>
+                            <text x="160" y="28" font-weight="bold" fill="#1e293b" text-anchor="middle" font-size="14" dominant-baseline="central">INT4 PTQ 모델 (총 ~5.5GB으로 감축!)</text>
+                            
+                            <rect x="20" y="55" width="280" height="45" fill="#4ade80" rx="8"/>
+                            <text x="160" y="77" fill="#065f46" font-weight="bold" text-anchor="middle" font-size="13" dominant-baseline="central">가중치 (Weights): INT4 NF4 (~3.5GB) 75%↓</text>
+                            
+                            <rect x="20" y="110" width="280" height="25" fill="#60a5fa" rx="6"/>
+                            <text x="160" y="122" fill="#ffffff" font-weight="bold" text-anchor="middle" font-size="11" dominant-baseline="central">활성화 &amp; KV 캐시: FP16 유지 (~1-2GB)</text>
+                        </g>
+                    </svg>
+                </div>
+                
                 <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
                     <i class="fa-solid fa-lightbulb text-amber-600 mt-0.5 text-sm"></i>
-                    <span><strong>핵심 포인트:</strong> 양자화는 모델 <u>가중치(Weights)</u>를 16-bit에서 4-bit로 압축하여 가중치 메모리를 약 75% 절감합니다. 하지만 추론 중 발생하는 <u>활성화값 및 KV 캐시</u>는 연산 정밀도를 위해 FP16을 유지하므로, 전체 피크 메모리는 가중치 절감분 + 알파 형태로 형성됩니다.</span>
+                    <span><strong>핵심 포인트:</strong> 양자화는 모델의 가중치(Weights)를 16-bit에서 4-bit로 압축하여 물리 저장 공간과 가중치 VRAM 점유율을 75% 수준으로 삭감한다. 반면 추론 과정의 활성화값과 KV 캐시 영역은 연산 정밀도 유지를 위해 FP16을 유지한다.</span>
                 </div>
             </div>
 
-            <!-- Python Implementation Snippet -->
+            <!-- Python Implementation Snippet (은서파 블로그 코드 주석 규격 적용) -->
             <div class="bg-slate-900 rounded-2xl p-6 text-white card-shadow space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <span class="text-xs font-mono text-blue-400 font-semibold"><i class="fa-brands fa-python mr-1"></i>bitsandbytes 기반 INT4 PTQ 모델 로딩 코드</span>
-                    <span class="text-xs text-slate-400">HuggingFace Transformers 연동</span>
+                    <span class="text-xs text-slate-400">Transformers Pipeline</span>
                 </div>
-                <pre class="text-xs font-mono leading-relaxed text-slate-300 overflow-x-auto"><code><span class="text-purple-400">import</span> torch
+                <pre class="code-viewer text-xs font-mono leading-relaxed text-slate-300 overflow-x-auto"><code><span class="text-purple-400">import</span> torch
 <span class="text-purple-400">from</span> transformers <span class="text-purple-400">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-<span class="text-slate-500"># 1. INT4 양자화 설정 (NF4 - Normal Float 4-bit)</span>
+<span class="text-slate-500"># 1. INT4 양자화 세부 셋업 선언 (Normal Float 4-bit 양자화 적용)</span>
 quant_config = BitsAndBytesConfig(
-    load_in_4bit=<span class="text-emerald-400">True</span>,                          <span class="text-slate-500"># INT4 양자화 활성화</span>
-    bnb_4bit_compute_dtype=torch.float16,       <span class="text-slate-500"># 추론 연산 시 dtype은 FP16 사용</span>
-    bnb_4bit_quant_type=<span class="text-emerald-400">"nf4"</span>,                  <span class="text-slate-500"># LLM 가중치 정규분포 최적화 양자화</span>
-    bnb_4bit_use_double_quant=<span class="text-emerald-400">True</span>,             <span class="text-slate-500"># 이중 양자화로 메타데이터 메모리 추가 절감</span>
+    load_in_4bit=<span class="text-emerald-400">True</span>,                          <span class="text-slate-500"># 4-bit 압축 모드 작동</span>
+    bnb_4bit_compute_dtype=torch.float16,       <span class="text-slate-500"># 활성화 텐서 연산 dtype을 FP16으로 강제</span>
+    bnb_4bit_quant_type=<span class="text-emerald-400">"nf4"</span>,                  <span class="text-slate-500"># 가중치 최적화 NF4 타입 사용</span>
+    bnb_4bit_use_double_quant=<span class="text-emerald-400">True</span>,             <span class="text-slate-500"># 메타데이터 자체의 이중 압축 추가 적용</span>
 )
 
-<span class="text-slate-500"># 2. PTQ 양자화 모델 로딩 (별도 파인튜닝 과정 없이 바로 로드)</span>
+<span class="text-slate-500"># 2. 파인튜닝 없이 Base Model을 INT4 PTQ 형태로 즉시 로드</span>
 model = AutoModelForCausalLM.from_pretrained(
     <span class="text-emerald-400">"Qwen/Qwen2.5-1.5B-Instruct"</span>,
     quantization_config=quant_config,
@@ -233,44 +224,47 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
         <!-- SECTION 3: QUANTIZATION LIMITATIONS & EDGE CASES -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+                <h3>
                     3. 양자화 모델의 한계: 경계 입력(Edge Cases) 품질 저하
                 </h3>
-                <p class="text-slate-500 text-sm mt-1">INT4로 압축된 모델은 정상 지문에서는 우수하지만, 불명확한 입력 시 정밀도 손실 누적으로 품질이 저하됩니다.</p>
+                <p class="text-slate-500 text-sm mt-1">INT4 압축 모델은 정상적인 지문에서는 성능을 유지하나, 오타나 추임새 등 정보 밀도가 떨어지는 입력값에서 한계를 보인다.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- 1. 오타 -->
                 <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow space-y-2">
                     <div class="text-rose-500 font-bold text-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-font"></i> 1. 오타 (Typo)
                     </div>
-                    <p class="text-xs text-slate-600">예: <em>"서울에셔 부산까지..."</em></p>
-                    <p class="text-xs text-slate-500">Attention Score 미세 오차로 단어 의미 파악 실패 및 엉뚱한 응답 발생.</p>
+                    <p class="text-sm text-slate-600">예: <em>"서울에셔 부산까지..."</em></p>
+                    <p class="text-sm text-slate-500 font-normal">양자화 오차 누적으로 어텐션 스코어 왜곡이 생겨 단어 파악 실패 유도.</p>
                 </div>
 
+                <!-- 2. 노이즈 -->
                 <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow space-y-2">
                     <div class="text-amber-500 font-bold text-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-bullhorn"></i> 2. 노이즈 (Noise)
                     </div>
-                    <p class="text-xs text-slate-600">예: <em>"음... KTX로 대략...?"</em></p>
-                    <p class="text-xs text-slate-500">불필요한 추임새나 불명확한 문장 요소로 인해 모델 추론 방황.</p>
+                    <p class="text-sm text-slate-600">예: <em>"음... KTX로 대략...?"</em></p>
+                    <p class="text-sm text-slate-500 font-normal">불필요한 공백과 삽입구가 추가되면서 정밀도가 무너진 토큰의 답변 궤적 이탈.</p>
                 </div>
 
+                <!-- 3. 모호함 -->
                 <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow space-y-2">
                     <div class="text-indigo-500 font-bold text-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-question"></i> 3. 모호함 (Ambiguity)
                     </div>
-                    <p class="text-xs text-slate-600">예: <em>"그거 얼마나 걸려?"</em></p>
-                    <p class="text-xs text-slate-500">맥락 생략 시 양자화로 좁아진 "추론 여유(Inference Margin)"로 잘못된 답변 선택.</p>
+                    <p class="text-sm text-slate-600">예: <em>"그거 얼마나 걸려?"</em></p>
+                    <p class="text-sm text-slate-500 font-normal">맥락이 흐려질 때 모델의 확률적 답변 판별 한계가 좁아져 엉뚱한 대답 도출.</p>
                 </div>
 
+                <!-- 4. 조건 변화 -->
                 <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow space-y-2">
                     <div class="text-purple-500 font-bold text-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-code-branch"></i> 4. 조건 변화
                     </div>
-                    <p class="text-xs text-slate-600">예: <em>"밤 11시 출발 시 다음날..."</em></p>
-                    <p class="text-xs text-slate-500">복합 제약조건 계산 시 양자화 오차가 누적되어 조건 유실.</p>
+                    <p class="text-sm text-slate-600">예: <em>"밤 11시 출발 시 다음날..."</em></p>
+                    <p class="text-sm text-slate-500 font-normal">여러 제약조건 연산 시 양자화 오차가 점진적으로 전파되어 연산 능력 조기 유실.</p>
                 </div>
             </div>
         </section>
@@ -278,11 +272,10 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
         <!-- SECTION 4: TTP (TEST-TIME PROMPTING) STRATEGIES -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i>
+                <h3>
                     4. TTP (Test-time Prompting) 품질 보정 전략
                 </h3>
-                <p class="text-slate-500 text-sm mt-1">모델 가중치를 수정하지 않고, 추론 시점의 프롬프트 구성만으로 양자화 모델의 성능을 원상 복구합니다.</p>
+                <p class="text-slate-500 text-sm mt-1">모델의 가중치를 직접 미세조정하지 않고, 추론 단계의 프롬프트 강화만으로 정상 범주의 출력 정밀도를 회복한다.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -291,12 +284,12 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                            <h4 class="font-bold text-slate-800">TTP-A: 출력 형식 &amp; 제약조건 강화</h4>
+                            <span class="font-bold text-slate-800">TTP-A: 출력 형식 &amp; 제약조건 강화</span>
                         </div>
                         <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-md">지시문 명시</span>
                     </div>
-                    <p class="text-xs text-slate-600">모델에게 처리 규칙(오타 허용, 단위 지정, 역활/맥락 부여)을 직접 지정하여 추론 방향을 안내합니다.</p>
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-xs text-slate-700 space-y-1">
+                    <p class="text-sm text-slate-600">모델이 준수해야 할 추론 가이드(오타 무시 규칙, 단위 고정)를 직접 시스템 프롬프트 형태로 조율하여 탈선 방지.</p>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-sm text-slate-700 space-y-1">
                         <div class="text-emerald-700 font-bold">[프롬프트 템플릿 예시]</div>
                         <div>규칙 1: 오타나 불명확 표현이 있어도 의도를 파악하세요.</div>
                         <div>규칙 2: 대략적인 소요 시간(시간 단위)으로 답하세요.</div>
@@ -309,12 +302,12 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                            <h4 class="font-bold text-slate-800">TTP-B: Few-shot 예시 포함</h4>
+                            <span class="font-bold text-slate-800">TTP-B: Few-shot 예시 포함</span>
                         </div>
                         <span class="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md">예시 제공</span>
                     </div>
-                    <p class="text-xs text-slate-600">1~2개의 모범 입출력 샘플을 프롬프트에 동량 배치하여 원하지 않는 방향으로의 이탈을 방지합니다.</p>
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-xs text-slate-700 space-y-1">
+                    <p class="text-sm text-slate-600">1~2개의 모범 입출력 구조(Few-shot)를 프롬프트에 내장하여 출력 타겟을 직관적으로 명시.</p>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-sm text-slate-700 space-y-1">
                         <div class="text-blue-700 font-bold">[프롬프트 템플릿 예시]</div>
                         <div>예시 Q: 서울역에서 대전역까지 KTX로 얼마나 걸려요?</div>
                         <div>예시 A: 서울역에서 대전역까지 KTX로 약 50분 소요됩니다.</div>
@@ -323,45 +316,45 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
                 </div>
             </div>
 
-            <!-- TTP Comparison Summary Box -->
+            <!-- TTP Comparison Summary Table (반응형 표 구현) -->
             <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow overflow-x-auto">
                 <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-blue-600"></i>
                     TTP 적용 전후 품질 회복 비교 테스트 (실습 결과 요약)
                 </h4>
-                <table class="w-full text-xs text-left text-slate-600 border-collapse">
+                <table class="w-full border-collapse border border-slate-200 rounded-xl overflow-hidden text-sm">
                     <thead>
                         <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
-                            <th class="p-3">입력 유형</th>
-                            <th class="p-3">입력 예시</th>
-                            <th class="p-3 text-rose-600">TTP 미적용 (INT4 전용)</th>
-                            <th class="p-3 text-emerald-600">TTP-A/B 적용 후</th>
+                            <th class="p-3 text-left">입력 유형</th>
+                            <th class="p-3 text-left">입력 예시</th>
+                            <th class="p-3 text-left text-rose-600">TTP 미적용 (INT4 전용)</th>
+                            <th class="p-3 text-left text-emerald-600 font-bold">TTP-A/B 적용 후</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                        <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3 font-semibold text-slate-800">정상</td>
-                            <td class="p-3">서울에서 부산까지 KTX로 얼마나 걸리나요?</td>
-                            <td class="p-3 text-emerald-600">정상 응답 (5/5)</td>
+                            <td class="p-3 text-slate-600">서울에서 부산까지 KTX로 얼마나 걸리나요?</td>
+                            <td class="p-3 text-emerald-600 font-medium">정상 응답 (5/5)</td>
                             <td class="p-3 text-emerald-600 font-bold">정상 응답 유지 (5/5)</td>
                         </tr>
-                        <tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3 font-semibold text-slate-800">오타</td>
-                            <td class="p-3">서울에셔 부산까지 KTX로 얼마나 걸리나요?</td>
-                            <td class="p-3 text-rose-500">의도 오파악/환각 (3/5)</td>
+                            <td class="p-3 text-slate-600">서울에셔 부산까지 KTX로 얼마나 걸리나요?</td>
+                            <td class="p-3 text-rose-500 font-medium">의도 오파악 및 환각 (3/5)</td>
                             <td class="p-3 text-emerald-600 font-bold">오타 교정 후 완벽 응답 (5/5)</td>
                         </tr>
-                        <tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3 font-semibold text-slate-800">노이즈</td>
-                            <td class="p-3">서울에서 부산까지... 음... KTX로 대략?</td>
-                            <td class="p-3 text-rose-500">답변 방황 (2/5)</td>
-                            <td class="p-3 text-emerald-600 font-bold">핵심 소요시간 즉시 응답 (4.5/5)</td>
+                            <td class="p-3 text-slate-600">서울에서 부산까지... 음... KTX로 대략?</td>
+                            <td class="p-3 text-rose-500 font-medium">답변 방황 (2/5)</td>
+                            <td class="p-3 text-emerald-600 font-bold">핵심 소요시간 정밀 응답 (4.5/5)</td>
                         </tr>
-                        <tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
                             <td class="p-3 font-semibold text-slate-800">모호함</td>
-                            <td class="p-3">그거 얼마나 걸려?</td>
-                            <td class="p-3 text-rose-500">엉뚱한 주제 대답 (1/5)</td>
-                            <td class="p-3 text-emerald-600 font-bold">교통 안내 맥락으로 복원 (4/5)</td>
+                            <td class="p-3 text-slate-600">그거 얼마나 걸려?</td>
+                            <td class="p-3 text-rose-500 font-medium">엉뚱한 대답 도출 (1/5)</td>
+                            <td class="p-3 text-emerald-600 font-bold">교통 안내 맥락 자동 복원 (4/5)</td>
                         </tr>
                     </tbody>
                 </table>
@@ -375,27 +368,27 @@ tokenizer = AutoTokenizer.from_pretrained(<span class="text-emerald-400">"Qwen/Q
                     <i class="fa-solid fa-clipboard-check text-xl"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-slate-900">최종 자가 체크리스트</h3>
-                    <p class="text-xs text-slate-500">배운 내용 중 아래 핵심 항목을 스스로 설명할 수 있는지 확인하세요.</p>
+                    <h4 class="font-bold text-slate-900 mb-0">최종 자가 체크리스트</h4>
+                    <p class="text-sm text-slate-500 mt-0.5">본 포스트의 핵심 개념 숙지 여부를 자가 점검한다.</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
                 <label class="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 transition">
                     <input type="checkbox" checked disabled class="mt-0.5 rounded text-blue-600">
-                    <span><strong>PTQ의 역할:</strong> QLoRA(학습 시 양자화)와 PTQ(추론 시 양자화)의 시점 및 목적 차이를 설명할 수 있다.</span>
+                    <span><strong>PTQ의 역할:</strong> QLoRA와 PTQ의 최적화 시점 및 대상의 차이를 이해함.</span>
                 </label>
                 <label class="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 transition">
                     <input type="checkbox" checked disabled class="mt-0.5 rounded text-blue-600">
-                    <span><strong>메모리 절감 구조:</strong> 가중치(Weights) 4-bit 압축과 활성화(Activations)/KV 캐시의 FP16 유지 관계를 이해한다.</span>
+                    <span><strong>메모리 절감 구조:</strong> 가중치 4-bit 압축과 활성화/KV 캐시의 FP16 정밀도 보존 관계 설명 가능.</span>
                 </label>
                 <label class="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 transition">
                     <input type="checkbox" checked disabled class="mt-0.5 rounded text-blue-600">
-                    <span><strong>양자화 한계 체감:</strong> 오타/노이즈 등 경계 입력(Edge Cases)에서 정밀도 손실로 인한 품질 저하 원인을 이해한다.</span>
+                    <span><strong>양자화 한계 체감:</strong> 정보 훼손(오타/노이즈)에 취약해지는 INT4 압축 한계의 원인 인지.</span>
                 </label>
                 <label class="flex items-start gap-2.5 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 transition">
                     <input type="checkbox" checked disabled class="mt-0.5 rounded text-blue-600">
-                    <span><strong>TTP 보정 기법:</strong> 재학습 없이 TTP-A(지시/규칙 강화) 및 TTP-B(Few-shot)로 품질을 회복할 수 있다.</span>
+                    <span><strong>TTP 보정 기법:</strong> 재학습 과정 없이 TTP-A/B 템플릿만으로 품질을 신속 복구함.</span>
                 </label>
             </div>
         </section>
