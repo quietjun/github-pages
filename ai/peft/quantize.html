@@ -68,7 +68,7 @@
         <!-- 왜 양자화(Quantization)가 필요한가? 이론 요약 영역 -->
         <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 card-shadow space-y-6">
             <div class="border-b border-slate-100 pb-4">
-                <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-circle-question text-indigo-600 mr-2"></i>왜 양자화(Quantization)가 필요한가?</h3>
+                <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-circle-question text-indigo-600 mr-2"></i>1. 부동소수점(Float) 규격과 메모리 한계</h3>
                 <p class="text-slate-500 text-sm mt-1">거대 모델의 대중적 서빙을 가로막는 근본적인 하드웨어 장벽과 가중치 압축 전략에 관한 요약이다.</p>
             </div>
 
@@ -138,9 +138,22 @@
                         </div>
                     </div>
                     
-                    <p class="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-200/60">
-                        양자화는 바로 이처럼 가중치의 표현 비트 수를 낮춤으로써 약간의 정확도 손실을 감수하고 메모리 용량을 대폭 확보하는 극대화 기법이다.
-                    </p>
+                    <div class="pt-3 border-t border-slate-200/60 text-xs text-slate-600">
+                        <div class="bg-emerald-50/40 p-4 rounded-2xl border border-emerald-100/70 text-slate-600 leading-relaxed">
+                            <strong>💡 정밀도 다운캐스팅과의 차이</strong>
+                            <ul class="list-disc pl-5 mt-2 space-y-1.5 text-[11px] text-slate-600">
+                                <li>
+                                    <strong>정밀도 다운캐스팅(Downcasting)</strong>: FP32에서 FP16 또는 BF16으로 변환하는 것으로, 실수라는 성질(경사로)을 그대로 유지한 채 표현 비트 크기만 줄이는 작업이다.
+                                </li>
+                                <li>
+                                    <strong>양자화(Quantization)</strong>: 연속적인 무한한 실수 데이터를 딱딱 끊어지는 고정된 정수 범위(INT8/INT4 등)로 매핑하여 도메인 자체를 바꾸는 작업이다. (비유하자면, <em>눈금 없는 부드러운 경사로(실수)를 칸칸이 나뉜 계단(정수)으로 바꾸는 것</em>과 같다.)
+                                </li>
+                            </ul>
+                            <p class="mt-2.5 pt-2 border-t border-slate-200/40 text-[11px]">
+                                양자화는 바로 이처럼 표현 비트 수를 낮춤으로써 약간의 정확도 손실을 감수하고 모델의 메모리 요구량을 대폭 줄이는 기법이다.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,7 +161,7 @@
         <!-- SECTION 1: FP32, FP16, BF16 BIT STRUCTURE (THE ORIGINAL COMPARATIVE IMAGE FORMAT) -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-layer-group text-blue-600 mr-2"></i>1. 실수형 정밀도 비트 구조 비교 (FP32 vs FP16 vs BF16)</h3>
+                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-layer-group text-blue-600 mr-2"></i>2. 실수형 정밀도 비트 구조 비교 (FP32 vs FP16 vs BF16)</h3>
                 <p class="text-slate-500 text-sm mt-1">부동소수점 형식이 메모리 상에서 어떻게 저장되는지 부호(Sign), 지수(Exponent), 가수(Mantissa)의 물리적 크기를 원본 도표 이미지 형태로 직관적으로 비교한다.</p>
             </div>
 
@@ -273,16 +286,16 @@
         <!-- SECTION 2: DEEP DIVE INT8 QUANTIZATION (CONVERSION PROCESS) -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-calculator text-emerald-600 mr-2"></i>2. 정수형 균등 양자화 (INT8) 변환 원리</h3>
-                <p class="text-slate-500 text-sm mt-1">소수점이 있는 FP32 가중치 텐서를 정수 INT8 범위(-128 ~ 127)로 스케일링하여 격자화하는 프로세스의 엄밀한 변환 수식과 가공 순서이다.</p>
+                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-calculator text-emerald-600 mr-2"></i>3. 정수형 균등 양자화 (INT8) 변환 원리</h3>
             </div>
 
             <div class="space-y-6">
                 <!-- Intuitive Breakdown -->
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
-                    <h4 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-square-root-variable text-blue-500 mr-2"></i>정수 변환(Symmetric Quantization) 직관적 이해</h4>
+                    <h4 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-square-root-variable text-blue-500 mr-2"></i>대칭 양자화(Symmetric Quantization) 직관적 이해</h4>
                     <p class="text-slate-600 text-xs leading-relaxed">
-                        대칭 양자화(Symmetric)는 복잡한 수식 대신 <strong>'고무줄 줄자'</strong>를 덧대는 원리와 같다. 실수 범위에 맞추어 일정한 정수 눈금(-128 ~ 127)이 그려진 줄자를 늘리거나 줄여서 실수 가중치에 딱 맞물리게 매핑하는 원리이다.
+                        소수점이 있는 FP32 가중치 텐서를 정수 INT8 범위(-128 ~ 127)로 스케일링하여 격자화하는 프로세스의 엄밀한 변환 수식과 가공 순서이다.<br><br>
+                        대칭 양자화는 복잡한 수식 대신 <strong>'고무줄 줄자'</strong>를 덧대는 원리와 같다. 실수 범위에 맞추어 일정한 정수 눈금(-128 ~ 127)이 그려진 줄자를 늘리거나 줄여서 실수 가중치에 딱 맞물리게 매핑하는 원리이다.
                     </p>
                 </div>
             </div>
@@ -345,6 +358,47 @@
                     <p class="text-slate-600 text-xs leading-relaxed">
                         그 결과, 대부분의 가중치 원소가 집중되어 있는 <strong>0 주변의 미세한 값들</strong>은 다 같이 뭉개지고, 드물게 존재하는 아웃라이어(큰 값) 영역에만 넓은 바구니들이 낭비되어 복원 성능의 정확도 낙폭이 심해짐.
                     </p>
+                    <!-- 신발 사이즈 비유 상징적 SVG 도해 -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-3">
+                        <div class="text-center space-y-1 sm:border-r sm:border-slate-200 sm:pr-4 flex-shrink-0">
+                            <i class="fa-solid fa-shoe-prints text-3xl text-rose-500/80"></i>
+                            <div class="text-[10px] font-bold text-rose-600">Uniform Size (20mm 간격)</div>
+                        </div>
+                        <div class="w-full overflow-x-auto">
+                            <svg width="450" height="70" viewBox="0 0 450 70" class="mx-auto overflow-visible text-slate-400">
+                                <!-- 가로 자 축 -->
+                                <line x1="20" y1="25" x2="430" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
+                                <!-- 20mm 단위의 일정하고 듬성듬성한 눈금들 -->
+                                <!-- 150 -->
+                                <line x1="20" y1="13" x2="20" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                                <text x="20" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
+                                <!-- 170 -->
+                                <line x1="61" y1="17" x2="61" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 190 -->
+                                <line x1="102" y1="17" x2="102" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 210 -->
+                                <line x1="143" y1="17" x2="143" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 230 (수렴 대상 1) -->
+                                <line x1="184" y1="13" x2="184" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="184" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">230</text>
+                                <!-- 250 (수렴 대상 2) -->
+                                <line x1="225" y1="13" x2="225" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="225" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">250</text>
+                                <!-- 270 (수렴 대상 3) -->
+                                <line x1="266" y1="13" x2="266" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="266" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">270</text>
+                                <!-- 290 -->
+                                <line x1="307" y1="17" x2="307" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 310 -->
+                                <line x1="348" y1="17" x2="348" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 330 -->
+                                <line x1="389" y1="17" x2="389" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <!-- 350 -->
+                                <line x1="430" y1="13" x2="430" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                                <text x="430" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
                 <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
                     💡 **클리핑 &amp; 반올림 오차**: 이로 인해 환경 변화 입력(오타/노이즈)이 발생하면 모델의 추론 방향이 흐트러지게 됨.
@@ -355,7 +409,7 @@
         <!-- SECTION 3: DEEP DIVE NF4 QUANTIZATION (THE MAGIC RULER PERFECT COPY) -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
-                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-bezier-curve text-indigo-600 mr-2"></i>3. 분위수 기반 4-bit 양자화 (NF4) 변환 원리</h3>
+                <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-bezier-curve text-indigo-600 mr-2"></i>4. 분위수 기반 4-bit 양자화 (NF4) 변환 원리</h3>
                 <p class="text-slate-500 text-sm mt-1">가중치 텐서의 정규분포 분포를 기반으로 16개의 분위수 분할 경계면을 수학적으로 배치하여 오차 왜곡을 억제하는 NF4 방식의 핵심 원리이다.</p>
             </div>
 
@@ -460,6 +514,62 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- NF4 신발 사이즈 비유 상징적 SVG 도해 -->
+                <div class="flex flex-col sm:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-4">
+                    <div class="text-center space-y-1 sm:border-r sm:border-slate-200 sm:pr-4 flex-shrink-0">
+                        <i class="fa-solid fa-shoe-prints text-3xl text-indigo-500/80"></i>
+                        <div class="text-[10px] font-bold text-indigo-600">NF4 Size (중앙 조밀 배치)</div>
+                    </div>
+                    <div class="w-full overflow-x-auto">
+                        <svg width="450" height="70" viewBox="0 0 450 70" class="mx-auto overflow-visible text-slate-400">
+                            <!-- 가로 자 축 -->
+                            <line x1="20" y1="25" x2="430" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
+                            <!-- 비선형 눈금들 -->
+                            <!-- 150 -->
+                            <line x1="20" y1="13" x2="20" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                            <text x="20" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
+                            
+                            <!-- 190 (외곽은 넓게 건너뜀) -->
+                            <line x1="80" y1="17" x2="80" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <text x="80" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">190</text>
+                            
+                            <!-- 220 -->
+                            <line x1="140" y1="17" x2="140" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            
+                            <!-- 230 (중앙 조밀 지대 시작) -->
+                            <line x1="175" y1="13" x2="175" y2="37" stroke="#6366f1" stroke-width="2.5"/>
+                            <text x="175" y="56" text-anchor="middle" font-size="14" fill="#6366f1" font-weight="800">230</text>
+                            
+                            <!-- 240 -->
+                            <line x1="205" y1="13" x2="205" y2="37" stroke="#6366f1" stroke-width="2.5"/>
+                            <text x="205" y="56" text-anchor="middle" font-size="14" fill="#6366f1" font-weight="800">240</text>
+                            
+                            <!-- 250 (가운데 최대 밀집) -->
+                            <line x1="230" y1="13" x2="230" y2="37" stroke="#6366f1" stroke-width="2.5"/>
+                            <text x="230" y="56" text-anchor="middle" font-size="14" fill="#6366f1" font-weight="800">250</text>
+                            
+                            <!-- 260 -->
+                            <line x1="255" y1="13" x2="255" y2="37" stroke="#6366f1" stroke-width="2.5"/>
+                            <text x="255" y="56" text-anchor="middle" font-size="14" fill="#6366f1" font-weight="800">260</text>
+                            
+                            <!-- 270 (중앙 조밀 지대 끝) -->
+                            <line x1="285" y1="13" x2="285" y2="37" stroke="#6366f1" stroke-width="2.5"/>
+                            <text x="285" y="56" text-anchor="middle" font-size="14" fill="#6366f1" font-weight="800">270</text>
+                            
+                            <!-- 280 -->
+                            <line x1="320" y1="17" x2="320" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            
+                            <!-- 310 (다시 넓게 배치) -->
+                            <line x1="380" y1="17" x2="380" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <text x="380" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">310</text>
+                            
+                            <!-- 350 -->
+                            <line x1="430" y1="13" x2="430" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                            <text x="430" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
+                        </svg>
+                    </div>
+                </div>
             </div>
 
             <!-- NF4 실시간 계산기 -->
@@ -476,7 +586,7 @@
                     <div class="lg:col-span-4 space-y-3">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
-                            <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
+                            <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.1, -0.3, 0.4, 0.8, 2.8">
                         </div>
                         <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
                             <div>• Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span></div>
