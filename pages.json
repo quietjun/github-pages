@@ -60,7 +60,7 @@
             "path": "ai/langchain/langfuse.html"
           },
           {
-            "label": "LangGraph 시각화",
+            "label": "LangGraph 에이전트 아키텍처 및 구현 가이드",
             "path": "ai/langchain/langgraph.html"
           },
           {
@@ -98,20 +98,16 @@
             "path": "ai/peft/peft_data_flow.html"
           },
           {
+            "label": "PTQ & TTP — 추론 양자화와 품질 보정 전략",
+            "path": "ai/peft/ptq.html"
+          },
+          {
             "label": "QLoRA — Quantized Low-Rank Adaptation",
             "path": "ai/peft/qlora.html"
           },
           {
             "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
             "path": "ai/peft/quantize.html"
-          },
-          {
-            "label": "강의 자료 최종 마스터 템플릿",
-            "path": "ai/peft/template.html"
-          },
-          {
-            "label": "LoRA — Low-Rank Adaptation 완전 이해",
-            "path": "ai/peft/test.html"
           }
         ]
       },
@@ -170,6 +166,15 @@
             "path": "ai/spring/spring_ai.html"
           }
         ]
+      }
+    ]
+  },
+  {
+    "label": "commons",
+    "children": [
+      {
+        "label": "강의 자료 최종 마스터 템플릿",
+        "path": "commons/template.html"
       }
     ]
   },
