@@ -475,115 +475,12 @@ h4.sub-title {
 <div class="header">
   <div class="badge">PEFT Series 02</div>
   <h1><span class="q">Q</span><span class="lo">LoRA</span> — Quantized Low-Rank Adaptation</h1>
-  <p>양자화 개념 · QLoRA 구조 · 핵심 기술 3가지 · 양자화 흐름 · 코드 사용법</p>
+  <p>양자화 개념 · QLoRA 구조 · 핵심 기술 3가지 · 양자화 흐름 · �<div class="tip-box" style="margin-bottom: 24px; border-left-color: #7c3aed; background: #faf5ff;">
+  💡 <strong>안내:</strong> 양자화(Quantization)의 수학적 원리, NF4 자(Ruler) 시각화 및 양자화 시뮬레이터 체험은 <a href="./quantize.html" style="color: #7c3aed; font-weight: 700; text-decoration: underline;">[양자화(Quantization) 완벽 가이드]</a> 포스트에서 깊이 있게 다루고 있습니다. 본 포스트에서는 이를 활용한 QLoRA 아키텍처와 결합 원리에 집중합니다.
 </div>
 
-<p style="font-size: 14.5px; color: #565c66; line-height: 1.8; max-width: 800px; margin: 0 auto 2.5rem; text-align: center;">
-  이번 포스트에서는 양자화(Quantization)의 기본 개념을 파악하고, 이를 LoRA와 결합하여 메모리를 혁신적으로 절감하는 QLoRA의 핵심 기술과 실무 사용법을 알아본다.
-</p>
-
-<!-- ═══ 01 · 양자화란? ═══ -->
-<h3 class="section-label">01 · 양자화(Quantization) 란?</h3>
-
-<div class="quant-def">
-  <div class="quant-def-keyword">QUANTIZATION</div>
-  <div class="quant-def-title">양자화 — 모델 가중치를 더 적은 비트로 표현하는 압축 기법</div>
-  <p class="quant-def-desc">
-    부동소수점 숫자를 표현하는 <strong>비트 수를 줄여</strong> 모델이 차지하는 메모리를 줄이는 기법.<br>
-    비트가 줄면 표현할 수 있는 숫자의 범위와 정밀도가 낮아지지만, <strong>잘 설계된 양자화는 성능 손실을 최소화</strong>하면서 메모리를 대폭 절감.<br>
-    → QLoRA는 Base 모델을 <strong>4-bit(NF4)</strong>로 양자화해 로드하고, 그 위에 LoRA Adapter를 붙여 학습.
-  </p>
-</div>
-
-<div class="prec-section">
-  <div class="prec-title">📊 정밀도별 메모리 사용량 — 1B 파라미터 기준</div>
-
-  <div class="prec-row">
-    <span class="prec-label" style="color:#1e40af">FP32</span>
-    <div class="prec-bar-wrap">
-      <div class="prec-bar" id="pb-fp32" style="background:linear-gradient(90deg,#3b82f6,#93c5fd)"></div>
-      <span class="prec-bar-text">~4 GB</span>
-    </div>
-    <span class="prec-meta"><strong>32bit</strong> 원본 정밀도 · 기준값</span>
-  </div>
-  <div class="prec-row">
-    <span class="prec-label" style="color:#166534">FP16</span>
-    <div class="prec-bar-wrap">
-      <div class="prec-bar" id="pb-fp16" style="background:linear-gradient(90deg,#10b981,#6ee7b7)"></div>
-      <span class="prec-bar-text">~2 GB</span>
-    </div>
-    <span class="prec-meta"><strong>16bit</strong> 절반 메모리 · LoRA 기본</span>
-  </div>
-  <div class="prec-row">
-    <span class="prec-label" style="color:#92400e">INT8</span>
-    <div class="prec-bar-wrap">
-      <div class="prec-bar" id="pb-int8" style="background:linear-gradient(90deg,#f59e0b,#fcd34d)"></div>
-      <span class="prec-bar-text">~1 GB</span>
-    </div>
-    <span class="prec-meta"><strong>8bit</strong> 1/4 메모리 · 주로 추론용</span>
-  </div>
-  <div class="prec-row">
-    <span class="prec-label" style="color:#5b21b6">NF4</span>
-    <div class="prec-bar-wrap">
-      <div class="prec-bar" id="pb-nf4" style="background:linear-gradient(90deg,#7c3aed,#c4b5fd)"></div>
-      <span class="prec-bar-text">~0.5 GB</span>
-    </div>
-    <span class="prec-meta"><strong>4bit ★</strong> 1/8 메모리 · QLoRA 핵심</span>
-  </div>
-
-  <div class="bit-grid">
-    <div class="bit-card fp32">
-      <div class="bit-card-head">FP32</div>
-      <div class="bit-dots" id="dots-fp32"></div>
-      <ul class="bit-card-desc">
-        <li>부호 1 + 지수 8 + 가수 23비트</li>
-        <li>표현 범위·정밀도 최대</li>
-        <li>학습 기본값, 메모리 부담 큼</li>
-      </ul>
-      <button class="more-btn" onclick="toggleOverlay(this)">FP란? ＋</button>
-      <div class="more-overlay">
-        <button class="overlay-close" onclick="closeOverlay(this)">✕</button>
-        <div class="overlay-title">FP — Floating Point</div>
-        <ul class="overlay-list">
-          <li>부동소수점 · 소수점 위치가 유동적</li>
-          <li>부호 + 지수 + 가수 세 파트로 구성</li>
-          <li>매우 크거나 작은 수 유연하게 표현</li>
-          <li>딥러닝 기본 수 표현 형식</li>
-        </ul>
-      </div>
-    </div>
-    <div class="bit-card fp16">
-      <div class="bit-card-head">FP16 / BF16</div>
-      <div class="bit-dots" id="dots-fp16"></div>
-      <ul class="bit-card-desc">
-        <li>FP32 대비 메모리 50% 절감</li>
-        <li>LoRA Adapter 정밀도</li>
-        <li>GPU Tensor Core 가속 지원</li>
-      </ul>
-      <button class="more-btn fp16-btn" onclick="toggleOverlay(this)">BF16 차이? ＋</button>
-      <div class="more-overlay">
-        <button class="overlay-close" onclick="closeOverlay(this)">✕</button>
-        <div class="overlay-title">FP16 vs BF16</div>
-        <ul class="overlay-list">
-          <li>FP16 · 지수 5 + 가수 10bit → 정밀도 ↑, 표현 범위 ↓</li>
-          <li>BF16 · 지수 8 + 가수 7bit → FP32와 동일 표현 범위</li>
-          <li>BF = Brain Float · 구글 브레인 팀 설계</li>
-          <li>학습 안정성 → BF16 선호 (오버플로우 ↓)</li>
-        </ul>
-      </div>
-    </div>
-    <div class="bit-card int8">
-      <div class="bit-card-head">INT8</div>
-      <div class="bit-dots" id="dots-int8"></div>
-      <ul class="bit-card-desc">
-        <li>정수 범위만 표현</li>
-        <li>비선형 표현력 손실 있음</li>
-        <li>주로 추론(inference)에 사용</li>
-      </ul>
-      <button class="more-btn int8-btn" onclick="toggleOverlay(this)">INT란? ＋</button>
-      <div class="more-overlay">
-        <button class="overlay-close" onclick="closeOverlay(this)">✕</button>
-        <div class="overlay-title">INT — Integer</div>
+<!-- ═══ 01 · QLoRA 개념 ═══ -->
+<h3 class="section-label">01 · QLoRA의 기본 개념 (Q + LoRA)</h3>div>
         <ul class="overlay-list">
           <li>정수(Integer) · 소수점 없음</li>
           <li>연산 속도 빠름 · 하드웨어 지원 우수</li>
