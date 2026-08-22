@@ -60,7 +60,7 @@
             "path": "ai/langchain/langfuse.html"
           },
           {
-            "label": "LangGraph 에이전트 아키텍처 및 구현 가이드",
+            "label": "LangGraph 시각화",
             "path": "ai/langchain/langgraph.html"
           },
           {
@@ -94,7 +94,7 @@
             "path": "ai/peft/lora.html"
           },
           {
-            "label": "PEFT/QLoRA 이원화 학습 시각화 가이드",
+            "label": "PEFT/QLoRA 데이터 처리 및 포맷팅 가이드",
             "path": "ai/peft/peft_data_flow.html"
           },
           {
