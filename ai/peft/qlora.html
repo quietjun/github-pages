@@ -48,7 +48,7 @@ h4.sub-title {
 .badge {
   display: inline-block;
   background: linear-gradient(135deg, #7c3aed, #a78bfa);
-  color: #fff; font-size: 11px; font-weight: 700;
+  color: #fff; font-size: 14px; font-weight: 700;
   letter-spacing: 2px; padding: 4px 14px;
   border-radius: 20px; margin-bottom: 14px; text-transform: uppercase;
 }
@@ -63,79 +63,7 @@ h4.sub-title {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e8edf3;
 }
 
-/* ── 01 양자화 개념 ── */
-.quant-def {
-  background: #fff; border-radius: 16px; padding: 22px 24px;
-  border: 1px solid #e8edf3; box-shadow: 0 1px 4px rgba(0,0,0,.06);
-  border-left: 5px solid #7c3aed; margin-bottom: 20px;
-}
-.quant-def-keyword {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px; font-weight: 700; color: #7c3aed;
-  letter-spacing: 2px; margin-bottom: 4px;
-}
-.quant-def-title { font-size: 16px; font-weight: 800; color: #1a1d2e; margin-bottom: 10px; }
-.quant-def-desc  { font-size: 14px; color: #475569; line-height: 1.8; }
-.quant-def-desc strong { color: #1a1d2e; }
 
-/* precision bars */
-.prec-section { background:#fff; border-radius:16px; padding:22px 24px; box-shadow:0 1px 4px rgba(0,0,0,.06); border:1px solid #e8edf3; }
-.prec-title   { font-size:14px; font-weight:700; color:#1a1d2e; margin-bottom:16px; }
-.prec-row     { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.prec-label   {
-  font-family:'JetBrains Mono',monospace;
-  font-size:14px; font-weight:700; width:52px; flex-shrink:0;
-}
-.prec-bar-wrap { flex:1; background:#f1f5f9; border-radius:8px; height:26px; overflow:hidden; position:relative; }
-.prec-bar-text {
-  position:absolute; left:12px; top:50%; transform:translateY(-50%);
-  font-size:13px; font-family:'JetBrains Mono',monospace;
-  font-weight:700; color:#fff; white-space:nowrap;
-  z-index:2; pointer-events:none;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-}
-.prec-bar {
-  height:100%; border-radius:8px;
-  display:flex; align-items:center; padding-left:12px;
-  font-size:13px; font-family:'JetBrains Mono',monospace;
-  font-weight:700; color:#fff; width:0%;
-  white-space:nowrap; overflow:visible;
-  transition: width 1.2s cubic-bezier(.4,0,.2,1);
-}
-.prec-meta { font-size:13.5px; color:#94a3b8; width:160px; flex-shrink:0; text-align:right; line-height:1.4; }
-.prec-meta strong { color:#1a1d2e; display:block; }
-
-/* bit cards */
-.bit-grid {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:20px;
-}
-.bit-card { border-radius:12px; padding:16px 14px; border:1.5px solid; }
-.bit-card.fp32 { border-color:#bfdbfe; background:#eff6ff; }
-.bit-card.fp16 { border-color:#bbf7d0; background:#f0fdf4; }
-.bit-card.int8 { border-color:#fde68a; background:#fffbeb; }
-.bit-card.nf4  { border-color:#ddd6fe; background:#f5f3ff; }
-.bit-card-head {
-  font-family:'JetBrains Mono',monospace;
-  font-size:14px; font-weight:700; margin-bottom:8px;
-}
-.fp32 .bit-card-head { color:#1e40af; }
-.fp16 .bit-card-head { color:#166534; }
-.int8 .bit-card-head { color:#92400e; }
-.nf4  .bit-card-head { color:#5b21b6; }
-.bit-dots { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:8px; }
-.bit-dot  { width:13px; height:13px; border-radius:3px; }
-.fp32 .bit-dot { background:#93c5fd; }
-.fp16 .bit-dot { background:#86efac; }
-.int8 .bit-dot { background:#fcd34d; }
-.nf4  .bit-dot { background:#c4b5fd; }
-.bit-card-desc { font-size:14px; color:#64748b; line-height:1.65; }
-.bit-card-desc li { list-style:none; padding-left:12px; position:relative; padding-bottom:2px; }
-.bit-card-desc li::before { content:'·'; position:absolute; left:0; color:#94a3b8; }
-.nf4-star {
-  display:inline-block; background:#7c3aed; color:#fff;
-  font-size:13px; font-weight:700; padding:1px 7px; border-radius:5px;
-  margin-left:4px; font-family:'JetBrains Mono',monospace;
-}
 
 /* ── 02 QLora = Q + LoRA ── */
 .formula-split {
@@ -164,19 +92,7 @@ h4.sub-title {
 .lo-block .fs-desc { color:#3b82f6; }
 .res-block .fs-desc { color:#a5b4fc; }
 
-/* lora recap */
-.lora-recap {
-  background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px;
-  padding:14px 18px; margin-top:14px;
-  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-}
-.lr-label { font-size:13px; font-weight:700; color:#94a3b8; letter-spacing:1px; white-space:nowrap; }
-.lr-item  {
-  background:#fff; border:1.5px solid #bfdbfe; border-radius:9px;
-  padding:8px 14px; font-size:14px; color:#1e40af; font-weight:700;
-  display:flex; align-items:center; gap:6px;
-}
-.lr-arrow { color:#cbd5e1; font-size:16px; }
+
 
 /* ── 03 핵심 기술 ── */
 /* ── 03 핵심 기술 ── */
@@ -209,7 +125,7 @@ h4.sub-title {
 }
 .tech-card-title .tech-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   color: #64748b;
   background: #f1f5f9;
@@ -218,7 +134,7 @@ h4.sub-title {
   margin-right: 10px;
 }
 .tech-card-title .tech-sub-label {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: #64748b;
   margin-left: 8px;
@@ -244,14 +160,14 @@ h4.sub-title {
 .tech-card:nth-child(3) .tech-why { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
 .tech-desc  { font-size:14px; color:#64748b; line-height:1.7; }
 .tech-desc li { list-style:none; padding-left:14px; position:relative; padding-bottom:3px; }
-.tech-desc li::before { content:'→'; position:absolute; left:0; color:#94a3b8; font-size:12px; }
+.tech-desc li::before { content:'→'; position:absolute; left:0; color:#94a3b8; font-size:14px; }
 
 /* nf4 비교 미니 */
 .nf4-compare {
   display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;
 }
-.nf4c-item { background:#fff; border-radius:8px; padding:9px 11px; border:1.5px solid #e2e8f0; font-size:13.5px; }
-.nf4c-item .nf4c-label { font-weight:700; margin-bottom:4px; font-size:13px; letter-spacing:0.5px; }
+.nf4c-item { background:#fff; border-radius:8px; padding:9px 11px; border:1.5px solid #e2e8f0; font-size:14px; }
+.nf4c-item .nf4c-label { font-weight:700; margin-bottom:4px; font-size:14px; letter-spacing:0.5px; }
 .nf4c-item.int4 .nf4c-label { color:#92400e; }
 .nf4c-item.nf4i .nf4c-label { color:#5b21b6; }
 .nf4c-item ul { color:#64748b; }
@@ -265,7 +181,7 @@ h4.sub-title {
 }
 .dq-step {
   background:#fff; border:1.5px solid #e2e8f0; border-radius:8px;
-  padding:7px 12px; font-size:13.5px; font-family:'JetBrains Mono',monospace;
+  padding:7px 12px; font-size:14px; font-family:'JetBrains Mono',monospace;
   font-weight:600; text-align:center;
 }
 .dq-step.s1 { border-color:#a5f3fc; color:#0e7490; background:#ecfeff; }
@@ -273,7 +189,7 @@ h4.sub-title {
 .dq-step.s3 { border-color:#bbf7d0; color:#166534; background:#f0fdf4; }
 .dq-arrow { color:#cbd5e1; font-size:14px; flex-shrink:0; }
 .dq-save {
-  font-size:13px; color:#0e7490; background:#ecfeff; border-radius:6px;
+  font-size:14px; color:#0e7490; background:#ecfeff; border-radius:6px;
   padding:3px 9px; margin-top:6px; display:inline-block;
   font-family:'JetBrains Mono',monospace; font-weight:600;
 }
@@ -283,86 +199,16 @@ h4.sub-title {
   display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;
 }
 .mem-item { background:#fff; border:1.5px solid #e2e8f0; border-radius:9px; padding:10px 12px; }
-.mem-item-label { font-size:13px; font-weight:700; margin-bottom:6px; }
+.mem-item-label { font-size:14px; font-weight:700; margin-bottom:6px; }
 .mem-item.without .mem-item-label { color:#dc2626; }
 .mem-item.with    .mem-item-label { color:#166534; }
 .mem-bar-bg { background:#f1f5f9; border-radius:6px; height:14px; overflow:hidden; margin-bottom:5px; }
 .mem-bar { height:100%; border-radius:6px; }
 .mem-bar.red    { background:linear-gradient(90deg,#ef4444,#f87171); width:100%; }
 .mem-bar.green  { background:linear-gradient(90deg,#22c55e,#4ade80); width:60%; }
-.mem-item-note  { font-size:13px; color:#94a3b8; }
+.mem-item-note  { font-size:14px; color:#94a3b8; }
 
-/* ── 더보기 오버레이 ── */
-.bit-card { position: relative; }
-.more-btn {
-  margin-top: 12px;
-  width: 100%;
-  background: none;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
-}
-.more-btn:hover       { border-color: #93c5fd; color: #3b82f6; background: #f8fafc; }
-.fp16-btn:hover       { border-color: #86efac; color: #166534; }
-.int8-btn:hover       { border-color: #fcd34d; color: #92400e; }
-.nf4-btn:hover        { border-color: #c4b5fd; color: #6d28d9; }
-.more-btn.open        { border-style: solid; border-color: currentColor; }
 
-.more-overlay {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0; right: 0;
-  border-radius: 12px;
-  padding: 14px 16px;
-  z-index: 100;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
-  animation: overlayIn 0.18s ease;
-}
-.fp32 .more-overlay { background: #eff6ff; border: 1.5px solid #93c5fd; }
-.fp16 .more-overlay { background: #f0fdf4; border: 1.5px solid #86efac; }
-.int8 .more-overlay { background: #fffbeb; border: 1.5px solid #fcd34d; }
-.nf4  .more-overlay { background: #f5f3ff; border: 1.5px solid #c4b5fd; }
-
-.overlay-close {
-  position: absolute; top: 8px; right: 10px;
-  background: none; border: none; cursor: pointer;
-  font-size: 13px; color: #94a3b8; line-height: 1;
-  padding: 2px 4px; border-radius: 4px;
-}
-.overlay-close:hover { background: rgba(0,0,0,0.06); }
-
-.overlay-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px; font-weight: 700; margin-bottom: 10px;
-}
-.fp32 .overlay-title { color: #1e40af; }
-.fp16 .overlay-title { color: #166534; }
-.int8 .overlay-title { color: #92400e; }
-.nf4  .overlay-title { color: #5b21b6; }
-
-.overlay-list { list-style: none; padding: 0; }
-.overlay-list li {
-  font-size: 14px; line-height: 1.7;
-  padding-left: 14px; position: relative;
-}
-.fp32 .overlay-list li { color: #1e40af; }
-.fp16 .overlay-list li { color: #166534; }
-.int8 .overlay-list li { color: #92400e; }
-.nf4  .overlay-list li { color: #5b21b6; }
-.overlay-list li::before { content: '→'; position: absolute; left: 0; font-size: 12px; opacity: 0.6; }
-
-@keyframes overlayIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 .flow-card { background:#fff; border-radius:16px; padding:24px 26px; box-shadow:0 1px 4px rgba(0,0,0,.06); border:1px solid #e8edf3; }
 .flow-steps {
   display:flex; align-items:stretch; gap:0; margin-top:4px;
@@ -375,14 +221,14 @@ h4.sub-title {
   font-size:18px; color:#cbd5e1; z-index:1;
 }
 .flow-step:last-child::after { display:none; }
-.fs-num  { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#94a3b8; margin-bottom:6px; }
+.fs-num  { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:#94a3b8; margin-bottom:6px; }
 .fs-badge {
-  display:inline-block; font-size:13px; font-weight:700;
+  display:inline-block; font-size:14px; font-weight:700;
   padding:2px 8px; border-radius:5px; margin-bottom:8px;
   font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;
 }
 .fs-title { font-size:14px; font-weight:800; color:#1a1d2e; margin-bottom:6px; }
-.fs-body  { font-size:13.5px; color:#64748b; line-height:1.6; }
+.fs-body  { font-size:14px; color:#64748b; line-height:1.6; }
 
 .step-orig  { background:#eff6ff; }
 .step-nf4   { background:#f5f3ff; }
@@ -407,10 +253,10 @@ h4.sub-title {
 .memb-row { margin-bottom:12px; }
 .memb-label { font-size:14px; font-weight:600; color:#475569; margin-bottom:5px; display:flex; justify-content:space-between; }
 .memb-bar-bg { background:#f1f5f9; border-radius:7px; height:20px; overflow:hidden; }
-.memb-bar { height:100%; border-radius:7px; display:flex; align-items:center; padding-left:9px; font-size:13px; font-family:'JetBrains Mono',monospace; font-weight:700; color:#fff; width:0%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+.memb-bar { height:100%; border-radius:7px; display:flex; align-items:center; padding-left:9px; font-size:14px; font-family:'JetBrains Mono',monospace; font-weight:700; color:#fff; width:0%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
 .bar-blue   { background:linear-gradient(90deg,#3b82f6,#60a5fa); }
 .bar-purple { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
-.tag-save { display:inline-block; background:#dcfce7; color:#166534; font-size:13px; font-weight:700; padding:2px 8px; border-radius:5px; font-family:'JetBrains Mono',monospace; }
+.tag-save { display:inline-block; background:#dcfce7; color:#166534; font-size:14px; font-weight:700; padding:2px 8px; border-radius:5px; font-family:'JetBrains Mono',monospace; }
 
 /* ── 05 코드 ── */
 .code-tabs  { display:flex; gap:8px; margin-bottom:12px; }
@@ -428,7 +274,7 @@ h4.sub-title {
 .code-pane { display:none; }
 .code-pane.active { display:block; }
 .code-block { background:#1a1d2e; border-radius:14px; padding:22px 24px; overflow-x:auto; }
-.code-block pre { font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:1.8; color:#e2e8f0; white-space:pre; }
+.code-block pre { font-family:'JetBrains Mono',monospace; font-size:14px; line-height:1.8; color:#e2e8f0; white-space:pre; }
 .c-comment { color:#64748b; }
 .c-keyword  { color:#c4b5fd; }
 .c-string   { color:#86efac; }
@@ -452,12 +298,12 @@ h4.sub-title {
 .sum-formula .sl { color:#93c5fd; }
 .sum-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 .sum-item { background:rgba(255,255,255,.1); border-radius:12px; padding:14px 16px; }
-.sum-key  { font-size:13px; color:#a5b4fc; margin-bottom:4px; font-weight:700; letter-spacing:1px; }
+.sum-key  { font-size:14px; color:#a5b4fc; margin-bottom:4px; font-weight:700; letter-spacing:1px; }
 .sum-val  { font-size:14px; font-weight:800; color:#fff; line-height:1.4; }
 
 /* ── RESPONSIVE ── */
 @media (max-width:700px) {
-  .bit-grid   { grid-template-columns:1fr 1fr; }
+
   .tech-grid  { grid-template-columns: 1fr; }
   .tech-body  { grid-template-columns: 1fr; gap: 20px; }
   .flow-steps { flex-direction:column; }
@@ -475,46 +321,19 @@ h4.sub-title {
 <div class="header">
   <div class="badge">PEFT Series 02</div>
   <h1><span class="q">Q</span><span class="lo">LoRA</span> — Quantized Low-Rank Adaptation</h1>
-  <p>양자화 개념 · QLoRA 구조 · 핵심 기술 3가지 · 양자화 흐름 · �<div class="tip-box" style="margin-bottom: 24px; border-left-color: #7c3aed; background: #faf5ff;">
-  💡 <strong>안내:</strong> 양자화(Quantization)의 수학적 원리, NF4 자(Ruler) 시각화 및 양자화 시뮬레이터 체험은 <a href="./quantize.html" style="color: #7c3aed; font-weight: 700; text-decoration: underline;">[양자화(Quantization) 완벽 가이드]</a> 포스트에서 깊이 있게 다루고 있습니다. 본 포스트에서는 이를 활용한 QLoRA 아키텍처와 결합 원리에 집중합니다.
+  <p>QLoRA 개념 · 핵심 기술 3가지 · 양자화 로드 흐름 · 실무 코드</p>
+</div>
+
+<p style="font-size: 14.5px; color: #565c66; line-height: 1.8; max-width: 800px; margin: 0 auto 2.5rem; text-align: center;">
+  이번 포스트에서는 LoRA와 양자화(Quantization)를 결합하여 VRAM 메모리를 혁신적으로 절감하는 QLoRA의 구조와 핵심 기술 3가지, 그리고 실무 사용법을 알아본다.
+</p>
+
+<div class="tip-box" style="margin-bottom: 28px; border-left: 4px solid #7c3aed; background: #faf5ff; padding: 16px 20px; border-radius: 10px; font-size: 14.5px; color: #5b21b6; line-height: 1.75;">
+  💡 <strong>안내:</strong> 가중치 비트를 줄이는 양자화(Quantization)의 수학적 원리, 양자화 정밀도(FP32 vs FP16 vs INT8 vs NF4) 비교 및 눈금자(Ruler) 시뮬레이터 체험은 <a href="./quantize.html" style="color: #7c3aed; font-weight: 700; text-decoration: underline;">[양자화(Quantization) 완벽 가이드]</a> 포스트에서 별도로 깊이 있게 다루고 있습니다.
 </div>
 
 <!-- ═══ 01 · QLoRA 개념 ═══ -->
-<h3 class="section-label">01 · QLoRA의 기본 개념 (Q + LoRA)</h3>div>
-        <ul class="overlay-list">
-          <li>정수(Integer) · 소수점 없음</li>
-          <li>연산 속도 빠름 · 하드웨어 지원 우수</li>
-          <li>연속 실수 표현 시 손실 발생</li>
-          <li>학습보다 배포·추론 최적화에 적합</li>
-        </ul>
-      </div>
-    </div>
-    <div class="bit-card nf4">
-      <div class="bit-card-head">NF4 <span class="nf4-star">QLoRA</span></div>
-      <div class="bit-dots" id="dots-nf4"></div>
-      <ul class="bit-card-desc">
-        <li>정규분포 기반 비균일 양자화</li>
-        <li>INT4보다 정보 손실 최소화</li>
-        <li>QLoRA의 핵심 양자화 방식</li>
-      </ul>
-      <button class="more-btn nf4-btn" onclick="toggleOverlay(this)">NF란? ＋</button>
-      <div class="more-overlay">
-        <button class="overlay-close" onclick="closeOverlay(this)">✕</button>
-        <div class="overlay-title">NF — NormalFloat</div>
-        <ul class="overlay-list">
-          <li>QLoRA 논문 제안 포맷</li>
-          <li>가중치 → 정규분포 형태로 분포</li>
-          <li>값 밀집 구간에 양자화 구간 촘촘히 배치</li>
-          <li>INT4 대비 정보 손실 최소화 → 성능 유지</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══ 02 · QLoRA = Q + LoRA ═══ -->
-<h3 class="section-label">02 · QLoRA = Q + LoRA</h3>
+<h3 class="section-label">01 · QLoRA의 기본 개념 (Q + LoRA)</h3>
 
 <div class="formula-split">
   <div class="fs-block q-block">
@@ -530,26 +349,13 @@ h4.sub-title {
   </div>
   <div class="fs-op">=</div>
   <div class="fs-block res-block">
-    <div class="fs-symbol" style="font-size:22px">QLoRA</div>
-    <div class="fs-name">소비자 GPU에서</div>
-    <div class="fs-desc">대형 LLM 파인튜닝 가능<br>7B → ~4 GB</div>
+    <div class="fs-symbol">QLoRA</div>
+    <div class="fs-name">Quantized LoRA</div>
+    <div class="fs-desc">VRAM 70% 이상 절감하며<br>성능 손실 없이 파인튜닝</div>
   </div>
 </div>
 
-<div class="lora-recap">
-  <span class="lr-label">LoRA 복습 →</span>
-  <div class="lr-item">❄ Base Model 동결</div>
-  <span class="lr-arrow">→</span>
-  <div class="lr-item">🔢 ΔW ≈ B × A (저순위 분해)</div>
-  <span class="lr-arrow">→</span>
-  <div class="lr-item">🔥 A, B만 학습</div>
-  <span class="lr-arrow">→</span>
-  <div class="lr-item" style="border-color:#ddd6fe;color:#5b21b6">+ Q: Base를 4-bit로 압축</div>
-</div>
-
-
-<!-- ═══ 03 · 핵심 기술 ═══ -->
-<h3 class="section-label">03 · QLoRA 핵심 기술 3가지</h3>
+<h3 class="section-label">02 · QLoRA 핵심 기술 3가지</h3>
 <div class="tech-grid">
 
   <!-- NF4 -->
@@ -656,7 +462,7 @@ h4.sub-title {
 
 
 <!-- ═══ 04 · 양자화 흐름 ═══ -->
-<h3 class="section-label">04 · 양자화 로드 & 학습 흐름</h3>
+<h3 class="section-label">03 · 양자화 로드 & 학습 흐름</h3>
 <div class="flow-card">
 
   <div class="flow-steps">
@@ -722,7 +528,7 @@ h4.sub-title {
 
 
 <!-- ═══ 05 · 코드 ═══ -->
-<h3 class="section-label">05 · 코드 사용법</h3>
+<h3 class="section-label">04 · 코드 사용법</h3>
 <div class="code-tabs">
   <button class="code-tab t1 active" onclick="switchTab('bnb')">① BitsAndBytesConfig</button>
   <button class="code-tab t2" onclick="switchTab('prep')">② 모델 로드 & 준비</button>
@@ -797,80 +603,7 @@ model.print_trainable_parameters()
 model.save_pretrained(<span class="c-string">"./qlora-adapter"</span>)</pre></div>
 </div>
 
-
-<!-- ═══ SUMMARY ═══ -->
-<h3 class="section-label" style="margin-top:40px">요약</h3>
-<div class="summary-box">
-  <div class="sum-title">QLoRA 핵심 정리</div>
-  <div class="sum-formula">
-    <span class="sq">Q</span>LoRA &nbsp;=&nbsp; <span class="sq">Q</span>(NF4 압축 Base) &nbsp;+&nbsp; <span class="sl">LoRA</span>(FP16 Adapter 학습)
-  </div>
-  <div class="sum-grid">
-    <div class="sum-item">
-      <div class="sum-key">핵심 기술</div>
-      <div class="sum-val">NF4 + Double Quant<br>+ Paged Optimizers</div>
-    </div>
-    <div class="sum-item">
-      <div class="sum-key">메모리 절감</div>
-      <div class="sum-val">7B 기준 14 GB → 4 GB<br><strong>71% 절감</strong></div>
-    </div>
-    <div class="sum-item">
-      <div class="sum-key">가능해진 것</div>
-      <div class="sum-val">RTX 3090/4090 등<br>소비자 GPU로 LLM 파인튜닝</div>
-    </div>
-  </div>
-</div>
-
-
 <script>
-  /* ─ 비트 박스 생성 ─ */
-  function makeDots(id, count) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    for (let i = 0; i < count; i++) {
-      const d = document.createElement('div');
-      d.className = 'bit-dot';
-      el.appendChild(d);
-    }
-  }
-  makeDots('dots-fp32', 32);
-  makeDots('dots-fp16', 16);
-  makeDots('dots-int8', 8);
-  makeDots('dots-nf4',  4);
-
-  /* ─ 오버레이 토글 ─ */
-  function toggleOverlay(btn) {
-    const overlay = btn.nextElementSibling;
-    const isOpen = overlay.style.display === 'block';
-    // 다른 열린 오버레이 모두 닫기
-    document.querySelectorAll('.more-overlay').forEach(o => o.style.display = 'none');
-    document.querySelectorAll('.more-btn').forEach(b => {
-      b.classList.remove('open');
-      b.textContent = b.textContent.replace(' －', ' ＋');
-    });
-    if (!isOpen) {
-      overlay.style.display = 'block';
-      btn.classList.add('open');
-      btn.textContent = btn.textContent.replace(' ＋', ' －');
-    }
-  }
-  function closeOverlay(closeBtn) {
-    const overlay = closeBtn.parentElement;
-    const btn = overlay.previousElementSibling;
-    overlay.style.display = 'none';
-    btn.classList.remove('open');
-    btn.textContent = btn.textContent.replace(' －', ' ＋');
-  }
-  // 오버레이 외부 클릭 시 닫기
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.bit-card')) {
-      document.querySelectorAll('.more-overlay').forEach(o => o.style.display = 'none');
-      document.querySelectorAll('.more-btn').forEach(b => {
-        b.classList.remove('open');
-        b.textContent = b.textContent.replace(' －', ' ＋');
-      });
-    }
-  });
   function switchTab(type) {
     document.querySelectorAll('.code-pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
@@ -885,19 +618,43 @@ model.save_pretrained(<span class="c-string">"./qlora-adapter"</span>)</pre></di
   window.onload = function () {
     setTimeout(() => {
       const max = 14;
-      document.getElementById('pb-fp32').style.width = '100%';
-      document.getElementById('pb-fp16').style.width = '50%';
-      document.getElementById('pb-int8').style.width = '25%';
-      document.getElementById('pb-nf4').style.width  = '12.5%';
-
-      document.getElementById('mb1').style.width = (2  /max*100)+'%';
-      document.getElementById('mb2').style.width = (14 /max*100)+'%';
-      document.getElementById('mb3').style.width = (.5 /max*100)+'%';
-      document.getElementById('mb4').style.width = (4  /max*100)+'%';
+      const mb1 = document.getElementById('mb1');
+      const mb2 = document.getElementById('mb2');
+      const mb3 = document.getElementById('mb3');
+      const mb4 = document.getElementById('mb4');
+      if (mb1) mb1.style.width = (2  /max*100)+'%';
+      if (mb2) mb2.style.width = (14 /max*100)+'%';
+      if (mb3) mb3.style.width = (.5 /max*100)+'%';
+      if (mb4) mb4.style.width = (4  /max*100)+'%';
     }, 300);
-
-    window.parent.postMessage({ height: document.body.scrollHeight }, '*');
   };
+
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+  window.onload = function() {
+    sendHeight();
+    // 바 애니메이션도 동시 실행
+    setTimeout(() => {
+      const max = 14;
+      const mb1 = document.getElementById('mb1');
+      const mb2 = document.getElementById('mb2');
+      const mb3 = document.getElementById('mb3');
+      const mb4 = document.getElementById('mb4');
+      if (mb1) mb1.style.width = (2  /max*100)+'%';
+      if (mb2) mb2.style.width = (14 /max*100)+'%';
+      if (mb3) mb3.style.width = (.5 /max*100)+'%';
+      if (mb4) mb4.style.width = (4  /max*100)+'%';
+    }, 300);
+  };
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
 </script>
 </body>
 </html>
