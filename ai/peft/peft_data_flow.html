@@ -64,116 +64,125 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                <!-- Stage 1 -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
-                    <div class="space-y-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Stage 01. Raw Data</span>
-                        <h4 class="font-bold text-slate-800"><i class="fa-solid fa-file-csv text-slate-500 mr-1.5"></i>ChessInstruct 데이터셋</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            태스크 지시어, 체스 기보 입력, 다음 예상수 정답이 각각 개별 필드로 파편화되어 로드된다.
-                        </p>
-                    </div>
-                    <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-slate-600 whitespace-pre-wrap">
-{
+            <div class="space-y-6">
+                <!-- Stage 01 & Stage 02 가로 2열 배치 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Stage 01 상세 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Stage 01 · 데이터셋 로드</span>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono whitespace-nowrap">Raw JSON</span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                태스크 지시어(task), 체스 기보 입력(input), 다음 예상수 정답(expected_output)이 각각 개별 필드로 파편화되어 로드된다.
+                            </p>
+                        </div>
+                        <pre class="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-slate-600 overflow-x-auto leading-relaxed">{
   "task": "Predict move...",
   "input": "1. e4 e5 2. Nf3",
   "expected_output": "Nc6"
 }</pre>
-                </div>
-
-                <!-- Stage 2 -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
-                    <div class="space-y-2">
-                        <span class="text-xs font-bold text-indigo-500 uppercase">Stage 02. Conversational Schema</span>
-                        <h4 class="font-bold text-slate-800"><i class="fa-solid fa-comments text-indigo-500 mr-1.5"></i>ChatML 구조화</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            대화형 모델(Gemma-3-it)이 인식할 수 있도록 system, user, assistant 역할군에 맞춰 가상 대화 목록 형태로 재구성한다.
-                        </p>
                     </div>
-                    <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-indigo-600 whitespace-pre-wrap">
-"conversations": [
+
+                    <!-- Stage 02 상세 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                                <span class="text-xs font-bold text-indigo-600 uppercase">Stage 02 · 대화형 모델 형식 구조</span>
+                                <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-mono whitespace-nowrap">ChatML</span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                system, user, assistant 역할군에 맞춰 대화 목록 형태로 재구성한다.
+                            </p>
+                        </div>
+                        <pre class="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-indigo-600 overflow-x-auto leading-relaxed">"conversations": [
   {"role": "system", "content": "..."},
   {"role": "user", "content": "1. e4..."},
   {"role": "assistant", "content": "Nc6"}
 ]</pre>
+                    </div>
                 </div>
 
-                <!-- Stage 3 -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
-                    <div class="space-y-2">
-                        <span class="text-xs font-bold text-violet-500 uppercase">Stage 03. Format &amp; Trim BOS</span>
-                        <h4 class="font-bold text-slate-800"><i class="fa-solid fa-scissors text-violet-500 mr-1.5"></i>Chat Template 및 BOS 탈락</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            토크나이저 템플릿을 거쳐 특수 지시어 마커를 이식한 뒤, Unsloth 학습 충돌을 막기 위해 맨 앞의 중복 <code>&lt;bos&gt;</code> 토큰을 명시적으로 제거한다.
-                        </p>
+                <!-- Stage 03 상세 (개념 설명 & 실제 구현 통합 카드) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="text-xs font-bold text-violet-600 uppercase">Stage 03 · Chat Template 적용 및 중복 BOS 토큰 탈락</span>
+                        <span class="text-[10px] bg-violet-50 text-violet-600 px-2 py-0.5 rounded font-mono">Formatting &amp; Trim</span>
                     </div>
-                    <pre class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-violet-700 whitespace-pre-wrap">
-&lt;start_of_turn&gt;system
-Predict move...&lt;end_of_turn&gt;
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        토크나이저 템플릿을 거쳐 특수 지시어 마커를 이식한 뒤, Unsloth 학습 충돌을 막기 위해 맨 앞의 중복 <code>&lt;bos&gt;</code> 토큰을 명시적으로 제거한다.
+                    </p>
+                    <pre class="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] text-violet-700 overflow-x-auto leading-relaxed">&lt;start_of_turn&gt;system
+  Predict move...
+&lt;end_of_turn&gt;
 &lt;start_of_turn&gt;user
-1. e4 e5 2. Nf3&lt;end_of_turn&gt;
+  1. e4 e5 2. Nf3
+&lt;end_of_turn&gt;
 &lt;start_of_turn&gt;model
-Nc6&lt;end_of_turn&gt;</pre>
-                </div>
+  Nc6
+&lt;end_of_turn&gt;</pre>
 
-                <!-- Stage 4 -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
-                    <div class="space-y-2">
-                        <span class="text-xs font-bold text-emerald-600 uppercase">Stage 04. Loss Masking</span>
-                        <h4 class="font-bold text-slate-800"><i class="fa-solid fa-mask text-emerald-600 mr-1.5"></i>Response-Only 마스킹</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            질문 영역의 토큰들은 모델의 학습 레이블에서 <code>-100</code> 값으로 마스킹 처리하여 손실(Loss) 계산에서 무시하고, 오직 정답 출력 모델 응답부(model) 영역만 학습시킨다.
-                        </p>
-                    </div>
-                    <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-500 font-medium">
-                        <pre class="font-mono text-[10px] text-slate-700 leading-normal bg-slate-50 p-2.5 rounded border border-slate-100 overflow-x-auto">labels = [
-  -100, -100, ..., -100, // user 영역
-  2412, 532, 23412       // model 영역
-]</pre>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Jupyter Notebook Code Snippet matching practice answers -->
-            <div class="bg-indigo-50 border border-indigo-150 rounded-2xl p-5 space-y-3 mt-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wide"><i class="fa-solid fa-code mr-1.5"></i>실습 5-1_PEFT_파라미터_효율적_튜닝 핵심 전처리 정답 코드</span>
-                    <span class="text-[10px] bg-indigo-200/60 text-indigo-800 px-2 py-0.5 rounded font-mono">formatting_prompts_func</span>
-                </div>
-                <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs overflow-x-auto leading-relaxed">
+                    <!-- STAGE 03 실제 구현 내부 박스 -->
+                    <div class="bg-indigo-50/50 border border-indigo-150 rounded-xl p-4 space-y-3 mt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-800 uppercase tracking-wide"><i class="fa-solid fa-code mr-1.5"></i>STAGE 03 실제 구현</span>
+                            <span class="text-[10px] bg-indigo-200/60 text-indigo-800 px-2 py-0.5 rounded font-mono">formatting_prompts_func</span>
+                        </div>
+                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs overflow-x-auto leading-relaxed">
 <span class="text-violet-400">def</span> <span class="text-blue-400">formatting_prompts_func</span>(examples):
     convos = examples[<span class="text-amber-300">"conversations"</span>]
     texts = [
         tokenizer.apply_chat_template(
-            convo, tokenize=<span class="text-orange-400">False</span>, add_generation_prompt=<span class="text-orange-400">False</span>
-        ).removeprefix(<span class="text-amber-300">'&lt;bos&gt;'</span>)  <span class="text-slate-400"># 중복 BOS 토큰 제거</span>
+            convo,
+            tokenize=<span class="text-orange-400">False</span>,                 <span class="text-slate-400"># False → 토큰 ID가 아닌 포맷팅된 문자열 텍스트 반환</span>
+            add_generation_prompt=<span class="text-orange-400">False</span>    <span class="text-slate-400"># 학습 시에는 정답 답변까지 포함해야 하므로 False 지정</span>
+        ).removeprefix(<span class="text-amber-300">'&lt;bos&gt;'</span>)            <span class="text-slate-400"># 중복 BOS 토큰 제거</span>
         <span class="text-violet-400">for</span> convo in convos
     ]
     <span class="text-violet-400">return</span> {<span class="text-amber-300">"text"</span>: texts}
 
 dataset = dataset.map(formatting_prompts_func, batched=<span class="text-orange-400">True</span>)</pre>
-                
-                <!-- BOS (<bos>) 토큰 관련 설명 주석 -->
-                <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-slate-700 space-y-1 mt-3">
-                    <div class="font-bold text-amber-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>BOS (&lt;bos&gt;) 제거 사유 요약</div>
-                    <p class="leading-relaxed">
-                        <code>&lt;bos&gt;</code>는 HuggingFace에서 템플릿 가공 시 자동 삽입되는 문장 시작 마커 토큰이나, 실제 훈련 시에는 불필요하므로 제거한다. 
-                        제거하지 않고 SFTTrainer 등으로 묶어 학습시키면 중복으로 삽입되어 학습 성능과 속도가 저하되는 부작용을 예방하기 위함이다.
-                    </p>
-                </div>
-            </div>
+                        
+                        <!-- BOS (<bos>) 토큰 관련 설명 주석 -->
+                        <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-slate-700 space-y-1 mt-3">
+                            <div class="font-bold text-amber-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>BOS (&lt;bos&gt;) 제거 사유</div>
+                            <p class="leading-relaxed">
+                                템플릿 가공 시 자동 삽입되는 문장 시작 토큰. SFTTrainer 훈련 시 중복 삽입되는 현상을 막아 <strong>학습 성능 및 속도 저하 방지</strong>.
+                            </p>
+                        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-4">
-                <!-- 1. 템플릿 마스킹 통합 도해 -->
-                <div class="md:col-span-7 space-y-2.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
-                    <div>
-                        <div class="text-[11px] font-bold text-slate-800"><i class="fa-solid fa-scissors mr-1 text-indigo-500"></i>1. 대화형 템플릿 내의 가중치 마스킹 도해</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5 leading-relaxed">
-                            원래 하나의 긴 연속된 문장이지만, 학습 대상이 아닌 질문/지시 영역은 취소선(Masked) 처리하고 오직 최종 정답인 model 응답 영역만 학습에 반영합니다.
-                        </p>
+                        <!-- add_generation_prompt 관련 설명 주석 -->
+                        <div class="p-3.5 bg-indigo-50 rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1 mt-3">
+                            <div class="font-bold text-indigo-800 text-[11px]"><i class="fa-solid fa-lightbulb mr-1.5"></i>add_generation_prompt 설정 가이드</div>
+                            <p class="leading-relaxed">
+                                <strong>학습 단계 (False)</strong>: 질문과 정답 답변을 결합하여 전체 가중치를 훈련하기 위해 정답 본문까지 이어서 포맷팅.<br>
+                                <strong>추론 단계 (True)</strong>: 질문 끝에 "어시스턴트 답변 시작"을 알리는 제어 토큰 주입.
+                            </p>
+                        </div>
                     </div>
-                    <div class="font-mono text-[10px] bg-white p-2.5 rounded border border-slate-200 leading-normal mt-1.5 overflow-x-auto whitespace-pre-wrap flex-grow">
+                </div>
+
+                <!-- Stage 04 상세 (개념 설명 & 실제 구현 통합 카드) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="text-xs font-bold text-emerald-600 uppercase">Stage 04 · Response-Only 마스킹 설정</span>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-mono">Loss Masking Labels</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        질문 영역의 손실(Loss) 계산을 제외하고 오직 모델 정답부(assistant/model) 영역만 가중치를 훈련시키는 설정.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch mt-4">
+                        <!-- 1. 템플릿 마스킹 통합 도해 -->
+                        <div class="md:col-span-7 space-y-2.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                            <div>
+                                <div class="text-[11px] font-bold text-slate-800"><i class="fa-solid fa-scissors mr-1 text-indigo-500"></i>1. 대화형 템플릿 내의 가중치 마스킹 도해</div>
+                                <p class="text-[10px] text-slate-500 mt-0.5 leading-relaxed">
+                                    전체 대화 템플릿 중 학습 대상이 아닌 질문 영역은 취소선(Masked) 처리.
+                                </p>
+                            </div>
+                            <div class="font-mono text-[10px] bg-white p-2.5 rounded border border-slate-200 leading-normal mt-1.5 overflow-x-auto whitespace-pre-wrap flex-grow">
 <span class="text-rose-400 line-through decoration-rose-400/80 decoration-2">&lt;start_of_turn&gt;</span>
   <span class="text-rose-400 line-through decoration-rose-400/80 decoration-2">system   Predict the next move in this chess game.
 &lt;end_of_turn&gt;</span>
@@ -183,31 +192,31 @@ dataset = dataset.map(formatting_prompts_func, batched=<span class="text-orange-
 &lt;start_of_turn&gt;
   <span class="text-emerald-700 font-bold bg-emerald-50 px-1 rounded border border-emerald-150">model   a6</span>
 &lt;end_of_turn&gt;</div>
-                    <div class="flex gap-4 text-[9px] text-slate-500 mt-1 font-semibold whitespace-nowrap">
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-200 inline-block rounded-full"></span> 붉은 취소선: Loss 무시 (Label = -100 ❄️)</span>
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-100 inline-block rounded-full"></span> 녹색 강조: Loss 계산 (실제 토큰 ID 🔥)</span>
-                    </div>
-                </div>
-                
-                <!-- 2. 최종 텐서 형태 -->
-                <div class="md:col-span-5 space-y-2.5 p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-between">
-                    <div>
-                        <div class="text-[11px] font-bold text-indigo-400"><i class="fa-solid fa-code mr-1"></i>2. 최종 PyTorch Label 텐서 형태</div>
-                        <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
-                            토크나이저를 거쳐 생성된 내부 Label 목록입니다. 취소선 영역은 전부 -100 상수로 바뀌어 학습에서 제외됩니다.
-                        </p>
-                    </div>
-                    <pre class="font-mono text-[10px] text-indigo-300 leading-normal bg-slate-900 p-2.5 rounded border border-slate-800 mt-1.5 flex-grow">labels = [
+                        </div>
+                        
+                        <!-- 2. 최종 텐서 형태 -->
+                        <div class="md:col-span-5 space-y-2.5 p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-between">
+                            <div>
+                                <div class="text-[11px] font-bold text-indigo-400"><i class="fa-solid fa-code mr-1"></i>2. 최종 PyTorch Label 텐서 형태</div>
+                                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+                                    취소선 처리된 질문 영역 토큰의 레이블 ID를 <code>-100</code> 상수로 치환한 내부 데이터셋 형태.
+                                </p>
+                            </div>
+                            <pre class="font-mono text-[10px] text-indigo-300 leading-normal bg-slate-900 p-2.5 rounded border border-slate-800 mt-1.5 flex-grow">labels = [
   -100, -100, ..., -100, // user 영역
   2412, 532, 23412       // model 영역
 ]</pre>
-                </div>
-            </div>
+                            <div class="flex gap-4 text-[9px] text-slate-400 mt-1 font-semibold whitespace-nowrap">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-500 inline-block rounded-full"></span> Loss 무시 (Label = -100 ❄️)</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-400 inline-block rounded-full"></span> Loss 계산 (실제 토큰 🔥)</span>
+                            </div>
+                        </div>
+                    </div>
 
-                        <!-- Code mapping to SFTTrainer unsloth setting -->
-            <div class="pt-2">
-                <span class="text-[10px] font-bold text-slate-400 block mb-1">Unsloth 기반 Response-Only 설정 코드</span>
-                <pre class="bg-slate-900 text-slate-100 p-3 rounded-xl font-mono text-[10px] overflow-x-auto">
+                    <!-- Unsloth Response-only code -->
+                    <div class="pt-3 border-t border-slate-100 mt-4">
+                        <span class="text-[10px] font-bold text-slate-500 block mb-1">Unsloth 기반 Response-Only 설정 코드</span>
+                        <pre class="bg-slate-900 text-slate-100 p-3 rounded-xl font-mono text-[10px] overflow-x-auto">
 from unsloth.chat_templates import train_on_responses_only
 
 trainer = train_on_responses_only(
@@ -215,12 +224,73 @@ trainer = train_on_responses_only(
     instruction_part="&lt;start_of_turn&gt;user\n",
     response_part="&lt;start_of_turn&gt;model\n",
 )</pre>
+                    </div>
+                </div>
             </div>
         </section>
 
+        <!-- 목적에 따른 데이터 처리 흐름 분화 (독립 섹션 카드) -->
+        <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 card-shadow space-y-6">
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <span class="bg-indigo-150 text-indigo-700 p-2.5 rounded-xl"><i class="fa-solid fa-code-compare text-xl"></i></span>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">목적에 따른 데이터 처리 흐름 분화</h3>
+                    <p class="text-slate-500 text-sm mt-0.5">LLM 파인튜닝 시 데이터를 가공하는 목적에 따라 훈련(Train) 단계와 평가/추론(Evaluation/Inference) 단계의 전처리 흐름이 명확히 분화된다.</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                            <th class="p-3 text-left w-1/4">구분</th>
+                            <th class="p-3 text-left w-3/8 bg-blue-50/50 text-blue-900 border-r border-slate-200"><i class="fa-solid fa-dumbbell mr-1.5 text-blue-500"></i>🏋️‍♂️ 훈련 (Training)</th>
+                            <th class="p-3 text-left w-3/8 bg-purple-50/50 text-purple-900"><i class="fa-solid fa-bolt mr-1.5 text-purple-500"></i>⚡ 평가 / 추론 (Evaluation)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">가공 목적 및 흐름</td>
+                            <td class="p-3.5 text-slate-600 border-r border-slate-200 leading-relaxed">
+                                질문 뒤에 정답 답변까지 한 문장으로 결합한 완성형 상태로 가공하여 모델의 전 가중치를 훈련.
+                            </td>
+                            <td class="p-3.5 text-slate-600 leading-relaxed">
+                                정답 답변을 가린 채 질문만 주입하고, 모델에게 "답변 시작" 제어 태그를 줘서 출력을 유도.
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">add_generation_prompt</td>
+                            <td class="p-3.5 text-slate-700 border-r border-slate-200 font-mono">
+                                <code class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded">False</code> (답변 뒤에 정답 본문을 곧바로 결합)
+                            </td>
+                            <td class="p-3.5 text-slate-700 font-mono">
+                                <code class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded">True</code> (문장 끝에 답변 시작 제어 헤더 강제 인젝션)
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">최종 가공 데이터 포맷</td>
+                            <td class="p-3.5 border-r border-slate-200">
+                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-[10px] text-blue-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; 정답 답변 &lt;eos&gt;</pre>
+                            </td>
+                            <td>
+                                <pre class="bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-[10px] text-purple-700 overflow-x-auto">&lt;user&gt; 질문 &lt;/user&gt;&lt;assistant&gt; (답변 대기 상태)</pre>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="p-3.5 font-bold text-slate-800 bg-slate-50/30">손실값 (Loss) 계산 범위</td>
+                            <td class="p-3.5 text-slate-600 border-r border-slate-200 leading-relaxed font-semibold">
+                                질문 영역은 <code class="text-rose-600 font-mono bg-rose-50 px-1 rounded">-100</code> 마스킹으로 손실 계산에서 제외, 오직 어시스턴트 정답 답변 토큰만 학습.
+                            </td>
+                            <td class="p-3.5 text-slate-600 leading-relaxed">
+                                모델이 스스로 생성해내는 토큰들을 획득하여 원본 정답 답변 문장과 오차를 대조 및 평가.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
     </main>
-
 
     <!-- Interactive Simulator Script -->
     <script>

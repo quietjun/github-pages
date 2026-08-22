@@ -876,18 +876,54 @@ h4.sub-title {
 </div>
 
 
-<!-- ═══ 06. 코드 사용법 ═══ -->
-<h3 class="section-label">06 · LoRA 코드 사용법</h3>
-<div class="code-tabs">
-  <button class="code-tab lora-tab active" onclick="switchTab('train')">① 학습</button>
-  <button class="code-tab lora-tab" onclick="switchTab('load')">② Adapter 로드 & 추론</button>
-  <button class="code-tab lora-tab" onclick="switchTab('merge')">③ 병합 추론</button>
+<!-- ── LoRA 어댑터 훈련 및 Trainer 구성 원리 ── -->
+<h3 class="section-label">06 · LoRA 어댑터 훈련 및 Trainer 구성 원리</h3>
+<div class="card" style="margin-bottom: 35px; border-left: 5px solid #2563eb;">
+  <p style="font-size: 14.5px; color: #475569; line-height: 1.8; margin-bottom: 18px;">
+    LoRA 어댑터 행렬(B × A) 설정을 마쳤다면, 이를 실제 데이터와 결합하여 학습을 구동할 <strong>훈련기(Trainer)</strong>를 구성해야 한다.
+  </p>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    
+    <!-- SFTTrainer 역할 -->
+    <div style="background: #eff6ff; border: 1.5px solid #dbeafe; border-radius: 12px; padding: 16px 18px;">
+      <div style="font-size: 14.5px; font-weight: 700; color: #1e40af; margin-bottom: 6px;">🏃‍♂️ 학습 구동기: SFTTrainer</div>
+      <ul style="font-size: 14px; color: #1e3a8a; line-height: 1.75; padding-left: 16px; margin: 0;">
+        <li style="margin-bottom: 8px;"><strong>데이터셋 토큰화 자동화</strong>: 일반 트레이너를 쓰면 텍스트 데이터를 토크나이저를 사용해 숫자(input_ids)로 바꾸고 길이를 자르고 패딩을 채워 넣는 코드를 수십 줄 짜야 하지만, SFTTrainer는 원본 데이터셋과 컬럼명 지정만으로 이 모든 전처리를 백그라운드에서 <strong>자동 해결</strong>.</li>
+        <li><strong>LoRA 학습 루프 자동화</strong>: 이전 단계(get_peft_model)에서 조립 완료된 LoRA 모델을 전달받아, 원본 가중치는 동결한 채 오직 어댑터 가중치만 역전파로 업데이트하는 훈련 엔진 <strong>자동 구동</strong>.</li>
+      </ul>
+    </div>
+
+    <!-- SFTConfig 역할 -->
+    <div style="background: #f5f3ff; border: 1.5px solid #ede9fe; border-radius: 12px; padding: 16px 18px;">
+      <div style="font-size: 14.5px; font-weight: 700; color: #5b21b6; margin-bottom: 6px;">📋 학습 명세서: SFTConfig</div>
+      <ul style="font-size: 14px; color: #4c1d95; line-height: 1.75; padding-left: 16px; margin: 0;">
+        <li style="margin-bottom: 8px;"><strong>기본 학습 설정 선언</strong>: 배치 사이즈, 학습률, 학습 횟수(Epochs) 등 핵심 훈련 파라미터 <strong>선언</strong>.</li>
+        <li><strong>SFT 전용 스펙 지정</strong>: 최대 입력 토큰 길이(max_seq_length) 등 SFTTrainer 구동 시 필요한 전용 튜닝 규격 <strong>명시</strong>.</li>
+      </ul>
+    </div>
+
+  </div>
 </div>
 
-<div class="code-pane active" id="pane-train">
+
+<!-- ═══ 07. 코드 사용법 ═══ -->
+<h3 class="section-label">07 · LoRA 코드 사용법</h3>
+<p style="font-size: 14.5px; color: #475569; line-height: 1.8; margin-bottom: 24px;">
+  LoRA 어댑터를 학습하고 활용하는 전체적인 파이프라인 코드이다.
+  <strong>[Base Model &amp; Tokenizer 로드] ➡️ [LoRA 어댑터 결합] ➡️ [SFTTrainer 학습 구동] ➡️ [어댑터 저장]</strong>으로 이어지는 핵심 훈련 구조를 코드 탭을 통해 확인할 수 있다.
+</p>
+<div class="code-tabs">
+  <button class="code-tab lora-tab active" onclick="switchTab('setup')">① Model 로드 &amp; LoRA 설정</button>
+  <button class="code-tab lora-tab" onclick="switchTab('train')">② SFTTrainer 학습</button>
+  <button class="code-tab lora-tab" onclick="switchTab('load')">③ Adapter 로드 &amp; 추론</button>
+  <button class="code-tab lora-tab" onclick="switchTab('merge')">④ 병합 추론</button>
+</div>
+
+<div class="code-pane active" id="pane-setup">
 <div class="code-block"><pre><span class="c-import">from</span> unsloth <span class="c-import">import</span> FastLanguageModel
 
-<span class="c-comment"># ── 1. Base Model 로드 + LoRA 설정 (한 번에) ────────────────────────────────</span>
+<span class="c-comment"># ── 1. Base Model &amp; Tokenizer 로드 ──────────────────────────────────────────</span>
 <span class="c-var">model</span>, <span class="c-var">tokenizer</span> = FastLanguageModel.from_pretrained(
     model_name=<span class="c-string">"meta-llama/Llama-2-7b-hf"</span>,
     max_seq_length=<span class="c-num">2048</span>,
@@ -895,22 +931,48 @@ h4.sub-title {
     load_in_4bit=<span class="c-keyword">True</span>,         <span class="c-comment"># QLoRA: 4-bit 실시간 양자화 로드</span>
 )
 
-<span class="c-comment"># ── 2. LoRA Adapter 설정 ─────────────────────────────────────────────────────</span>
+<span class="c-comment"># ── 2. LoRA Adapter 설정 (어댑터 구조 장착 및 가중치 동결) ───────────────────</span>
 <span class="c-var">model</span> = FastLanguageModel.get_peft_model(
     model,
-    r=<span class="c-num">16</span>,                       <span class="c-comment"># rank: Low-Rank 행렬 크기</span>
+    r=<span class="c-num">16</span>,                       <span class="c-comment"># rank: 저순위 행렬 크기</span>
     lora_alpha=<span class="c-num">32</span>,              <span class="c-comment"># scaling = alpha / r</span>
-    target_modules=[<span class="c-string">"q_proj"</span>, <span class="c-string">"v_proj"</span>],  <span class="c-comment"># q + v 기본 권장</span>
+    target_modules=[<span class="c-string">"q_proj"</span>, <span class="c-string">"v_proj"</span>],  <span class="c-comment"># 타겟 레이어 지정</span>
     lora_dropout=<span class="c-num">0.05</span>,
     bias=<span class="c-string">"none"</span>,
     use_gradient_checkpointing=<span class="c-string">"unsloth"</span>,  <span class="c-comment"># 메모리 추가 절감</span>
     use_rslora=<span class="c-keyword">False</span>,
 )
 model.print_trainable_parameters()
-<span class="c-comment"># 출력 예: trainable params: 4,194,304 / all params: 6,742,609,920 (0.06%)</span>
+<span class="c-comment"># 출력 예: trainable params: 4,194,304 / all params: 6,742,609,920 (0.06%)</span></pre></div>
+</div>
 
-<span class="c-comment"># ── 3. 학습 후 Adapter 저장 (~10MB) ─────────────────────────────────────────</span>
-model.save_pretrained(<span class="c-string">"./lora-adapter"</span>)
+<div class="code-pane" id="pane-train">
+<div class="code-block"><pre><span class="c-import">from</span> trl <span class="c-import">import</span> SFTConfig, SFTTrainer
+
+<span class="c-comment"># ── 1. SFTTrainer 설정 (데이터 전처리 결합) ───────────────────────────────────</span>
+<span class="c-var">trainer</span> = SFTTrainer(
+    model=<span class="c-var">model</span>,
+    tokenizer=<span class="c-var">tokenizer</span>,
+    train_dataset=<span class="c-var">dataset</span>,               <span class="c-comment"># 텍스트 데이터셋</span>
+    dataset_text_field=<span class="c-string">"text"</span>,           <span class="c-comment"># 데이터셋 내의 텍스트 컬럼명 지정</span>
+    max_seq_length=<span class="c-num">2048</span>,                <span class="c-comment"># 최대 토큰 길이</span>
+    dataset_num_proc=<span class="c-num">2</span>,
+    packing=<span class="c-keyword">False</span>,
+    args=SFTConfig(
+        per_device_train_batch_size=<span class="c-num">2</span>,
+        gradient_accumulation_steps=<span class="c-num">4</span>,
+        warmup_steps=<span class="c-num">5</span>,
+        max_steps=<span class="c-num">60</span>,
+        learning_rate=<span class="c-num">2e-4</span>,
+        fp16=<span class="c-keyword">True</span>,                       <span class="c-comment"># 일반 GPU용 가속</span>
+        logging_steps=<span class="c-num">1</span>,
+        output_dir=<span class="c-string">"outputs"</span>,
+    ),
+)
+
+<span class="c-comment"># ── 2. 학습 구동 및 완성된 Adapter 저장 ───────────────────────────────────────</span>
+trainer.train()                          <span class="c-comment"># 훈련 바퀴 작동</span>
+model.save_pretrained(<span class="c-string">"./lora-adapter"</span>)  <span class="c-comment"># 가벼운 어댑터 파일 저장 (~10MB)</span>
 tokenizer.save_pretrained(<span class="c-string">"./lora-adapter"</span>)</pre></div>
 </div>
 
