@@ -13,33 +13,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* 글로벌 최소 폰트 크기 14px 강제 적용 및 라이트 테마 변수 */
+        /* 글로벌 기본 폰트 크기 및 최소 폰트 크기 14px 보장 */
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8fafc; /* Slate 50 */
             color: #1e293b; /* Slate 800 */
         }
         
-        /* 최소 폰트 크기 14px 강제 적용 */
-        body, p, span, div, label, input, select, button, pre, code, li, a, th, td {
-            font-size: max(14px, 1rem) !important;
-        }
-        
-        /* 제목 폰트 스케일링 */
-        h1, .text-xl {
-            font-size: 20px !important;
-        }
-        h2, .text-2xl, .text-3xl {
-            font-size: 24px !important;
-        }
-        h3 {
-            font-size: 22px !important;
-        }
-        h4 {
-            font-size: 18px !important;
-        }
-        h5 {
-            font-size: 16px !important;
+        /* 14px 미만으로 작아지는 것을 방지 (Tailwind의 text-xs, text-[9px] 등이 너무 작아지지 않도록 14px로 하한선 보장) */
+        body, p, span, div, label, input, select, button, pre, code, li, a {
+            font-size: max(14px, 1em) !important;
         }
 
         code, pre {
@@ -72,20 +55,101 @@
                     <p class="text-xs text-slate-500">부동소수점 비트 정밀도 설계와 정수(INT8)/분위수(NF4) 변환 로직 분석</p>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold border border-blue-200">Chapter 5-2</span>
-                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-200">실습 교재</span>
-            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 mt-8 space-y-12">
         
+        <!-- 블로그 스타일 도입부 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 text-sm text-slate-700 leading-relaxed">
+            이번 포스트에서는 대형 언어 모델(LLM)의 효율적인 서빙과 경량화를 위한 핵심 기술인 <strong>양자화(Quantization)</strong>의 물리적 구조와 수학적 변환 원리를 상세히 알아본다. FP32, FP16, BF16의 비트 할당 차이를 비교하고, INT8 균등 양자화 및 분위수 기반 NF4 양자화의 원리를 시각적 시뮬레이터와 함께 구현해 본다.
+        </div>
+
+        <!-- 왜 양자화(Quantization)가 필요한가? 이론 요약 영역 -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 card-shadow space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-circle-question text-indigo-600 mr-2"></i>왜 양자화(Quantization)가 필요한가?</h3>
+                <p class="text-slate-500 text-sm mt-1">거대 모델의 대중적 서빙을 가로막는 근본적인 하드웨어 장벽과 가중치 압축 전략에 관한 요약이다.</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 1열: 상단 설명글 + LLM 모델 크기 이미지 (수직 배치로 균형 확보) -->
+                <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
+                    <p>
+                        LLM의 추론 성능은 파라미터 규모에 비례하여 향상된다. 그러나 파라미터가 비대해질수록 연산에 필요한 <strong>GPU 메모리(VRAM) 요구량과 하드웨어 도입 비용</strong> 또한 급격하게 증가한다. 일반적인 단일 GPU 환경(VRAM 16GB ~ 24GB)에서는 고정밀도로 구현된 수백억 파라미터급 모델을 메모리에 할당하는 것조차 불가능하다.
+                    </p>
+                    <div class="flex justify-center">
+                        <img src="https://i.ibb.co/tP3HgBpG/image-A.png" alt="LLM 모델 크기와 VRAM 요구사항" class="w-full max-w-3xl rounded-2xl border border-slate-200 shadow-sm bg-white p-1">
+                    </div>
+                </div>
+
+                <!-- 2열: 사진 압축 비유 카드 내부에서 이미지와 표를 대칭 카드로 균형 배치 -->
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                    <strong class="text-slate-800 font-bold block text-sm"><i class="fa-solid fa-lightbulb text-amber-500 mr-1.5"></i>핵심 개념: 사진 압축과의 비유</strong>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                        <!-- 이미지 카드 (왼쪽) -->
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                            <span class="text-xs font-bold text-slate-400 block mb-3"><i class="fa-solid fa-file-image mr-1"></i>비트 정밀도 비교 (비트가 줄어들면 표현이 거칠어짐)</span>
+                            <img src="https://i.ibb.co/m5MDYJz9/image-B.png" alt="비트 정밀도와 이미지 압축 비유" class="w-full rounded-lg">
+                        </div>
+                        
+                        <!-- 표 카드 (오른쪽) -->
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center overflow-x-auto">
+                            <div>
+                                <span class="text-xs font-bold text-slate-500 block uppercase tracking-wider mb-3"><i class="fa-solid fa-server mr-1"></i> 포맷 정밀도별 메모리 절감폭 (1B 파라미터 기준)</span>
+                                <table class="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden text-xs">
+                                    <thead class="bg-slate-100 font-bold text-slate-700">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left whitespace-nowrap">정밀도</th>
+                                            <th class="px-3 py-2 text-left whitespace-nowrap">비트 수</th>
+                                            <th class="px-3 py-2 text-left whitespace-nowrap">요구 용량</th>
+                                            <th class="px-3 py-2 text-left whitespace-nowrap">FP32 대비 절감</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 text-slate-600">
+                                        <tr>
+                                            <td class="px-3 py-2.5 font-bold">FP32</td>
+                                            <td class="px-3 py-2.5">32비트</td>
+                                            <td class="px-3 py-2.5 font-mono text-slate-500">4.0 GB</td>
+                                            <td class="px-3 py-2.5 font-medium text-slate-400">기준</td>
+                                        </tr>
+                                        <tr class="bg-rose-50/20">
+                                            <td class="px-3 py-2.5 font-bold text-rose-600">FP16</td>
+                                            <td class="px-3 py-2.5">16비트</td>
+                                            <td class="px-3 py-2.5 font-mono text-rose-700">2.0 GB</td>
+                                            <td class="px-3 py-2.5 font-medium text-rose-600">50.0% 절감</td>
+                                        </tr>
+                                        <tr class="bg-amber-50/20">
+                                            <td class="px-3 py-2.5 font-bold text-amber-600">INT8</td>
+                                            <td class="px-3 py-2.5">8비트</td>
+                                            <td class="px-3 py-2.5 font-mono text-amber-700">1.0 GB</td>
+                                            <td class="px-3 py-2.5 font-medium text-amber-600">75.0% 절감</td>
+                                        </tr>
+                                        <tr class="bg-indigo-50/20">
+                                            <td class="px-3 py-2.5 font-bold text-indigo-600">INT4</td>
+                                            <td class="px-3 py-2.5">4비트</td>
+                                            <td class="px-3 py-2.5 font-mono text-indigo-700">0.5 GB</td>
+                                            <td class="px-3 py-2.5 font-bold text-indigo-600">87.5% 절감</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-200/60">
+                        양자화는 바로 이처럼 가중치의 표현 비트 수를 낮춤으로써 약간의 정확도 손실을 감수하고 메모리 용량을 대폭 확보하는 극대화 기법이다.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- SECTION 1: FP32, FP16, BF16 BIT STRUCTURE (THE ORIGINAL COMPARATIVE IMAGE FORMAT) -->
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-layer-group text-blue-600 mr-2"></i>1. 실수형 정밀도 비트 구조 비교 (FP32 vs FP16 vs BF16)</h3>
-                <p class="text-slate-500 text-sm mt-1">부동소수점 형식이 메모리 상에서 어떻게 저장되는지 부호(Sign), 지수(Exponent), 가수(Mantissa)의 물리적 크기를 원본 도표 이미지 형태로 직관적으로 비교합니다.</p>
+                <p class="text-slate-500 text-sm mt-1">부동소수점 형식이 메모리 상에서 어떻게 저장되는지 부호(Sign), 지수(Exponent), 가수(Mantissa)의 물리적 크기를 원본 도표 이미지 형태로 직관적으로 비교한다.</p>
             </div>
 
             <!-- Unified Stacked Bit Structure SVG Diagram (The original image style) -->
@@ -171,25 +235,37 @@
                     </svg>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-6">
-                    <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 text-xs">
-                        <strong class="text-rose-800 font-bold block mb-1">FP32 (Single Precision)</strong>
-                        - 소수점 이하 정밀도가 약 7자리 십진수로 가장 높습니다.<br>
-                        - 대형 모델의 훈련 가중치 가공 및 연산의 기준 역할을 수행합니다.<br>
-                        - 메모리 소모가 엄청나 16GB VRAM 배포는 한계가 따릅니다.
-                    </div>
-                    <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-xs">
-                        <strong class="text-amber-800 font-bold block mb-1">FP16 (Half Precision)</strong>
-                        - 가수를 10비트 사용해 소수 정밀도(약 3-4자리)를 확보합니다.<br>
-                        - 그러나 지수가 5비트로 줄어 **표현할 수 있는 수의 범위가 극단적으로 좁습니다** (최대 65,504).<br>
-                        - 훈련 중 조금만 큰 값이 발생해도 오버플로우로 학습이 중단될 수 있습니다.
-                    </div>
-                    <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 text-xs">
-                        <strong class="text-indigo-800 font-bold block mb-1">BF16 (Brain Float 16)</strong>
-                        - 지수를 FP32와 동일하게 8비트로 유지하여 **표현 범위 한계를 완벽히 극복**했습니다.<br>
-                        - 대신 가수가 7비트로 줄어 소수점 이하 정확도(약 2자리)는 약간 떨어집니다.<br>
-                        - 대형 LLM 훈련 시 오버플로우 리스크를 줄이기 위해 적극 권장됩니다.
-                    </div>
+                <div class="overflow-x-auto w-full mt-6">
+                    <table class="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-2xl overflow-hidden bg-white text-sm">
+                        <thead class="bg-slate-50 font-bold text-slate-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">데이터 포맷</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">물리적 비트 구조</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">소수점 정밀도</th>
+                                <th class="px-4 py-3 text-left">메모리 및 훈련 특징</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-600">
+                            <tr class="bg-rose-50/30">
+                                <td class="px-4 py-3.5 font-bold text-rose-700 whitespace-nowrap">FP32 (Single Precision)</td>
+                                <td class="px-4 py-3.5 font-mono text-xs text-rose-800 font-bold whitespace-nowrap">32-bit (S1 / E8 / M23)</td>
+                                <td class="px-4 py-3.5 font-medium whitespace-nowrap">가장 높음 (약 7자리)</td>
+                                <td class="px-4 py-3.5 leading-relaxed">연산 기준이나 메모리 소모 극심으로 단일 GPU 서빙 한계</td>
+                            </tr>
+                            <tr class="bg-amber-50/30">
+                                <td class="px-4 py-3.5 font-bold text-amber-700 whitespace-nowrap">FP16 (Half Precision)</td>
+                                <td class="px-4 py-3.5 font-mono text-xs text-amber-800 font-bold whitespace-nowrap">16-bit (S1 / E5 / M10)</td>
+                                <td class="px-4 py-3.5 font-medium whitespace-nowrap">중간 수준 (약 3~4자리)</td>
+                                <td class="px-4 py-3.5 leading-relaxed">메모리 50% 절감되나 좁은 표현 범위로 오버플로우 리스크 높음</td>
+                            </tr>
+                            <tr class="bg-indigo-50/30">
+                                <td class="px-4 py-3.5 font-bold text-indigo-700 whitespace-nowrap">BF16 (Brain Float 16)</td>
+                                <td class="px-4 py-3.5 font-mono text-xs text-indigo-800 font-bold whitespace-nowrap">16-bit (S1 / E8 / M7)</td>
+                                <td class="px-4 py-3.5 font-medium whitespace-nowrap">다소 낮음 (약 2자리)</td>
+                                <td class="px-4 py-3.5 leading-relaxed">메모리 50% 절감 및 넓은 수 범위 표현으로 안정적 훈련 지원</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -198,51 +274,80 @@
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-calculator text-emerald-600 mr-2"></i>2. 정수형 균등 양자화 (INT8) 변환 원리</h3>
-                <p class="text-slate-500 text-sm mt-1">소수점이 있는 FP32 가중치 텐서를 정수 INT8 범위(-128 ~ 127)로 스케일링하여 격자화하는 프로세스의 엄밀한 변환 수식과 가공 순서입니다.</p>
+                <p class="text-slate-500 text-sm mt-1">소수점이 있는 FP32 가중치 텐서를 정수 INT8 범위(-128 ~ 127)로 스케일링하여 격자화하는 프로세스의 엄밀한 변환 수식과 가공 순서이다.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                <!-- Mathematical Breakdown -->
-                <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
-                    <h4 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-square-root-variable text-blue-500 mr-2"></i>정수 변환(Symmetric Quantization) 공식</h4>
+            <div class="space-y-6">
+                <!-- Intuitive Breakdown -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow space-y-4">
+                    <h4 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-square-root-variable text-blue-500 mr-2"></i>정수 변환(Symmetric Quantization) 직관적 이해</h4>
                     <p class="text-slate-600 text-xs leading-relaxed">
-                        대칭 양자화(Symmetric)는 입력 가중치 중 절대값이 가장 큰 값을 기준으로 범위를 대칭 대입합니다. 소수 값이 정수 셀에 들어맞도록 scale 팩터를 계산하여 격자화(Rounding)합니다.
+                        대칭 양자화(Symmetric)는 복잡한 수식 대신 <strong>'고무줄 줄자'</strong>를 덧대는 원리와 같다. 실수 범위에 맞추어 일정한 정수 눈금(-128 ~ 127)이 그려진 줄자를 늘리거나 줄여서 실수 가중치에 딱 맞물리게 매핑하는 원리이다.
                     </p>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
-                            <span class="text-xs text-slate-400 block font-bold mb-1">양자화 (Quantization)</span>
-                            <code class="text-base text-blue-600 font-bold font-mono">Q(x) = clamp(round(x * Scale), -128, 127)</code>
-                        </div>
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
-                            <span class="text-xs text-slate-400 block font-bold mb-1">역양자화 (Dequantization)</span>
-                            <code class="text-base text-emerald-600 font-bold font-mono">deQ(q) = q / Scale</code>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
-                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                        <span class="font-bold text-slate-700 block"><i class="fa-solid fa-list-ol mr-1"></i> 단계별 가공 순서:</span>
-                        <p><strong>1. 절대값 최대범위 추출:</strong> 전체 가중치에서 가장 절대값이 큰 $x_{max}$를 찾아냅니다.</p>
-                        <p><strong>2. 스케일 팩터 산출:</strong> 양수 영역의 최대 칸 크기인 127에 부합하도록 배율을 계산합니다: $Scale = 127 / x_{max}$.</p>
-                        <p><strong>3. 반올림 및 클램핑:</strong> 각 가중치에 $Scale$을 곱한 후 반올림하여 가까운 정수로 이산화한 뒤, 혹여 127을 벗어나면 강제 클리핑합니다.</p>
+            <!-- INT8 실시간 계산기 -->
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200/80 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm"><i class="fa-solid fa-calculator text-blue-600 mr-1.5"></i>INT8 실시간 양자화 변환기</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">FP32 값을 입력하여 INT8 이산화 값과 오차(L1 Loss)를 실시간 계산한다.</p>
                     </div>
+                    <span id="int8-loss-badge" class="self-start md:self-auto text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">L1 평균 오차: 계산 중</span>
                 </div>
 
-                <!-- Uniform Quantization Limitation Card -->
-                <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 card-shadow flex flex-col justify-between space-y-4">
-                    <div class="space-y-3">
-                        <h4 class="font-bold text-slate-900 text-base text-rose-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>INT8 균등 변환의 핵심적인 오차 한계</h4>
-                        <p class="text-slate-600 text-xs leading-relaxed">
-                            INT8은 실수 범위를 <strong>'균등한 간격(Uniform Interval)'</strong>으로만 자를 수 있습니다. 
-                            이는 가중치 분포가 정밀하게 조밀되어 있지 않은 희소한 경계 부분까지 모두 똑같은 크기의 바구니로 할당해야 함을 의미합니다.
-                        </p>
-                        <p class="text-slate-600 text-xs leading-relaxed">
-                            그 결과, 대부분의 가중치 원소가 집중되어 있는 <strong>0 주변의 미세한 값들</strong>은 다 같이 뭉개지고, 드물게 존재하는 아웃라이어(큰 값) 영역에만 넓은 바구니들이 낭비되어 복원 성능의 정확도 낙폭이 심해집니다.
-                        </p>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-4 space-y-3">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
+                            <input type="text" id="int8-sim-weights" oninput="runINT8Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-blue-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
+                            <div>• Scale 배율: <span id="int8-meta-scale" class="font-bold text-slate-700">0.00</span></div>
+                        </div>
+
+                        <!-- 그림으로 그려보는 3단계 변환 과정 -->
+                        <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-[11px] leading-relaxed text-slate-600">
+                            <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-blue-500"></i> 3단계 변환 과정:</span>
+                            <p><strong>1. 극단값 기준 설정:</strong> 부호 상관없이 크기가 가장 큰 실수(예: 2.8)를 범위 기준값으로 정함.</p>
+                            <p><strong>2. 배율 계산:</strong> 기준값(2.8)이 INT8 정밀도 최대 칸(127)에 닿는 배율을 구함. (예: 127 / 2.8 = 약 45.3배)</p>
+                            <p><strong>3. 정수 반올림 매핑:</strong> 실수에 배율을 곱해 부풀린 후 가까운 정수(-128 ~ 127)로 매핑함.</p>
+                        </div>
                     </div>
-                    <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
-                        💡 **클리핑 &amp; 반올림 오차**: 이로 인해 환경 변화 입력(오타/노이즈)이 발생하면 모델의 추론 방향이 흐트러지게 됩니다.
+
+                    <div class="lg:col-span-8 space-y-3">
+                        <!-- INT8 SVG -->
+                        <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="int8-graph-container"></div>
+                        
+                        <!-- INT8 Table -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-[11px] text-slate-700 space-y-1.5">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-[10px] gap-2">
+                                <div class="col-span-1">원본</div>
+                                <div class="col-span-5">양자화 연산 (원본 * 배율)</div>
+                                <div class="col-span-4">역양자화 연산 (정수 / 배율)</div>
+                                <div class="col-span-2 text-right">절대오차</div>
+                            </div>
+                            <div class="space-y-1.5" id="int8-table-body"></div>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Uniform Quantization Limitation Card -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 card-shadow flex flex-col justify-between space-y-4 mt-6">
+                <div class="space-y-3">
+                    <h4 class="font-bold text-slate-900 text-base text-rose-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>INT8 균등 변환의 핵심적인 오차 한계</h4>
+                    <p class="text-slate-600 text-xs leading-relaxed">
+                        INT8은 실수 범위를 <strong>'균등한 간격(Uniform Interval)'</strong>으로만 자를 수 있음. 
+                        이는 가중치 분포가 정밀하게 조밀되어 있지 않은 희소한 경계 부분까지 모두 똑같은 크기의 바구니로 할당해야 함을 의미함.
+                    </p>
+                    <p class="text-slate-600 text-xs leading-relaxed">
+                        그 결과, 대부분의 가중치 원소가 집중되어 있는 <strong>0 주변의 미세한 값들</strong>은 다 같이 뭉개지고, 드물게 존재하는 아웃라이어(큰 값) 영역에만 넓은 바구니들이 낭비되어 복원 성능의 정확도 낙폭이 심해짐.
+                    </p>
+                </div>
+                <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
+                    💡 **클리핑 &amp; 반올림 오차**: 이로 인해 환경 변화 입력(오타/노이즈)이 발생하면 모델의 추론 방향이 흐트러지게 됨.
                 </div>
             </div>
         </section>
@@ -251,7 +356,7 @@
         <section class="space-y-6">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-bezier-curve text-indigo-600 mr-2"></i>3. 분위수 기반 4-bit 양자화 (NF4) 변환 원리</h3>
-                <p class="text-slate-500 text-sm mt-1">가중치 텐서의 정규분포 분포를 기반으로 16개의 분위수 분할 경계면을 수학적으로 배치하여 오차 왜곡을 억제하는 NF4 방식의 핵심 원리입니다.</p>
+                <p class="text-slate-500 text-sm mt-1">가중치 텐서의 정규분포 분포를 기반으로 16개의 분위수 분할 경계면을 수학적으로 배치하여 오차 왜곡을 억제하는 NF4 방식의 핵심 원리이다.</p>
             </div>
 
             <!-- Beautiful NF4 "Magic Ruler" SVG Container matching user image perfectly -->
@@ -304,31 +409,27 @@
                         <text x="450" y="412" text-anchor="middle" font-size="11" fill="#64748b" font-weight="700">Value</text>
 
                         <!-- Symmetric NF4 Quantization Bins (16 vertical blue lines) -->
-                        <!-- Left 8 lines -->
-                        <line x1="202" y1="50" x2="202" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -1.86 -->
-                        <line x1="274" y1="50" x2="274" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -1.32 -->
-                        <line x1="317" y1="50" x2="317" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -1.00 -->
-                        <line x1="347" y1="50" x2="347" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -0.77 -->
-                        <line x1="373" y1="50" x2="373" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -0.58 -->
-                        <line x1="397" y1="50" x2="397" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -0.40 -->
-                        <line x1="421" y1="50" x2="421" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -0.22 -->
-                        <line x1="439" y1="50" x2="439" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- -0.08 -->
+                        <line x1="202" y1="50" x2="202" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="274" y1="50" x2="274" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="317" y1="50" x2="317" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="347" y1="50" x2="347" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="373" y1="50" x2="373" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="397" y1="50" x2="397" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="421" y1="50" x2="421" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="439" y1="50" x2="439" y2="360" stroke="#0000ff" stroke-width="2" />
 
-                        <!-- Right 8 lines -->
-                        <line x1="461" y1="50" x2="461" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 0.08 -->
-                        <line x1="479" y1="50" x2="479" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 0.22 -->
-                        <line x1="503" y1="50" x2="503" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 0.40 -->
-                        <line x1="527" y1="50" x2="527" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 0.58 -->
-                        <line x1="553" y1="50" x2="553" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 0.77 -->
-                        <line x1="583" y1="50" x2="583" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 1.00 -->
-                        <line x1="626" y1="50" x2="626" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 1.32 -->
-                        <line x1="698" y1="50" x2="698" y2="360" stroke="#0000ff" stroke-width="2" /> <!-- 1.86 -->
+                        <line x1="461" y1="50" x2="461" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="479" y1="50" x2="479" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="503" y1="50" x2="503" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="527" y1="50" x2="527" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="553" y1="50" x2="553" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="583" y1="50" x2="583" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="626" y1="50" x2="626" y2="360" stroke="#0000ff" stroke-width="2" />
+                        <line x1="698" y1="50" x2="698" y2="360" stroke="#0000ff" stroke-width="2" />
 
-                        <!-- Blue Header Text (Dense near 0) -->
-                        <text x="450" y="24" text-anchor="middle" font-size="14" font-weight="900" fill="#0000ff">Dense near 0</text>
+                            <text x="450" y="24" text-anchor="middle" font-size="14" font-weight="900" fill="#0000ff">Dense near 0</text>
                         <text x="450" y="42" text-anchor="middle" font-size="13" font-weight="900" fill="#0000ff">(High Precision)</text>
 
-                        <!-- Red Arrow for "Sparse at tail" -->
                         <defs>
                             <marker id="red-arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
                                 <polygon points="0 1.5, 6 3, 0 4.5" fill="#ef4444" />
@@ -347,81 +448,54 @@
                     <div class="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl text-xs space-y-2">
                         <strong class="text-indigo-900 font-bold block"><i class="fa-solid fa-compass-drafting"></i> 0 주위 조밀 분할 (Dense near 0)</strong>
                         <p class="leading-relaxed">
-                            신경망의 매개변수는 대부분 0 주위에 기하급수적으로 몰려 분포합니다. 
-                            따라서 NF4는 <strong>가운데 0 주위에 눈금(Bins)을 조밀하게 배치</strong>하여 미세한 값 차이를 정교하게 검출하고 손실률을 FP16에 준하게 지켜냅니다.
+                            신경망의 매개변수는 대부분 0 주위에 기하급수적으로 몰려 분포함. 
+                            따라서 NF4는 <strong>가운데 0 주위에 눈금(Bins)을 조밀하게 배치</strong>하여 미세한 값 차이를 정교하게 검출하고 손실률을 FP16 수준으로 방어함.
                         </p>
                     </div>
                     <div class="p-5 bg-rose-50 border border-rose-100 rounded-2xl text-xs space-y-2">
                         <strong class="text-rose-950 font-bold block"><i class="fa-solid fa-arrows-left-right"></i> 꼬리 부분 희소 분할 (Sparse at tail)</strong>
                         <p class="leading-relaxed">
-                            가중치가 거의 없는 꼬리 영역(예: -2 이하, 2 이상)에는 양자화 Bins 간격을 극단적으로 크게 벌립니다. 
-                            어차피 분포 빈도가 적은 구간이므로, 눈금을 절약하여 0 주변의 고해상도 정보 캡처에 가용 눈금을 몰아주는 영리한 자원 분배입니다.
+                            가중치가 거의 없는 꼬리 영역(예: -2 이하, 2 이상)에는 양자화 Bins 간격을 극단적으로 크게 벌림. 
+                            어차피 분포 빈도가 낮으므로 눈금을 절약하여 0 주변의 고해상도 정보 보존에 눈금을 집중 분배함.
                         </p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- SECTION 4: LIVE INTERACTIVE QUANTIZATION CALCULATOR -->
-        <section class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
-            <div>
-                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">Quantization Interactive Simulator</span>
-                <h3 class="text-2xl font-bold text-slate-900 mt-2"><i class="fa-solid fa-calculator text-blue-600 mr-2"></i>실시간 양자화 변환 &amp; 수치 오차 계산기</h3>
-                <p class="text-slate-500 text-sm mt-1">임의의 FP32 가중치 5개를 반점(,)으로 구분해 입력한 후 양자화 방식을 스위칭하여 실제 손실되는 오차(L1 Loss)를 실시간 계산해 보세요.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- Inputs & Settings -->
-                <div class="lg:col-span-5 space-y-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">1. 원본 가중치 입력 (FP32 Float 리스트)</label>
-                        <input type="text" id="sim-weights" oninput="runSimulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 font-mono focus:bg-white" value="-1.5, -0.3, 0.8, 2.1, 2.8">
-                        <span class="text-[11px] text-slate-400">다양한 양수, 음수 실수들을 자유롭게 넣어보세요.</span>
+            <!-- NF4 실시간 계산기 -->
+            <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200/80 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm"><i class="fa-solid fa-calculator text-emerald-600 mr-1.5"></i>NF4 실시간 양자화 변환기</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">FP32 값을 입력하여 분위수 기반 NF4 매핑 Bin 위치와 오차(L1 Loss)를 실시간 계산한다.</p>
                     </div>
-
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">2. 양자화 알고리즘 선택</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="toggleAlgo('int8')" id="btn-algo-int8" class="py-2.5 px-4 rounded-xl font-bold text-sm text-center border step-active-tab transition-all">
-                                <i class="fa-solid fa-border-all mr-1.5"></i> INT8 균등
-                            </button>
-                            <button onclick="toggleAlgo('nf4')" id="btn-algo-nf4" class="py-2.5 px-4 rounded-xl font-bold text-sm text-center border text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all">
-                                <i class="fa-solid fa-chart-line mr-1.5"></i> NF4 분위수
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs" id="sim-meta">
-                        <div class="font-bold text-slate-700 uppercase"><i class="fa-solid fa-circle-info text-blue-500 mr-1.5"></i>스케일 메타 정보</div>
-                        <div class="space-y-1 text-slate-600 font-mono">
-                            <div>- 최소값: <span id="meta-min">-1.50</span></div>
-                            <div>- 최대값: <span id="meta-max">2.80</span></div>
-                            <div>- 배율 (Scale): <span id="meta-scale">59.30</span></div>
-                        </div>
-                    </div>
+                    <span id="nf4-loss-badge" class="self-start md:self-auto text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">L1 평균 오차: 계산 중</span>
                 </div>
 
-                <!-- Simulation Output Panel -->
-                <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-chart-bar text-indigo-500 mr-1.5"></i>실시간 변환 후 복원값 비교</span>
-                        <span id="sim-loss-badge" class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded border border-rose-200">L1 평균 복원 오차: 0.125</span>
-                    </div>
-
-                    <!-- Dynamic Mapping Graph Section based on Algorithm -->
-                    <div class="w-full bg-white rounded-2xl border border-slate-200 p-3" id="dynamic-graph-container">
-                        <!-- Javascript will dynamically inject the active SVG diagram here! -->
-                    </div>
-
-                    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 overflow-auto h-[250px] font-mono text-xs text-slate-700 space-y-3">
-                        <div class="grid grid-cols-4 border-b border-slate-200 pb-1.5 font-bold text-[11px] text-slate-500">
-                            <div>원본 실수 (FP32)</div>
-                            <div>압축 정수 / 그룹</div>
-                            <div>역양자화 복원값</div>
-                            <div class="text-right">절대오차 (Loss)</div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-4 space-y-3">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
+                            <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
                         </div>
-                        <div class="space-y-2.5" id="sim-table-body">
-                            <!-- Javascript updates this dynamically -->
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
+                            <div>• Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span></div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8 space-y-3">
+                        <!-- NF4 SVG -->
+                        <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="nf4-graph-container"></div>
+                        
+                        <!-- NF4 Table -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-[11px] text-slate-700 space-y-1.5">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-[10px] gap-2">
+                                <div class="col-span-1">원본</div>
+                                <div class="col-span-5">정규화 & Bin 매핑 (원본 / 배율)</div>
+                                <div class="col-span-4">역양자화 복원 (Bin값 * 배율)</div>
+                                <div class="col-span-2 text-right">절대오차</div>
+                            </div>
+                            <div class="space-y-1.5" id="nf4-table-body"></div>
                         </div>
                     </div>
                 </div>
@@ -432,42 +506,36 @@
 
     <!-- Footer -->
     <footer class="mt-16 text-center text-xs text-slate-400 border-t border-slate-200 pt-8">
-        <p>© 2026 AI 모델 학습 실습 과정 가이드. PEFT &amp; QLoRA 파이프라인 시각화 자료.</p>
+        <p>© 2026 AI 모델 학습 가이드. PEFT &amp; QLoRA 파이프라인 시각화 자료.</p>
     </footer>
 
-    <!-- Interactive Track Switcher Script -->
+    <!-- Interactive Simulation Engine Script -->
     <script>
-        let selectedAlgo = 'int8';
-
-        function toggleAlgo(algo) {
-            selectedAlgo = algo;
-            const btnInt8 = document.getElementById('btn-algo-int8');
-            const btnNf4 = document.getElementById('btn-algo-nf4');
-            
-            if (algo === 'int8') {
-                btnInt8.className = "py-2.5 px-4 rounded-xl font-bold text-sm text-center border step-active-tab transition-all";
-                btnNf4.className = "py-2.5 px-4 rounded-xl font-bold text-sm text-center border text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all";
-            } else {
-                btnInt8.className = "py-2.5 px-4 rounded-xl font-bold text-sm text-center border text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all";
-                btnNf4.className = "py-2.5 px-4 rounded-xl font-bold text-sm text-center border step-active-tab transition-all";
-            }
-            
-            runSimulation();
-        }
-
-        // Standard NF4 quantization mapping bins (16 bins)
+        // QLoRA/bitsandbytes 공식 사양의 표준 NF4 16개 분위수 값
         const nf4Table = [
-            -1.0, -0.848096, -0.721677, -0.610633, -0.505051, -0.401832, -0.297454, -0.187313,
-            0.0, 0.160329, 0.27931, 0.399583, 0.523069, 0.654033, 0.795781, 1.0
+            -1.0, 
+            -0.696192809343338, 
+            -0.5250730514526367, 
+            -0.39491748809814453, 
+            -0.28444138169288635, 
+            -0.18477343022823334, 
+            -0.09105003625154495, 
+            0.0, 
+            0.0, 
+            0.07958748191595078, 
+            0.16800000369548798, 
+            0.2651650309562683, 
+            0.3746069371700287, 
+            0.50259929895401, 
+            0.6770293712615967, 
+            1.0
         ];
 
         function quantizeToNF4(val, scale) {
-            // Normalize val
             let normVal = val / scale;
             if (normVal < -1.0) normVal = -1.0;
             if (normVal > 1.0) normVal = 1.0;
 
-            // Find closest value in nf4Table
             let closest = nf4Table[0];
             let minDiff = Math.abs(normVal - closest);
             let binIdx = 0;
@@ -481,7 +549,6 @@
                 }
             }
 
-            // Dequantized
             let dequant = closest * scale;
             return {
                 bin: `Bin ${binIdx} (${closest.toFixed(2)})`,
@@ -490,26 +557,17 @@
             };
         }
 
-        function runSimulation() {
-            const rawInput = document.getElementById('sim-weights').value;
-            const tableBody = document.getElementById('sim-table-body');
-            const metaScale = document.getElementById('meta-scale');
-            const metaMin = document.getElementById('meta-min');
-            const metaMax = document.getElementById('meta-max');
-            const lossBadge = document.getElementById('sim-loss-badge');
-            const graphContainer = document.getElementById('dynamic-graph-container');
-
-            // Parse weights
+        function runINT8Simulation() {
+            const rawInput = document.getElementById('int8-sim-weights').value;
             let weights = rawInput.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
             if (weights.length === 0) {
-                tableBody.innerHTML = `<div class="text-rose-500 font-bold">오류: 유효한 숫자를 입력하세요.</div>`;
+                document.getElementById('int8-table-body').innerHTML = `<div class="text-rose-500 font-bold p-2">오류: 유효한 숫자를 입력하세요.</div>`;
                 return;
             }
 
-            // Limit weights list to exactly 5 elements for the SVG diagrams mapping consistency
             if (weights.length > 5) weights = weights.slice(0, 5);
             while (weights.length < 5) {
-                weights.push(0); // Pad with zeros to keep SVG 5-node structure
+                weights.push(0);
             }
 
             let minVal = Math.min(...weights);
@@ -517,146 +575,177 @@
             let absoluteMax = Math.max(Math.abs(minVal), Math.abs(maxVal));
             if (absoluteMax === 0) absoluteMax = 1.0;
 
-            metaMin.innerText = minVal.toFixed(2);
-            metaMax.innerText = maxVal.toFixed(2);
+            let scale = 127 / absoluteMax;
+            document.getElementById('int8-meta-scale').innerText = scale.toFixed(2);
 
-            let htmlContent = "";
+            let int8Points = [];
             let totalLoss = 0;
+            let htmlContent = "";
 
-            if (selectedAlgo === 'int8') {
-                // INT8 Symmetric Scale (for simpler visualization)
-                let scale = 127 / absoluteMax;
-                metaScale.innerText = scale.toFixed(2);
+            for (let w of weights) {
+                let quantized = Math.round(w * scale);
+                if (quantized > 127) quantized = 127;
+                if (quantized < -128) quantized = -128;
 
-                // Compute exact quantized points for SVG scaling
-                let int8Points = [];
+                let dequantized = quantized / scale;
+                let error = Math.abs(w - dequantized);
+                totalLoss += error;
 
-                for (let w of weights) {
-                    // Quantize
-                    let quantized = Math.round(w * scale);
-                    if (quantized > 127) quantized = 127;
-                    if (quantized < -128) quantized = -128;
+                int8Points.push({ orig: w, quant: quantized });
 
-                    // Dequantize
-                    let dequantized = quantized / scale;
-                    let error = Math.abs(w - dequantized);
-                    totalLoss += error;
+                let qCalc = `${w.toFixed(2)} * ${scale.toFixed(1)} = ${quantized}`;
+                let deqCalc = `${quantized} / ${scale.toFixed(1)} = ${dequantized.toFixed(2)}`;
 
-                    int8Points.push({
-                        orig: w,
-                        quant: quantized
-                    });
-
-                    htmlContent += `
-                    <div class="grid grid-cols-4 font-mono">
-                        <div class="text-slate-900 font-bold">${w.toFixed(3)}</div>
-                        <div class="text-blue-600 font-bold">${quantized} (int8)</div>
-                        <div class="text-slate-800">${dequantized.toFixed(3)}</div>
-                        <div class="text-right text-rose-500">${error.toFixed(4)}</div>
-                    </div>`;
-                }
-
-                // Dynamic INT8 Mapping SVG Generator
-                // Maps values inside [-absoluteMax, absoluteMax] to x-coordinates [80, 520]
-                const getX = (val) => 300 + (val / absoluteMax) * 220;
-                
-                graphContainer.innerHTML = `
-                <div class="text-[12px] font-bold text-slate-700 uppercase tracking-wide mb-1.5"><i class="fa-solid fa-circle-nodes text-indigo-500 mr-1"></i>실수(FP32) ➡️ 정수(INT8) 균등 매핑 도해</div>
-                <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-xl p-1">
-                    <text x="30" y="24" font-size="11" font-weight="bold" fill="#475569">FP32 실수 범위 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
-                    <line x1="80" y1="40" x2="520" y2="40" stroke="#94a3b8" stroke-width="2" />
-                    <line x1="300" y1="36" x2="300" y2="44" stroke="#475569" stroke-width="2" />
-                    <text x="300" y="54" text-anchor="middle" font-size="10" fill="#64748b">0</text>
-                    
-                    ${int8Points.map((p, i) => {
-                        let cx_orig = getX(p.orig);
-                        let cx_quant = 300 + (p.quant / 127) * 220;
-                        let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
-                        return `
-                        <circle cx="${cx_orig}" cy="40" r="4.5" fill="${colors[i]}" />
-                        <text x="${cx_orig}" y="28" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(2)}</text>
-                        <path d="M ${cx_orig},48 L ${cx_quant},92" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" />
-                        <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
-                        <text x="${cx_quant}" y="122" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">${p.quant}</text>
-                        `;
-                    }).join('')}
-
-                    <text x="300" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">Scale 배율 연산 (× ${scale.toFixed(2)})</text>
-                    <text x="30" y="98" font-size="11" font-weight="bold" fill="#1e293b">INT8 정수 격자 [-128 ~ 127]</text>
-                    <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="2" />
-                    <line x1="300" y1="101" x2="300" y2="109" stroke="#1e293b" stroke-width="2" />
-                    <text x="300" y="132" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">0</text>
-                </svg>`;
-
-            } else {
-                // NF4 Block Scaler
-                let scale = absoluteMax;
-                metaScale.innerText = `${scale.toFixed(2)} (Block Scaler)`;
-
-                let nf4Points = [];
-
-                for (let w of weights) {
-                    let nf4Res = quantizeToNF4(w, scale);
-                    let error = Math.abs(w - nf4Res.dequant);
-                    totalLoss += error;
-
-                    nf4Points.push({
-                        orig: w,
-                        binIdx: nf4Res.binIdx,
-                        dequant: nf4Res.dequant
-                    });
-
-                    htmlContent += `
-                    <div class="grid grid-cols-4 font-mono">
-                        <div class="text-slate-900 font-bold">${w.toFixed(3)}</div>
-                        <div class="text-emerald-600 font-bold">${nf4Res.bin}</div>
-                        <div class="text-slate-800">${nf4Res.dequant.toFixed(3)}</div>
-                        <div class="text-right text-rose-500">${error.toFixed(4)}</div>
-                    </div>`;
-                }
-
-                // Dynamic NF4 Mapping SVG Generator
-                const getX = (val) => 300 + (val / absoluteMax) * 220;
-                
-                graphContainer.innerHTML = `
-                <div class="text-[12px] font-bold text-slate-700 uppercase tracking-wide mb-1.5"><i class="fa-solid fa-bezier-curve text-indigo-500 mr-1"></i>정규분포 실수 ➡️ NF4 분위수 자(Ruler) 매핑 도해</div>
-                <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-xl p-1">
-                    <text x="30" y="24" font-size="11" font-weight="bold" fill="#475569">FP32 실수값 분포 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
-                    <line x1="80" y1="40" x2="520" y2="40" stroke="#94a3b8" stroke-width="2" />
-                    <line x1="300" y1="36" x2="300" y2="44" stroke="#475569" stroke-width="2" />
-                    <text x="300" y="54" text-anchor="middle" font-size="10" fill="#64748b">0</text>
-                    
-                    ${nf4Points.map((p, i) => {
-                        let cx_orig = getX(p.orig);
-                        let normQuant = nf4Table[p.binIdx];
-                        let cx_quant = 300 + normQuant * 220;
-                        let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
-                        return `
-                        <circle cx="${cx_orig}" cy="40" r="4.5" fill="${colors[i]}" />
-                        <text x="${cx_orig}" y="28" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(2)}</text>
-                        <path d="M ${cx_orig},48 L ${cx_quant},92" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2" />
-                        <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
-                        <text x="${cx_quant}" y="122" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Bin ${p.binIdx}</text>
-                        `;
-                    }).join('')}
-
-                    <text x="300" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">Block Scaler 정규화 &amp; 분위수 테이블 검색</text>
-                    <text x="30" y="98" font-size="11" font-weight="bold" fill="#1e293b">NF4 비선형 4-bit 자 (가운데 밀집 Bins)</text>
-                    <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="2" />
-                    <line x1="300" y1="101" x2="300" y2="109" stroke="#1e293b" stroke-width="2" />
-                    <text x="300" y="132" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">0</text>
-                </svg>`;
+                htmlContent += `
+                <div class="grid grid-cols-12 font-mono text-[9px] py-1 border-b border-slate-50 items-center gap-2">
+                    <div class="col-span-1 text-slate-900 font-bold">${w.toFixed(2)}</div>
+                    <div class="col-span-5 text-blue-600 font-semibold whitespace-nowrap">${qCalc}</div>
+                    <div class="col-span-4 text-emerald-600 font-semibold whitespace-nowrap">${deqCalc}</div>
+                    <div class="col-span-2 text-right text-rose-500 font-bold">${error.toFixed(3)}</div>
+                </div>`;
             }
 
-            let avgLoss = totalLoss / weights.length;
-            lossBadge.innerText = `L1 평균 복원 오차: ${avgLoss.toFixed(4)}`;
-            tableBody.innerHTML = htmlContent;
+            document.getElementById('int8-loss-badge').innerText = `L1 평균 오차: ${(totalLoss / weights.length).toFixed(4)}`;
+            document.getElementById('int8-table-body').innerHTML = htmlContent;
+
+            const getX = (val) => 300 + (val / absoluteMax) * 220;
+            document.getElementById('int8-graph-container').innerHTML = `
+            <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
+                <text x="30" y="22" font-size="10" font-weight="bold" fill="#475569">FP32 실수 범위 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
+                <line x1="80" y1="40" x2="520" y2="40" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="36" x2="300" y2="44" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="54" text-anchor="middle" font-size="9" fill="#64748b">0</text>
+                
+                ${int8Points.map((p, i) => {
+                    let cx_orig = getX(p.orig);
+                    let cx_quant = 300 + (p.quant / 127) * 220;
+                    let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
+                    return `
+                    <circle cx="${cx_orig}" cy="40" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="28" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <path d="M ${cx_orig},46 L ${cx_quant},94" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,2" />
+                    <circle cx="${cx_quant}" cy="100" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_quant}" y="116" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">${p.quant}</text>
+                    `;
+                }).join('')}
+
+                <text x="300" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">Scale 배율 연산 (× ${scale.toFixed(1)})</text>
+                <text x="30" y="96" font-size="10" font-weight="bold" fill="#1e293b">INT8 정수 격자 [-128 ~ 127]</text>
+                <line x1="80" y1="100" x2="520" y2="100" stroke="#1e293b" stroke-width="1.5" />
+                <line x1="300" y1="96" x2="300" y2="104" stroke="#1e293b" stroke-width="1.5" />
+                <text x="300" y="116" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">0</text>
+            </svg>`;
+        }
+
+        function runNF4Simulation() {
+            const rawInput = document.getElementById('nf4-sim-weights').value;
+            let weights = rawInput.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+            if (weights.length === 0) {
+                document.getElementById('nf4-table-body').innerHTML = `<div class="text-rose-500 font-bold p-2">오류: 유효한 숫자를 입력하세요.</div>`;
+                return;
+            }
+
+            if (weights.length > 5) weights = weights.slice(0, 5);
+            while (weights.length < 5) {
+                weights.push(0);
+            }
+
+            let minVal = Math.min(...weights);
+            let maxVal = Math.max(...weights);
+            let absoluteMax = Math.max(Math.abs(minVal), Math.abs(maxVal));
+            if (absoluteMax === 0) absoluteMax = 1.0;
+
+            let scale = absoluteMax;
+            document.getElementById('nf4-meta-scale').innerText = `${scale.toFixed(2)} (Block Scaler)`;
+
+            let nf4Points = [];
+            let totalLoss = 0;
+            let htmlContent = "";
+
+            for (let w of weights) {
+                let nf4Res = quantizeToNF4(w, scale);
+                let error = Math.abs(w - nf4Res.dequant);
+                totalLoss += error;
+
+                nf4Points.push({
+                    orig: w,
+                    binIdx: nf4Res.binIdx,
+                    dequant: nf4Res.dequant
+                });
+
+                let normVal = w / scale;
+                let qCalc = `${w.toFixed(2)} / ${scale.toFixed(1)} ➡️ Bin ${nf4Res.binIdx}`;
+                let deqVal = nf4Table[nf4Res.binIdx];
+                let deqCalc = `${deqVal.toFixed(2)} * ${scale.toFixed(1)} = ${nf4Res.dequant.toFixed(2)}`;
+
+                htmlContent += `
+                <div class="grid grid-cols-12 font-mono text-[9px] py-1 border-b border-slate-50 items-center gap-2">
+                    <div class="col-span-1 text-slate-900 font-bold">${w.toFixed(2)}</div>
+                    <div class="col-span-5 text-emerald-600 font-semibold whitespace-nowrap">${qCalc}</div>
+                    <div class="col-span-4 text-indigo-600 font-semibold whitespace-nowrap">${deqCalc}</div>
+                    <div class="col-span-2 text-right text-rose-500 font-bold">${error.toFixed(3)}</div>
+                </div>`;
+            }
+
+            document.getElementById('nf4-loss-badge').innerText = `L1 평균 오차: ${(totalLoss / weights.length).toFixed(4)}`;
+            document.getElementById('nf4-table-body').innerHTML = htmlContent;
+
+            const getX = (val) => 300 + (val / absoluteMax) * 220;
+            document.getElementById('nf4-graph-container').innerHTML = `
+            <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
+                <text x="30" y="22" font-size="10" font-weight="bold" fill="#475569">FP32 실수값 분포 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
+                <line x1="80" y1="40" x2="520" y2="40" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="36" x2="300" y2="44" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="54" text-anchor="middle" font-size="9" fill="#64748b">0</text>
+                
+                ${nf4Points.map((p, i) => {
+                    let cx_orig = getX(p.orig);
+                    let normQuant = nf4Table[p.binIdx];
+                    let cx_quant = 300 + normQuant * 220;
+                    let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
+                    return `
+                    <circle cx="${cx_orig}" cy="40" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="28" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <path d="M ${cx_orig},46 L ${cx_quant},94" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,2" />
+                    <circle cx="${cx_quant}" cy="100" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_quant}" y="116" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">Bin ${p.binIdx}</text>
+                    `;
+                }).join('')}
+
+                <text x="300" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">정규화 &amp; 분위수 검색</text>
+                <text x="30" y="96" font-size="10" font-weight="bold" fill="#1e293b">NF4 분위수 자 [16 Bins]</text>
+                <line x1="80" y1="100" x2="520" y2="100" stroke="#1e293b" stroke-width="1.5" />
+                
+                <!-- 16개의 분위수 Bins 눈금선 전체 표시 -->
+                ${nf4Table.map((binVal, idx) => {
+                    let tickX = 300 + binVal * 220;
+                    return `<line x1="${tickX}" y1="95" x2="${tickX}" y2="105" stroke="#cbd5e1" stroke-width="1" />`;
+                }).join('')}
+
+                <line x1="300" y1="94" x2="300" y2="106" stroke="#000000" stroke-width="1.8" />
+                <text x="300" y="132" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">0</text>
+            </svg>`;
         }
 
         // Initialize Simulator on Load
-        window.onload = function() {
-            runSimulation();
-        }
+        window.addEventListener('load', function() {
+            runINT8Simulation();
+            runNF4Simulation();
+        });
+    </script>
+    <script>
+      function sendHeight() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ height: height }, "*");
+      }
+      window.onload = sendHeight;
+      [50, 200, 500, 1000, 2000].forEach(function(delay) {
+        setTimeout(sendHeight, delay);
+      });
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(sendHeight);
+        ro.observe(document.body);
+      }
     </script>
 </body>
 </html>

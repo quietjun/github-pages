@@ -571,7 +571,7 @@ retriever = vectorstore.as_retriever(search_kwargs={<span style="color:#CE9178;"
 
 prompt = ChatPromptTemplate.from_messages([
     (<span style="color:#CE9178;">"system"</span>, <span style="color:#CE9178;">"참고자료에만 기반하여 고객의 질문에 답하세요:\n\n{context}"</span>),
-    (<span style="color:#CE9178;">"human"</span>, <span style="color:#CE9178;">"{question}"</span>)
+    (<span style="color:#CE9178;">"user"</span>, <span style="color:#CE9178;">"{question}"</span>)
 ])
 
 chain = prompt | llm | StrOutputParser()

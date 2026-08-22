@@ -712,7 +712,7 @@
     
     rag_prompt = ChatPromptTemplate.from_messages([
         (<span style="color:#CE9178;">"system"</span>, <span style="color:#CE9178;">"당신은 Yes24 상담원입니다. 검색된 자료에만 기반하여 답하세요:\n\n{context}"</span>),
-        (<span style="color:#CE9178;">"human"</span>, <span style="color:#CE9178;">"{question}"</span>)
+        (<span style="color:#CE9178;">"user"</span>, <span style="color:#CE9178;">"{question}"</span>)
     ])
     
     messages = rag_prompt.format_messages(context=context, question=question)
