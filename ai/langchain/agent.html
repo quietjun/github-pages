@@ -352,8 +352,8 @@
     <div class="diagram-box" style="margin-bottom:24px;">
       <svg viewBox="0 0 900 240" width="100%" style="aspect-ratio: 900/240; height: auto; display: block; max-width: 100%;" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#565C66"/>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 1 L 9 5 L 0 9 Z" fill="#565C66"/>
           </marker>
         </defs>
 
@@ -362,7 +362,7 @@
         <text x="80" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700">사용자 질문</text>
         <text id="svg-query-text" x="80" y="135" text-anchor="middle" font-family="Noto Sans KR" font-size="10.5" fill="var(--ink-soft)">"배송 지연 보상..."</text>
 
-        <line x1="140" y1="120" x2="190" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="140" y1="120" x2="193" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
 
         <!-- ReAct Loop Area -->
         <rect x="200" y="20" width="460" height="200" rx="10" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
@@ -373,14 +373,14 @@
         <text x="275" y="98" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700">Thought (추론)</text>
         <text x="275" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--ink-soft)">"판단 및 도구 검토"</text>
 
-        <line x1="330" y1="100" x2="360" y2="100" stroke="var(--indigo)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="330" y1="100" x2="363" y2="100" stroke="var(--indigo)" stroke-width="1.5" marker-end="url(#arrow)"/>
 
         <!-- Action Node -->
         <rect id="rect-action" x="370" y="70" width="110" height="60" rx="8" fill="#fff" stroke="var(--bronze)" stroke-width="1.5" style="transition: var(--transition);"/>
         <text x="425" y="98" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700">Action (행동)</text>
         <text x="425" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--ink-soft)">"함수/도구 호출"</text>
 
-        <line x1="480" y1="100" x2="510" y2="100" stroke="var(--bronze)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="480" y1="100" x2="513" y2="100" stroke="var(--bronze)" stroke-width="1.5" marker-end="url(#arrow)"/>
 
         <!-- Observation Node -->
         <rect id="rect-observation" x="520" y="70" width="120" height="60" rx="8" fill="#fff" stroke="var(--forest)" stroke-width="1.5" style="transition: var(--transition);"/>
@@ -392,7 +392,7 @@
         <text x="425" y="155" text-anchor="middle" font-family="Noto Sans KR" font-size="10.5" fill="var(--ink-soft)">반복 수행</text>
 
         <!-- Final Decision Arrow -->
-        <line x1="660" y1="120" x2="710" y2="120" stroke="var(--indigo)" stroke-width="1.8" marker-end="url(#arrow)"/>
+        <line x1="660" y1="120" x2="713" y2="120" stroke="var(--indigo)" stroke-width="1.8" marker-end="url(#arrow)"/>
 
         <!-- Final Answer -->
         <rect id="rect-answer" x="720" y="80" width="160" height="80" rx="8" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5" style="transition: var(--transition);"/>
