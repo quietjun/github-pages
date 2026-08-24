@@ -456,6 +456,81 @@
     </div>
   </div>
 
+  <!-- [NEW] 실전 계산 예제 카드: Conv & Pooling 채널 및 파라미터 수 계산 -->
+  <div class="block" style="margin-bottom:20px; border-left:4px solid #2563eb;">
+    <div class="block-hd" style="background:#f8fafc;">
+      <div>
+        <div class="bapi" style="color:#2563eb;">Feature Map Shape &amp; Parameter Calculation Example</div>
+        <div class="bname">🧮 실전 계산 예제 : Conv &amp; Pooling 채널 및 파라미터 개수 계산</div>
+      </div>
+    </div>
+    <div class="block-body">
+      <div class="bdesc algo-desc">
+        입력 이미지 <strong>32 × 32 × 3 (H×W×C)</strong>에 대해 Conv2d 및 Pooling 연산을 적용할 때의 <strong>출력 크기(Feature Map Shape), 채널 수, 학습 파라미터 개수(Parameters)</strong> 계산 과정입니다.
+      </div>
+
+      <div class="grid-2">
+        <!-- 1. Conv2d 연산 결과 -->
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
+          <div style="font-size:15px; font-weight:700; color:#1d4ed8; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <span>🔲</span> 1. Convolutional Layer (Conv2d)
+          </div>
+          <div style="font-size:13.5px; color:#334155; line-height:1.7;">
+            • <strong>입력 크기</strong>: <code>32 × 32 × 3</code> (H<sub>in</sub>=32, W<sub>in</sub>=32, C<sub>in</sub>=3)<br>
+            • <strong>설정 조건</strong>: 커널 K=<code>3×3</code>, Stride S=<code>1</code>, Padding P=<code>1</code>, 출력 채널 C<sub>out</sub>=<code>8</code><br>
+            • <strong>출력 가로/세로(H, W) 크기 산출 공식</strong>:<br>
+            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 31 + 1 = 32</code><br>
+            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 31 + 1 = 32</code><br>
+            • <strong>출력 채널 수(C<sub>out</sub>)</strong>: 설정한 필터 개수 = <strong>8 채널</strong><br>
+            • <strong>학습 파라미터(Params) 수 계산</strong>:<br>
+            &nbsp;&nbsp; <code>((3 × 3 × 3) + 1) × 8 = 224 개</code>
+          </div>
+          <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #2563eb; border-radius:8px;">
+            <div style="font-size:12px; font-weight:700; color:#2563eb;">🎯 [Conv2d 최종 답]</div>
+            <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
+              • Feature Map Shape: <span style="color:#2563eb; font-size:16px;">32 × 32 × 8</span><br>
+              • 채널 수: <span style="color:#2563eb; font-size:15px;">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span style="color:#2563eb; font-size:15px;">224 개</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Pooling 연산 결과 -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
+          <div style="font-size:15px; font-weight:700; color:#15803d; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <span>⬇️</span> 2. Max Pooling Layer (2×2, Stride=2)
+          </div>
+          <div style="font-size:13.5px; color:#334155; line-height:1.7;">
+            • <strong>입력 크기</strong>: <code>32 × 32 × 8</code> (Conv 연산의 출력값)<br>
+            • <strong>설정 조건</strong>: 커널 <code>2×2</code>, Stride <code>2</code> (표준 다운샘플링)<br>
+            • <strong>출력 H, W 크기 계산</strong>:<br>
+            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
+            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
+            • <strong>출력 채널 수 계산</strong>: <code>C<sub>out</sub> = C<sub>in</sub> = 8 채널 (동일 유지)</code><br>
+            • <strong>학습 파라미터(Params) 수</strong>: <code>0 개</code> (학습 가중치 없음)
+          </div>
+          <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #16a34a; border-radius:8px;">
+            <div style="font-size:12px; font-weight:700; color:#16a34a;">🎯 [Pooling 최종 답]</div>
+            <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
+              • Feature Map Shape: <span style="color:#16a34a; font-size:16px;">16 × 16 × 8</span><br>
+              • 채널 수: <span style="color:#16a34a; font-size:15px;">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span style="color:#16a34a; font-size:15px;">0 개</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hbox orange" style="margin-top:14px; margin-bottom:0;">
+        <div class="hbox-icon">💡</div>
+        <div>
+          <div class="hbox-title">한눈에 보는 최종 정답 요약</div>
+          <div class="hbox-text" style="font-size:14px;">
+            • <strong>Conv2d 최종 출력</strong> = <strong style="color:#2563eb; font-size:15px;">32 × 32 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>224</strong>개)<br>
+            • <strong>Pooling 최종 출력</strong> = <strong style="color:#16a34a; font-size:15px;">16 × 16 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>0</strong>개)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── SEC 03 ── -->
@@ -1051,6 +1126,21 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<!-- iframe 높이 조절 스크립트 (AGENTS.md 규칙 필수 준수) -->
+<script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+  window.onload = sendHeight;
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
+</script>
 </body>
 </html>
 
