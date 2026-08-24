@@ -222,7 +222,7 @@
     
     messages = state.get(<span style="color: #CE9178;">"messages"</span>, [])
     messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Planner"</span>, <span style="color: #CE9178;">"content"</span>: plan})
-    <span style="color: #C586C0;">return</span> {**state, <span style="color: #CE9178;">"plan"</span>: plan, <span style="color: #CE9178;">"messages"</span>: messages}
+    <span style="color: #C586C0;">return</span> {<span style="color: #CE9178;">"plan"</span>: plan, <span style="color: #CE9178;">"messages"</span>: messages}
 
 <span style="color: #6A9955;"># 3. Worker Node 구현</span>
 <span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">worker_node</span>(state: AgentState) -> AgentState:
@@ -235,7 +235,7 @@
     
     messages = state.get(<span style="color: #CE9178;">"messages"</span>, [])
     messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Worker"</span>, <span style="color: #CE9178;">"content"</span>: result})
-    <span style="color: #C586C0;">return</span> {**state, <span style="color: #CE9178;">"result"</span>: result, <span style="color: #CE9178;">"messages"</span>: messages}
+    <span style="color: #C586C0;">return</span> {<span style="color: #CE9178;">"result"</span>: result, <span style="color: #CE9178;">"messages"</span>: messages}
 
 <span style="color: #6A9955;"># 4. Planner-Worker 그래프 빌드</span>
 workflow = StateGraph(AgentState)
@@ -352,7 +352,6 @@ app = workflow.compile()
     messages.append({<span style="color: #CE9178;">"sender"</span>: <span style="color: #CE9178;">"Reflection"</span>, <span style="color: #CE9178;">"content"</span>: reflection})
     
     <span style="color: #C586C0;">return</span> {
-        **state,
         <span style="color: #CE9178;">"reflection"</span>: reflection,
         <span style="color: #CE9178;">"final_result"</span>: reflection,
         <span style="color: #CE9178;">"reflection_count"</span>: count + <span style="color: #B5CEA8;">1</span>,
