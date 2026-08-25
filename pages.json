@@ -70,6 +70,14 @@
           {
             "label": "RAG(검색 증강 생성) 기술 소개",
             "path": "ai/langchain/rag.html"
+          },
+          {
+            "label": "RAG 시스템 평가 가이드 및 시뮬레이터",
+            "path": "ai/langchain/rag_evaluation.html"
+          },
+          {
+            "label": "RecursiveCharacterTextSplitter 시뮬레이터",
+            "path": "ai/langchain/recursivechartextspliter.html"
           }
         ]
       },
