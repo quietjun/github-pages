@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecursiveCharacterTextSplitter 시뮬레이터</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/content.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #ffffff;
+            color: #3d3d3a;
+            line-height: 1.6;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #0b0b0b;
+            border-bottom: 2px solid #e1e0d9;
+            padding-bottom: 12px;
+        }
+
+        .control-group {
+            background-color: #fcfcfb;
+            border: 1px solid #e1e0d9;
+            border-radius: 8px;
+            padding: 16px;
+            flex-shrink: 0;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .control-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #0b0b0b;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #e1e0d9;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3987e5;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3987e5;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            font-size: 12px;
+            font-weight: 500;
+            color: #0b0b0b;
+            min-width: 35px;
+            text-align: right;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border: 1px solid #e1e0d9;
+            border-radius: 6px;
+            resize: none;
+            color: #3d3d3a;
+            line-height: 1.5;
+            overflow-y: hidden;
+        }
+
+        textarea::placeholder {
+            color: #a9a8a1;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3987e5;
+            box-shadow: 0 0 0 2px rgba(57, 135, 229, 0.1);
+        }
+
+        button {
+            background: #3987e5;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #2c67b8;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .recursion-view {
+            background-color: #fcfcfb;
+            border: 1px solid #e1e0d9;
+            border-radius: 8px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 12px;
+        }
+
+        .recursion-step {
+            margin-bottom: 16px;
+            padding: 12px;
+            border: 1px solid #e1e0d9;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .recursion-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .recursion-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e1e0d9;
+            flex-wrap: wrap;
+        }
+
+        .depth-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #b5d4f4;
+            color: #0c447c;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .separator-badge {
+            display: inline-block;
+            background: #e6f1fb;
+            color: #0c447c;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .status-split {
+            background: #e6f1fb;
+            color: #0c447c;
+        }
+
+        .status-merge {
+            background: #eaf3de;
+            color: #3b6d11;
+        }
+
+        .recursion-content {
+            padding: 8px;
+            background: #fafaf9;
+            border-radius: 4px;
+            border: 0.5px solid #e1e0d9;
+            line-height: 1.6;
+            word-break: break-all;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .split-pieces {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .split-piece {
+            display: inline-block;
+            background: #f1f3f5;
+            border: 1px dashed #ced4da;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 10px;
+            color: #495057;
+        }
+
+        .split-piece.large {
+            background: #ffe0e0;
+            border-color: #ff9999;
+            color: #c92a2a;
+            font-weight: 500;
+        }
+
+        .separator-info {
+            background: #eaf3de;
+            border-left: 3px solid #199e70;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #3b6d11;
+            margin-bottom: 12px;
+        }
+
+        .results-container {
+            background-color: #fcfcfb;
+            border: 1px solid #e1e0d9;
+            border-radius: 8px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            padding: 12px;
+        }
+
+        .chunk-item {
+            background: white;
+            border: 1px solid #e1e0d9;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .chunk-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .chunk-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e1e0d9;
+            font-size: 11px;
+        }
+
+        .chunk-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #b5d4f4;
+            color: #0c447c;
+            border-radius: 50%;
+            font-weight: 500;
+        }
+
+        .chunk-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1.5;
+            color: #3d3d3a;
+            padding: 8px;
+            background: #fafaf9;
+            border-radius: 4px;
+            border: 0.5px solid #e1e0d9;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chunk-stat {
+            font-size: 10px;
+            color: #52514e;
+            margin-left: auto;
+        }
+
+        .stats {
+            background: #fcfcfb;
+            border: 1px solid #e1e0d9;
+            border-radius: 6px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #a9a8a1;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #0b0b0b;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: #a9a8a1;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <!-- ===== HERO ===== -->
+    <div class="hero">
+        <div class="eyebrow">LangChain</div>
+        <h1 class="title">RecursiveCharacterTextSplitter <span class="accent">시뮬레이터</span></h1>
+        <p class="lede font-mono">구분자 우선순위( 단락 > 줄바꿈 > 공백 > 문자 )에 맞춰 문서 크기를 적절한 청크 단위로 분리하고 오버랩을 반영하는 과정을 시각적으로 확인한다.</p>
+        <div class="chain-rule">
+            <div class="link"></div>
+            <div class="link"></div>
+            <div class="rest"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Left Panel: Controls & Results -->
+        <div class="panel">
+        <div class="section-title">🔧 설정</div>
+        <div class="control-group">
+            <div class="control-item">
+                <label class="control-label">텍스트 입력</label>
+                <textarea id="inputText" placeholder="분할할 텍스트를 입력하세요.">Hello world!
+The quick brown fox jumps over the lazy dog.
+
+This is a test sentence with multiple words.
+
+Let me add another paragraph to demonstrate recursive splitting.</textarea>
+            </div>
+
+            <div class="control-item">
+                <label class="control-label">Chunk Size</label>
+                <div class="input-group">
+                    <input type="range" id="chunkSize" min="10" max="200" value="50" step="5">
+                    <span class="value-display" id="chunkSizeValue">50</span>
+                </div>
+            </div>
+
+            <div class="control-item">
+                <label class="control-label">Chunk Overlap</label>
+                <div class="input-group">
+                    <input type="range" id="chunkOverlap" min="0" max="50" value="5" step="5">
+                    <span class="value-display" id="chunkOverlapValue">5</span>
+                </div>
+            </div>
+
+            <button onclick="runSplitter()">분할 실행</button>
+        </div>
+
+        <div class="section-title">📦 최종 청크 결과</div>
+        <div class="results-container" id="resultsContainer">
+            <div class="empty-state">분할 결과가 여기에 표시됩니다.</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">총 청크</div>
+                <div class="stat-value" id="statChunks">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">총 문자</div>
+                <div class="stat-value" id="statChars">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">평균 크기</div>
+                <div class="stat-value" id="statAvg">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">겹침 문자</div>
+                <div class="stat-value" id="statOverlap">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Recursion Steps -->
+    <div class="panel">
+        <div class="section-title">📊 재귀 과정</div>
+        <div class="separator-info">
+            구분자 우선순위:<br>
+            ① "\n\n" → ② "\n" → ③ " " → ④ ""
+        </div>
+        <div class="recursion-view" id="recursionView">
+            <div class="empty-state">분할 실행 버튼을 클릭하면 재귀 과정이 표시됩니다.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== COMMENT ===== -->
+<div style="margin-top: 30px; padding: 16px 20px; background: #fff8f8; border-left: 4px solid #ef4444; border-radius: 8px; font-size: 14px; color: #b91c1c; font-weight: 500; box-shadow: var(--shadow, 0 2px 12px rgba(0,0,0,0.04));">
+    ⚠️ 시뮬레이터는 이해를 돕기 위한 것이므로 실제 LangChain Python 패키지의 세부 엣지 케이스 처리 동작과 100% 일치하지 않을 수 있습니다.
+</div>
+
+<script>
+    const separators = ["\n\n", "\n", " ", ""];
+    let recursionSteps = [];
+    let finalChunks = [];
+    let totalOverlapChars = 0;
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function formatSeparator(sep) {
+        if (sep === "\n\n") return "\\n\\n (단락)";
+        if (sep === "\n") return "\\n (줄)";
+        if (sep === " ") return "SPACE";
+        return "문자단위";
+    }
+
+    function mergeSplits(splits, separator, chunkSize, depth) {
+        const separatorLen = separator.length;
+        const goodSplits = [];
+        
+        for (const split of splits) {
+            if (split.length >= chunkSize) {
+                // 현재까지 모은 splits 병합
+                if (goodSplits.length > 0) {
+                    const merged = goodSplits.join(separator);
+                    if (merged.length <= chunkSize) {
+                        finalChunks.push(merged);
+                        recursionSteps.push({
+                            depth: depth + 1,
+                            text: merged.length > 100 ? merged.substring(0, 100) + "..." : merged,
+                            separator: '병합 확정',
+                            status: 'merge',
+                            message: `병합 확정: ${merged.length}자 (≤ ${chunkSize})`
+                        });
+                    }
+                    goodSplits.length = 0;
+                }
+                
+                // 이 split 자체가 크므로 그대로 추가
+                finalChunks.push(split);
+                recursionSteps.push({
+                    depth: depth + 1,
+                    text: split.length > 100 ? split.substring(0, 100) + "..." : split,
+                    separator: '단일 청크',
+                    status: 'merge',
+                    message: `단일 청크: ${split.length}자 (분할 불가능했던 큰 항목)`
+                });
+            } else {
+                // 현재 split이 chunkSize 미만
+                // goodSplits에 추가했을 때 chunkSize를 넘는지 확인
+                if (goodSplits.length > 0) {
+                    const testMerge = goodSplits.join(separator) + separator + split;
+                    if (testMerge.length > chunkSize) {
+                        // 넘으면 현재 goodSplits를 먼저 청크로 확정
+                        const merged = goodSplits.join(separator);
+                        finalChunks.push(merged);
+                        recursionSteps.push({
+                            depth: depth + 1,
+                            text: merged.length > 100 ? merged.substring(0, 100) + "..." : merged,
+                            separator: '병합 확정',
+                            status: 'merge',
+                            message: `병합 확정: ${merged.length}자 (다음 추가 시 초과)`
+                        });
+                        goodSplits.length = 0;
+                    }
+                }
+                
+                goodSplits.push(split);
+            }
+        }
+        
+        // 남은 splits 병합
+        if (goodSplits.length > 0) {
+            const merged = goodSplits.join(separator);
+            finalChunks.push(merged);
+            recursionSteps.push({
+                depth: depth + 1,
+                text: merged.length > 100 ? merged.substring(0, 100) + "..." : merged,
+                separator: '병합 완료',
+                status: 'merge',
+                message: `최종 병합: ${merged.length}자 (≤ ${chunkSize})`
+            });
+        }
+    }
+
+    function _splitText(text, seps, depth, chunkSize) {
+        const goodSplits = [];
+        let separator = null;
+        let nextSeps = [];
+
+        // 1단계: 적절한 구분자 찾기
+        for (let i = 0; i < seps.length; i++) {
+            if (seps[i] === "" || text.includes(seps[i])) {
+                separator = seps[i];
+                nextSeps = seps.slice(i + 1);
+                break;
+            }
+        }
+
+        if (!separator) {
+            separator = "";
+            nextSeps = [];
+        }
+
+        // 2단계: 구분자로 분할
+        let splits = [];
+        if (separator === "") {
+            splits = text.split("");
+        } else {
+            splits = text.split(separator);
+        }
+
+        // 재귀 로그 추가
+        const displayText = text.length > 100 ? text.substring(0, 100) + "..." : text;
+        const splitSizes = splits.map(s => s.length);
+        
+        recursionSteps.push({
+            depth,
+            text: displayText,
+            splits: splits,
+            separator: formatSeparator(separator),
+            status: 'split',
+            message: `"${formatSeparator(separator)}"로 ${splits.length}개 분할 → sizes: [${splitSizes.join(', ')}]`
+        });
+
+        // 3단계: 각 split을 처리
+        const tempGoodSplits = [];
+        
+        for (const split of splits) {
+            if (!split) continue;
+
+            if (split.length < chunkSize) {
+                tempGoodSplits.push(split);
+            } else {
+                // 현재까지 모은 splits 병합
+                if (tempGoodSplits.length > 0) {
+                    mergeSplits(tempGoodSplits, separator, chunkSize, depth);
+                    tempGoodSplits.length = 0;
+                }
+
+                // 현재 split이 너무 크므로 재귀
+                if (nextSeps.length > 0) {
+                    _splitText(split, nextSeps, depth + 1, chunkSize);
+                } else {
+                    // 더 이상 분할 불가능 → 그대로 추가
+                    finalChunks.push(split);
+                    
+                    recursionSteps.push({
+                        depth: depth + 1,
+                        text: split.length > 100 ? split.substring(0, 100) + "..." : split,
+                        separator: '리프',
+                        status: 'merge',
+                        message: `리프 노드: ${split.length}자 (더 이상 분할 불가)`
+                    });
+                }
+            }
+        }
+
+        // 남은 splits 병합
+        if (tempGoodSplits.length > 0) {
+            mergeSplits(tempGoodSplits, separator, chunkSize, depth);
+        }
+    }
+
+    function applyChunkOverlap(chunks, overlap) {
+        if (overlap <= 0 || chunks.length <= 1) {
+            return { chunks, totalOverlap: 0 };
+        }
+
+        const result = [];
+        let totalOverlap = 0;
+
+        for (let i = 0; i < chunks.length; i++) {
+            if (i === 0) {
+                result.push(chunks[i]);
+            } else {
+                const prevChunk = chunks[i - 1];
+                const currChunk = chunks[i];
+                
+                // overlap 크기만큼 이전 청크의 끝부분을 가져옴
+                const overlapSize = Math.min(overlap, prevChunk.length);
+                const overlapText = prevChunk.slice(-overlapSize);
+                
+                // 새로운 청크는 겹침 + 현재 청크
+                const newChunk = overlapText + currChunk;
+                result.push(newChunk);
+                totalOverlap += overlapSize;
+            }
+        }
+
+        return { chunks: result, totalOverlap };
+    }
+
+    function runSplitter() {
+        const text = document.getElementById("inputText").value;
+        const chunkSize = parseInt(document.getElementById("chunkSize").value);
+        const chunkOverlap = parseInt(document.getElementById("chunkOverlap").value);
+
+        if (!text.trim()) {
+            alert("텍스트를 입력하세요.");
+            return;
+        }
+
+        recursionSteps = [];
+        finalChunks = [];
+        totalOverlapChars = 0;
+
+        // Step 1: 재귀적 분할
+        _splitText(text, separators, 0, chunkSize);
+
+        // Step 2: Overlap 적용
+        const result = applyChunkOverlap(finalChunks, chunkOverlap);
+        finalChunks = result.chunks;
+        totalOverlapChars = result.totalOverlap;
+
+        // 재귀 과정 표시
+        displayRecursionSteps();
+
+        // 결과 표시
+        displayResults(finalChunks, text.length, totalOverlapChars);
+    }
+
+    function displayRecursionSteps() {
+        const container = document.getElementById("recursionView");
+        container.innerHTML = "";
+
+        if (recursionSteps.length === 0) {
+            container.innerHTML = '<div class="empty-state">재귀 단계가 없습니다.</div>';
+            return;
+        }
+
+        recursionSteps.forEach((step) => {
+            const div = document.createElement("div");
+            div.className = "recursion-step";
+            div.style.marginLeft = (step.depth * 16) + "px";
+
+            const badgeClass = step.status === 'split' ? 'status-split' : 'status-merge';
+
+            let contentHtml = '';
+            if (step.status === 'split' && step.splits) {
+                const pieces = step.splits.map(s => {
+                    const isLarge = s.length >= 50;
+                    const display = s.length > 30 ? s.substring(0, 30) + '...' : s;
+                    return `<span class="split-piece ${isLarge ? 'large' : ''}" title="${s.length}자">${escapeHtml(display)}</span>`;
+                });
+                contentHtml = '<div class="split-pieces">' + pieces.join('') + '</div>';
+            } else {
+                contentHtml = '<div class="recursion-content">' + escapeHtml(step.text) + '</div>';
+            }
+
+            div.innerHTML = `
+                <div class="recursion-header">
+                    <div class="depth-badge">${step.depth}</div>
+                    <span class="separator-badge">${step.separator}</span>
+                    <span class="status-badge ${badgeClass}">${step.message}</span>
+                </div>
+                ${contentHtml}
+            `;
+
+            container.appendChild(div);
+        });
+    }
+
+    function displayResults(chunks, totalChars, totalOverlap) {
+        const container = document.getElementById("resultsContainer");
+        container.innerHTML = "";
+
+        if (chunks.length === 0) {
+            container.innerHTML = '<div class="empty-state">청크가 없습니다.</div>';
+            return;
+        }
+
+        chunks.forEach((chunk, index) => {
+            const div = document.createElement("div");
+            div.className = "chunk-item";
+
+            div.innerHTML = `
+                <div class="chunk-header">
+                    <div class="chunk-number">${index + 1}</div>
+                    <div class="chunk-stat">${chunk.length}자</div>
+                </div>
+                <div class="chunk-content">${escapeHtml(chunk)}</div>
+            `;
+
+            container.appendChild(div);
+        });
+
+        // 통계 업데이트
+        const avgSize = chunks.length > 0 ? Math.round(totalChars / chunks.length) : 0;
+        document.getElementById("statChunks").textContent = chunks.length;
+        document.getElementById("statChars").textContent = totalChars;
+        document.getElementById("statAvg").textContent = avgSize;
+        document.getElementById("statOverlap").textContent = totalOverlap;
+    }
+
+    // 초기 로드 및 이벤트 리스너
+    const inputText = document.getElementById("inputText");
+    
+    function autoResizeTextarea() {
+        inputText.style.height = 'auto';
+        inputText.style.height = (inputText.scrollHeight) + 'px';
+    }
+
+    inputText.addEventListener("input", autoResizeTextarea);
+
+    document.getElementById("chunkSize").addEventListener("change", () => {
+        document.getElementById("chunkSizeValue").textContent = 
+            document.getElementById("chunkSize").value;
+    });
+
+    document.getElementById("chunkOverlap").addEventListener("change", () => {
+        document.getElementById("chunkOverlapValue").textContent = 
+            document.getElementById("chunkOverlap").value;
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+        autoResizeTextarea();
+    });
+</script>
+</div>
+<script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height: height }, "*");
+  }
+  window.onload = sendHeight;
+  [50, 200, 500, 1000, 2000].forEach(function(delay) {
+    setTimeout(sendHeight, delay);
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.body);
+  }
+</script>
+</body>
+</html>
