@@ -112,11 +112,11 @@
         "label": "llm",
         "children": [
           {
-            "label": "LLM 샘플링 파라미터",
+            "label": "LLM 샘플링 파라미터 — Temperature · Top-k · Top-p 작동 원리 가이드",
             "path": "ai/llm/llmsampling.html"
           },
           {
-            "label": "LLM Role 정리",
+            "label": "LLM Role 정리 — System · User · Assistant 마스터 가이드",
             "path": "ai/llm/roles.html"
           }
         ]
@@ -125,7 +125,7 @@
         "label": "peft",
         "children": [
           {
-            "label": "LoRA — Low-Rank Adaptation 완전 이해",
+            "label": "LoRA (Low-Rank Adaptation) 완전 이해 — 동작 원리부터 실무 구현까지",
             "path": "ai/peft/lora.html"
           },
           {
@@ -143,6 +143,10 @@
           {
             "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
             "path": "ai/peft/quantize.html"
+          },
+          {
+            "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
+            "path": "ai/peft/quantize_백업.html"
           }
         ]
       },
