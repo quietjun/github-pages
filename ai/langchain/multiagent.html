@@ -214,6 +214,7 @@
 
 <span style="color: #6A9955;"># 2. Planner Node 구현</span>
 <span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">planner_node</span>(state: AgentState) -> AgentState:
+    <span style="color: #DCDCAA;">print</span>(<span style="color: #CE9178;">"📋 [Planner Agent] 계획 수립 중..."</span>)
     user_request = state[<span style="color: #CE9178;">"user_request"</span>]
     planner_prompt = <span style="color: #CE9178;">f"사용자 요청 {user_request}에 대해 실행 가능한 단계별 계획(Step 1, Step 2...)만 세워주세요."</span>
     
@@ -226,6 +227,7 @@
 
 <span style="color: #6A9955;"># 3. Worker Node 구현</span>
 <span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">worker_node</span>(state: AgentState) -> AgentState:
+    <span style="color: #DCDCAA;">print</span>(<span style="color: #CE9178;">"⚙️ [Worker Agent] 계획 실행 중..."</span>)
     plan = state[<span style="color: #CE9178;">"plan"</span>]
     user_request = state[<span style="color: #CE9178;">"user_request"</span>]
     worker_prompt = <span style="color: #CE9178;">f"계획:\n{plan}\n\n위 계획의 각 단계를 구체적으로 실행하여 상세 결과를 도출하세요."</span>
@@ -324,6 +326,7 @@ app = workflow.compile()
       <div class="code-viewer" data-lang="PYTHON">
 <span style="color: #6A9955;"># 1. Reflection Node 구현</span>
 <span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">reflection_node</span>(state: AgentState) -> AgentState:
+    <span style="color: #DCDCAA;">print</span>(<span style="color: #CE9178;">"🔍 [Reflection Agent] 결과 검토 중..."</span>)
     user_request = state[<span style="color: #CE9178;">"user_request"</span>]
     plan = state[<span style="color: #CE9178;">"plan"</span>]
     result = state[<span style="color: #CE9178;">"result"</span>]
