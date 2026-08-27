@@ -34,12 +34,8 @@
             "path": "ai/cnn/clip.html"
           },
           {
-            "label": "CNN — 합성곱 신경망",
-            "path": "ai/cnn/cnn.html"
-          },
-          {
             "label": "CNN (Convolutional Neural Network) — 합성곱 신경망 마스터 가이드",
-            "path": "ai/cnn/cnn_2.html"
+            "path": "ai/cnn/cnn.html"
           },
           {
             "label": "HuggingFace 모델 활용 - 1. Hugging Face 소개 & 사용법",
