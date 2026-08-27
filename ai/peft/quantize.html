@@ -315,7 +315,7 @@
                         <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
                             <div class="space-y-1.5">
                                 <label class="text-sm font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
-                                <input type="text" id="int8-sim-weights" oninput="runINT8Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-blue-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
+                                <input type="text" id="int8-sim-weights" oninput="runINT8Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-blue-500" value="-1.1, -0.3, 0.3, 0.8, 2.8">
                             </div>
                             <div class="border-t border-slate-100 pt-2 text-sm font-mono text-slate-500">
                                 • Scale 배율: <span id="int8-meta-scale" class="font-bold text-slate-700">0.00</span>
@@ -586,37 +586,24 @@
 
 
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div class="lg:col-span-4 space-y-3">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                    <div class="lg:col-span-4 flex flex-col h-full space-y-3">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
                             <div class="space-y-1.5">
                                 <label class="text-sm font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
-                                <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.1, -0.3, 0.4, 0.8, 2.8">
+                                <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.1, -0.3, 0.3, 0.8, 2.8">
                             </div>
-                            <div class="border-t border-slate-100 pt-2 text-sm font-mono text-slate-500 space-y-2">
-                                <div class="mb-1">• Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span></div>
-                                <div class="border-t border-slate-100 pt-2">
-                                    <span class="font-bold text-slate-700 block mb-1.5" style="font-size: 14px;"><i class="fa-solid fa-list-ol mr-1 text-indigo-500"></i> NF4 표준 분위수 눈금 (고정 상수값):</span>
-                                    <div class="grid grid-cols-4 gap-1 text-center text-sm">
-                                        <div><span class="text-slate-400">B0:</span> -1.00</div>
-                                        <div><span class="text-slate-400">B1:</span> -0.70</div>
-                                        <div><span class="text-slate-400">B2:</span> -0.53</div>
-                                        <div><span class="text-slate-400">B3:</span> -0.39</div>
-                                        <div><span class="text-slate-400">B4:</span> -0.28</div>
-                                        <div><span class="text-slate-400">B5:</span> -0.18</div>
-                                        <div><span class="text-slate-400">B6:</span> -0.09</div>
-                                        <div><span class="text-slate-400">B7:</span> 0.00</div>
-                                        <div><span class="text-slate-400">B8:</span> 0.00</div>
-                                        <div><span class="text-slate-400">B9:</span> 0.08</div>
-                                        <div><span class="text-slate-400">B10:</span> 0.17</div>
-                                        <div><span class="text-slate-400">B11:</span> 0.27</div>
-                                        <div><span class="text-slate-400">B12:</span> 0.37</div>
-                                        <div><span class="text-slate-400">B13:</span> 0.50</div>
-                                        <div><span class="text-slate-400">B14:</span> 0.68</div>
-                                        <div><span class="text-slate-400">B15:</span> 1.00</div>
-                                    </div>
-                                </div>
+                            <div class="border-t border-slate-100 pt-2 text-sm font-mono text-slate-500">
+                                • Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span>
                             </div>
+                        </div>
+ 
+                        <!-- 그림으로 그려보는 3단계 변환 과정 -->
+                        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-sm leading-relaxed text-slate-600 flex-1">
+                            <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-emerald-500"></i> NF4 3단계 양자화 과정:</span>
+                            <p><strong>1. Block Scaler(배율) 추출:</strong> 입력된 가중치 블록의 절대값 중 최댓값(예: 2.8)을 구하여 Scaler 스케일 상수로 지정함.</p>
+                            <p><strong>2. 실수 정규화:</strong> 각 FP32 가중치를 Scaler 값으로 나누어 [-1.0 ~ 1.0] 범위 내로 부호와 정밀도를 정규화함. (예: -1.1 / 2.8 = -0.39)</p>
+                            <p><strong>3. 분위수 대표값 매핑:</strong> 정규화된 값이 16개 분위수 경계(Bins) 중 어디에 속하는지 검색하여 가장 가까운 대표값(Bin 인덱스)으로 변환함.</p>
                         </div>
                     </div>
  
@@ -624,6 +611,45 @@
                         <!-- NF4 SVG -->
                         <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="nf4-graph-container"></div>
                         
+                        <!-- NF4 표준 분위수 눈금 고정 상수표 -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-slate-700 space-y-2">
+                            <div class="font-bold text-slate-800 text-xs uppercase tracking-wide flex items-center gap-1.5 pb-1 border-b border-slate-100">
+                                <i class="fa-solid fa-list-check text-indigo-500"></i> NF4 표준 분위수 눈금 고정 상수표
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-center text-[11px] border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-slate-400 font-bold border-b border-slate-100">
+                                            <th class="py-1 px-1">B0</th><th class="py-1 px-1">B1</th><th class="py-1 px-1">B2</th><th class="py-1 px-1">B3</th>
+                                            <th class="py-1 px-1">B4</th><th class="py-1 px-1">B5</th><th class="py-1 px-1">B6</th><th class="py-1 px-1">B7</th>
+                                            <th class="py-1 px-1">B8</th><th class="py-1 px-1">B9</th><th class="py-1 px-1">B10</th><th class="py-1 px-1">B11</th>
+                                            <th class="py-1 px-1">B12</th><th class="py-1 px-1">B13</th><th class="py-1 px-1">B14</th><th class="py-1 px-1">B15</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="text-slate-700 font-semibold">
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-1.00</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.70</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.53</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.39</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.28</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.18</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">-0.09</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.00</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.00</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.08</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.17</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.27</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.37</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.50</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.68</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">1.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+ 
                         <!-- NF4 Table -->
                         <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5">
                             <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2">
@@ -633,14 +659,6 @@
                                 <div class="col-span-2 text-right">절대오차</div>
                             </div>
                             <div class="space-y-1.5" id="nf4-table-body"></div>
-                        </div>
- 
-                        <!-- 그림으로 그려보는 3단계 변환 과정 -->
-                        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-sm leading-relaxed text-slate-600">
-                            <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-emerald-500"></i> NF4 3단계 양자화 과정:</span>
-                            <p><strong>1. Block Scaler(배율) 추출:</strong> 입력된 가중치 블록의 절대값 중 최댓값(예: 2.8)을 구하여 Scaler 스케일 상수로 지정함.</p>
-                            <p><strong>2. 실수 정규화:</strong> 각 FP32 가중치를 Scaler 값으로 나누어 [-1.0 ~ 1.0] 범위 내로 부호와 정밀도를 정규화함. (예: -1.1 / 2.8 = -0.39)</p>
-                            <p><strong>3. 분위수 대표값 매핑:</strong> 정규화된 값이 16개 분위수 경계(Bins) 중 어디에 속하는지 검색하여 가장 가까운 대표값(Bin 인덱스)으로 변환함.</p>
                         </div>
                     </div>
                 </div>
@@ -735,14 +753,20 @@
 
                 int8Points.push({ orig: w, quant: quantized });
 
-                let qCalc = `${w.toFixed(2)} * ${scale.toFixed(1)} = ${quantized}`;
-                let deqCalc = `${quantized} / ${scale.toFixed(1)} = ${dequantized.toFixed(2)}`;
+                let qCalc = `
+                    <span class="w-[110px] text-left">${w.toFixed(2)} * ${scale.toFixed(1)}</span>
+                    <span class="w-[15px] text-center">=</span>
+                    <span class="w-[35px] text-right">${quantized}</span>`;
+                let deqCalc = `
+                    <span class="w-[110px] text-left">${quantized} / ${scale.toFixed(1)}</span>
+                    <span class="w-[15px] text-center">=</span>
+                    <span class="w-[45px] text-right">${dequantized.toFixed(2)}</span>`;
 
                 htmlContent += `
-                <div class="grid grid-cols-12 font-mono text-[9px] py-1 border-b border-slate-50 items-center gap-2">
+                <div class="grid grid-cols-12 font-mono text-xs py-1 border-b border-slate-50 items-center gap-1.5">
                     <div class="col-span-1 text-slate-900 font-bold">${w.toFixed(2)}</div>
-                    <div class="col-span-5 text-blue-600 font-semibold whitespace-nowrap">${qCalc}</div>
-                    <div class="col-span-4 text-emerald-600 font-semibold whitespace-nowrap">${deqCalc}</div>
+                    <div class="col-span-5 text-blue-600 font-semibold flex items-center whitespace-nowrap">${qCalc}</div>
+                    <div class="col-span-4 text-emerald-600 font-semibold flex items-center whitespace-nowrap">${deqCalc}</div>
                     <div class="col-span-2 text-right text-rose-500 font-bold">${error.toFixed(3)}</div>
                 </div>`;
             }
@@ -752,39 +776,39 @@
 
             const getX = (val) => 300 + (val / absoluteMax) * 220;
             document.getElementById('int8-graph-container').innerHTML = `
-            <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
+            <svg viewBox="0 0 600 170" class="w-full h-auto bg-slate-50 rounded-lg p-1">
                 <text x="30" y="24" font-size="14" font-weight="bold" fill="#475569">FP32 실수 범위 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
-                <line x1="80" y1="45" x2="520" y2="45" stroke="#94a3b8" stroke-width="1.5" />
-                <line x1="300" y1="39" x2="300" y2="51" stroke="#475569" stroke-width="1.5" />
-                <text x="300" y="32" text-anchor="middle" font-size="14" fill="#64748b">0</text>
+                <line x1="80" y1="55" x2="520" y2="55" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="49" x2="300" y2="61" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="42" text-anchor="middle" font-size="14" fill="#64748b">0</text>
                 
                 ${int8Points.map((p, i) => {
                     let cx_orig = getX(p.orig);
                     let cx_quant = 300 + (p.quant / 127) * 220;
                     let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
                     return `
-                    <circle cx="${cx_orig}" cy="45" r="4.5" fill="${colors[i]}" />
-                    <text x="${cx_orig}" y="32" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <circle cx="${cx_orig}" cy="55" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="42" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
                     
                     <!-- 매핑 가이드 점선 -->
-                    <path d="M ${cx_orig},50 L ${cx_quant},100" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
+                    <path d="M ${cx_orig},60 L ${cx_quant},110" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
                     
-                    <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
+                    <circle cx="${cx_quant}" cy="115" r="4.5" fill="${colors[i]}" />
                     `;
                 }).join('')}
  
-                <text x="300" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#3b82f6">정수 스케일링 &amp; 반올림</text>
+                <text x="300" y="88" text-anchor="middle" font-size="14" font-weight="bold" fill="#3b82f6">정수 스케일링 &amp; 반올림</text>
  
-                <text x="30" y="100" font-size="14" font-weight="bold" fill="#1e293b">INT8 정수 축 [-128 ~ 127]</text>
-                <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="1.5" />
-                <line x1="300" y1="99" x2="300" y2="111" stroke="#000000" stroke-width="1.8" />
-                <text x="300" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">0</text>
+                <text x="30" y="110" font-size="14" font-weight="bold" fill="#1e293b">INT8 정수 축 [-128 ~ 127]</text>
+                <line x1="80" y1="115" x2="520" y2="115" stroke="#1e293b" stroke-width="1.5" />
+                <line x1="300" y1="109" x2="300" y2="121" stroke="#000000" stroke-width="1.8" />
+                <text x="300" y="135" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">0</text>
  
                 <!-- INT8 극단값 가이드라인 표시 -->
-                <line x1="80" y1="99" x2="80" y2="111" stroke="#ef4444" stroke-width="1.5" />
-                <text x="80" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">-128</text>
-                <line x1="520" y1="99" x2="520" y2="111" stroke="#ef4444" stroke-width="1.5" />
-                <text x="520" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">127</text>
+                <line x1="80" y1="109" x2="80" y2="121" stroke="#ef4444" stroke-width="1.5" />
+                <text x="80" y="135" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">-128</text>
+                <line x1="520" y1="109" x2="520" y2="121" stroke="#ef4444" stroke-width="1.5" />
+                <text x="520" y="135" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">127</text>
             </svg>`;
         }
         
@@ -811,15 +835,19 @@
                 let normVal = p.orig / scale;
                 let binBaseVal = parseFloat(p.bin.split('(')[1].replace(')', ''));
                 return `
-                <div class="grid grid-cols-12 border-b border-slate-50 py-2 items-center gap-2">
+                <div class="grid grid-cols-12 border-b border-slate-50 py-1 items-center gap-1.5 text-xs">
                     <div class="col-span-2 font-bold text-slate-800">${p.orig.toFixed(2)}</div>
-                    <div class="col-span-5 text-blue-600 font-medium flex items-center gap-1.5 whitespace-nowrap">
-                        <span>${p.orig.toFixed(2)} / ${scale.toFixed(2)} = ${normVal.toFixed(2)}</span>
-                        <span>➡️</span>
-                        <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold border border-blue-100">${binBaseVal.toFixed(2)}</span>
+                    <div class="col-span-5 text-blue-600 font-medium flex items-center whitespace-nowrap">
+                        <span class="w-[115px] text-left">${p.orig.toFixed(2)} / ${scale.toFixed(2)}</span>
+                        <span class="w-[15px] text-center">=</span>
+                        <span class="w-[55px] text-right pr-2">${normVal.toFixed(2)}</span>
+                        <span class="w-[25px] text-center">➡️</span>
+                        <span class="bg-blue-50 text-blue-700 px-1 py-0.5 rounded font-bold border border-blue-100 min-w-[38px] text-center">${binBaseVal.toFixed(2)}</span>
                     </div>
                     <div class="col-span-3 text-emerald-600 font-medium flex items-center whitespace-nowrap">
-                        ${binBaseVal.toFixed(2)} × ${scale.toFixed(2)} = ${p.dequant.toFixed(2)}
+                        <span class="w-[100px] text-left">${binBaseVal.toFixed(2)} × ${scale.toFixed(2)}</span>
+                        <span class="w-[15px] text-center">=</span>
+                        <span class="w-[40px] text-right">${p.dequant.toFixed(2)}</span>
                     </div>
                     <div class="col-span-2 text-right text-rose-500 font-bold font-mono">${Math.abs(p.orig - p.dequant).toFixed(3)}</div>
                 </div>`;
@@ -829,11 +857,11 @@
             const getX = (val) => 300 + (val / maxVal) * 220;
             const activeBins = new Set(nf4Points.map(p => p.binIdx));
             document.getElementById('nf4-graph-container').innerHTML = `
-            <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
+            <svg viewBox="0 0 600 170" class="w-full h-auto bg-slate-50 rounded-lg p-1">
                 <text x="30" y="24" font-size="14" font-weight="bold" fill="#475569">FP32 실수값 분포 [-${maxVal.toFixed(1)} ~ ${maxVal.toFixed(1)}]</text>
-                <line x1="80" y1="45" x2="520" y2="45" stroke="#94a3b8" stroke-width="1.5" />
-                <line x1="300" y1="39" x2="300" y2="51" stroke="#475569" stroke-width="1.5" />
-                <text x="300" y="32" text-anchor="middle" font-size="14" fill="#64748b">0</text>
+                <line x1="80" y1="55" x2="520" y2="55" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="49" x2="300" y2="61" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="42" text-anchor="middle" font-size="14" fill="#64748b">0</text>
                 
                 ${(() => {
                     let polygonsHtml = "";
@@ -861,7 +889,7 @@
                         let x_nf4_center = 300 + nf4Table[i] * 220;
                         
                         polygonsHtml += `
-                        <polygon points="${x_fp32_left},45 ${x_fp32_right},45 ${x_nf4_center},105" fill="${palette[i]}" fill-opacity="0.15" stroke="${palette[i]}" stroke-opacity="0.2" stroke-width="0.5" />
+                        <polygon points="${x_fp32_left},55 ${x_fp32_right},55 ${x_nf4_center},115" fill="${palette[i]}" fill-opacity="0.15" stroke="${palette[i]}" stroke-opacity="0.2" stroke-width="0.5" />
                         `;
                     }
                     return polygonsHtml;
@@ -880,14 +908,14 @@
  
                     return `
                     <!-- FP32 축상의 범위 바(괄호)와 설명 텍스트 -->
-                    <line x1="${x_fp32_left}" y1="45" x2="${x_fp32_right}" y2="45" stroke="#2563eb" stroke-width="3" />
-                    <line x1="${x_fp32_left}" y1="37" x2="${x_fp32_left}" y2="53" stroke="#2563eb" stroke-width="1.8" />
-                    <line x1="${x_fp32_right}" y1="37" x2="${x_fp32_right}" y2="53" stroke="#2563eb" stroke-width="1.8" />
+                    <line x1="${x_fp32_left}" y1="55" x2="${x_fp32_right}" y2="55" stroke="#2563eb" stroke-width="3" />
+                    <line x1="${x_fp32_left}" y1="47" x2="${x_fp32_left}" y2="63" stroke="#2563eb" stroke-width="1.8" />
+                    <line x1="${x_fp32_right}" y1="47" x2="${x_fp32_right}" y2="63" stroke="#2563eb" stroke-width="1.8" />
                     
-                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="74" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
+                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="84" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
                         Bin 14 범위
                     </text>
-                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
+                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
                         [${val_left.toFixed(2)} ~ ${val_right.toFixed(2)}]
                     </text>
                     `;
@@ -899,28 +927,28 @@
                     let cx_quant = 300 + normQuant * 220;
                     let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
                     return `
-                    <circle cx="${cx_orig}" cy="45" r="4.5" fill="${colors[i]}" />
-                    <text x="${cx_orig}" y="32" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <circle cx="${cx_orig}" cy="55" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="42" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
                     <!-- 양자화 수렴 연산 점선 경로 -->
-                    <path d="M ${cx_orig},50 L ${cx_quant},100" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
-                    <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
+                    <path d="M ${cx_orig},60 L ${cx_quant},110" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
+                    <circle cx="${cx_quant}" cy="115" r="4.5" fill="${colors[i]}" />
                     `;
                 }).join('')}
  
-                <text x="30" y="100" font-size="14" font-weight="bold" fill="#1e293b">NF4 분위수 자 [16 Bins]</text>
-                <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="1.5" />
+                <text x="30" y="110" font-size="14" font-weight="bold" fill="#1e293b">NF4 분위수 자 [16 Bins]</text>
+                <line x1="80" y1="115" x2="520" y2="115" stroke="#1e293b" stroke-width="1.5" />
                 
                 <!-- 16개의 분위수 Bins 눈금선 전체 표시 및 실제 매핑된 경우에만 수치 + Bin 번호 라벨 추가 -->
                 ${nf4Table.map((binVal, idx) => {
                     let tickX = 300 + binVal * 220;
                     let showLabel = activeBins.has(idx);
                     return `
-                    <line x1="${tickX}" y1="100" x2="${tickX}" y2="110" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="${tickX}" y1="110" x2="${tickX}" y2="120" stroke="#64748b" stroke-width="1.2" />
                     ${showLabel ? `
                     <!-- 첫째 줄: 분위수 실제값 -->
-                    <text x="${tickX}" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#64748b">${binVal.toFixed(2)}</text>
+                    <text x="${tickX}" y="135" text-anchor="middle" font-size="14" font-weight="bold" fill="#64748b">${binVal.toFixed(2)}</text>
                     <!-- 둘째 줄: 대응되는 Bin 번호 -->
-                    <text x="${tickX}" y="142" text-anchor="middle" font-size="14" font-weight="800" fill="#475569">B${idx}</text>
+                    <text x="${tickX}" y="152" text-anchor="middle" font-size="14" font-weight="800" fill="#475569">B${idx}</text>
                     ` : ''}
                     `;
                 }).join('')}
