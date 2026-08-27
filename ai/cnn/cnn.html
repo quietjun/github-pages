@@ -132,6 +132,14 @@
 
   input[type=range] { width: 100px; accent-color: #2563eb; cursor: pointer; }
 
+  /* ── Calculation Tabs ── */
+  .calc-tab-buttons { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; padding-bottom: 8px; }
+  .calc-tab-btn { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; padding: 8px 16px; border: none; background: none; color: #64748b; cursor: pointer; border-radius: 6px; transition: all .15s; }
+  .calc-tab-btn:hover { color: #1e2a3a; background: #f1f5f9; }
+  .calc-tab-btn.active { color: #2563eb; background: #eff6ff; font-weight: 700; }
+  .calc-tab-content { display: none; }
+  .calc-tab-content.active { display: block; }
+
   footer { text-align: center; padding: 24px; color: #64748b; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; letter-spacing: .05em; border-top: 1px solid #e2e8f0; margin-top: 40px; font-weight: 500; }
 </style>
 </head>
@@ -456,80 +464,8 @@
     </div>
   </div>
 
-  <!-- [NEW] 실전 계산 예제 카드: Conv & Pooling 채널 및 파라미터 수 계산 -->
-  <div class="block" style="margin-bottom:20px; border-left:4px solid #2563eb;">
-    <div class="block-hd" style="background:#f8fafc;">
-      <div>
-        <div class="bapi" style="color:#2563eb;">Feature Map Shape &amp; Parameter Calculation Example</div>
-        <div class="bname">🧮 실전 계산 예제 : Conv &amp; Pooling 채널 및 파라미터 개수 계산</div>
-      </div>
-    </div>
-    <div class="block-body">
-      <div class="bdesc algo-desc">
-        입력 이미지 <strong>32 × 32 × 3 (H×W×C)</strong>에 대해 Conv2d 및 Pooling 연산을 적용할 때의 <strong>출력 크기(Feature Map Shape), 채널 수, 학습 파라미터 개수(Parameters)</strong> 계산 과정입니다.
-      </div>
 
-      <div class="grid-2">
-        <!-- 1. Conv2d 연산 결과 -->
-        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
-          <div style="font-size:15px; font-weight:700; color:#1d4ed8; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-            <span>🔲</span> 1. Convolutional Layer (Conv2d)
-          </div>
-          <div style="font-size:13.5px; color:#334155; line-height:1.7;">
-            • <strong>입력 크기</strong>: <code>32 × 32 × 3</code> (H<sub>in</sub>=32, W<sub>in</sub>=32, C<sub>in</sub>=3)<br>
-            • <strong>설정 조건</strong>: 커널 K=<code>3×3</code>, Stride S=<code>1</code>, Padding P=<code>1</code>, 출력 채널 C<sub>out</sub>=<code>8</code><br>
-            • <strong>출력 가로/세로(H, W) 크기 산출 공식</strong>:<br>
-            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 31 + 1 = 32</code><br>
-            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 31 + 1 = 32</code><br>
-            • <strong>출력 채널 수(C<sub>out</sub>)</strong>: 설정한 필터 개수 = <strong>8 채널</strong><br>
-            • <strong>학습 파라미터(Params) 수 계산</strong>:<br>
-            &nbsp;&nbsp; <code>((3 × 3 × 3) + 1) × 8 = 224 개</code>
-          </div>
-          <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #2563eb; border-radius:8px;">
-            <div style="font-size:12px; font-weight:700; color:#2563eb;">🎯 [Conv2d 최종 답]</div>
-            <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
-              • Feature Map Shape: <span style="color:#2563eb; font-size:16px;">32 × 32 × 8</span><br>
-              • 채널 수: <span style="color:#2563eb; font-size:15px;">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span style="color:#2563eb; font-size:15px;">224 개</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- 2. Pooling 연산 결과 -->
-        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
-          <div style="font-size:15px; font-weight:700; color:#15803d; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-            <span>⬇️</span> 2. Max Pooling Layer (2×2, Stride=2)
-          </div>
-          <div style="font-size:13.5px; color:#334155; line-height:1.7;">
-            • <strong>입력 크기</strong>: <code>32 × 32 × 8</code> (Conv 연산의 출력값)<br>
-            • <strong>설정 조건</strong>: 커널 <code>2×2</code>, Stride <code>2</code> (표준 다운샘플링)<br>
-            • <strong>출력 H, W 크기 계산</strong>:<br>
-            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
-            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
-            • <strong>출력 채널 수 계산</strong>: <code>C<sub>out</sub> = C<sub>in</sub> = 8 채널 (동일 유지)</code><br>
-            • <strong>학습 파라미터(Params) 수</strong>: <code>0 개</code> (학습 가중치 없음)
-          </div>
-          <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #16a34a; border-radius:8px;">
-            <div style="font-size:12px; font-weight:700; color:#16a34a;">🎯 [Pooling 최종 답]</div>
-            <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
-              • Feature Map Shape: <span style="color:#16a34a; font-size:16px;">16 × 16 × 8</span><br>
-              • 채널 수: <span style="color:#16a34a; font-size:15px;">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span style="color:#16a34a; font-size:15px;">0 개</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hbox orange" style="margin-top:14px; margin-bottom:0;">
-        <div class="hbox-icon">💡</div>
-        <div>
-          <div class="hbox-title">한눈에 보는 최종 정답 요약</div>
-          <div class="hbox-text" style="font-size:14px;">
-            • <strong>Conv2d 최종 출력</strong> = <strong style="color:#2563eb; font-size:15px;">32 × 32 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>224</strong>개)<br>
-            • <strong>Pooling 최종 출력</strong> = <strong style="color:#16a34a; font-size:15px;">16 × 16 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>0</strong>개)
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
@@ -541,6 +477,10 @@
       <div class="pblock" style="background:#eff6ff;border-color:#2563eb;"><div class="picon">🖼️</div><div class="pname">Input</div><div class="psize">H×W×3</div></div>
       <div class="parr">→</div>
       <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">저수준 특징</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
+      <div class="parr">→</div>
+      <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">중간수준 특징</div></div>
       <div class="parr">→</div>
       <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
       <div class="parr">→</div>
@@ -650,10 +590,197 @@
     </div>
   </div>
 
+  <!-- ── SEC 06 ── -->
+  <div class="sec" style="margin-top:30px;"><div class="ln"></div><span>⑥ Feature Map Shape &amp; Parameter Calculation</span><div class="ln"></div></div>
 
-</div>
+  <div class="block">
+    <div class="block-hd" style="background:#f8fafc;">
+      <div>
+        <div class="bapi" style="color:#2563eb;">Feature Map Shape &amp; Parameter Calculation Example</div>
+        <div class="bname">🧮 실전 계산 예제 : 망 구조로 이해하는 출력 크기 및 파라미터 개수</div>
+      </div>
+    </div>
+      <div class="bdesc algo-desc">
+        다음 구조의 신경망 연결 흐름을 머릿속에 그려보며, 각 단계의 <strong>출력 크기</strong>와 <strong>학습 파라미터 수(편향 고려 여부 포함)</strong>를 직관적으로 이해해 본다.
+      </div>
 
-<footer>CNN · Convolutional Neural Network · 초보자 가이드 & 인터랙티브 시뮬레이션</footer>
+      <!-- 망 흐름 시각 구조도 (SVG 다이어그램) -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin-bottom:20px; overflow-x:auto;">
+        <svg viewBox="0 0 940 180" width="940" style="max-width:100%; height:auto; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <!-- 1. Input Image Block -->
+          <g transform="translate(15, 10)">
+            <rect x="0" y="25" width="55" height="55" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" rx="4"/>
+            <rect x="5" y="20" width="55" height="55" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" rx="4"/>
+            <rect x="10" y="15" width="55" height="55" fill="#94a3b8" stroke="#475569" stroke-width="1.5" rx="4"/>
+            <text x="37" y="47" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#fff" font-weight="700">RGB</text>
+            <text x="37" y="95" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="13" fill="#475569" font-weight="700">입력 이미지</text>
+            <text x="37" y="115" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#64748b">32 x 32 x 3</text>
+          </g>
+
+          <!-- Arrow 1 -->
+          <g transform="translate(110, 45)">
+            <line x1="0" y1="0" x2="60" y2="0" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="30" y="-12" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" fill="#2563eb" font-weight="700">Conv1</text>
+            <text x="30" y="12" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#64748b">3x3 커널</text>
+          </g>
+
+          <!-- 2. Conv1 Feature Map Block -->
+          <g transform="translate(200, 10)">
+            <rect x="0" y="35" width="60" height="60" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1" rx="4"/>
+            <rect x="4" y="31" width="60" height="60" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" rx="4"/>
+            <rect x="8" y="27" width="60" height="60" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1" rx="4"/>
+            <rect x="12" y="23" width="60" height="60" fill="#93c5fd" stroke="#3b82f6" stroke-width="1" rx="4"/>
+            <rect x="16" y="19" width="60" height="60" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5" rx="4"/>
+            <text x="46" y="54" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#fff" font-weight="700">8 Ch</text>
+            <text x="46" y="105" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="13" fill="#1e2a3a" font-weight="700">Conv1 출력</text>
+            <text x="46" y="125" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#2563eb" font-weight="700">32 x 32 x 8</text>
+          </g>
+
+          <!-- Arrow 2 -->
+          <g transform="translate(295, 45)">
+            <line x1="0" y1="0" x2="60" y2="0" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="30" y="-12" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" fill="#16a34a" font-weight="700">Pool1</text>
+            <text x="30" y="12" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#64748b">2x2 Max</text>
+          </g>
+
+          <!-- 3. Pool1 Block (Half Size) -->
+          <g transform="translate(385, 10)">
+            <rect x="0" y="30" width="40" height="40" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1" rx="3"/>
+            <rect x="3" y="27" width="40" height="40" fill="#dcfce7" stroke="#86efac" stroke-width="1" rx="3"/>
+            <rect x="6" y="24" width="40" height="40" fill="#bbf7d0" stroke="#4ade80" stroke-width="1" rx="3"/>
+            <rect x="9" y="21" width="40" height="40" fill="#86efac" stroke="#16a34a" stroke-width="1.5" rx="3"/>
+            <text x="29" y="46" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#15803d" font-weight="700">8</text>
+            <text x="29" y="95" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="13" fill="#1e2a3a" font-weight="700">Pool1 출력</text>
+            <text x="29" y="115" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#16a34a" font-weight="700">16 x 16 x 8</text>
+          </g>
+
+          <!-- Arrow 3 (Flatten) -->
+          <g transform="translate(460, 45)">
+            <line x1="0" y1="0" x2="70" y2="0" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="35" y="-12" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#7c3aed" font-weight="700">Flatten</text>
+            <text x="35" y="12" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#64748b">1D 평탄화</text>
+          </g>
+
+          <!-- 4. Flatten Vector Representation -->
+          <g transform="translate(560, 10)">
+            <rect x="0" y="10" width="15" height="70" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" rx="2"/>
+            <line x1="7.5" y1="20" x2="7.5" y2="70" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="2 3"/>
+            <text x="7.5" y="95" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="13" fill="#1e2a3a" font-weight="700">입력 노드</text>
+            <text x="7.5" y="115" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#7c3aed" font-weight="700">2048 노드</text>
+          </g>
+
+          <!-- Arrow 4 (Fully Connected Lines) -->
+          <g transform="translate(605, 10)">
+            <line x1="0" y1="20" x2="110" y2="30" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="35" x2="110" y2="30" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="50" x2="110" y2="30" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="20" x2="110" y2="45" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="50" x2="110" y2="45" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="65" x2="110" y2="45" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="35" x2="110" y2="60" stroke="#ddd6fe" stroke-width="1"/>
+            <line x1="0" y1="65" x2="110" y2="60" stroke="#ddd6fe" stroke-width="1"/>
+            <text x="55" y="15" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="12" fill="#7c3aed" font-weight="700">FC 연결망</text>
+            <text x="55" y="85" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#7c3aed">2048 x 10 연결선</text>
+          </g>
+
+          <!-- 5. FC Output Block -->
+          <g transform="translate(745, 10)">
+            <circle cx="20" cy="20" r="6" fill="#7c3aed"/>
+            <circle cx="20" cy="32" r="6" fill="#7c3aed"/>
+            <circle cx="20" cy="44" r="6" fill="#7c3aed"/>
+            <line x1="20" y1="53" x2="20" y2="62" stroke="#7c3aed" stroke-width="2" stroke-dasharray="1 2"/>
+            <circle cx="20" cy="68" r="6" fill="#7c3aed"/>
+            <text x="20" y="95" text-anchor="middle" font-family="'Noto Sans KR',sans-serif" font-size="13" fill="#1e2a3a" font-weight="700">최종 출력</text>
+            <text x="20" y="115" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#7c3aed" font-weight="700">10 노드</text>
+          </g>
+
+          <!-- SVG Markers Definition -->
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#cbd5e1"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- ── 탭 메뉴 ── -->
+      <div class="calc-tab-buttons">
+        <button class="calc-tab-btn active" onclick="switchCalcTab('params')">🧮 파라미터 개수 계산</button>
+        <button class="calc-tab-btn" onclick="switchCalcTab('ops')">⚡ 연산 횟수 계산</button>
+      </div>
+
+      <!-- ── 탭 콘텐츠: 파라미터 개수 계산 ── -->
+      <div class="calc-tab-content active" id="tab-params">
+        <div class="grid-2">
+          <!-- 1. Conv1 연산의 이해 -->
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
+            <div>
+              <div style="font-size:15px; font-weight:700; color:#1d4ed8; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                <span>🔲</span> Conv1 단계: 필터와 채널의 연결 관계
+              </div>
+              <div style="font-size:14px; color:#334155; line-height:1.7;">
+                • <strong>출력 크기 결정</strong>: 32 x 32 x 8 (스트라이드 1, 패딩 1 적용으로 가로세로는 32로 유지, 출력 채널 수가 8이므로 채널이 8로 변환됨)<br>
+                • <strong>필터 볼륨 구조</strong>: 출력 채널 1개를 만들기 위해 <code>3 x 3 x 3(입력 채널 수) = 27</code>의 볼륨을 가진 3D 필터 1개 사용. 필터가 총 8개 존재하므로 기본 가중치는 <code>27 x 8 = 216개</code>임.<br>
+                • <strong>편향(Bias) 추가</strong>: 필터 1개당(출력 채널당) 고유한 1개의 편향 상수값을 가짐. 이에 따라 편향은 8개가 추가됨.
+              </div>
+            </div>
+            <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #2563eb; border-radius:8px;">
+              <div style="font-size:12px; font-weight:700; color:#2563eb;">🎯 Conv1 파라미터 최종 정답</div>
+              <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
+                • 편향 고려 시: <span style="color:#2563eb; font-size:16px;">224 개</span> (216 + 8)<br>
+                • 편향 미고려 시: <span style="color:#2563eb; font-size:15px;">216 개</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. FC 연산의 이해 -->
+          <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:18px; display:flex; flex-direction:column; justify-content: space-between;">
+            <div>
+              <div style="font-size:15px; font-weight:700; color:#7c3aed; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                <span>🔗</span> FC 단계: 1대1 선연결 관계
+              </div>
+              <div style="font-size:14px; color:#334155; line-height:1.7;">
+                • <strong>입력 노드 수 구하기</strong>: 이전 Pool1 단계에서 크기가 절반으로 축소된 <code>16 x 16 x 8</code> 출력 맵이 생성됨. 완전연결층(FC)에서 이를 일렬로 펼치는 Flatten 작업을 진행하므로, 입력 노드는 총 <code>2048개 (16 x 16 x 8)</code>임.<br>
+                • <strong>가중치(연결선) 구조</strong>: 입력 노드 2048개 각각이 출력 노드 10개와 모두 1대1로 연결됨. 총 연결선 수는 <code>2048 x 10 = 20,480개</code>임.<br>
+                • <strong>편향(Bias) 추가</strong>: 최종 10개의 출력 노드 각각에 더해지는 고유 편향이 1개씩 존재하므로 총 10개의 편향이 추가됨.
+              </div>
+            </div>
+            <div style="margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid #7c3aed; border-radius:8px;">
+              <div style="font-size:12px; font-weight:700; color:#7c3aed;">🎯 FC 파라미터 최종 정답</div>
+              <div style="font-size:14px; font-weight:700; color:#1e2a3a; margin-top:3px; line-height:1.6;">
+                • 편향 고려 시: <span style="color:#7c3aed; font-size:16px;">20,490 개</span> (20,480 + 10)<br>
+                • 편향 미고려 시: <span style="color:#7c3aed; font-size:15px;">20,480 개</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 탭 콘텐츠: 연산 횟수 계산 ── -->
+      <div class="calc-tab-content" id="tab-ops">
+        <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:18px;">
+          <div style="font-size:15px; font-weight:700; color:#ea580c; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <span>⚡</span> Conv1 및 Pool1 단계의 총 연산 횟수 구하기 (스트라이드 1, 패딩 1 기준)
+          </div>
+          <div style="font-size:14px; color:#334155; line-height:1.7;">
+            연산 횟수를 공식을 적용해 기계적으로 외우기보다는 <strong>"출력으로 만들어진 픽셀 하나를 채우기 위해 연산이 몇 번 일어나는가"</strong>로 직관적으로 생각한다.<br><br>
+
+            • <strong>합성곱(Conv1) 총 연산 횟수: 8,192회</strong><br>
+            &nbsp;&nbsp; - <strong>기준</strong>: 스트라이드 1, 패딩 1 옵션 적용으로 가로세로 크기가 줄어들지 않고 32 x 32 크기로 유지됨.<br>
+            &nbsp;&nbsp; - <strong>원리</strong>: 출력 특징 맵의 픽셀 1개(1 x 1 크기)를 결정할 때마다 필터 연산이 1회 작동함.<br>
+            &nbsp;&nbsp; - <strong>계산</strong>: 최종 Conv1의 출력 크기는 <code>32 x 32 x 8(채널 수)</code>임. 즉, 채워야 할 총 픽셀 개수는 <code>32 * 32 * 8 = 8,192개</code>이므로 연산 횟수는 8,192회임.<br><br>
+
+            • <strong>맥스풀링(Pool1) 총 연산 횟수: 2,048회</strong><br>
+            &nbsp;&nbsp; - <strong>기준</strong>: 커널 2x2, 스트라이드 2 옵션을 거침.<br>
+            &nbsp;&nbsp; - <strong>원리</strong>: 풀링 역시 출력 특징 맵의 픽셀 1개를 결정할 때마다 2x2 영역 내에서 최댓값을 뽑는 집계 연산이 1회 발생함.<br>
+            &nbsp;&nbsp; - <strong>계산</strong>: 풀링의 출력 크기는 <code>16 x 16 x 8(채널 수)</code>임. 즉, 채워야 할 총 픽셀 개수는 <code>16 * 16 * 8 = 2,048개</code>이므로 연산 횟수는 2,048회임.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>CNN · Convolutional Neural Network · 초보자 가이드 & 인터랙티브 시뮬레이션</footer>
 
 <script>
 /* ── SEC 01: Pixel Visualization Script ── */
@@ -1115,6 +1242,14 @@ function updSpd(val){
   spdMs=delays[val-1];
   document.getElementById('spdLbl').textContent=labels[val-1];
   if(isPlay){clearInterval(simTimer);simTimer=setInterval(()=>{simStep++;if(simStep>=positions.length){finishSim();return;}execStep(simStep);},spdMs);}
+}
+
+function switchCalcTab(tabId) {
+  document.querySelectorAll('.calc-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.calc-tab-content').forEach(content => content.classList.remove('active'));
+  
+  document.querySelector(`[onclick="switchCalcTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(`tab-${tabId}`).classList.add('active');
 }
 
 // Initialize on page load
