@@ -1,803 +1,815 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Agent 개념 및 ReAct 아키텍처</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
-<!-- 은서파 블로그 공통 스타일시트 연동 -->
-<link rel="stylesheet" href="./images/common.css">
-<style>
-  /* 개별 인터랙티브 요소 및 레이아웃 확장 설정 */
-  .wrap{max-width:1024px; margin:0 auto;}
-  
-  /* ===== HERO ===== */
-  .hero{
-    padding:64px 20px 40px;
-    border-bottom:1px solid var(--line);
-    cursor: pointer;
-    transition: var(--transition);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(10px);
-    margin-bottom: 24px;
-  }
-  .hero:hover{
-    background-color: rgba(61, 79, 196, 0.03);
-    transform: translateY(-2px);
-  }
-  .eyebrow{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:14px; letter-spacing:.06em;
-    color:var(--indigo);
-    background:var(--indigo-soft);
-    padding:6px 14px; border-radius:20px;
-    margin-bottom:22px;
-    font-weight: 700;
-  }
-  .eyebrow::before{content:"●"; font-size:8px;}
-  h1.title{
-    font-size:clamp(30px,5vw,44px);
-    font-weight:900; letter-spacing:-0.02em;
-    line-height:1.25;
-    margin-bottom:18px;
-  }
-  h1.title .accent{color:var(--indigo);}
-  .lede{
-    font-size:16px; color:var(--ink-soft);
-    max-width:760px;
-    font-weight:500;
-  }
-  .lede b{color:var(--ink); font-weight:700;}
-  .chain-rule{
-    display:flex; align-items:center; gap:6px;
-    margin:32px 0 8px;
-  }
-  .chain-rule .link{
-    width:22px; height:12px; border:3px solid var(--indigo);
-    border-radius:8px;
-  }
-  .chain-rule .link:nth-child(even){ margin-top:6px; }
-  .chain-rule .rest{flex:1; height:2px; background:var(--line);}
-  
-  /* ===== SECTION ===== */
-  section{padding:48px 8px; border-bottom: 1px solid var(--line);}
-  section:last-of-type{border-bottom: none;}
-  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:12px;}
-  .sec-num{
-    font-family:'JetBrains Mono',monospace;
-    font-size:14px; color:var(--indigo); font-weight:700;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 개념 및 ReAct 아키텍처</title>
+    
+    <!-- 1. 외부 라이브러리 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Pretendard:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --kw: #d63384;
+            --orange: #fd7e14;
+            --indigo: #6f42c1;
+            --forest: #198754;
+            --bronze: #d97706;
+            --code-bg: #fdfdfe;
+        }
 
-  /* 카드 하위 특수 레이아웃 */
-  .comp-card h3 .sub-title{
-    font-family:'JetBrains Mono', monospace;
-    font-size:14px; color:var(--indigo); font-weight:500;
-  }
-  .comp-card .danger-zone{
-    background:var(--red-soft); border-left:3px solid var(--red);
-    padding:8px 10px; border-radius:4px; font-size:14px; color:var(--ink);
-    margin-top: auto; /* 하단 밀착 */
-  }
-  .comp-card .danger-zone strong{
-    color:var(--red);
-  }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 18px;
+            color: #000;
+            line-height: 1.7;
+            background-color: #fff;
+        }
 
-  /* ===== 다이어그램 박스 ===== */
-  .diagram-box{
-    background:var(--panel); border:1px solid var(--line);
-    border-radius:14px; padding:24px 12px 8px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-  }
-  .diagram-caption{
-    text-align:center; font-size:14px; color:var(--ink-soft);
-    font-family:'JetBrains Mono',monospace; margin-top:12px; padding-bottom:14px;
-  }
+        .container-custom {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
 
-  /* SVG Active Node Styles */
-  @keyframes pulse-indigo {
-    0% { stroke: var(--indigo); stroke-width: 1.5; }
-    50% { stroke: #6366F1; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.6)); }
-    100% { stroke: var(--indigo); stroke-width: 1.5; }
-  }
-  @keyframes pulse-bronze {
-    0% { stroke: var(--bronze); stroke-width: 1.5; }
-    50% { stroke: #D97706; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(217, 119, 6, 0.6)); }
-    100% { stroke: var(--bronze); stroke-width: 1.5; }
-  }
-  @keyframes pulse-forest {
-    0% { stroke: var(--forest); stroke-width: 1.5; }
-    50% { stroke: #10B981; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6)); }
-    100% { stroke: var(--forest); stroke-width: 1.5; }
-  }
-  .active-thought { animation: pulse-indigo 1.2s infinite; }
-  .active-action { animation: pulse-bronze 1.2s infinite; }
-  .active-observation { animation: pulse-forest 1.2s infinite; }
-  .active-answer { animation: pulse-forest 1.2s infinite; }
-  
-  /* ===== 인터랙티브 시뮬레이터 ===== */
-  .simulator-container{
-    background:var(--panel); border:1.5px solid var(--indigo); border-radius:14px;
-    padding:26px; margin-top:24px;
-    box-shadow: 0 8px 16px -4px rgba(61, 79, 196, 0.08);
-  }
-  .scenario-box {
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  .scenario-selector {
-    display: flex;
-    gap: 16px;
-    margin-top: 10px;
-  }
-  @media(max-width: 600px) { .scenario-selector { flex-direction: column; gap: 8px; } }
-  .scenario-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--line);
-    background: var(--panel);
-    transition: var(--transition);
-    flex: 1;
-  }
-  .scenario-option input {
-    accent-color: var(--indigo);
-  }
-  .scenario-option.active {
-    border-color: var(--indigo);
-    background: var(--indigo-soft);
-  }
-  .sim-log-box{
-    background:var(--code-bg); border-radius:10px; padding:18px;
-    min-height:220px; max-height:400px; overflow-y:auto;
-    font-family:'JetBrains Mono', monospace; font-size:14px; line-height:1.6;
-    margin:16px 0; display:flex; flex-direction:column; gap:12px;
-  }
-  .log-line{border-left:3px solid; padding-left:12px; animation: fadeIn 0.3s ease;}
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .log-thought{border-color:var(--indigo); color:#A5B4FC;}
-  .log-action{border-color:var(--bronze); color:#FDE047;}
-  .log-observation{border-color:var(--forest); color:#86EFAC;}
-  .log-answer{border-color:#10B981; color:#FFFFFF; font-weight:bold; background:#111827; padding:8px;}
-  
-  .btn{
-    background:var(--indigo); color:#fff; border:none; padding:10px 22px;
-    border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;
-    font-family:inherit; transition: var(--transition);
-  }
-  .btn:hover{
-    background:#2D3BA4;
-    box-shadow: 0 4px 12px rgba(61, 79, 196, 0.25);
-  }
-  .btn:disabled{
-    background:var(--line); color:var(--ink-soft); cursor:not-allowed;
-    box-shadow: none;
-  }
-</style>
+        /* --- 2. 플로팅 목차 (TOC Drawer) --- */
+        .toc-drawer {
+            position: fixed;
+            right: -300px;
+            top: 80px;
+            width: 340px;
+            transition: right 0.3s ease-in-out;
+            z-index: 1001;
+            display: flex;
+        }
+        .toc-drawer:hover { right: 0; }
+        .toc-handle {
+            width: 40px;
+            background: var(--primary);
+            color: white;
+            padding: 20px 5px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 15px 0 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
+        }
+        .toc-content {
+            width: 300px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.1);
+        }
+        .toc-content h5 { font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; }
+        .toc-content ul { list-style: none; padding-left: 0; }
+        .toc-content li { margin-bottom: 10px; border-bottom: 1px solid #f8f9fa; }
+        .toc-content a { text-decoration: none; color: #444; font-size: 15px; display: block; transition: 0.2s; }
+        .toc-content a:hover { color: var(--primary); font-weight: bold; padding-left: 5px; }
+
+        /* --- 3. 콘텐츠 스타일 요소 --- */
+        h1 { border-left: 10px solid var(--primary); padding-left: 20px; margin-bottom: 20px; font-weight: 800; font-size: 2.3rem; }
+        h2 { margin-top: 60px; border-bottom: 2px solid #eee; padding-bottom: 10px; font-weight: 700; scroll-margin-top: 50px; }
+        .kw { color: var(--kw); font-weight: bold; font-style: italic; }
+
+        .lead-quote {
+            margin: 20px 0 35px 0;
+            padding: 18px 24px;
+            background: #f8f9fa;
+            border-left: 5px solid var(--orange);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        /* SVG 박스 */
+        .svg-wrapper {
+            margin: 30px 0;
+            overflow-x: auto;
+            background: #fdfdfd;
+            padding: 25px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            text-align: center;
+        }
+        svg { display: inline-block; background: white; border: 1px solid #f0f0f0; }
+
+        /* 카드 박스 */
+        .card-custom {
+            border: 2px solid var(--primary);
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        /* 코드 블록 */
+        pre {
+            margin: 30px 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-align: left !important;
+        }
+        pre code {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 17px !important;
+            padding: 24px !important;
+            line-height: 1.6;
+            display: block !important;
+            text-align: left !important;
+        }
+
+        /* 테이블 */
+        .table-custom { font-size: 16px; margin: 30px 0; border-top: 2px solid var(--primary); }
+
+        /* 요약 박스 */
+        .summary-box {
+            background-color: #f0f7ff;
+            border-left: 8px solid var(--primary);
+            padding: 30px;
+            margin-top: 60px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* SVG Active Node Pulse Animations */
+        @keyframes pulse-indigo {
+            0% { stroke: #0d6efd; stroke-width: 1.5; }
+            50% { stroke: #6f42c1; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(111, 66, 193, 0.6)); }
+            100% { stroke: #0d6efd; stroke-width: 1.5; }
+        }
+        @keyframes pulse-bronze {
+            0% { stroke: #fd7e14; stroke-width: 1.5; }
+            50% { stroke: #d97706; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(217, 119, 6, 0.6)); }
+            100% { stroke: #fd7e14; stroke-width: 1.5; }
+        }
+        @keyframes pulse-forest {
+            0% { stroke: #198754; stroke-width: 1.5; }
+            50% { stroke: #20c997; stroke-width: 3.5; filter: drop-shadow(0 0 6px rgba(32, 201, 151, 0.6)); }
+            100% { stroke: #198754; stroke-width: 1.5; }
+        }
+        .active-thought { animation: pulse-indigo 1.2s infinite; }
+        .active-action { animation: pulse-bronze 1.2s infinite; }
+        .active-observation { animation: pulse-forest 1.2s infinite; }
+        .active-answer { animation: pulse-forest 1.2s infinite; }
+
+        /* 시뮬레이터 전용 스타일 */
+        .simulator-container {
+            background: #f8f9fa;
+            border: 2px solid var(--primary);
+            border-radius: 14px;
+            padding: 26px;
+            margin-top: 24px;
+        }
+        .sim-log-box {
+            background: #212529;
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 220px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .log-line { border-left: 4px solid; padding-left: 12px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .log-thought { border-color: #0d6efd; color: #9ec5fe; }
+        .log-action { border-color: #fd7e14; color: #ffe69c; }
+        .log-observation { border-color: #198754; color: #a3cfbb; }
+        .log-answer { border-color: #20c997; color: #ffffff; font-weight: bold; background: #051b11; padding: 10px; border-radius: 6px; }
+    </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- HERO -->
-  <div class="hero" id="hero-section" title="클릭하면 에이전트 컨셉 이미지를 보거나 숨깁니다.">
-    <span class="eyebrow">AI AGENT ARCHITECTURE &amp; DESIGN</span>
-    <h1 class="title">목표를 향해 스스로 판단하고<br>행동하는 <span class="accent">AI 에이전트(Agent)</span></h1>
-    <p class="lede">
-      <b>AI 에이전트</b>는 단순한 텍스트 응답 모델을 넘어, 주어진 목표를 달성하기 위해 <b>적절한 도구를 선택(Tool-use)</b>하고, <b>대화 맥락을 기억(Memory)</b>하며, <b>사고 및 행동 과정(Plan/ReAct)을 자율적으로 설계</b>하여 문제를 해결하는 시스템이다.
-    </p>
-    
-    <!-- 토글되는 컨셉 이미지 영역 -->
-    <div id="hero-img-container" style="display: none; margin: 24px 0 8px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
-      <img src="./images/agent.jpg" alt="AI Agent Concept" style="width: 100%; display: block; max-width: 100%;">
-    </div>
-
-    <div class="chain-rule">
-      <div class="link"></div><div class="link"></div><div class="link"></div>
-      <div class="rest"></div>
-    </div>
-  </div>
-
-  <!-- 도입부(Intro) -->
-  <blockquote style="border-left: 5px solid var(--indigo); background: var(--panel); padding: 18px 24px; border-radius: 4px; font-weight: 500;">
-    이번 포스트에서는 자율적인 의사결정 루프를 수행하는 AI 에이전트의 4대 핵심 구성요소와 ReAct 패턴의 개념을 이해하고 동작 방식을 시뮬레이션해 본다.
-  </blockquote>
-
-  <!-- 1. 에이전트 4대 구성요소 -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">01</span>
-      <h3>AI 에이전트의 4대 핵심 구성요소 (Core Components)</h3>
-    </div>
-    <p>주어진 목표를 완수하기 위해 유기적으로 결합되어 동작하는 에이전트 아키텍처의 네 가지 핵심 기둥이다.</p>
-    
-    <div class="grid-4" style="margin-bottom: 32px;">
-      <!-- LLM -->
-      <div class="comp-card">
-        <div class="icon">🧠</div>
-        <h4>LLM <span class="sub-title">Brain (의사결정)</span></h4>
-        <p class="desc">
-          자연어 질문 해석 및 단계별 문제 해결을 위한 최종 의사결정 수행.
-        </p>
-        <div class="danger-zone">
-          <strong>부재 시:</strong> 대화 및 고차원적 의사결정 불가능.
+    <!-- [플로팅 목차 (TOC Drawer)] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-core">1. AI 에이전트 4대 구성요소</a></li>
+                <li><a href="#sec-binding">2. 도구 바인딩 메커니즘</a></li>
+                <li><a href="#sec-react">3. ReAct 프레임워크 &amp; 시뮬레이터</a></li>
+                <li><a href="#sec-memory">4. 메모리 기반 대화 맥락 유지</a></li>
+                <li><a href="#sec-plan">5. Plan 의사결정 구조</a></li>
+                <li><a href="#summary">6. 핵심 요약</a></li>
+            </ul>
         </div>
-      </div>
-      <!-- Tool -->
-      <div class="comp-card">
-        <div class="icon">🛠️</div>
-        <h4>Tool <span class="sub-title">Action (행동실행)</span></h4>
-        <p class="desc">
-          외부 DB 조회 및 API 호출을 통해 모델의 지식 한계를 극복하고 조치 대행.
-        </p>
-        <div class="danger-zone">
-          <strong>부재 시:</strong> 현실적인 시스템 조작 불가 및 할루시네이션 남발.
-        </div>
-      </div>
-      <!-- Memory -->
-      <div class="comp-card">
-        <div class="icon">💾</div>
-        <h4>Memory <span class="sub-title">Context (맥락유지)</span></h4>
-        <p class="desc">
-          대화 이력 및 작업 세션 정보를 저장하여 다단계 수행 흐름 연속성 확보.
-        </p>
-        <div class="danger-zone">
-          <strong>부재 시:</strong> 대화 내에 이미 제공된 키값이나 맥락 인식 불가능.
-        </div>
-      </div>
-      <!-- Plan -->
-      <div class="comp-card">
-        <div class="icon">🧭</div>
-        <h4>Plan <span class="sub-title">Strategy (사고설계)</span></h4>
-        <p class="desc">
-          자율적 단계별 추론 및 최적의 도구 활용 호출 순서를 설계하고 조율.
-        </p>
-        <div class="danger-zone">
-          <strong>부재 시:</strong> 중첩 다단계 작업 시 무한 루프 진입 및 제어 오류 발생.
-        </div>
-      </div>
-    </div>
+    </nav>
 
-  </section>
+    <div class="container-custom">
+        <article>
+            <!-- Header -->
+            <header id="header">
+                <h1>AI Agent 개념 및 ReAct 아키텍처 <span class="fs-4 text-muted d-block mt-2">목표를 향해 스스로 판단하고 행동하는 AI 에이전트(Agent)</span></h1>
+                
+                <p class="lead mt-3">
+                    <strong>AI 에이전트</strong>는 단순한 텍스트 응답 모델을 넘어, 주어진 목표를 달성하기 위해 <span class="kw">적절한 도구를 선택(Tool-use)</span>하고, <span class="kw">대화 맥락을 기억(Memory)</span>하며, <span class="kw">사고 및 행동 과정(Plan/ReAct)을 자율적으로 설계</span>하여 문제를 해결하는 시스템이다.
+                </p>
 
-  <!-- 2. 도구 바인딩(Tool Binding) 메커니즘 및 예제 -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">02</span>
-      <h3>도구 바인딩(Tool Binding) 메커니즘 및 코드 대조</h3>
-    </div>
-    <p>파이썬 함수의 독스트링과 타입 선언이 LLM 호출 규격서(JSON Schema)로 매핑되는 실제 예시이다.</p>
+                <!-- 토글 가능한 컨셉 이미지 -->
+                <div class="my-3 text-center">
+                    <button class="btn btn-outline-primary btn-sm mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#heroImgCollapse" aria-expanded="false" aria-controls="heroImgCollapse">
+                        🖼️ AI 에이전트 아키텍처 컨셉 이미지 토글
+                    </button>
+                    <div class="collapse" id="heroImgCollapse">
+                        <div class="card card-body p-2 border-0 shadow-sm">
+                            <img src="./images/agent.jpg" alt="AI Agent Concept" class="img-fluid rounded mx-auto" style="max-height: 450px;">
+                        </div>
+                    </div>
+                </div>
 
-    <!-- 4대 도구 설명 카드 -->
-    <div class="grid-4" style="margin-top: 16px; margin-bottom: 24px;">
-      <div class="comp-card">
-        <h4>1. 도구 이름 (Function Name)</h4>
-        <span class="desc">
-          파이썬 함수명(예: <code>get_order_status</code>)이 스키마의 <code>name</code> 필드로 매핑되어 LLM의 직접적인 호출 식별자로 활용됨.
-        </span>
-      </div>
-      <div class="comp-card">
-        <h4>2. 매개변수 타입 힌트</h4>
-        <span class="desc">
-          매개변수 타입(예: <code>str</code>, <code>int</code>)이 스키마의 <code>type</code> 정의로 맵핑되어 적합한 자료형 입력을 강제함.
-        </span>
-      </div>
-      <div class="comp-card">
-        <h4>3. 함수 독스트링 (Docstring)</h4>
-        <span class="desc">
-          함수 내부의 <code>"""설명문"""</code>이 스키마의 <code>description</code> 필드가 되어 LLM이 도구 목적을 판별하는 프롬프트로 기동됨.
-        </span>
-      </div>
-      <div class="comp-card">
-        <h4>4. 인자 설명</h4>
-        <span class="desc">
-          독스트링 내의 <code>Args: parameter: 설명</code> 포맷이 인자 설명서로 매핑되어 각 인자의 입력 목적을 LLM에 가이드함.
-        </span>
-      </div>
-    </div>
+                <div class="lead-quote">
+                    &quot;자율적인 의사결정 루프를 수행하는 AI 에이전트의 4대 핵심 구성요소와 ReAct 패턴의 개념을 이해하고 동작 방식을 시뮬레이션한다.&quot;
+                </div>
+            </header>
 
-    <!-- 코드 대조 뷰어 -->
-    <div class="code-compare-grid">
-      <!-- 파이썬 도구 정의 코드 -->
-      <div class="code-viewer" data-lang="PYTHON CODE (도구 정의)">
-<span style="color: #6A9955;"># @tool 데코레이터 적용</span>
-<span style="color: #569CD6;">from</span> langchain_core.tools <span style="color: #569CD6;">import</span> tool
- 
-<span style="color: #DCDCAA;">@tool</span>
-<span style="color: #569CD6;">def</span> <span style="color: #DCDCAA;">get_order_status</span>(order_id: <span style="color: #4EC9B0;">str</span>) -&gt; <span style="color: #4EC9B0;">str</span>:
-    <span style="color: #CE9178;">"""특정 주문의 배송 상태를 조회합니다.
- 
+            <!-- 1. AI 에이전트의 4대 핵심 구성요소 -->
+            <section id="sec-core">
+                <h2>1. AI 에이전트의 4대 핵심 구성요소 (Core Components)</h2>
+                <p>주어진 목표를 완수하기 위해 유기적으로 결합되어 동작하는 에이전트 아키텍처의 4가지 핵심 기둥이다.</p>
+
+                <div class="row g-4 my-3">
+                    <!-- LLM -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">🧠</div>
+                                <h3 class="h5 card-title fw-bold text-primary">LLM <span class="fs-6 text-muted font-normal d-block">Brain (의사결정)</span></h3>
+                                <p class="card-text fs-6 text-secondary">자연어 질문 해석 및 단계별 문제 해결을 위한 최종 의사결정 수행</p>
+                            </div>
+                            <div class="card-footer bg-danger-subtle border-danger text-danger fs-6 fw-bold">
+                                ⚠️ 부재 시: 대화 및 고차원적 의사결정 불가능
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tool -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">🛠️</div>
+                                <h3 class="h5 card-title fw-bold text-primary">Tool <span class="fs-6 text-muted font-normal d-block">Action (행동실행)</span></h3>
+                                <p class="card-text fs-6 text-secondary">외부 DB 조회 및 API 호출을 통해 모델의 지식 한계를 극복하고 조치 대행</p>
+                            </div>
+                            <div class="card-footer bg-danger-subtle border-danger text-danger fs-6 fw-bold">
+                                ⚠️ 부재 시: 시스템 조작 불가 및 할루시네이션 남발
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Memory -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">💾</div>
+                                <h3 class="h5 card-title fw-bold text-primary">Memory <span class="fs-6 text-muted font-normal d-block">Context (맥락유지)</span></h3>
+                                <p class="card-text fs-6 text-secondary">대화 이력 및 작업 세션 정보를 저장하여 다단계 수행 흐름 연속성 확보</p>
+                            </div>
+                            <div class="card-footer bg-danger-subtle border-danger text-danger fs-6 fw-bold">
+                                ⚠️ 부재 시: 이전 키값 및 대화 맥락 인식 불가능
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Plan -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">🧭</div>
+                                <h3 class="h5 card-title fw-bold text-primary">Plan <span class="fs-6 text-muted font-normal d-block">Strategy (사고설계)</span></h3>
+                                <p class="card-text fs-6 text-secondary">자율적 단계별 추론 및 최적의 도구 활용 호출 순서를 설계하고 조율</p>
+                            </div>
+                            <div class="card-footer bg-danger-subtle border-danger text-danger fs-6 fw-bold">
+                                ⚠️ 부재 시: 무한 루프 진입 및 제어 오류 발생
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 도구 바인딩(Tool Binding) 메커니즘 및 코드 대조 -->
+            <section id="sec-binding">
+                <h2>2. 도구 바인딩(Tool Binding) 메커니즘 및 코드 대조</h2>
+                <p>파이썬 함수의 독스트링과 타입 선언이 LLM 호출 규격서(JSON Schema)로 매핑되는 원리이다.</p>
+
+                <!-- 4대 요소 매핑 카드 -->
+                <div class="row g-3 my-3 fs-6">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <strong class="text-primary d-block mb-1">1. 도구 이름 (Function Name)</strong>
+                            <span class="text-secondary">파이썬 함수명(<code>get_order_status</code>)이 스키마의 <code>name</code> 필드로 매핑되어 LLM의 직접적 호출 식별자로 활용됨</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <strong class="text-primary d-block mb-1">2. 매개변수 타입 힌트</strong>
+                            <span class="text-secondary">매개변수 타입(<code>str</code>, <code>int</code>)이 스키마의 <code>type</code> 정의로 매핑되어 적합한 자료형 입력을 강제함</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <strong class="text-primary d-block mb-1">3. 함수 독스트링 (Docstring)</strong>
+                            <span class="text-secondary">함수 내부 독스트링이 스키마의 <code>description</code> 필드가 되어 LLM이 도구 목적을 판별하는 프롬프트로 기동됨</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <strong class="text-primary d-block mb-1">4. 인자 설명 포맷</strong>
+                            <span class="text-secondary">독스트링 내의 <code>Args: parameter: 설명</code> 포맷이 인자 설명서로 매핑되어 입력 목적을 가이드함</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 코드 대조 뷰어 -->
+                <div class="row g-4 my-2">
+                    <div class="col-md-6">
+                        <h3 class="h6 fw-bold text-primary mb-1">💻 Python 도구 정의 소스코드</h3>
+                        <pre><code class="language-python"># @tool 데코레이터 적용 예시
+from langchain_core.tools import tool
+
+@tool
+def get_order_status(order_id: str) -> str:
+    """특정 주문의 배송 상태를 조회합니다.
+
     Args:
         order_id: 주문 번호 (예: ORD001)
-    """</span>
-    <span style="color: #C586C0;">return</span> <span style="color: #CE9178;">"배송 지연"</span>
-      </div>
-
-      <!-- 변환된 JSON Schema -->
-      <div class="code-viewer" data-lang="JSON SCHEMA (LLM 전달 규격)">
-{
-  <span style="color: #9CDCFE;">"name"</span>: <span style="color: #CE9178;">"get_order_status"</span>,
-  <span style="color: #9CDCFE;">"description"</span>: <span style="color: #CE9178;">"특정 주문의 배송 상태를 조회합니다."</span>,
-  <span style="color: #9CDCFE;">"parameters"</span>: {
-    <span style="color: #9CDCFE;">"type"</span>: <span style="color: #CE9178;">"object"</span>,
-    <span style="color: #9CDCFE;">"properties"</span>: {
-      <span style="color: #9CDCFE;">"order_id"</span>: {
-        <span style="color: #9CDCFE;">"type"</span>: <span style="color: #CE9178;">"string"</span>,
-        <span style="color: #9CDCFE;">"description"</span>: <span style="color: #CE9178;">"주문 번호 (예: ORD001)"</span>
+    """
+    return "배송 지연"</code></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="h6 fw-bold text-primary mb-1">📋 자동 변환된 JSON Schema 규격</h3>
+                        <pre><code class="language-json">{
+  "name": "get_order_status",
+  "description": "특정 주문의 배송 상태를 조회합니다.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "order_id": {
+        "type": "string",
+        "description": "주문 번호 (예: ORD001)"
       }
     },
-    <span style="color: #9CDCFE;">"required"</span>: [<span style="color: #CE9178;">"order_id"</span>]
+    "required": ["order_id"]
   }
-}
-      </div>
-    </div>
-  </section>
+}</code></pre>
+                    </div>
+                </div>
+            </section>
 
-  <!-- 3. ReAct (Reasoning + Acting) 프레임워크 -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">03</span>
-      <h3>ReAct (Reasoning + Acting) 프레임워크</h3>
-    </div>
-    <p>추론(Thought)과 행동(Action)을 번갈아 수행하며, 관찰(Observation) 결과를 다음 추론에 반영하는 에이전트의 사고 아키텍처이다.</p>
+            <!-- 3. ReAct (Reasoning + Acting) 프레임워크 -->
+            <section id="sec-react">
+                <h2>3. ReAct (Reasoning + Acting) 프레임워크 &amp; 인터랙티브 시뮬레이터</h2>
+                <p>
+                    추론(Thought)과 행동(Action)을 번갈아 수행하며, 관찰(Observation) 결과를 다음 추론에 반영하는 에이전트의 사고 아키텍처이다.
+                </p>
 
-    <div class="diagram-box" style="margin-bottom:24px;">
-      <svg viewBox="0 0 900 240" width="100%" style="aspect-ratio: 900/240; height: auto; display: block; max-width: 100%;" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-            <path d="M 0 1 L 9 5 L 0 9 Z" fill="#565C66"/>
-          </marker>
-        </defs>
+                <!-- ReAct Loop SVG -->
+                <div class="svg-wrapper">
+                    <svg viewBox="0 0 900 240" width="100%" height="auto" style="max-width: 900px;">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                                <path d="M 0 1 L 9 5 L 0 9 Z" fill="#6c757d"/>
+                            </marker>
+                        </defs>
 
-        <!-- User Input -->
-        <rect x="20" y="80" width="120" height="80" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
-        <text x="80" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700">사용자 질문</text>
-        <text id="svg-query-text" x="80" y="135" text-anchor="middle" font-family="Noto Sans KR" font-size="10.5" fill="var(--ink-soft)">"배송 지연 보상..."</text>
+                        <!-- User Input -->
+                        <rect x="20" y="80" width="120" height="80" rx="8" fill="#f8f9fa" stroke="#6c757d" stroke-width="1.5"/>
+                        <text x="80" y="115" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="12" font-weight="700">사용자 질문</text>
+                        <text id="svg-query-text" x="80" y="135" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="10.5" fill="#6c757d">&quot;배송 지연 보상...&quot;</text>
 
-        <line x1="140" y1="120" x2="193" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        <line x1="140" y1="120" x2="193" y2="120" stroke="#6c757d" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- ReAct Loop Area -->
-        <rect x="200" y="20" width="460" height="200" rx="10" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.5"/>
-        <text x="220" y="45" font-family="Noto Sans KR" font-weight="700" fill="var(--indigo)" font-size="13">ReAct Loop (자율 순환)</text>
+                        <!-- ReAct Loop Area -->
+                        <rect x="200" y="20" width="460" height="200" rx="10" fill="#e7f1ff" stroke="#0d6efd" stroke-width="1.5"/>
+                        <text x="220" y="45" font-family="'Pretendard', sans-serif" font-weight="700" fill="#0d6efd" font-size="13">ReAct Loop (자율 순환)</text>
 
-        <!-- Thought Node -->
-        <rect id="rect-thought" x="220" y="70" width="110" height="60" rx="8" fill="#fff" stroke="var(--indigo)" stroke-width="1.5" style="transition: var(--transition);"/>
-        <text x="275" y="98" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700">Thought (추론)</text>
-        <text x="275" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--ink-soft)">"판단 및 도구 검토"</text>
+                        <!-- Thought Node -->
+                        <rect id="rect-thought" x="220" y="70" width="110" height="60" rx="8" fill="#fff" stroke="#0d6efd" stroke-width="1.5"/>
+                        <text x="275" y="98" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="11.5" font-weight="700">Thought (추론)</text>
+                        <text x="275" y="115" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="9" fill="#6c757d">&quot;판단 및 도구 검토&quot;</text>
 
-        <line x1="330" y1="100" x2="363" y2="100" stroke="var(--indigo)" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        <line x1="330" y1="100" x2="363" y2="100" stroke="#0d6efd" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- Action Node -->
-        <rect id="rect-action" x="370" y="70" width="110" height="60" rx="8" fill="#fff" stroke="var(--bronze)" stroke-width="1.5" style="transition: var(--transition);"/>
-        <text x="425" y="98" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700">Action (행동)</text>
-        <text x="425" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--ink-soft)">"함수/도구 호출"</text>
+                        <!-- Action Node -->
+                        <rect id="rect-action" x="370" y="70" width="110" height="60" rx="8" fill="#fff" stroke="#fd7e14" stroke-width="1.5"/>
+                        <text x="425" y="98" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="11.5" font-weight="700">Action (행동)</text>
+                        <text x="425" y="115" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="9" fill="#6c757d">&quot;함수/도구 호출&quot;</text>
 
-        <line x1="480" y1="100" x2="513" y2="100" stroke="var(--bronze)" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        <line x1="480" y1="100" x2="513" y2="100" stroke="#fd7e14" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- Observation Node -->
-        <rect id="rect-observation" x="520" y="70" width="120" height="60" rx="8" fill="#fff" stroke="var(--forest)" stroke-width="1.5" style="transition: var(--transition);"/>
-        <text x="580" y="98" text-anchor="middle" font-family="Noto Sans KR" font-size="11.5" font-weight="700">Observation (관찰)</text>
-        <text x="580" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="var(--ink-soft)">"도구 결과 피드백"</text>
+                        <!-- Observation Node -->
+                        <rect id="rect-observation" x="520" y="70" width="120" height="60" rx="8" fill="#fff" stroke="#198754" stroke-width="1.5"/>
+                        <text x="580" y="98" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="11.5" font-weight="700">Observation (관찰)</text>
+                        <text x="580" y="115" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="9" fill="#6c757d">&quot;도구 결과 피드백&quot;</text>
 
-        <!-- Loop arrows -->
-        <path d="M 580,130 C 580,185 275,185 275,130" fill="none" stroke="var(--ink-soft)" stroke-dasharray="4 3" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="425" y="155" text-anchor="middle" font-family="Noto Sans KR" font-size="10.5" fill="var(--ink-soft)">반복 수행</text>
+                        <!-- Loop arrows -->
+                        <path d="M 580,130 C 580,185 275,185 275,130" fill="none" stroke="#6c757d" stroke-dasharray="4 3" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        <text x="425" y="155" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="10.5" fill="#6c757d">반복 수행</text>
 
-        <!-- Final Decision Arrow -->
-        <line x1="660" y1="120" x2="713" y2="120" stroke="var(--indigo)" stroke-width="1.8" marker-end="url(#arrow)"/>
+                        <line x1="660" y1="120" x2="713" y2="120" stroke="#0d6efd" stroke-width="1.8" marker-end="url(#arrow)"/>
 
-        <!-- Final Answer -->
-        <rect id="rect-answer" x="720" y="80" width="160" height="80" rx="8" fill="var(--forest-soft)" stroke="var(--forest)" stroke-width="1.5" style="transition: var(--transition);"/>
-        <text x="800" y="115" text-anchor="middle" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--forest)">최종 답변 도출</text>
-        <text id="svg-answer-text" x="800" y="135" text-anchor="middle" font-family="Noto Sans KR" font-size="10" fill="var(--ink-soft)">"보상 답변 조율 완료"</text>
-      </svg>
-      <div class="diagram-caption">ReAct 아키텍처 : 목표를 달성할 때까지 Thought → Action → Observation 루프를 순환 수행하며 노드가 강조됩니다.</div>
-    </div>
+                        <!-- Final Answer -->
+                        <rect id="rect-answer" x="720" y="80" width="160" height="80" rx="8" fill="#d1e7dd" stroke="#198754" stroke-width="1.5"/>
+                        <text x="800" y="115" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="12" font-weight="700" fill="#198754">최종 답변 도출</text>
+                        <text id="svg-answer-text" x="800" y="135" text-anchor="middle" font-family="'Pretendard', sans-serif" font-size="10" fill="#6c757d">&quot;보상 답변 조율 완료&quot;</text>
+                    </svg>
+                </div>
 
-    <!-- 인터랙티브 ReAct 시뮬레이터 -->
-    <div class="simulator-container">
-      <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; color:var(--indigo); margin-bottom:8px;">⚡ INTERACTIVE MULTI-SCENARIO SIMULATOR</div>
-      <p style="font-size:14.5px; color:var(--ink-soft); margin-bottom:16px;">
-        상황별 시나리오를 선택하여 에이전트의 사고 흐름과 도구 연동을 테스트합니다.
-      </p>
-      
-      <div class="scenario-box">
-        <span style="font-size:14px; font-weight:700; color:var(--ink); display:block; margin-bottom:4px;">시나리오 선택 (Select Scenario)</span>
-        <div class="scenario-selector">
-          <div class="scenario-option active" id="opt-simple" onclick="selectScenario('simple')">
-            <input type="radio" name="scenario_select" id="scen-simple" checked>
-            <div>
-              <strong>시나리오 A: 단순 정책 조회 (1-Step)</strong>
-              <div style="font-size:14px; color:var(--ink-soft); margin-top:2px;">"배송 지연 보상 규정이 어떻게 돼?"</div>
-            </div>
-          </div>
-          <div class="scenario-option" id="opt-complex" onclick="selectScenario('complex')">
-            <input type="radio" name="scenario_select" id="scen-complex">
-            <div>
-              <strong>시나리오 B: 복합 쿠폰 발급 (Multi-Step)</strong>
-              <div style="font-size:14px; color:var(--ink-soft); margin-top:2px;">"ORD001, ORD002 상태 조회 후 지연 건에 보상 쿠폰 발행"</div>
-            </div>
-          </div>
-        </div>
-      </div>
+                <!-- 인터랙티브 ReAct 시뮬레이터 -->
+                <div class="simulator-container">
+                    <div class="fw-bold text-primary mb-2">⚡ INTERACTIVE MULTI-SCENARIO SIMULATOR</div>
+                    <p class="fs-6 text-secondary mb-3">상황별 시나리오를 선택하여 에이전트의 사고 흐름과 도구 연동을 실시간 테스트한다.</p>
+                    
+                    <div class="card p-3 mb-3 bg-white border">
+                        <span class="fw-bold fs-6 mb-2 d-block">시나리오 선택 (Select Scenario)</span>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-check p-3 border rounded active" id="opt-simple" style="cursor: pointer;" onclick="selectScenario('simple')">
+                                    <input class="form-check-input ms-0 me-2" type="radio" name="scenario_select" id="scen-simple" checked>
+                                    <label class="form-check-label fw-bold" for="scen-simple" style="cursor: pointer;">
+                                        시나리오 A: 단순 정책 조회 (1-Step)
+                                        <span class="d-block text-muted font-normal fs-6 mt-1">&quot;배송 지연 보상 규정이 어떻게 돼?&quot;</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check p-3 border rounded" id="opt-complex" style="cursor: pointer;" onclick="selectScenario('complex')">
+                                    <input class="form-check-input ms-0 me-2" type="radio" name="scenario_select" id="scen-complex">
+                                    <label class="form-check-label fw-bold" for="scen-complex" style="cursor: pointer;">
+                                        시나리오 B: 복합 쿠폰 발급 (Multi-Step)
+                                        <span class="d-block text-muted font-normal fs-6 mt-1">&quot;ORD001, ORD002 상태 조회 후 지연 건에 보상 쿠폰 발행&quot;</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn" id="sim-btn" onclick="nextStep()">시뮬레이션 시작</button>
-        <span style="font-size:14px; color:var(--ink-soft);" id="step-counter">진행 상황: 대기 중</span>
-      </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <button class="btn btn-primary px-4 fw-bold" id="sim-btn" onclick="nextStep()">시뮬레이션 시작</button>
+                        <span class="fs-6 text-muted fw-bold" id="step-counter">진행 상황: 대기 중</span>
+                    </div>
 
-      <div class="sim-log-box" id="sim-log">
-        <div style="color:var(--ink-soft); font-style:italic;">시작 버튼을 누르면 에이전트의 Thought-Action-Observation 루프가 시작된다.</div>
-      </div>
-    </div>
+                    <div class="sim-log-box" id="sim-log">
+                        <div class="text-muted italic">시작 버튼을 누르면 에이전트의 Thought-Action-Observation 루프가 시작된다.</div>
+                    </div>
+                </div>
 
-    <!-- ReAct 에이전트 생성 실전 코드 -->
-    <div style="margin-top:24px;">
-      <span style="font-size:15px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 LangGraph 기반 ReAct 에이전트 생성 실전 코드</span>
-      <div class="code-viewer" data-lang="PYTHON">
-<span style="color: #569CD6;">from</span> langgraph.prebuilt <span style="color: #569CD6;">import</span> create_react_agent
-<span style="color: #569CD6;">from</span> langchain_openai <span style="color: #569CD6;">import</span> ChatOpenAI
+                <!-- ReAct 에이전트 생성 파이썬 코드 -->
+                <div class="my-4">
+                    <h3 class="h6 fw-bold text-primary mb-2">💻 LangGraph 기반 ReAct 에이전트 생성 실전 코드</h3>
+                    <pre><code class="language-python">from langgraph.prebuilt import create_react_agent
+from langchain_openai import ChatOpenAI
 
-<span style="color: #6A9955;"># 1. LLM 모델 객체 및 바인딩할 도구 리스트 정의</span>
-model = ChatOpenAI(model=<span style="color: #CE9178;">"gpt-4o"</span>)
+# 1. LLM 모델 객체 및 바인딩할 도구 리스트 정의
+model = ChatOpenAI(model="gpt-4o")
 tools = [get_order_status, search_policy]
 
-<span style="color: #6A9955;"># 2. ReAct 에이전트 생성 (CompiledStateGraph 객체 반환)</span>
+# 2. ReAct 에이전트 생성 (CompiledStateGraph 객체 반환)
 agent = create_react_agent(model, tools)
 
-<span style="color: #6A9955;"># 3. 에이전트 실행 (단발성 실행)</span>
-response = agent.invoke({<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"ORD001 주문 상태를 확인하고 지연 시 조치 정책을 조회해줘."</span>)]})
-      </div>
-      
-    </div>
-  </section>
+# 3. 에이전트 실행 (단발성 실행)
+response = agent.invoke({"messages": [("user", "ORD001 주문 상태를 확인하고 지연 시 조치 정책을 조회해줘.")]})</code></pre>
+                </div>
+            </section>
 
-  <!-- 4. 메모리(Memory)를 활용한 대화 맥락(Context) 유지 -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">04</span>
-      <h3>메모리(Memory)를 활용한 대화 맥락(Context) 유지</h3>
-    </div>
-    <p>멀티턴 대화 세션에서 사용자의 이전 발화와 도구 실행 결과를 기억하여 연속성 있는 답변을 생성하는 메모리 아키텍처이다.</p>
+            <!-- 4. 메모리(Memory)를 활용한 대화 맥락(Context) 유지 -->
+            <section id="sec-memory">
+                <h2>4. 메모리(Memory)를 활용한 대화 맥락(Context) 유지</h2>
+                <p>멀티턴 대화 세션에서 사용자의 이전 발화와 도구 실행 결과를 기억하여 연속성 있는 답변을 생성하는 아키텍처이다.</p>
 
-    <div class="grid-4" style="margin-bottom: 32px;">
-      <!-- MemorySaver -->
-      <div class="comp-card">
-        <div class="icon">💾</div>
-        <h4>MemorySaver <span class="sub-title">(단기 세션)</span></h4>
-        <p class="desc">
-          애플리케이션의 메모리 내에 체크포인트를 저장하여 단일 세션 동안 대화 맥락을 유지함.
-        </p>
-        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
-          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 프로세스 재시작 시 메모리 정보 유실.
-        </div>
-      </div>
-      <!-- SqliteSaver -->
-      <div class="comp-card">
-        <div class="icon">🗄️</div>
-        <h4>SqliteSaver <span class="sub-title">(디스크 영속)</span></h4>
-        <p class="desc">
-          로컬 SQLite DB 파일에 체크포인트를 저장하여 애플리케이션 재시작 후에도 상태를 보존함.
-        </p>
-        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
-          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 영속적인 멀티 세션 히스토리 보존 가능.
-        </div>
-      </div>
-      <!-- thread_id -->
-      <div class="comp-card">
-        <div class="icon">🔑</div>
-        <h4>thread_id <span class="sub-title">(세션 구분자)</span></h4>
-        <p class="desc">
-          동일한 대화 스레드를 그룹화하여 고유 세션 간 대화 내역이 섞이지 않도록 격리함.
-        </p>
-        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
-          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 설정(config) 키에 세션 ID 매핑 수행.
-        </div>
-      </div>
-      <!-- Checkpoint -->
-      <div class="comp-card">
-        <div class="icon">📌</div>
-        <h4>State Checkpoint <span class="sub-title">(상태 보존)</span></h4>
-        <p class="desc">
-          에이전트의 이전 실행 노드 시점 상태를 스냅샷으로 백업하여 에러 복구 및 롤백을 제어함.
-        </p>
-        <div class="danger-zone" style="background: var(--indigo-soft); border-left-color: var(--indigo); font-size: 14px; margin-top: 10px; padding: 6px 10px;">
-          <strong style="color: var(--indigo); display: inline; margin-bottom: 0;">특징:</strong> 노드 전파 및 실행의 물리적 시점 저장.
-        </div>
-      </div>
-    </div>
+                <div class="row g-4 my-3">
+                    <!-- MemorySaver -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">💾</div>
+                                <h3 class="h5 card-title fw-bold text-primary">MemorySaver <span class="fs-6 text-muted font-normal d-block">단기 세션 메모리</span></h3>
+                                <p class="card-text fs-6 text-secondary">애플리케이션 메모리 내에 체크포인트를 저장하여 단일 세션 동안 대화 맥락을 유지함</p>
+                            </div>
+                            <div class="card-footer bg-primary-subtle text-primary border-primary fs-6 fw-bold">
+                                📌 특징: 프로세스 재시작 시 정보 유실
+                            </div>
+                        </div>
+                    </div>
+                    <!-- SqliteSaver -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">🗄️</div>
+                                <h3 class="h5 card-title fw-bold text-primary">SqliteSaver <span class="fs-6 text-muted font-normal d-block">디스크 영속 저장</span></h3>
+                                <p class="card-text fs-6 text-secondary">로컬 SQLite DB 파일에 체크포인트를 저장하여 프로세스 재시작 후에도 상태 보존함</p>
+                            </div>
+                            <div class="card-footer bg-primary-subtle text-primary border-primary fs-6 fw-bold">
+                                📌 특징: 영속적인 멀티 세션 히스토리 보존
+                            </div>
+                        </div>
+                    </div>
+                    <!-- thread_id -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">🔑</div>
+                                <h3 class="h5 card-title fw-bold text-primary">thread_id <span class="fs-6 text-muted font-normal d-block">세션 식별자</span></h3>
+                                <p class="card-text fs-6 text-secondary">동일한 대화 스레드를 그룹화하여 고유 세션 간 대화 내역이 섞이지 않도록 격리함</p>
+                            </div>
+                            <div class="card-footer bg-primary-subtle text-primary border-primary fs-6 fw-bold">
+                                📌 특징: config 설정 키에 세션 ID 매핑
+                            </div>
+                        </div>
+                    </div>
+                    <!-- State Checkpoint -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="fs-2 mb-2">📌</div>
+                                <h3 class="h5 card-title fw-bold text-primary">State Checkpoint <span class="fs-6 text-muted font-normal d-block">상태 백업</span></h3>
+                                <p class="card-text fs-6 text-secondary">에이전트의 노드 실행 시점 상태를 스냅샷으로 백업하여 복구 및 롤백 제어함</p>
+                            </div>
+                            <div class="card-footer bg-primary-subtle text-primary border-primary fs-6 fw-bold">
+                                📌 특징: 노드 전파 및 물리적 실행 시점 저장
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- 메모리 에이전트 생성 실전 코드 -->
-    <div>
-      <span style="font-size:15px; font-weight:700; color:var(--indigo); display:block; margin-bottom:8px;">💻 메모리 체크포인터(MemorySaver)를 활용한 대화 맥락 유지 실전 코드</span>
-      <div class="code-viewer" data-lang="PYTHON">
-<span style="color: #569CD6;">from</span> langgraph.prebuilt <span style="color: #569CD6;">import</span> create_react_agent
-<span style="color: #569CD6;">from</span> langchain_openai <span style="color: #569CD6;">import</span> ChatOpenAI
-<span style="color: #569CD6;">from</span> langgraph.checkpoint.memory <span style="color: #569CD6;">import</span> MemorySaver  <span style="color: #6A9955;"># 메모리 체크포인터 임포트</span>
+                <!-- 메모리 예제 소스코드 -->
+                <div class="my-4">
+                    <h3 class="h6 fw-bold text-primary mb-2">💻 메모리 체크포인터(MemorySaver) 활용 실전 코드</h3>
+                    <pre><code class="language-python">from langgraph.prebuilt import create_react_agent
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver  # 메모리 체크포인터 임포트
 
-<span style="color: #6A9955;"># 1. 모델, 도구 목록 및 체크포인터 메모리 세이버 생성</span>
-model = ChatOpenAI(model=<span style="color: #CE9178;">"gpt-4o"</span>)
+# 1. 모델, 도구 목록 및 체크포인터 메모리 세이버 생성
+model = ChatOpenAI(model="gpt-4o")
 tools = [get_order_status, search_policy]
-memory = MemorySaver()  <span style="color: #6A9955;"># 메모리 인스턴스 초기화</span>
+memory = MemorySaver()  # 메모리 인스턴스 초기화
 
-<span style="color: #6A9955;"># 2. 에이전트 빌드 시 checkpointer 매개변수 바인딩</span>
+# 2. 에이전트 빌드 시 checkpointer 매개변수 바인딩
 agent = create_react_agent(model, tools, checkpointer=memory)
 
-<span style="color: #6A9955;"># 3. 고유 세션 ID(thread_id) 설정</span>
-config = {<span style="color: #CE9178;">"configurable"</span>: {<span style="color: #CE9178;">"thread_id"</span>: <span style="color: #CE9178;">"user_session_001"</span>}}
+# 3. 고유 세션 ID(thread_id) 설정
+config = {"configurable": {"thread_id": "user_session_001"}}
 
-<span style="color: #6A9955;"># 첫 번째 대화 수행 (주문 상태 요청)</span>
+# 첫 번째 대화 수행 (주문 상태 요청)
 agent.invoke(
-    {<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"ORD001 주문 상태를 확인해줘."</span>)]},
+    {"messages": [("user", "ORD001 주문 상태를 확인해줘.")]},
     config=config
 )
 
-<span style="color: #6A9955;"># 두 번째 대화 수행 (메모리에 기록된 ORD001의 맥락을 이어서 보상 정책 조회)</span>
+# 두 번째 대화 수행 (메모리에 기록된 ORD001의 맥락을 이어서 보상 정책 조회)
 response = agent.invoke(
-    {<span style="color: #CE9178;">"messages"</span>: [(<span style="color: #CE9178;">"user"</span>, <span style="color: #CE9178;">"그럼 지연 건에 대한 보상 조치를 진행해줘."</span>)]},
+    {"messages": [("user", "그럼 지연 건에 대한 보상 조치를 진행해줘.")]},
     config=config
-)
-      </div>
+)</code></pre>
+                </div>
+            </section>
+
+            <!-- 5. Plan - 의사결정 구조 만들기 -->
+            <section id="sec-plan">
+                <h2>5. Plan - 의사결정 구조 만들기</h2>
+                <p>목표를 달성하기 위해 에이전트가 수행할 작업 단계와 도구 호출 계획을 LLM 스스로 판단하여 결정하는 논리 아키텍처이다.</p>
+
+                <div class="card-custom">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="fs-3">🧭</span>
+                        <h3 class="h5 m-0 fw-bold text-primary">ReAct 프레임워크가 곧 Plan의 동작 실체이다</h3>
+                    </div>
+                    <p class="mb-2 fs-6">
+                        에이전트에게 수동으로 세부 경로를 하드코딩하지 않고, 제공된 도구(Tools) 목록을 활용해 스스로 다음 단계를 계획(Thought)하고 실행(Action)한 후 피드백을 받는 <strong>ReAct 순환 아키텍처가 곧 Plan의 구체적인 구현 방식</strong>이다.
+                    </p>
+                    <p class="mb-0 fs-6">
+                        LangGraph에서는 헬퍼 함수인 <code>create_react_agent</code>를 사용하는 것만으로도 Plan 의사결정 루프가 내장되어 복잡한 멀티 스텝 태스크를 자율적으로 계획해 해결할 수 있다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 6. 핵심 요약 -->
+            <footer id="summary" class="summary-box">
+                <h2 style="margin:0 0 15px 0; border:none; color: var(--primary); font-size: 1.3rem;">6. 강의 핵심 요약</h2>
+                <ul class="mb-0 fs-6">
+                    <li><span class="kw">4대 핵심 요소</span>: LLM(Brain), Tool(Action), Memory(Context), Plan(Strategy)의 유기적 결합</li>
+                    <li><span class="kw">Tool Binding</span>: 함수 독스트링과 타입 힌트가 LLM의 JSON Schema 호출 규격으로 자동 맵핑</li>
+                    <li><span class="kw">ReAct 순환 루프</span>: Thought ➔ Action ➔ Observation 과정을 반복하며 자율적 문제 해결 수행</li>
+                    <li><span class="kw">Memory 맥락 유지</span>: MemorySaver 및 thread_id를 통해 멀티턴 대화 세션의 연속성 확보</li>
+                </ul>
+            </footer>
+        </article>
     </div>
-  </section>
 
-  <!-- 5. Plan - 의사결정 구조 만들기 -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">05</span>
-      <h3>Plan - 의사결정 구조 만들기</h3>
-    </div>
-    <p>목표를 달성하기 위해 에이전트가 수행할 작업 단계와 도구 호출 계획을 LLM 스스로 판단하여 결정하는 논리 아키텍처이다.</p>
+    <!-- 5. 스크립트 로드 및 시뮬레이터 조작 스크립트 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
-    <div class="aside-box" style="border-left: 5px solid var(--indigo); background: var(--bg); margin-bottom: 24px;">
-      <p style="font-size: 15px; font-weight: 700; color: var(--indigo); margin-bottom: 8px;">🧭 ReAct 프레임워크가 곧 Plan의 동작 실체이다</p>
-      <p style="line-height: 1.7; font-size: 14px;">
-        에이전트에게 수동으로 세부 경로를 하드코딩하지 않고, 제공된 도구(Tools) 목록을 활용해 스스로 다음 단계를 계획(Thought)하고 실행(Action)한 후 피드백을 받는 <strong>ReAct 순환 아키텍처가 곧 Plan의 구체적인 구현 방식</strong>이다.
-      </p>
-      <p style="line-height: 1.7; font-size: 14px; margin-top: 10px;">
-        LangGraph에서는 기성품 헬퍼 함수인 <code>create_react_agent</code>를 사용하는 것만으로도 이 Plan 의사결정 루프가 내장되어 복잡한 멀티 스텝 태스크를 자율적으로 계획해 해결할 수 있다.
-      </p>
-    </div>
-  </section>
+    <script>
+        // --- 시나리오 데이터 정의 ---
+        const scenarios = {
+            simple: [
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: '사용자가 "배송 지연 보상 정책"에 관해 질문했다. 정책 데이터베이스를 조회하기 위해 search_policy 도구를 호출하자.'
+                },
+                {
+                    type: 'action',
+                    node: 'rect-action',
+                    content: 'search_policy("배송 지연 보상 정책") 호출'
+                },
+                {
+                    type: 'observation',
+                    node: 'rect-observation',
+                    content: '검색 규정 반환: "배송 지연 시 최대 10,000원의 보상 쿠폰 발급 적용 가능 (1회 최대 한도: 20,000원)"'
+                },
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: '정책 정보가 성공적으로 조회되었다. 고객에게 1회 한도 10,000원의 할인 쿠폰 정책을 최종 응답한다.'
+                },
+                {
+                    type: 'answer',
+                    node: 'rect-answer',
+                    content: '최종 답변: 당사 배송 지연 보상 정책에 따라 배송이 지연된 건에 대해 최대 10,000원 쿠폰 발급 조치가 가능합니다.'
+                }
+            ],
+            complex: [
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: '사용자가 ORD001, ORD002의 상태를 조회한 후 지연 건에 할인 쿠폰을 발급해달라고 요청했다. 먼저 주문 데이터를 조회하기 위해 get_order_status 도구로 각 주문 상태를 호출해야 한다.'
+                },
+                {
+                    type: 'action',
+                    node: 'rect-action',
+                    content: 'get_order_status("ORD001"), get_order_status("ORD002") 호출'
+                },
+                {
+                    type: 'observation',
+                    node: 'rect-observation',
+                    content: 'ORD001: 배송 지연 (상품: 노트북, 고객: 홍길동) / ORD002: 배송 완료 (상품: 키보드, 고객: 이몽룡)'
+                },
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: 'ORD001 주문 건만 배송 지연 상태이다. 규정에 부합하는 할인 쿠폰을 발급하기 전에, 쿠폰 보상 한도 규정을 확인하기 위해 search_policy 도구를 호출해야 한다.'
+                },
+                {
+                    type: 'action',
+                    node: 'rect-action',
+                    content: 'search_policy("배송 지연 보상") 호출'
+                },
+                {
+                    type: 'observation',
+                    node: 'rect-observation',
+                    content: '보상 정책 반환: "배송 지연 시 1회 최대 10,000원 쿠폰 발급 가능"'
+                },
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: 'ORD001에 대해 한도 내 금액인 10,000원 쿠폰을 발급해야 한다. issue_coupon 도구를 호출하여 쿠폰을 생성한다.'
+                },
+                {
+                    type: 'action',
+                    node: 'rect-action',
+                    content: 'issue_coupon("ORD001", 10000) 호출'
+                },
+                {
+                    type: 'observation',
+                    node: 'rect-observation',
+                    content: '쿠폰 발급 완료: "주문 번호 ORD001에 10,000원 보상 쿠폰이 성공적으로 발행되었습니다." 반환됨.'
+                },
+                {
+                    type: 'thought',
+                    node: 'rect-thought',
+                    content: 'ORD001의 쿠폰 발급이 정상 처리되었고, ORD002는 완료 상태이므로 제외했다. 모든 태스크가 종결되었으므로 종합 결과를 답변한다.'
+                },
+                {
+                    type: 'answer',
+                    node: 'rect-answer',
+                    content: '최종 답변: 조회 결과 ORD001은 배송 지연 상태여서 보상 한도인 10,000원 쿠폰을 정상 발급했습니다. ORD002는 배송 완료 건으로 추가 발급 대상이 아닙니다.'
+                }
+            ]
+        };
 
+        let activeScenarioKey = 'simple';
+        let currentStep = 0;
 
+        const simBtn = document.getElementById('sim-btn');
+        const simLog = document.getElementById('sim-log');
+        const stepCounter = document.getElementById('step-counter');
+        const svgQueryText = document.getElementById('svg-query-text');
+        const svgAnswerText = document.getElementById('svg-answer-text');
 
-  <footer>AI Agent 개념 및 ReAct 아키텍처 · 교육용 시각화</footer>
-</div>
+        function selectScenario(key) {
+            activeScenarioKey = key;
+            currentStep = 0;
 
-<!-- iframe 높이 보정 및 실시간 시뮬레이터 구동 스크립트 -->
-<script>
-  // --- 시나리오 데이터 정의 ---
-  const scenarios = {
-    simple: [
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: '사용자가 "배송 지연 보상 정책"에 관해 질문했다. 정책 데이터베이스를 조회하기 위해 search_policy 도구를 호출하자.'
-      },
-      {
-        type: 'action',
-        node: 'rect-action',
-        content: 'search_policy("배송 지연 보상 정책") 호출'
-      },
-      {
-        type: 'observation',
-        node: 'rect-observation',
-        content: '검색 규정 반환: "배송 지연 시 최대 10,000원의 보상 쿠폰 발급 적용 가능 (1회 최대 한도: 20,000원)"'
-      },
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: '정책 정보가 성공적으로 조회되었다. 고객에게 1회 한도 10,000원의 할인 쿠폰 정책을 최종 응답한다.'
-      },
-      {
-        type: 'answer',
-        node: 'rect-answer',
-        content: '최종 답변: 당사 배송 지연 보상 정책에 따라 배송이 지연된 건에 대해 최대 10,000원 쿠폰 발급 조치가 가능합니다.'
-      }
-    ],
-    complex: [
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: '사용자가 ORD001, ORD002의 상태를 조회한 후 지연 건에 할인 쿠폰을 발급해달라고 요청했다. 먼저 주문 데이터를 조회하기 위해 get_order_status 도구로 각 주문 상태를 호출해야 한다.'
-      },
-      {
-        type: 'action',
-        node: 'rect-action',
-        content: 'get_order_status("ORD001"), get_order_status("ORD002") 호출'
-      },
-      {
-        type: 'observation',
-        node: 'rect-observation',
-        content: 'ORD001: 배송 지연 (상품: 노트북, 고객: 홍길동) / ORD002: 배송 완료 (상품: 키보드, 고객: 이몽룡)'
-      },
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: 'ORD001 주문 건만 배송 지연 상태이다. 규정에 부합하는 할인 쿠폰을 발급하기 전에, 쿠폰 보상 한도 규정을 확인하기 위해 search_policy 도구를 호출해야 한다.'
-      },
-      {
-        type: 'action',
-        node: 'rect-action',
-        content: 'search_policy("배송 지연 보상") 호출'
-      },
-      {
-        type: 'observation',
-        node: 'rect-observation',
-        content: '보상 정책 반환: "배송 지연 시 1회 최대 10,000원 쿠폰 발급 가능"'
-      },
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: 'ORD001에 대해 한도 내 금액인 10,000원 쿠폰을 발급해야 한다. issue_coupon 도구를 호출하여 쿠폰을 생성한다.'
-      },
-      {
-        type: 'action',
-        node: 'rect-action',
-        content: 'issue_coupon("ORD001", 10000) 호출'
-      },
-      {
-        type: 'observation',
-        node: 'rect-observation',
-        content: '쿠폰 발급 완료: "주문 번호 ORD001에 10,000원 보상 쿠폰이 성공적으로 발행되었습니다." 반환됨.'
-      },
-      {
-        type: 'thought',
-        node: 'rect-thought',
-        content: 'ORD001의 쿠폰 발급이 정상 처리되었고, ORD002는 완료 상태이므로 제외했다. 모든 태스크가 종결되었으므로 종합 결과를 답변한다.'
-      },
-      {
-        type: 'answer',
-        node: 'rect-answer',
-        content: '최종 답변: 조회 결과 ORD001은 배송 지연 상태여서 보상 한도인 10,000원 쿠폰을 정상 발급했습니다. ORD002는 배송 완료 건으로 추가 발급 대상이 아닙니다.'
-      }
-    ]
-  };
+            document.querySelectorAll('.form-check').forEach(el => el.classList.remove('active'));
+            document.getElementById(`opt-${key}`).classList.add('active');
+            document.getElementById(`scen-${key}`).checked = true;
 
-  let activeScenarioKey = 'simple';
-  let currentStep = 0;
+            if (key === 'simple') {
+                svgQueryText.textContent = '"배송 지연 보상..."';
+                svgAnswerText.textContent = '"보상 답변 조율 완료"';
+            } else {
+                svgQueryText.textContent = '"ORD001/002 처리"';
+                svgAnswerText.textContent = '"지연건 쿠폰 지급 완료"';
+            }
 
-  const simBtn = document.getElementById('sim-btn');
-  const simLog = document.getElementById('sim-log');
-  const stepCounter = document.getElementById('step-counter');
+            resetSimulatorUI();
+            clearSVGActiveStates();
+        }
 
-  const svgQueryText = document.getElementById('svg-query-text');
-  const svgAnswerText = document.getElementById('svg-answer-text');
+        function resetSimulatorUI() {
+            simLog.innerHTML = '<div class="text-muted italic">시작 버튼을 누르면 에이전트의 Thought-Action-Observation 루프가 시작된다.</div>';
+            simBtn.textContent = '시뮬레이션 시작';
+            stepCounter.textContent = '진행 상황: 대기 중';
+        }
 
-  // --- 시나리오 토글 전환 ---
-  function selectScenario(key) {
-    activeScenarioKey = key;
-    currentStep = 0;
+        function clearSVGActiveStates() {
+            const ids = ['rect-thought', 'rect-action', 'rect-observation', 'rect-answer'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('active-thought', 'active-action', 'active-observation', 'active-answer');
+                }
+            });
+        }
 
-    document.querySelectorAll('.scenario-option').forEach(el => el.classList.remove('active'));
-    document.getElementById(`opt-${key}`).classList.add('active');
-    document.getElementById(`scen-${key}`).checked = true;
+        function nextStep() {
+            const stepsData = scenarios[activeScenarioKey];
 
-    // SVG 쿼리 텍스트 변경
-    if (key === 'simple') {
-      svgQueryText.textContent = '"배송 지연 보상..."';
-      svgAnswerText.textContent = '"보상 답변 조율 완료"';
-    } else {
-      svgQueryText.textContent = '"ORD001/002 처리"';
-      svgAnswerText.textContent = '"지연건 쿠폰 지급 완료"';
-    }
+            if (currentStep === 0) {
+                simLog.innerHTML = '';
+                simBtn.textContent = '다음 단계 진행';
+            }
 
-    // 시뮬레이터 리셋
-    resetSimulatorUI();
-    clearSVGActiveStates();
-  }
+            if (currentStep < stepsData.length) {
+                const step = stepsData[currentStep];
 
-  function resetSimulatorUI() {
-    simLog.innerHTML = '<div style="color:var(--ink-soft); font-style:italic;">시작 버튼을 누르면 에이전트의 Thought-Action-Observation 루프가 시작된다.</div>';
-    simBtn.textContent = '시뮬레이션 시작';
-    stepCounter.textContent = '진행 상황: 대기 중';
-  }
+                clearSVGActiveStates();
 
-  // SVG 활성 노드 효과 제거
-  function clearSVGActiveStates() {
-    const ids = ['rect-thought', 'rect-action', 'rect-observation', 'rect-answer'];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.remove('active-thought', 'active-action', 'active-observation', 'active-answer');
-      }
-    });
-  }
+                const activeRect = document.getElementById(step.node);
+                if (activeRect) {
+                    activeRect.classList.add(`active-${step.type}`);
+                }
 
-  // --- 시뮬레이션 동작 제어 ---
-  function nextStep() {
-    const stepsData = scenarios[activeScenarioKey];
+                const logDiv = document.createElement('div');
+                logDiv.className = `log-line log-${step.type}`;
+                
+                let prefix = '';
+                if (step.type === 'thought') prefix = '🧠 THOUGHT : ';
+                if (step.type === 'action') prefix = '🛠️ ACTION (Tool Call) : ';
+                if (step.type === 'observation') prefix = '🔍 OBSERVATION : ';
+                if (step.type === 'answer') prefix = '✨ FINAL ANSWER : ';
 
-    if (currentStep === 0) {
-      simLog.innerHTML = '';
-      simBtn.textContent = '다음 단계 진행';
-    }
+                logDiv.innerHTML = `<strong>${prefix}</strong>${step.content}`;
+                simLog.appendChild(logDiv);
+                simLog.scrollTop = simLog.scrollHeight;
+                
+                currentStep++;
+                stepCounter.textContent = `진행 상황: ${currentStep} / ${stepsData.length} 단계`;
 
-    if (currentStep < stepsData.length) {
-      const step = stepsData[currentStep];
+                if (currentStep === stepsData.length) {
+                    simBtn.textContent = '시뮬레이션 초기화';
+                    stepCounter.textContent = '진행 상황: 완료';
+                }
+            } else {
+                currentStep = 0;
+                resetSimulatorUI();
+                clearSVGActiveStates();
+            }
+        }
 
-      // 기존 활성 하이라이트 지우기
-      clearSVGActiveStates();
+        // Highlight.js 초기화
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            }
+        });
 
-      // 새로운 노드 하이라이트 지정
-      const activeRect = document.getElementById(step.node);
-      if (activeRect) {
-        activeRect.classList.add(`active-${step.type}`);
-      }
-
-      // 로그 작성
-      const logDiv = document.createElement('div');
-      logDiv.className = `log-line log-${step.type}`;
-      
-      let prefix = '';
-      if (step.type === 'thought') prefix = '🧠 THOUGHT : ';
-      if (step.type === 'action') prefix = '🛠️ ACTION (Tool Call) : ';
-      if (step.type === 'observation') prefix = '🔍 OBSERVATION : ';
-      if (step.type === 'answer') prefix = '✨ FINAL ANSWER : ';
-
-      logDiv.innerHTML = `<strong>${prefix}</strong>${step.content}`;
-      simLog.appendChild(logDiv);
-      simLog.scrollTop = simLog.scrollHeight;
-      
-      currentStep++;
-      stepCounter.textContent = `진행 상황: ${currentStep} / ${stepsData.length} 단계`;
-
-      if (currentStep === stepsData.length) {
-        simBtn.textContent = '시뮬레이션 초기화';
-        stepCounter.textContent = '진행 상황: 완료';
-      }
-    } else {
-      // 초기화
-      currentStep = 0;
-      resetSimulatorUI();
-      clearSVGActiveStates();
-    }
-  }
-
-  // --- Hero 이미지 토글 기능 ---
-  const heroSection = document.getElementById('hero-section');
-  const heroImgContainer = document.getElementById('hero-img-container');
-
-  heroSection.addEventListener('click', () => {
-    if (heroImgContainer.style.display === 'none') {
-      heroImgContainer.style.display = 'block';
-    } else {
-      heroImgContainer.style.display = 'none';
-    }
-    // iframe 높이 보정용 스크립 실행
-    if (typeof sendHeight === 'function') {
-      sendHeight();
-    }
-  });
-
-  // 이미지 클릭 시 토글 방지 (UX 개선)
-  heroImgContainer.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-</script>
-
-<script>
-  function sendHeight() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  }
-  window.onload = sendHeight;
-  [50, 200, 500, 1000, 2000].forEach(function(delay) {
-    setTimeout(sendHeight, delay);
-  });
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(sendHeight);
-    ro.observe(document.body);
-  }
-</script>
+        // iframe 높이 자동 조절 스크립트
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100);
+        };
+    </script>
 </body>
 </html>

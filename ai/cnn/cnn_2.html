@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN (Convolutional Neural Network) — 합성곱 신경망 마스터 가이드</title>
+    
+    <!-- 1. 외부 라이브러리 및 폰트 (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --accent-green: #16a34a;
+            --accent-orange: #ea580c;
+            --accent-purple: #7c3aed;
+            --kw: #d63384;
+            --code-bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 18px;
+            color: #000;
+            line-height: 1.75;
+            background-color: #fff;
+        }
+
+        .container-custom {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* --- 2. 플로팅 목차 (TOC Drawer) --- */
+        .toc-drawer {
+            position: fixed;
+            right: -320px;
+            top: 80px;
+            width: 360px;
+            transition: right 0.3s ease-in-out;
+            z-index: 1001;
+            display: flex;
+        }
+        .toc-drawer:hover { right: 0; }
+        .toc-handle {
+            width: 40px;
+            background: var(--primary);
+            color: white;
+            padding: 20px 5px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 15px 0 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
+        }
+        .toc-content {
+            width: 320px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.1);
+        }
+        .toc-content h5 { font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; }
+        .toc-content ul { list-style: none; padding-left: 0; }
+        .toc-content li { margin-bottom: 10px; border-bottom: 1px solid #f8f9fa; }
+        .toc-content a { text-decoration: none; color: #444; font-size: 15px; display: block; transition: 0.2s; }
+        .toc-content a:hover { color: var(--primary); font-weight: bold; padding-left: 5px; }
+
+        /* --- 3. 타이포그래피 & 타이틀 --- */
+        h1 {
+            border-left: 10px solid var(--primary);
+            padding-left: 20px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            font-size: 2.4rem;
+            color: #0f172a;
+        }
+        .lead-desc {
+            font-size: 1.15rem;
+            color: #475569;
+            margin-bottom: 40px;
+        }
+        h2 {
+            margin-top: 65px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-weight: 700;
+            font-size: 1.75rem;
+            scroll-margin-top: 50px;
+            color: #1e293b;
+        }
+        .kw {
+            color: var(--kw);
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        /* --- 4. 카드 및 박스 구성 요소 --- */
+        .intro-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px 20px;
+            height: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .intro-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .intro-icon { font-size: 28px; margin-bottom: 12px; }
+        .intro-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
+        .intro-card p { font-size: 15px; color: #64748b; line-height: 1.65; margin: 0; }
+
+        .hbox {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .hbox.blue { background: #eff6ff; border-color: #2563eb; }
+        .hbox.green { background: #f0fdf4; border-color: #16a34a; }
+        .hbox.orange { background: #fff7ed; border-color: #ea580c; }
+        .hbox-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .hbox-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .hbox.blue .hbox-title { color: #2563eb; }
+        .hbox.green .hbox-title { color: #16a34a; }
+        .hbox.orange .hbox-title { color: #ea580c; }
+        .hbox-text { font-size: 15px; color: #475569; line-height: 1.7; }
+        .hbox-text strong { color: #0f172a; }
+
+        /* 블록 카드 */
+        .block {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 28px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .block-hd {
+            padding: 18px 24px;
+            border-bottom: 1px solid #eef1f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .bnum {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .bapi { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+        .bname { font-size: 17px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+        .block-body { padding: 24px; }
+        .bdesc { font-size: 15px; color: #475569; line-height: 1.7; margin-bottom: 20px; }
+        .bdesc strong { color: #0f172a; }
+
+        /* 수식 박스 */
+        .equation {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.35em;
+            background: #f8fafc;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: inline-block;
+            border-left: 5px solid var(--primary);
+        }
+
+        /* --- 5. 인터랙티브 시뮬레이터 전용 스타일 --- */
+        .sim {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .sim-top-bar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; }
+        .sim-ctrl { display: flex; flex-direction: column; flex: 1; min-width: 240px; gap: 16px; }
+        .ctrl-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .btn-grp { display: flex; gap: 6px; flex-wrap: wrap; }
+        .kbtn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            padding: 7px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            transition: all .15s;
+            font-weight: 500;
+        }
+        .kbtn:hover { border-color: #2563eb; color: #2563eb; }
+        .kbtn.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 700; }
+        .sim-play {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .sim-play:hover { opacity: .9; }
+        .sim-step {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            padding: 8px 14px;
+            border: 1.5px solid #2563eb;
+            border-radius: 8px;
+            background: #fff;
+            color: #2563eb;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .sim-step:hover { background: #eff6ff; }
+        .sim-reset {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            padding: 8px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .sim-reset:hover { background: #f1f5f9; }
+
+        .kern-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .kern-label { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #475569; }
+        .kern-name { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #ea580c; margin-top: 2px; text-align: center; font-weight: 600; }
+
+        .fbox {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #2563eb;
+            border-radius: 10px;
+            padding: 14px 18px;
+            min-width: 190px;
+        }
+        .fbox-label { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        .fbox-expr { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #1e293b; line-height: 1.7; }
+        .fbox-result { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #2563eb; margin-top: 4px; }
+
+        .sim-grids { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 15px 0; }
+        .gw { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .glabel { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #475569; font-weight: 500; }
+        .glabel span { color: #0f172a; font-weight: 700; }
+        .sgrid { display: grid; gap: 4px; }
+        .cell {
+            width: 44px;
+            height: 44px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #0f172a;
+            transition: background .2s, border-color .2s;
+        }
+        .cell.hi { background: #dbeafe; border: 2px solid #2563eb; font-weight: 700; }
+        .cell.kact { background: #fff7ed; border-color: #ea580c; }
+        .cell.done { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
+        .cell.cur { background: #2563eb; border-color: #2563eb; color: #fff; animation: pop .3s ease; }
+        .cell.pad { background: #f1f5f9; border: 1.5px dashed #94a3b8; color: #64748b; font-size: 13.5px; }
+        .cell.pad.hi { background: #dbeafe; border: 2px dashed #2563eb; color: #1d4ed8; font-weight: 700; }
+        @keyframes pop { 0%{transform:scale(.8)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
+
+        .cbox { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+        .cbox-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        #simCalc { font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; color: #0f172a; }
+        #simCalcR { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: #2563eb; margin-top: 6px; min-height: 22px; }
+
+        .dots-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 360px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; transition: background .2s, transform .2s; }
+        .dot.done { background: #16a34a; }
+        .dot.cur { background: #2563eb; transform: scale(1.3); }
+        #simSteps { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #64748b; font-weight: 500; }
+
+        /* Canvas Wrapper */
+        canvas.interactive-canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+            display: block;
+            margin: 12px auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* SVG 박스 & 파이프라인 */
+        .svg-wrapper {
+            margin: 25px 0;
+            overflow-x: auto;
+            background: #fdfdfd;
+            padding: 24px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .pipe-wrap {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .pipe-flow { display: flex; align-items: center; gap: 10px; min-width: 760px; }
+        .pblock {
+            border: 1.5px solid;
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-align: center;
+            min-width: 105px;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .pblock:hover { transform: translateY(-2px); opacity: .9; }
+        .picon { font-size: 22px; margin-bottom: 4px; }
+        .pname { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #0f172a; }
+        .psize { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748b; margin-top: 4px; }
+        .parr { font-size: 20px; color: #94a3b8; flex-shrink: 0; }
+        .pipe-note { margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 15px; color: #475569; line-height: 1.7; }
+
+        /* --- 6. 코드 블록 (Syntax Highlighting 규격 준수) --- */
+        pre {
+            margin: 30px 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-align: left !important;
+        }
+        pre code {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 17px !important;
+            padding: 25px !important;
+            line-height: 1.6;
+            display: block !important;
+            text-align: left !important;
+        }
+
+        /* 테이블 */
+        .table-custom { font-size: 16px; margin: 25px 0; border-top: 2px solid var(--primary); }
+
+        /* 요약 및 검증 테이블 */
+        .summary-box {
+            background-color: #f0f7ff;
+            border-left: 8px solid var(--primary);
+            padding: 35px;
+            margin-top: 80px;
+            border-radius: 0 15px 15px 0;
+        }
+        .verification-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            margin-top: 60px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- [플로팅 목차] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#header">1. 개요 및 CNN의 본질</a></li>
+                <li><a href="#sec-blocks">2. CNN 핵심 3대 빌딩 블록</a></li>
+                <li><a href="#sec-pipeline">3. CNN 전체 파이프라인 및 아키텍처</a></li>
+                <li><a href="#sec-calc">4. Conv & Pooling 실전 계산 예제</a></li>
+                <li><a href="#sec-principles">5. CNN이 강력한 4가지 핵심 원리</a></li>
+                <li><a href="#sec-code">6. PyTorch 모델 구현 코드</a></li>
+                <li><a href="#summary">7. 핵심 요약</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <article>
+            <!-- 0. Header & Introduction -->
+            <header id="header">
+                <h1><span>CNN</span> (Convolutional Neural Network)</h1>
+                <p class="lead-desc">
+                    합성곱 신경망 — 이미지를 이해하는 시각 신경망 가이드<br>
+                    <span class="kw">Conv · Pooling · FC</span> 핵심 블록의 동작 원리와 인터랙티브 픽셀 및 연산 시뮬레이션
+                </p>
+            </header>
+
+            <section id="sec-intro">
+                <h2>1. 개요 및 CNN의 본질 (이미지와 숫자 행렬)</h2>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="intro-card">
+                            <div class="intro-icon">🖼️</div>
+                            <h3>이미지는 숫자 행렬</h3>
+                            <p>컴퓨터는 이미지를 픽셀 밝기값(0~255) 수치 행렬로 인지하며, 컬러 사진은 R·G·B 3채널의 3D 행렬로 표현된다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="intro-card">
+                            <div class="intro-icon">🔍</div>
+                            <h3>지역적 패턴 학습</h3>
+                            <p>작은 필터(커널)를 슬라이딩하며 엣지, 선, 곡선 등 국소적 패턴(Local Features)을 수학적 연산으로 추출한다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="intro-card">
+                            <div class="intro-icon">📐</div>
+                            <h3>공간/위치 불변성</h3>
+                            <p>동일한 필터 가중치를 이미지 전체 영역에 공유 적용하여, 피사체가 어느 위치에 있든 동일하게 감지한다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 픽셀 대조 Canvas 시각화 -->
+                <div class="block">
+                    <div class="block-hd" style="background:#f8fafc;">
+                        <div class="bname">🖼️ 시각적 픽셀 vs 컴퓨터의 2D 숫자 행렬 (0~255 수치)</div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            사람이 눈으로 인식하는 시각 이미지와 컴퓨터가 실제 내부 메모리에서 처리하는 <strong>0(검은색)부터 255(흰색)까지의 픽셀 밝기 수치 행렬</strong>을 1:1 대조 시각화한다.
+                        </div>
+                        <canvas id="pixelCanvas" class="interactive-canvas" width="600" height="230"></canvas>
+                        <p class="text-center text-muted fs-6 mt-2">
+                            ▲ [왼쪽] 사람이 인식하는 이미지 패턴 &nbsp;|&nbsp; [오른쪽] 컴퓨터가 실제 처리하는 픽셀 밝기 수치 행렬
+                        </p>
+                    </div>
+                </div>
+
+                <!-- MLP vs CNN 차이 -->
+                <div class="hbox blue">
+                    <div class="hbox-icon">💡</div>
+                    <div>
+                        <div class="hbox-title">MLP (다층 퍼셉트론)와 CNN의 결정적 차이</div>
+                        <div class="hbox-text">
+                            • <strong>MLP (Multi-Layer Perceptron)</strong>: 2D 이미지를 1D 평탄화(Flatten)하여 입력하므로 <strong>공간적 위치 구조 정보가 완전히 손실</strong>되며 파라미터가 급격히 폭발함<br>
+                            • <strong>CNN (Convolutional Neural Network)</strong>: 2D/3D 공간 형상을 그대로 유지하며 <strong>인접 픽셀 간 상호 연관성</strong>을 필터로 탐지함<br>
+                            • <strong>파라미터 공유 (Weight Sharing)</strong>: 이미지 전체 영역에 동일 필터를 슬라이딩 적용하여 학습해야 할 가중치 수치를 대폭 절감함
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. CNN Core 3 Building Blocks -->
+            <section id="sec-blocks">
+                <h2>2. CNN 핵심 3대 빌딩 블록 (Conv · Pooling · FC)</h2>
+
+                <!-- 01 Conv Layer -->
+                <div class="block">
+                    <div class="block-hd" style="background:#eff6ff;">
+                        <div>
+                            <div class="bapi" style="color:#2563eb;">nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0)</div>
+                            <div class="bname"><span class="bnum" style="background:#2563eb;">01</span> &nbsp;Convolutional Layer · 합성곱 레이어</div>
+                        </div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            입력 이미지에 <strong>필터(커널)</strong>를 슬라이딩하며 요소별 곱셈 및 합산(Dot Product + Bias)을 수행하여 <strong>Feature Map (특징 맵)</strong>을 생성한다.<br>
+                            • 필터 1개 = 특정 형태의 엣지/패턴 감지기 역할 수행<br>
+                            • 기본 연산 공식:
+                            <div class="equation">
+                                Output = &Sigma;(Input &times; Weight) + Bias
+                            </div>
+                            <br><span class="text-muted">(※ 딥러닝 라이브러리 파라미터명에서 자주 사용되는 <strong>커널(Kernel)</strong>은 <strong>필터(Filter)</strong>와 동일한 대상을 지칭한다.)</span>
+                        </div>
+
+                        <div class="hbox green mb-3">
+                            <div class="hbox-icon">❓</div>
+                            <div>
+                                <div class="hbox-title">필터 수치는 사람이 직접 지정하나요, 아니면 스스로 학습하나요?</div>
+                                <div class="hbox-text">
+                                    <strong>학습 과정에서 인공지능이 스스로 탐색하여 최적화합니다!</strong><br>
+                                    초기 필터 가중치는 난수(Random)로 설정되지만, 수많은 이미지를 학습(역전파, Backpropagation)하면서 <strong>이미지를 가장 잘 분류할 수 있는 수직 엣지, 곡선, 질감 등의 최적 필터 가중치를 자동으로 갱신</strong>한다.<br>
+                                    (아래 시뮬레이션의 'Sobel/블러' 필터는 이해를 돕기 위한 예시이며, 실제 모델은 더 복잡하고 정밀한 필터를 자동 생성한다.)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conv 파라미터 요약 표 -->
+                        <table class="table table-bordered table-custom text-center my-4">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>파라미터</th>
+                                    <th>설명</th>
+                                    <th>표준 적용 수치 및 산출 공식</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Kernel Size (K)</strong></td>
+                                    <td>필터의 가로 × 세로 크기</td>
+                                    <td><code>3 × 3</code> 또는 <code>5 × 5</code> 주로 사용</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Stride (S)</strong></td>
+                                    <td>필터를 슬라이딩 이동시킬 칸 수</td>
+                                    <td>보통 <code>S = 1</code> (다운샘플링 시 S = 2)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Padding (P)</strong></td>
+                                    <td>입력 외곽에 채우는 0의 두께 (Zero-Padding)</td>
+                                    <td>외곽 정보 보존 및 크기 유지 목적 (<code>P = 1</code>)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>출력 크기 (Output Size)</strong></td>
+                                    <td>합성곱 연산 후 최종 Feature Map 가로/세로 크기</td>
+                                    <td><code>⌊(N + 2P - K) / S⌋ + 1</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Conv Interactive Simulator -->
+                        <div class="sim">
+                            <div class="sim-top-bar">
+                                <div>
+                                    <div class="ctrl-label">필터 (KERNEL) 선택</div>
+                                    <div class="btn-grp">
+                                        <button class="kbtn active" onclick="selK('edge_v',this)">수직 엣지</button>
+                                        <button class="kbtn" onclick="selK('edge_h',this)">수평 엣지</button>
+                                        <button class="kbtn" onclick="selK('sharpen',this)">샤프닝</button>
+                                        <button class="kbtn" onclick="selK('blur',this)">블러</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="ctrl-label">STRIDE (이동 간격)</div>
+                                    <div class="btn-grp">
+                                        <button class="kbtn stride-btn active" onclick="selS(1,this)">S=1</button>
+                                        <button class="kbtn stride-btn" onclick="selS(2,this)">S=2</button>
+                                        <button class="kbtn stride-btn" onclick="selS(3,this)">S=3</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="ctrl-label">PADDING (외곽 패딩)</div>
+                                    <div class="btn-grp">
+                                        <button class="kbtn pad-btn active" onclick="selP(0,this)">P=0</button>
+                                        <button class="kbtn pad-btn" onclick="selP(1,this)">P=1</button>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="sim-play" id="playBtn" onclick="toggleSim()">▶ 시작</button>
+                                    <button class="sim-step" onclick="stepSim()">→ 다음</button>
+                                    <button class="sim-reset" onclick="resetSim()">↺ 초기화</button>
+                                </div>
+                            </div>
+
+                            <div class="sim-grids">
+                                <div class="gw">
+                                    <div class="glabel" id="inLbl">Input <span>(5×5)</span></div>
+                                    <div class="sgrid" id="simIn"></div>
+                                </div>
+                                <div class="kern-wrap">
+                                    <div class="kern-label">현재 Kernel <span class="fw-bold text-dark">(3×3)</span></div>
+                                    <div class="sgrid" style="grid-template-columns:repeat(3,44px);" id="simKern"></div>
+                                    <div class="kern-name" id="simKernName"></div>
+                                </div>
+                                <div class="text-center font-monospace text-muted" style="font-size:13px;">내적 연산<br><span style="font-size:22px;color:#94a3b8;">→</span></div>
+                                <div class="fbox">
+                                    <div class="fbox-label">출력 크기 계산 공식</div>
+                                    <div class="fbox-expr" id="fExpr"></div>
+                                    <div class="fbox-result" id="fRes"></div>
+                                </div>
+                                <div class="text-center font-monospace text-primary fw-bold fs-1">➔</div>
+                                <div class="gw">
+                                    <div class="glabel" id="outLbl">Feature Map</div>
+                                    <div class="sgrid" id="simOut"></div>
+                                </div>
+                            </div>
+
+                            <div class="cbox">
+                                <div class="cbox-title">실시간 연산 과정</div>
+                                <div id="simCalc">▶ 시작 버튼을 눌러 합성곱 과정을 확인하세요.</div>
+                                <div id="simCalcR"></div>
+                            </div>
+
+                            <div class="dots-wrap">
+                                <div class="font-monospace text-muted fw-bold uppercase" style="font-size:12px; letter-spacing:.05em;">진행 단계</div>
+                                <div class="dots" id="simDots"></div>
+                                <div id="simSteps"></div>
+                            </div>
+                        </div>
+
+                        <!-- 다중 필터 Canvas 시각화 -->
+                        <div class="mt-4 p-3 bg-light border rounded-3">
+                            <div class="fw-bold text-dark mb-2" style="font-size:15px;">📊 여러 필터 동시 적용 = 다채널 특징 맵 (Multi-Channel Feature Maps) 생성</div>
+                            <div class="text-secondary fs-6 mb-3">
+                                CNN은 1개의 필터만 사용하지 않고 32개, 64개 등 수많은 필터를 동시 적용한다. 필터마다 서로 다른 형태의 패턴(수직선, 수평선, 샤프닝, 블러 등)을 감지하여 다채로운 특징 맵 레이어를 구성한다.
+                            </div>
+                            <canvas id="multiFilterCanvas" class="interactive-canvas" width="640" height="200"></canvas>
+                            <p class="text-center text-muted fs-6 mt-2">
+                                ▲ 1개의 동일한 원본 사진 → 서로 다른 4개 필터 적용 → 감지된 특징이 각각 강조된 다채널 맵 생성
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 02 Pooling Layer -->
+                <div class="block">
+                    <div class="block-hd" style="background:#f0fdf4;">
+                        <div>
+                            <div class="bapi" style="color:#16a34a;">nn.MaxPool2d(kernel_size=2, stride=2)</div>
+                            <div class="bname"><span class="bnum" style="background:#16a34a;">02</span> &nbsp;Pooling Layer · 풀링 레이어</div>
+                        </div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            Feature Map의 해상도를 축소하는 <strong>다운샘플링 (Downsampling)</strong>을 수행하여 <strong>계산량을 절감</strong>하고 미세한 위치 변화에 강인한 표현을 형성한다.<br>
+                            • 2×2 영역에서 최댓값을 선택하는 <strong>Max Pooling</strong>이 대표적이다.<br>
+                            • <strong>학습 파라미터 없음 (가중치 0개)</strong> — 단순 통계 집계 연산 수행
+                            
+                            <div class="d-flex gap-2 flex-wrap mt-3">
+                                <a href="https://www.youtube.com/watch?v=f1fXCRtSUWU" target="_blank" class="kbtn active text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:13px; padding:6px 12px;">
+                                    <span>🎬</span> 영상 1: Top Breeder (격자 재배치와 다운샘플링)
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=U1KiC0AXhHg" target="_blank" class="kbtn text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:13px; padding:6px 12px;">
+                                    <span>🎬</span> 영상 2: #todayscuriosity: Avatar (사진 슬라이싱 작업)
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Pooling Interactive Simulator -->
+                        <div class="p-4 bg-light border rounded-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="fw-bold text-dark" style="font-size:15px;">🎬 Pooling 인터랙티브 시뮬레이터 (2×2 vs 3×3 / Max vs Avg 비교)</div>
+                                <div class="btn-grp" id="poolingCtrlBtns">
+                                    <button class="kbtn active" onclick="switchPoolingConfig(2,'max',this)">2×2 Max</button>
+                                    <button class="kbtn" onclick="switchPoolingConfig(3,'max',this)">3×3 Max</button>
+                                    <button class="kbtn" onclick="switchPoolingConfig(2,'avg',this)">2×2 Avg</button>
+                                    <button class="kbtn" onclick="switchPoolingConfig(3,'avg',this)">3×3 Avg</button>
+                                </div>
+                            </div>
+                            <canvas id="poolingCanvas" class="interactive-canvas" width="640" height="230"></canvas>
+                            <div id="poolingExplainText" class="p-3 bg-white border rounded-3 mt-2 fs-6 text-secondary">
+                                <strong>2×2 Max Pooling (S=2):</strong> 2×2 겹치지 않는 영역에서 가장 큰 값만 추출한다. (출력 크기: 2×2)
+                            </div>
+                        </div>
+
+                        <!-- Pooling 종류 비교 테이블 -->
+                        <table class="table table-bordered table-custom text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>구분</th>
+                                    <th>Max Pooling</th>
+                                    <th>Average Pooling</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>연산 방식</strong></td>
+                                    <td>지정 영역 내 최댓값(Max) 선택</td>
+                                    <td>지정 영역 내 평균값(Average) 산출</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>특징 및 효과</strong></td>
+                                    <td>강한 엣지 및 선명한 특징 추출 강조</td>
+                                    <td>부드러운 전반적 배경 정보 유지</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>학습 파라미터</strong></td>
+                                    <td><code>0개</code> (가중치 없음)</td>
+                                    <td><code>0개</code> (가중치 없음)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 03 FC Layer -->
+                <div class="block">
+                    <div class="block-hd" style="background:#f5f3ff;">
+                        <div>
+                            <div class="bapi" style="color:#7c3aed;">nn.Linear(in_features, out_features)</div>
+                            <div class="bname"><span class="bnum" style="background:#7c3aed;">03</span> &nbsp;Fully Connected Layer · 완전연결 레이어</div>
+                        </div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            Conv와 Pooling을 거쳐 추출된 3D 특징 맵을 <strong>1차원 벡터로 펼쳐(Flatten)</strong> 최종 분류를 수행한다.<br>
+                            • 고수준 특징들의 조합을 바탕으로 <strong>Softmax 함수</strong>를 적용하여 각 클래스별 확률값(0~1)을 출력한다.
+                        </div>
+
+                        <!-- SVG 다이어그램 -->
+                        <div class="svg-wrapper">
+                            <svg viewBox="0 0 680 135" width="100%" style="max-width:680px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Feature Maps -->
+                                <rect x="20" y="22" width="38" height="38" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+                                <rect x="27" y="28" width="38" height="38" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+                                <rect x="34" y="34" width="38" height="38" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" rx="4"/>
+                                <text x="53" y="96" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Feature Maps</text>
+
+                                <!-- Flatten Arrow -->
+                                <text x="120" y="56" text-anchor="middle" font-size="18" fill="#cbd5e1">→</text>
+                                <text x="120" y="74" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">Flatten</text>
+
+                                <!-- 1D Vector -->
+                                <rect x="170" y="16" width="18" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3"/>
+                                <text x="179" y="38" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+                                <text x="179" y="50" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+                                <text x="179" y="62" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+                                <text x="179" y="74" text-anchor="middle" font-size="10" fill="#7c3aed">·</text>
+                                <text x="179" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">1D Vector</text>
+
+                                <!-- Connection Lines -->
+                                <line x1="188" y1="30" x2="255" y2="34" stroke="#e0d5f0" stroke-width="1.2"/>
+                                <line x1="188" y1="45" x2="255" y2="55" stroke="#e0d5f0" stroke-width="1.2"/>
+                                <line x1="188" y1="60" x2="255" y2="76" stroke="#e0d5f0" stroke-width="1.2"/>
+                                <line x1="188" y1="75" x2="255" y2="55" stroke="#e0d5f0" stroke-width="1.2"/>
+                                <line x1="188" y1="30" x2="255" y2="76" stroke="#e0d5f0" stroke-width="1.2"/>
+
+                                <!-- Hidden Layer -->
+                                <circle cx="260" cy="34" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+                                <circle cx="260" cy="55" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+                                <circle cx="260" cy="76" r="10" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/>
+                                <text x="260" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Hidden Layer</text>
+
+                                <!-- Softmax Arrow -->
+                                <text x="325" y="56" text-anchor="middle" font-size="18" fill="#cbd5e1">→</text>
+                                <text x="325" y="74" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">Softmax</text>
+
+                                <!-- Output Probabilities -->
+                                <rect x="380" y="22" width="130" height="22" rx="4" fill="#7c3aed"/>
+                                <text x="445" y="37" text-anchor="middle" font-size="12" fill="white" font-family="JetBrains Mono,monospace" font-weight="700">고양이 85%</text>
+
+                                <rect x="380" y="48" width="85" height="22" rx="4" fill="#a78bfa"/>
+                                <text x="422" y="63" text-anchor="middle" font-size="12" fill="white" font-family="JetBrains Mono,monospace" font-weight="700">개 12%</text>
+
+                                <rect x="380" y="74" width="45" height="22" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+                                <text x="402" y="89" text-anchor="middle" font-size="12" fill="#7c3aed" font-family="JetBrains Mono,monospace" font-weight="700">기타</text>
+
+                                <text x="445" y="112" text-anchor="middle" font-size="12" fill="#475569" font-family="JetBrains Mono,monospace" font-weight="600">Softmax 확률 출력</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. CNN Full Pipeline & Architecture -->
+            <section id="sec-pipeline">
+                <h2>3. CNN 전체 파이프라인 및 아키텍처</h2>
+
+                <div class="pipe-wrap">
+                    <div class="pipe-flow">
+                        <div class="pblock" style="background:#eff6ff;border-color:#2563eb;"><div class="picon">🖼️</div><div class="pname">Input</div><div class="psize">H×W×3</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">저수준 특징</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#fff7ed;border-color:#ea580c;"><div class="picon">🔲</div><div class="pname">Conv+ReLU</div><div class="psize">고수준 특징</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#f0fdf4;border-color:#16a34a;"><div class="picon">⬇️</div><div class="pname">Pooling</div><div class="psize">크기 ½ 감소</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#f5f3ff;border-color:#7c3aed;"><div class="picon">📊</div><div class="pname">FC+Softmax</div><div class="psize">최종 분류</div></div>
+                        <div class="parr">→</div>
+                        <div class="pblock" style="background:#f8fafc;border-color:#334155;"><div class="picon">🏷️</div><div class="pname">Class</div><div class="psize">예측 결과</div></div>
+                    </div>
+                    <div class="pipe-note">
+                        레이어가 깊어질수록 : 저수준 (엣지·색상) → 중간 수준 (형태·패턴) → 고수준 (눈·코·얼굴·객체 전체)
+                    </div>
+                </div>
+
+                <!-- 계층적 특징 학습 (Hierarchical Features) -->
+                <div class="my-4">
+                    <h3 class="fs-5 fw-bold text-dark mb-3">🏷️ 계층적 특징 학습 (Hierarchical Features)</h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="intro-card" style="border-top:4px solid #2563eb;">
+                                <div>
+                                    <div class="text-uppercase font-monospace text-muted fs-6 fw-bold mb-2">Low-Level · 앞부분 레이어</div>
+                                    <h4 class="fs-5 fw-bold text-dark">저수준 특징 (Low-Level)</h4>
+                                    <p>이미지의 기본 시각 요소를 감지한다. 단순하며 거의 모든 영상에서 공통으로 발견된다.</p>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-3">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">엣지 (Edge)</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">색상 (Color)</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">그라디언트</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="intro-card" style="border-top:4px solid #ea580c;">
+                                <div>
+                                    <div class="text-uppercase font-monospace text-muted fs-6 fw-bold mb-2">Mid-Level · 중간 레이어</div>
+                                    <h4 class="fs-5 fw-bold text-dark">중간 수준 특징 (Mid-Level)</h4>
+                                    <p>저수준 엣지들이 조합되어 형성되며, 특정 기하학적 형태나 질감 정보를 표현한다.</p>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-3">
+                                    <span class="badge bg-warning bg-opacity-10 text-warning text-dark">곡선 (Curve)</span>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning text-dark">텍스처</span>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning text-dark">기하학 모양</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="intro-card" style="border-top:4px solid #7c3aed;">
+                                <div>
+                                    <div class="text-uppercase font-monospace text-muted fs-6 fw-bold mb-2">High-Level · 뒷부분 레이어</div>
+                                    <h4 class="fs-5 fw-bold text-dark">고수준 특징 (High-Level)</h4>
+                                    <p>의미 있는 추상적 형태를 완성하며, 물체의 특정 부위나 고유 객체 구조를 나타낸다.</p>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-3">
+                                    <span class="badge bg-secondary bg-opacity-10 text-dark">눈·코·입</span>
+                                    <span class="badge bg-secondary bg-opacity-10 text-dark">얼굴 구조</span>
+                                    <span class="badge bg-secondary bg-opacity-10 text-dark">객체 형상</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MathWorks CNN Architecture Diagram Image -->
+                <div class="block">
+                    <div class="block-hd" style="background:#f8fafc;">
+                        <div class="bname">📐 CNN 전체 아키텍처 구조도 (MathWorks)</div>
+                    </div>
+                    <div class="block-body text-center">
+                        <img src="https://kr.mathworks.com/discovery/convolutional-neural-network/_jcr_content/mainParsys/band_copy_copy/mainParsys/lockedsubnav/mainParsys/columns/a32c7d5d-8012-4de1-bc76-8bd092f97db8/image_2109075398_cop.adapt.full.medium.jpg/1785923231874.jpg" alt="CNN Architecture Diagram" class="img-fluid rounded-3 border">
+                        <p class="text-muted fs-6 mt-2">
+                            ▲ 입력 이미지 → Convolution + ReLU → Pooling (특징 추출 파트) → Flatten &amp; Fully Connected Layer (분류 파트) 전체 연결 흐름
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Conv & Pooling Calculation Example -->
+            <section id="sec-calc">
+                <h2>4. Conv &amp; Pooling 실전 계산 예제 (Feature Map &amp; Params)</h2>
+
+                <div class="block border-primary border-4 border-start">
+                    <div class="block-hd style-light">
+                        <div>
+                            <div class="bapi text-primary">Feature Map Shape &amp; Parameter Calculation Example</div>
+                            <div class="bname">🧮 실전 예제: Conv2d 및 Pooling 출력 크기 및 파라미터 개수 계산</div>
+                        </div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            입력 이미지 <strong>32 × 32 × 3 (H × W × C)</strong>에 대해 Conv2d 및 Max Pooling 연산을 적용할 때의 <strong>출력 크기 (Feature Map Shape), 채널 수, 학습 파라미터 개수 (Parameters)</strong> 단계별 계산 과정이다.
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- 1. Conv2d 연산 -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light border border-primary border-opacity-25 rounded-3 h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="fw-bold text-primary mb-2 fs-6">
+                                            <span>🔲</span> 1. Convolutional Layer (Conv2d)
+                                        </div>
+                                        <div class="fs-6 text-secondary line-height-lg">
+                                            • <strong>입력 크기</strong>: <code>32 × 32 × 3</code> (H<sub>in</sub>=32, W<sub>in</sub>=32, C<sub>in</sub>=3)<br>
+                                            • <strong>설정 조건</strong>: 커널 K=<code>3×3</code>, Stride S=<code>1</code>, Padding P=<code>1</code>, 출력 채널 C<sub>out</sub>=<code>8</code><br>
+                                            • <strong>출력 가로/세로 크기 산출 공식</strong>:<br>
+                                            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 32</code><br>
+                                            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 + 2×1 - 3) / 1⌋ + 1 = 32</code><br>
+                                            • <strong>출력 채널 수 (C<sub>out</sub>)</strong>: 설정한 필터 개수 = <strong>8 채널</strong><br>
+                                            • <strong>학습 파라미터 (Params) 수 계산</strong>:<br>
+                                            &nbsp;&nbsp; <code>((3 × 3 × 3) + 1) × 8 = 224 개</code>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 p-2 bg-white border border-primary rounded-3">
+                                        <div class="text-primary fw-bold fs-6">🎯 [Conv2d 최종 결과]</div>
+                                        <div class="fw-bold text-dark fs-6 mt-1">
+                                            • Feature Map Shape: <span class="text-primary fs-5">32 × 32 × 8</span><br>
+                                            • 채널 수: <span class="text-primary">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span class="text-primary">224 개</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Pooling 연산 -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light border border-success border-opacity-25 rounded-3 h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="fw-bold text-success mb-2 fs-6">
+                                            <span>⬇️</span> 2. Max Pooling Layer (2×2, Stride=2)
+                                        </div>
+                                        <div class="fs-6 text-secondary line-height-lg">
+                                            • <strong>입력 크기</strong>: <code>32 × 32 × 8</code> (Conv 연산의 출력값)<br>
+                                            • <strong>설정 조건</strong>: 커널 <code>2×2</code>, Stride <code>2</code> (표준 다운샘플링)<br>
+                                            • <strong>출력 H, W 크기 계산</strong>:<br>
+                                            &nbsp;&nbsp; <code>H<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
+                                            &nbsp;&nbsp; <code>W<sub>out</sub> = ⌊(32 - 2) / 2⌋ + 1 = 16</code><br>
+                                            • <strong>출력 채널 수 계산</strong>: <code>C<sub>out</sub> = C<sub>in</sub> = 8 채널 (동일 유지)</code><br>
+                                            • <strong>학습 파라미터 (Params) 수</strong>: <code>0 개</code> (학습 가중치 없음)
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 p-2 bg-white border border-success rounded-3">
+                                        <div class="text-success fw-bold fs-6">🎯 [Pooling 최종 결과]</div>
+                                        <div class="fw-bold text-dark fs-6 mt-1">
+                                            • Feature Map Shape: <span class="text-success fs-5">16 × 16 × 8</span><br>
+                                            • 채널 수: <span class="text-success">8 채널</span> &nbsp;|&nbsp; 파라미터 수: <span class="text-success">0 개</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 최종 요약 상자 -->
+                        <div class="hbox orange mt-3 mb-0">
+                            <div class="hbox-icon">💡</div>
+                            <div>
+                                <div class="hbox-title">한눈에 보는 계산 정답 요약</div>
+                                <div class="hbox-text fs-6">
+                                    • <strong>Conv2d 최종 출력</strong> = <strong class="text-primary fs-6">32 × 32 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>224</strong>개)<br>
+                                    • <strong>Pooling 최종 출력</strong> = <strong class="text-success fs-6">16 × 16 × 8</strong> &nbsp;(채널 수: <strong>8</strong>개 / 파라미터 수: <strong>0</strong>개)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. 4 Core Principles -->
+            <section id="sec-principles">
+                <h2>5. CNN이 강력한 4가지 핵심 원리</h2>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="intro-card">
+                            <h3>🔗 1. 지역 연결성 (Local Connectivity)</h3>
+                            <p>모든 픽셀을 전결합하지 않고 3×3 등 <strong>작은 국소 영역 (Receptive Field)</strong>에만 뉴런을 연결함으로써 연산량과 파라미터를 비약적으로 절감한다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="intro-card">
+                            <h3>⚖️ 2. 가중치 공유 (Weight Sharing)</h3>
+                            <p>하나의 필터 가중치를 <strong>이미지 전체 위치에 동일하게 슬라이딩</strong>하며 적용한다. 세로선 패턴을 학습하면 영상 어느 위치든 감지할 수 있다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="intro-card">
+                            <h3>📚 3. 계층적 학습 (Hierarchical Features)</h3>
+                            <p>층이 깊어질수록 <strong>단순 엣지 → 복잡한 모양 → 고수준 객체 부위</strong>로 추상화 수준이 높아진다. 사람의 시각 피질 작동 원리와 일치한다.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="intro-card">
+                            <h3>🎯 4. 이동 불변성 (Translation Invariance)</h3>
+                            <p>합성곱 연산과 Pooling 축소를 거치며 피사체가 중앙, 좌측, 우측 등 <strong>어느 위치로 이동하더라도 동일하게 인식</strong>하는 강인성을 가진다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. PyTorch Code Implementation -->
+            <section id="sec-code">
+                <h2>6. PyTorch 모델 구현 코드 (CNN Sample)</h2>
+                <p class="text-secondary fs-6 mb-3">PyTorch의 <code>torch.nn.Module</code>을 상속하여 특징 추출(Feature Extraction) 및 분류(Classification) 파이프라인을 갖춘 CNN 모델 클래스 구현 예제이다.</p>
+
+                <pre><code class="language-python">import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SimpleCNN(nn.Module):
+    def __init__(self, num_classes=10):
+        super(SimpleCNN, self).__init__()
+        # 1. 첫 번째 합성곱 블록 (Conv2d -> ReLU -> MaxPool)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # 2. 두 번째 합성곱 블록
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # 3. 완전연결 레이어 (Fully Connected)
+        # 32x32x3 입력 기준 -> pool2 거치면 8x8x32 차원
+        self.fc1 = nn.Linear(32 * 8 * 8, 128)
+        self.fc2 = nn.Linear(128, num_classes)
+
+    def forward(self, x):
+        # 특징 추출 파트 (Feature Extraction)
+        x = self.pool1(F.relu(self.conv1(x)))
+        x = self.pool2(F.relu(self.conv2(x)))
+        
+        # 1D 벡터 평탄화 (Flatten)
+        x = x.view(x.size(0), -1)
+        
+        # 최종 분류 파트 (Classification)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+if __name__ == "__main__":
+    # 샘플 입력 (Batch=1, Channels=3, H=32, W=32)
+    dummy_input = torch.randn(1, 3, 32, 32)
+    model = SimpleCNN(num_classes=10)
+    output = model(dummy_input)
+    print(f"모델 출력 Shape: {output.shape}") # [1, 10]</code></pre>
+            </section>
+
+            <!-- 7. 핵심 요약 -->
+            <footer id="summary" class="summary-box">
+                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">7. 핵심 요약</h2>
+                <ul class="mb-0">
+                    <li>CNN은 2D/3D 공간 구조를 보존하며 커널 슬라이딩을 통해 이미지를 효과적으로 이해한다.</li>
+                    <li><strong>Conv (합성곱)</strong> 레이어는 국소 패턴 추출, <strong>Pooling (풀링)</strong>은 다운샘플링 및 가중치 절감 역할을 수행한다.</li>
+                    <li><strong>Weight Sharing (가중치 공유)</strong>과 <strong>Local Connectivity (지역 연결성)</strong> 덕분에 학습 파라미터가 크게 감소한다.</li>
+                    <li>추출된 3D 특징 맵은 <strong>Flatten &amp; FC Layer</strong>를 거쳐 최종 클래스 확률로 예측된다.</li>
+                </ul>
+            </footer>
+
+
+        </article>
+    </div>
+
+    <!-- 5. 스크립트 로드 및 시뮬레이션 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+    <script>
+    /* ── SEC 00: Pixel Visualization Script ── */
+    function drawPixelVisualization() {
+      const canvas = document.getElementById('pixelCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Left side: Human View (Pattern Image)
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(30, 20, 210, 170);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(30, 20, 210, 170);
+
+      // Shape inside
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(60, 50, 70, 70);
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(170, 85, 35, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '700 13.5px "Pretendard", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('우리가 보는 이미지', 135, 212);
+
+      // Arrow
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 20px "JetBrains Mono", monospace';
+      ctx.fillText('➔', 280, 110);
+
+      // Right side: Computer View (2D Array)
+      const pixelValues = [
+        [255, 255, 255, 255, 255],
+        [255,  40,  40, 255, 120],
+        [255,  40,  40, 255, 120],
+        [255, 255, 255, 255, 255],
+        [255, 180, 180, 255, 255]
+      ];
+
+      const startX = 320;
+      const startY = 20;
+      const cellSize = 34;
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(startX, startY, cellSize * 5, cellSize * 5);
+
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          const x = startX + j * cellSize;
+          const y = startY + i * cellSize;
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.strokeRect(x, y, cellSize, cellSize);
+
+          const val = pixelValues[i][j];
+          ctx.fillStyle = val < 100 ? '#2563eb' : (val < 200 ? '#64748b' : '#0f172a');
+          ctx.font = '700 12px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(val, x + cellSize / 2, y + cellSize / 2);
+        }
+      }
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '700 13.5px "Pretendard", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('컴퓨터가 보는 픽셀 수치 (0~255)', startX + (cellSize * 5) / 2, 212);
+    }
+
+    /* ── SEC 01: Multi-Filter Visualization Script ── */
+    function drawMultiFilterVisualization() {
+      const canvas = document.getElementById('multiFilterCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const filters = [
+        { title: '수직 엣지', color: '#2563eb', bg: '#eff6ff' },
+        { title: '수평 엣지', color: '#ea580c', bg: '#fff7ed' },
+        { title: '샤프닝', color: '#16a34a', bg: '#f0fdf4' },
+        { title: '블러', color: '#7c3aed', bg: '#f5f3ff' }
+      ];
+
+      // Draw Input image icon on left
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(20, 40, 80, 80);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(35, 55, 50, 50);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Input (2D)', 60, 142);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 18px "JetBrains Mono", monospace';
+      ctx.fillText('➔', 120, 85);
+
+      // Draw Feature maps for each filter
+      const startX = 150;
+      const spacing = 120;
+
+      filters.forEach((f, idx) => {
+        const x = startX + idx * spacing;
+        const y = 30;
+
+        ctx.fillStyle = f.bg;
+        ctx.fillRect(x, y, 90, 90);
+        ctx.strokeStyle = f.color;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x, y, 90, 90);
+
+        // Inner pattern simulation
+        ctx.fillStyle = f.color;
+        if(idx === 0) { // Vertical
+          ctx.fillRect(x + 25, y + 10, 12, 70);
+          ctx.fillRect(x + 55, y + 10, 12, 70);
+        } else if(idx === 1) { // Horizontal
+          ctx.fillRect(x + 10, y + 25, 70, 12);
+          ctx.fillRect(x + 10, y + 55, 70, 12);
+        } else if(idx === 2) { // Sharpen
+          ctx.strokeRect(x + 20, y + 20, 50, 50);
+          ctx.fillRect(x + 35, y + 35, 20, 20);
+        } else { // Blur
+          ctx.globalAlpha = 0.4;
+          ctx.fillRect(x + 15, y + 15, 60, 60);
+          ctx.globalAlpha = 1.0;
+        }
+
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '700 12.5px "Pretendard", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(f.title + ' Map', x + 45, y + 112);
+      });
+    }
+
+    /* ── SEC 01: Max vs Avg Pooling Simulator Script ── */
+    let currentPoolingK = 2;
+    let currentPoolingMode = 'max';
+
+    function switchPoolingConfig(k, mode, btn) {
+      currentPoolingK = k;
+      currentPoolingMode = mode;
+      document.querySelectorAll('#poolingCtrlBtns .kbtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const expEl = document.getElementById('poolingExplainText');
+      if(k === 2 && mode === 'max') {
+        expEl.innerHTML = '<strong>2×2 Max Pooling (S=2):</strong> 2×2 겹치지 않는 영역에서 가장 큰 값만 추출합니다. (출력 크기: 2×2)';
+      } else if(k === 3 && mode === 'max') {
+        expEl.innerHTML = '<strong>3×3 Max Pooling (S=1):</strong> 3×3 영역을 1칸씩 슬라이딩하며 영역 내 가장 큰 값만 추출합니다. (출력 크기: 2×2)';
+      } else if(k === 2 && mode === 'avg') {
+        expEl.innerHTML = '<strong>2×2 Avg Pooling (S=2):</strong> 2×2 겹치지 않는 영역 픽셀 4개의 평균을 계산합니다. (출력 크기: 2×2)';
+      } else if(k === 3 && mode === 'avg') {
+        expEl.innerHTML = '<strong>3×3 Avg Pooling (S=1):</strong> 3×3 영역 픽셀 9개의 평균을 계산합니다. (출력 크기: 2×2)';
+      }
+      drawPoolingSim();
+    }
+
+    function drawPoolingSim() {
+      const canvas = document.getElementById('poolingCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const inputGrid = [
+        [1, 6, 5, 3],
+        [3, 2, 8, 4],
+        [5, 2, 2, 9],
+        [1, 3, 4, 1]
+      ];
+
+      // Draw Input Matrix (4x4)
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '700 12.5px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('Input Feature Map (4×4)', 20, 20);
+
+      const cSize = 36;
+      const inX = 20, inY = 32;
+      const colors = ['#eff6ff', '#fff7ed', '#f0fdf4', '#f5f3ff'];
+
+      for(let r=0; r<4; r++) {
+        for(let c=0; c<4; c++) {
+          let qIdx = 0;
+          if(currentPoolingK === 2) {
+            qIdx = (r >= 2 ? 2 : 0) + (c >= 2 ? 1 : 0);
+          } else {
+            qIdx = 0;
+          }
+          ctx.fillStyle = colors[qIdx];
+          ctx.fillRect(inX + c*cSize, inY + r*cSize, cSize, cSize);
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(inX + c*cSize, inY + r*cSize, cSize, cSize);
+
+          ctx.fillStyle = '#1e293b';
+          ctx.font = '700 13px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(inputGrid[r][c], inX + c*cSize + cSize/2, inY + r*cSize + cSize/2);
+        }
+      }
+
+      // Draw overlay outline
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(inX, inY, cSize * currentPoolingK, cSize * currentPoolingK);
+
+      // Arrow & Label
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 18px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('➔', 230, inY + cSize*2);
+      ctx.fillStyle = '#2563eb';
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.fillText(`${currentPoolingK}×${currentPoolingK} Pooling`, 230, inY + cSize*2 + 20);
+
+      // Draw Output Matrix (2x2)
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '700 12.5px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Output Map (2×2) — ${currentPoolingK}×${currentPoolingK} ${currentPoolingMode.toUpperCase()}`, 330, 20);
+
+      const outCSize = 56;
+      const outX = 340, outY = 38;
+
+      let results = [];
+      if(currentPoolingK === 2) {
+        if(currentPoolingMode === 'max') {
+          results = [
+            [Math.max(1,6,3,2), Math.max(5,3,8,4)],
+            [Math.max(5,2,1,3), Math.max(2,9,4,1)]
+          ];
+        } else {
+          results = [
+            [((1+6+3+2)/4).toFixed(1), ((5+3+8+4)/4).toFixed(1)],
+            [((5+2+1+3)/4).toFixed(1), ((2+9+4+1)/4).toFixed(1)]
+          ];
+        }
+      } else { // 3x3
+        if(currentPoolingMode === 'max') {
+          results = [
+            [Math.max(1,6,5,3,2,8,5,2,2), Math.max(6,5,3,2,8,4,2,2,9)],
+            [Math.max(3,2,8,5,2,2,1,3,4), Math.max(2,8,4,2,2,9,3,4,1)]
+          ];
+        } else {
+          results = [
+            [((1+6+5+3+2+8+5+2+2)/9).toFixed(1), ((6+5+3+2+8+4+2+2+9)/9).toFixed(1)],
+            [((3+2+8+5+2+2+1+3+4)/9).toFixed(1), ((2+8+4+2+2+9+3+4+1)/9).toFixed(1)]
+          ];
+        }
+      }
+
+      for(let r=0; r<2; r++) {
+        for(let c=0; c<2; c++) {
+          const qIdx = r*2 + c;
+          ctx.fillStyle = colors[qIdx];
+          ctx.fillRect(outX + c*outCSize, outY + r*outCSize, outCSize, outCSize);
+          ctx.strokeStyle = '#2563eb';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(outX + c*outCSize, outY + r*outCSize, outCSize, outCSize);
+
+          ctx.fillStyle = '#2563eb';
+          ctx.font = '700 16px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(results[r][c], outX + c*outCSize + outCSize/2, outY + r*outCSize + outCSize/2);
+        }
+      }
+    }
+
+    /* ── Interactive Conv Simulation Logic ── */
+    const BASE_INPUT=[[3,0,1,2,7],[1,5,8,9,3],[2,7,2,5,1],[0,1,3,1,7],[4,2,1,0,6]];
+    const KERNELS={
+      edge_v:{name:'수직 엣지 감지 (Sobel)',w:[[1,0,-1],[2,0,-2],[1,0,-1]]},
+      edge_h:{name:'수평 엣지 감지 (Sobel)',w:[[1,2,1],[0,0,0],[-1,-2,-1]]},
+      sharpen:{name:'샤프닝 (윤곽 강조)',w:[[0,-1,0],[-1,5,-1],[0,-1,0]]},
+      blur:{name:'블러 — 1/9 정규화',w:[[1,1,1],[1,1,1],[1,1,1]]}
+    };
+    let curK='edge_v',curS=1,curP=0,simStep=-1,simTimer=null,isPlay=false,spdMs=900;
+    let positions=[],padded=[];
+
+    function outSz(N,K,P,S){return Math.floor((N+2*P-K)/S)+1;}
+
+    function buildPad(){
+      const N=5,P=curP,sz=N+2*P;
+      const m=Array.from({length:sz},()=>Array(sz).fill(0));
+      for(let r=0;r<N;r++)for(let c=0;c<N;c++)m[r+P][c+P]=BASE_INPUT[r][c];
+      padded=m;return sz;
+    }
+
+    function buildPos(){
+      const K=3,S=curS,P=curP,out=outSz(5,K,P,S);
+      positions=[];
+      for(let r=0;r<out;r++)for(let c=0;c<out;c++)positions.push({pr:r*S,pc:c*S,or:r,oc:c});
+    }
+
+    function updFormula(){
+      const N=5,K=3,P=curP,S=curS,out=outSz(N,K,P,S);
+      document.getElementById('fExpr').innerHTML=`⌊(N+2P−K)/S⌋+1<br>⌊(${N}+${2*P}−${K})/${S}⌋+1<br>= ⌊${N+2*P-K}/${S}⌋+1`;
+      document.getElementById('fRes').textContent=`= ${out} × ${out}`;
+    }
+
+    function buildInputGrid(){
+      const P=curP,sz=buildPad();
+      const inp=document.getElementById('simIn');
+      inp.style.gridTemplateColumns=`repeat(${sz},44px)`;
+      inp.innerHTML='';
+      for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){
+        const isPad=P>0&&(r<P||r>=P+5||c<P||c>=P+5);
+        const d=document.createElement('div');
+        d.className='cell'+(isPad?' pad':'');
+        d.id=`ic_${r}_${c}`;
+        d.textContent=isPad?'0':BASE_INPUT[r-P][c-P];
+        inp.appendChild(d);
+      }
+      document.getElementById('inLbl').innerHTML=P>0?`Padded Input <span>(${sz}×${sz})</span>`:`Input <span>(5×5)</span>`;
+    }
+
+    function buildKernGrid(){
+      const kd=KERNELS[curK],kg=document.getElementById('simKern');
+      kg.innerHTML='';
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+        const d=document.createElement('div');
+        d.className='cell kact';
+        d.textContent=kd.w[r][c];
+        kg.appendChild(d);
+      }
+      document.getElementById('simKernName').textContent=kd.name;
+    }
+
+    function buildOutGrid(){
+      const out=outSz(5,3,curP,curS),og=document.getElementById('simOut');
+      og.style.gridTemplateColumns=`repeat(${out},44px)`;
+      og.innerHTML='';
+      for(let i=0;i<out*out;i++){
+        const d=document.createElement('div');
+        d.className='cell';d.id=`oc_${i}`;og.appendChild(d);
+      }
+      document.getElementById('outLbl').innerHTML=`Feature Map <span>(${out}×${out})</span>`;
+    }
+
+    function buildDots(){
+      const dots=document.getElementById('simDots');
+      dots.innerHTML='';
+      for(let i=0;i<positions.length;i++){
+        const d=document.createElement('div');
+        d.className='dot';d.id=`dot_${i}`;dots.appendChild(d);
+      }
+      document.getElementById('simSteps').textContent='';
+    }
+
+    function buildAll(){
+      buildPos();buildInputGrid();buildKernGrid();buildOutGrid();buildDots();updFormula();
+      document.getElementById('simCalc').textContent='▶ 시작 버튼을 눌러 합성곱 과정을 확인하세요.';
+      document.getElementById('simCalcR').textContent='';
+    }
+
+    function clearHi(){
+      const sz=5+2*curP;
+      for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){
+        const el=document.getElementById(`ic_${r}_${c}`);
+        if(el)el.classList.remove('hi');
+      }
+      for(let i=0;i<positions.length;i++){
+        const oc=document.getElementById(`oc_${i}`);
+        if(oc)oc.classList.remove('cur');
+      }
+    }
+
+    function execStep(step){
+      if(step>=positions.length){finishSim();return;}
+      clearHi();
+      const {pr,pc,or,oc}=positions[step],kd=KERNELS[curK];
+      for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++)
+        document.getElementById(`ic_${pr+dr}_${pc+dc}`).classList.add('hi');
+      let sum=0;const terms=[];
+      for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++){
+        const iv=padded[pr+dr][pc+dc],kv=kd.w[dr][dc];
+        sum+=iv*kv;if(kv!==0)terms.push(`${iv}×${kv}`);
+      }
+      const ocel=document.getElementById(`oc_${step}`);
+      ocel.textContent=sum;ocel.classList.add('cur');
+      for(let i=0;i<step;i++){
+        document.getElementById(`oc_${i}`).classList.remove('cur');
+        document.getElementById(`oc_${i}`).classList.add('done');
+        document.getElementById(`dot_${i}`).className='dot done';
+      }
+      document.getElementById(`dot_${step}`).className='dot cur';
+      document.getElementById('simCalc').innerHTML=
+        `위치 출력(${or},${oc}) — 패치 시작(${pr},${pc})<br>`+
+        `<span style="color:#2563eb;font-weight:600;">${terms.join(' + ')}</span>`;
+      document.getElementById('simCalcR').textContent=`= ${sum}  (bias 제외 단순화 연산)`;
+      document.getElementById('simSteps').textContent=`${step+1} / ${positions.length}`;
+    }
+
+    function finishSim(){
+      isPlay=false;clearInterval(simTimer);simTimer=null;clearHi();
+      for(let i=0;i<positions.length;i++){
+        document.getElementById(`oc_${i}`).classList.add('done');
+        document.getElementById(`dot_${i}`).className='dot done';
+      }
+      document.getElementById('playBtn').textContent='▶ 다시 재생';
+      const out=outSz(5,3,curP,curS);
+      document.getElementById('simCalc').textContent=`✓ 연산 완료! ${out}×${out} Feature Map 생성됨`;
+      document.getElementById('simCalcR').textContent='';
+      document.getElementById('simSteps').textContent=`${positions.length} / ${positions.length} 완료`;
+      simStep=positions.length;
+    }
+
+    function toggleSim(){
+      if(simStep>=positions.length){resetSim();return;}
+      if(isPlay){
+        isPlay=false;clearInterval(simTimer);simTimer=null;
+        document.getElementById('playBtn').textContent='▶ 계속';
+      }else{
+        isPlay=true;document.getElementById('playBtn').textContent='⏸ 일시정지';
+        if(simStep<0)simStep=0;
+        execStep(simStep);
+        simTimer=setInterval(()=>{simStep++;if(simStep>=positions.length){finishSim();return;}execStep(simStep);},spdMs);
+      }
+    }
+
+    function stepSim(){
+      if(isPlay)toggleSim();
+      if(simStep<0)simStep=0;else simStep++;
+      if(simStep>=positions.length){finishSim();return;}
+      execStep(simStep);
+    }
+
+    function resetSim(){
+      isPlay=false;clearInterval(simTimer);simTimer=null;simStep=-1;
+      document.getElementById('playBtn').textContent='▶ 시작';
+      buildAll();
+    }
+
+    function selK(key,btn){
+      curK=key;
+      document.querySelectorAll('.kbtn:not(.stride-btn):not(.pad-btn)').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');resetSim();
+    }
+    function selS(s,btn){
+      curS=s;
+      document.querySelectorAll('.stride-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');resetSim();
+    }
+    function selP(p,btn){
+      curP=p;
+      document.querySelectorAll('.pad-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');resetSim();
+    }
+
+    // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
+    document.addEventListener('DOMContentLoaded', (event) => {
+      if (typeof hljs !== 'undefined') {
+        hljs.configure({ ignoreUnescapedHTML: true });
+        hljs.highlightAll();
+      } else {
+        console.error('Highlight.js 로드 실패');
+      }
+      buildAll();
+      drawPixelVisualization();
+      drawMultiFilterVisualization();
+      drawPoolingSim();
+    });
+
+    // Iframe 높이 조절 및 렌더링 완료 알림
+    window.onload = function() {
+      setTimeout(function() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ height: height }, "*");
+      }, 100); // 렌더링 안정화를 위한 미세 지연
+    };
+  </script>
+</body>
+</html>

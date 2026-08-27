@@ -1,37 +1,64 @@
 [
   {
-    "label": "ai",
+    "label": ".agents",
     "children": [
       {
-        "label": "basic",
+        "label": "skills",
         "children": [
           {
-            "label": "신경망 아키텍처의 진화 과정",
-            "path": "ai/basic/flow.html"
+            "label": "create-page",
+            "children": [
+              {
+                "label": "resources",
+                "children": [
+                  {
+                    "label": "강의 자료 최종 마스터 템플릿",
+                    "path": ".agents/skills/create-page/resources/template.html"
+                  }
+                ]
+              }
+            ]
           }
         ]
-      },
+      }
+    ]
+  },
+  {
+    "label": "ai",
+    "children": [
       {
         "label": "cnn",
         "children": [
           {
-            "label": "CLIP 개념 개요",
+            "label": "CLIP 개념 개요 - OpenAI 2021",
             "path": "ai/cnn/clip.html"
           },
           {
-            "label": "CNN — 합성곱 신경망",
-            "path": "ai/cnn/cnn.html"
+            "label": "CNN (Convolutional Neural Network) — 합성곱 신경망 마스터 가이드",
+            "path": "ai/cnn/cnn_2.html"
           },
           {
-            "label": "HuggingFace 모델 활용",
-            "path": "ai/cnn/huggingface.html"
+            "label": "HuggingFace 모델 활용 - 1. Hugging Face 소개 & 사용법",
+            "path": "ai/cnn/huggingface_1.html"
           },
           {
-            "label": "Linear Probing & Fine-tuning — 전이학습 전략",
+            "label": "HuggingFace 모델 활용 - 2. SANA 이미지 생성",
+            "path": "ai/cnn/huggingface_2.html"
+          },
+          {
+            "label": "HuggingFace 모델 활용 - 3. CLIP Zero-shot 분류",
+            "path": "ai/cnn/huggingface_3.html"
+          },
+          {
+            "label": "HuggingFace 모델 활용 - 4. ResNet-50 이미지 분류",
+            "path": "ai/cnn/huggingface_4.html"
+          },
+          {
+            "label": "Linear Probing &amp; Fine-tuning — 전이학습 전략 가이드",
             "path": "ai/cnn/linearprobing.html"
           },
           {
-            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처",
+            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처 가이드",
             "path": "ai/cnn/vit.html"
           }
         ]
@@ -60,16 +87,24 @@
             "path": "ai/langchain/langfuse.html"
           },
           {
-            "label": "LangGraph 시각화",
+            "label": "LangGraph 시각화 및 실무 가이드",
             "path": "ai/langchain/langgraph.html"
           },
           {
-            "label": "Multi-Agent 협업 디자인 패턴 (Part 4)",
+            "label": "Multi-Agent 협업 디자인 패턴",
             "path": "ai/langchain/multiagent.html"
           },
           {
             "label": "RAG(검색 증강 생성) 기술 소개",
             "path": "ai/langchain/rag.html"
+          },
+          {
+            "label": "RAG 시스템 평가 가이드 및 시뮬레이터",
+            "path": "ai/langchain/rag_evaluation.html"
+          },
+          {
+            "label": "RecursiveCharacterTextSplitter 정밀 시뮬레이터",
+            "path": "ai/langchain/recursivechartextspliter.html"
           }
         ]
       },

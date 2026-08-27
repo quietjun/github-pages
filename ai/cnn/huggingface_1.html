@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuggingFace 모델 활용 - 1. Hugging Face 소개 & 사용법</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Highlight.js (Syntax Highlighting) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <!-- Pretendard & Fira Code & JetBrains Mono Fonts -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.1);
+            --secondary: #ea580c;
+            --accent: #16a34a;
+            --purple: #7c3aed;
+            --amber: #d97706;
+            --rose: #e11d48;
+            --bg-light: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            font-size: 18px;
+            line-height: 1.75;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            padding: 0;
+            margin: 0;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Floating TOC Drawer */
+        .toc-drawer {
+            position: fixed;
+            top: 100px;
+            right: -260px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e2e8f0;
+            border-right: none;
+            border-radius: 16px 0 0 16px;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1050;
+            padding: 20px;
+        }
+
+        .toc-drawer:hover {
+            right: 0;
+        }
+
+        .toc-handle {
+            position: absolute;
+            left: -48px;
+            top: 20px;
+            width: 48px;
+            height: 48px;
+            background: #2563eb;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px 0 0 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            box-shadow: -3px 0 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .toc-content h5 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .toc-content ul {
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .toc-content li {
+            margin-bottom: 8px;
+        }
+
+        .toc-content a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toc-content a:hover {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        /* Header Style */
+        .page-header {
+            text-align: center;
+            padding: 40px 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .page-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--primary-glow);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            color: var(--primary);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 840px;
+            margin: 0 auto;
+        }
+
+        /* 4개 별도 HTML 분리 탭 상단 바 */
+        .nav-tabs-custom {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab-item-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 12px 22px;
+            border-radius: 12px 12px 0 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-item-btn:hover {
+            color: #2563eb;
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .tab-item-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Section & Cards */
+        section {
+            margin-bottom: 44px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .block {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .block-hd {
+            padding: 18px 24px;
+            border-bottom: 1px solid #eef1f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafc;
+        }
+        .block-hd.blue { background: #eff6ff; }
+
+        .bicon {
+            font-size: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .bname {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .block-body {
+            padding: 24px;
+        }
+
+        .bdesc {
+            font-size: 16px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        /* Callout Box (hbox) */
+        .hbox {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .hbox.orange { background: #fff7ed; border-color: #ea580c; }
+        .hbox-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .hbox-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .hbox.orange .hbox-title { color: #ea580c; }
+        .hbox-text { font-size: 15px; color: #475569; line-height: 1.7; }
+        .hbox-text strong { color: #0f172a; }
+
+        /* Tables & Code */
+        .table-custom {
+            font-size: 16px;
+            margin: 20px 0;
+            border-top: 2px solid var(--primary);
+        }
+
+        .verification-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- [플로팅 목차] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-intro">1. Hugging Face 생태계 &amp; 모델 허브 개요</a></li>
+                <li><a href="#sec-discovery">2. 모델 탐색 &amp; 명명 규칙</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <article>
+            <!-- Header Section -->
+            <header class="page-header">
+                <span class="page-badge">Part 1. Hugging Face Ecosystem &amp; Usage</span>
+                <h1>Hugging Face 소개 &amp; 사용법</h1>
+                <p>
+                    100만 개 이상의 오픈소스 AI 사전학습 모델과 데이터셋을 공유하는 최대 오픈소스 ML 생태계의 구성 요소, 모델 탐색 필터 및 Naming Convention 규칙을 완벽하게 다룬다.
+                </p>
+            </header>
+
+            <!-- 1. Hugging Face 생태계 & 모델 허브 개요 -->
+            <section id="sec-intro">
+                <h2>1. Hugging Face 생태계 &amp; 모델 허브 개요</h2>
+
+                <div class="block">
+                    <div class="block-hd blue">
+                        <div class="bicon">⚡</div>
+                        <div class="bname">Hugging Face 플랫폼 가치 및 주요 서비스</div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            <strong>Hugging Face</strong>는 전 세계 AI 엔지니어들이 100만 개 이상의 오픈소스 사전학습 모델(Pre-trained Models)과 데이터셋을 공유하는 최대 머신러닝 커뮤니티이자 플랫폼이다. 
+                            비전(Vision), 자연어 처리(NLP), 오디오 등 다양한 분야의 최첨단 AI 모델을 코드 단 몇 줄로 즉시 로드하고 실행하는 파이프라인 API를 제공한다.
+                        </div>
+
+                        <!-- Official Link Banner -->
+                        <div class="text-center my-3">
+                            <a href="https://huggingface.co" target="_blank" class="d-inline-block text-decoration-none">
+                                <img src="huggingface_logo.png" alt="Hugging Face Header Bar" class="img-fluid rounded border shadow-sm mb-2" style="max-width: 100%;">
+                                <div class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2 border border-primary border-opacity-25">
+                                    🔗 Hugging Face 공식 웹사이트 (huggingface.co) 바로가기
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Platform Core Services (Models, Datasets, Spaces, Buckets) -->
+                        <h3 class="fs-5 fw-bold text-dark mt-4 mb-3">💡 플랫폼 핵심 제공 서비스 4종</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-light border border-primary border-opacity-25 rounded-3 h-100">
+                                    <div class="fw-bold text-primary mb-1 fs-6">📦 Models</div>
+                                    <div class="fs-6 text-secondary">
+                                        다양한 도메인의 오픈소스 사전학습 AI 가중치를 공유하고 손쉽게 다운로드받는 모델 허브
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-light border border-success border-opacity-25 rounded-3 h-100">
+                                    <div class="fw-bold text-success mb-1 fs-6">📊 Datasets</div>
+                                    <div class="fs-6 text-secondary">
+                                        정형/비정형 텍스트, 이미지, 음성 등 모델 학습 및 벤치마크 평가용 대규모 데이터셋 보관소
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-light border border-warning border-opacity-25 rounded-3 h-100">
+                                    <div class="fw-bold text-warning mb-1 fs-6">🚀 Spaces</div>
+                                    <div class="fs-6 text-secondary">
+                                        Gradio 또는 Streamlit으로 AI 동작 데모 웹 앱을 무료로 빠르게 배포하고 공유하는 플랫폼
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-light border border-danger border-opacity-25 rounded-3 h-100">
+                                    <div class="fw-bold text-danger mb-1 fs-6">🪣 Buckets <span class="badge bg-danger fs-6 py-1 ms-1">NEW</span></div>
+                                    <div class="fs-6 text-secondary">
+                                        머신러닝 워크플로우에 최적화된 대용량 원본 파일 및 ML 에셋 저장소
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core Value Callout Box -->
+                        <div class="hbox orange mt-4 mb-0">
+                            <div class="hbox-icon">💡</div>
+                            <div>
+                                <div class="hbox-title">Hugging Face의 핵심 가치</div>
+                                <div class="hbox-text">
+                                    독자적으로 방대한 컴퓨팅 리소스를 들여 거대 비전/언어 모델을 직접 사전학습시킬 필요 없이, 검증된 가중치(Weights)와 아키텍처 설정을 허브로부터 API 기반으로 즉시 호출하여 **전이학습(Transfer Learning)** 및 추론을 수행하도록 지원한다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 허깅페이스 탐색 및 명명 규칙 -->
+            <section id="sec-discovery">
+                <h2>2. 허깅페이스 모델 탐색 및 명명 규칙</h2>
+
+                <div class="block">
+                    <div class="block-hd">
+                        <div class="bicon">🔍</div>
+                        <div class="bname">모델 검색, Naming Conventions &amp; 핵심 검토 항목</div>
+                    </div>
+                    <div class="block-body">
+                        <!-- 2.1 Model Search Filters -->
+                        <div class="row align-items-center g-4 mb-5">
+                            <div class="col-lg-7">
+                                <h3 class="fs-5 fw-bold text-primary mb-2">🗂️ 1. 다차원 모델 검색 시스템 (Task &amp; Filter)</h3>
+                                <div class="bdesc mb-2">
+                                    허깅페이스는 다양한 기준에 따라 최적의 모델을 쉽고 빠르게 찾을 수 있도록 강력한 검색 및 필터링 시스템을 제공한다.
+                                </div>
+                                <ul class="fs-6 text-secondary lh-lg mb-3">
+                                    <li><strong>Computer Vision</strong>: <code>Image Classification</code>(이미지 분류), <code>Object Detection</code>(사물 검출), <code>Text-to-Image</code>(텍스트 기반 이미지 생성 - 예: SANA)</li>
+                                    <li><strong>Natural Language Processing (NLP)</strong>: <code>Text Generation</code>(텍스트 생성), <code>Translation</code>(기계 번역), <code>Question Answering</code>(질의응답)</li>
+                                    <li><strong>Multimodal</strong>: <code>Zero-Shot Image Classification</code>(텍스트-이미지 매칭 - 예: CLIP), <code>Image-to-Text</code></li>
+                                </ul>
+                                <div class="p-3 bg-light border-start border-4 border-success rounded-end fs-6">
+                                    💡 <strong>실무 팁:</strong> 허깅페이스 좌측 패널에서 검색 조건을 조합하면 서비스 요구사항 및 로컬 하드웨어(GPU VRAM) 리소스에 정확히 부합하는 모델을 즉시 스크리닝할 수 있다.
+                                </div>
+                            </div>
+                            <div class="col-lg-5 text-center">
+                                <img src="sana_tasks.png" alt="Hugging Face Model Search Filters" class="img-fluid rounded-3 border shadow-sm" style="max-height:250px;">
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-muted">
+
+                        <!-- 2.2 Naming Conventions -->
+                        <h3 class="fs-5 fw-bold text-secondary mb-3">📛 2. 리포지토리 ID 명명 규칙 (Naming Conventions)</h3>
+                        <div class="bdesc">
+                            허깅페이스의 사전학습 모델은 <code>네임스페이스/모델명</code> 포맷의 고유한 <strong>리포지토리 ID (Repository ID)</strong>를 갖는다. 모델명 내부에는 크기, 용도, 학습 방식 등의 정보가 접미사(Suffix) 형태로 조합된다.
+                        </div>
+
+                        <!-- Naming Table -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered table-custom text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 20%;">구분</th>
+                                        <th style="width: 45%;">설명 및 의미</th>
+                                        <th style="width: 35%;">주요 태그 및 접미사 예시</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold text-primary">리포지토리 ID</td>
+                                        <td class="text-start">네임스페이스와 모델명을 결합한 고유 식별 주소</td>
+                                        <td><code>namespace/model_name</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-secondary">네임스페이스</td>
+                                        <td class="text-start">모델 배포 조직 또는 작성자 계정명</td>
+                                        <td><code>meta-llama</code>, <code>google</code>, <code>openai</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-success">모델 크기</td>
+                                        <td class="text-start">모델의 매개변수(파라미터) 총규모</td>
+                                        <td><code>7B</code>, <code>8B</code>, <code>70B</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-danger">용도 및 목적</td>
+                                        <td class="text-start">기본 모델(Base) 및 지시수행(Instruct) 구분</td>
+                                        <td><code>-Base</code>, <code>-Instruct</code>, <code>-Chat</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-purple" style="color:#7c3aed;">학습 기법</td>
+                                        <td class="text-start">지도학습 및 강화학습 파인튜닝 방식</td>
+                                        <td><code>-SFT</code>, <code>-DPO</code>, <code>-RLHF</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-warning">양자화 포맷</td>
+                                        <td class="text-start">로컬 구동용 경량 압축 포맷</td>
+                                        <td><code>-GGUF</code>, <code>-GPTQ</code>, <code>-AWQ</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Diagram Box: Real Repo ID Analysis -->
+                        <div class="p-4 bg-light border rounded-3 mb-5">
+                            <div class="fw-bold text-secondary mb-3 fs-6 text-uppercase" style="letter-spacing: 0.5px;">📌 실제 리포지토리 ID 분석 예시 (Meta-Llama-3-8B-Instruct)</div>
+                            
+                            <div class="d-flex flex-wrap align-items-center gap-2 font-monospace fs-5 fw-bold mb-3 p-3 bg-white border rounded-3">
+                                <span class="badge bg-primary fs-6">meta-llama</span>
+                                <span class="text-muted">/</span>
+                                <span class="badge bg-purple fs-6" style="background:#7c3aed;">Meta-Llama-3</span>
+                                <span class="text-muted">-</span>
+                                <span class="badge bg-warning text-dark fs-6">8B</span>
+                                <span class="text-muted">-</span>
+                                <span class="badge bg-danger fs-6">Instruct</span>
+                            </div>
+
+                            <div class="row g-3 fs-6">
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-white border rounded-3 h-100">
+                                        <div class="fw-bold text-warning mb-1">🏷️ 8B, 70B (매개변수 크기)</div>
+                                        <div class="text-secondary">가중치 규모 표시 (숫자가 클수록 높은 성능과 무거운 VRAM 요구)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-white border rounded-3 h-100">
+                                        <div class="fw-bold text-danger mb-1">🎯 -Base, -Instruct, -Chat</div>
+                                        <div class="text-secondary">기본형(<code>-Base</code>) 또는 대화/정렬 튜닝(<code>-Instruct</code>, <code>-DPO</code>) 표기</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-white border rounded-3 h-100">
+                                        <div class="fw-bold text-success mb-1">⚙️ -GGUF, -GPTQ, -AWQ</div>
+                                        <div class="text-secondary">로컬 저사양 환경 동작을 위해 소수점 정밀도를 압축한 양자화 포맷 표기</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-muted">
+
+                        <!-- 2.3 Model Card & Metadata Detailed Checklist -->
+                        <h3 class="fs-5 fw-bold text-dark mb-3">📑 3. 모델 상세 정보 핵심 검토 항목 (Model Card &amp; Metadata)</h3>
+                        <div class="bdesc mb-4">
+                            허깅페이스 개별 모델 저장소 메인 화면과 탭 리소스에서 서비스 도입 검토 및 실무 연동을 위해 반드시 점검해야 할 핵심 3대 구성 영역이다.
+                        </div>
+
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Point 1 -->
+                            <div class="p-3 bg-light border border-primary border-opacity-25 rounded-3">
+                                <div class="fw-bold text-primary mb-2 fs-6">1. 📄 메인 README (Model Card)</div>
+                                <div class="fs-6 text-secondary">
+                                    모델의 공식 소개서이다. 모델 개발사, 학습 메커니즘, 평가 성능(Benchmark) 점수를 확인한다. 특히 코드 구현 시 즉시 테스트해 볼 수 있는 <strong>실행 가능한 예제 코드(Usage Code)</strong>의 유무를 필히 검증한다.
+                                </div>
+                            </div>
+
+                            <!-- Point 2 -->
+                            <div class="p-3 bg-light border border-success border-opacity-25 rounded-3">
+                                <div class="fw-bold text-success mb-2 fs-6">2. 📂 Files and versions 탭 (가중치 및 아키텍처 설정)</div>
+                                <div class="fs-6 text-secondary">
+                                    가중치 파일 보관소이자 <strong>실제 프로그래밍 시 코드 레벨에서 반드시 참조해야 하는 메타데이터 설정 파일들</strong>이 위치하는 핵심 공간이다.
+                                    <ul class="mt-2 mb-2 ps-4">
+                                        <li class="mb-1"><strong>가중치 본체 (<code>.safetensors</code>)</strong>: 해킹(악성 코드 실행) 위험이 없고 컴퓨터 메모리로 로드하는 속도도 훨씬 빠른 최신 표준 가중치 파일 형태</li>
+                                        <li><strong>모델 상세 설정 (<code>config.json</code>)</strong>: 모델 아키텍처 상세 사양이다. <strong>Linear Probing(선형 분류기 추가 학습) 시 백본의 최종 출력 피처 차원(Hidden Dimension) 크기를 직접 확인하여 새로운 선형 레이어 차원을 설계하는 기준</strong>이 된다.</li>
+                                    </ul>
+                                    <div class="p-2 bg-white border border-warning rounded-2 fs-6 text-muted">
+                                        💡 <code>preprocessor_config.json</code>, <code>tokenizer.json</code> 등 그 외 설정 파일은 개발자가 직접 열어볼 필요 없이, 라이브러리(<code>Auto</code> 클래스)가 실행 시 내부적으로 알아서 자동 로드하여 처리한다.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Point 3 -->
+                            <div class="p-3 bg-light border border-purple border-opacity-25 rounded-3">
+                                <div class="fw-bold text-purple mb-2 fs-6" style="color:#7c3aed;">3. 💬 Community &amp; Spaces 탭 (생태계 피드백 및 데모)</div>
+                                <div class="fs-6 text-secondary">
+                                    저장소 상단의 서브 탭 요소이다. <strong>Community</strong> 탭의 토론 스레드 및 PR에서 잠재적 오류를 모니터링하고, <strong>Spaces</strong> 탭에서 실행 중인 Gradio 라이브 데모 웹 앱을 통해 코딩 작업 전 실제 모델 성능을 검증한다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </div>
+
+    <!-- 필수 라이브러리 및 높이 조절 스크립트 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            } else {
+                console.error('Highlight.js 로드 실패');
+            }
+        });
+
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100); // 렌더링 안정화를 위한 미세 지연
+        };
+    </script>
+</body>
+</html>

@@ -138,7 +138,6 @@
         <div class="toc-content">
             <h5>문서 구조</h5>
             <ul class="list-unstyled">
-                <li><a href="#header">0. 도입 및 개요</a></li>
                 <li><a href="#sec-svg">1. 프로세스 시각화 (SVG)</a></li>
                 <li><a href="#sec-table">2. 기술 비교 분석 (Table)</a></li>
                 <li><a href="#sec-code">3. 구현 예시 (Python Code)</a></li>
@@ -254,22 +253,14 @@ if __name__ == "__main__":
                 console.error('Highlight.js 로드 실패');
             }
         });
-    </script>
 
-    <!-- [필수] Iframe 높이 조절 스크립트 (AGENTS.md 규칙) -->
-    <script>
-      function sendHeight() {
-        const height = document.body.scrollHeight;
-        window.parent.postMessage({ height: height }, "*");
-      }
-      window.onload = sendHeight;
-      [50, 200, 500, 1000, 2000].forEach(function(delay) {
-        setTimeout(sendHeight, delay);
-      });
-      if (window.ResizeObserver) {
-        const ro = new ResizeObserver(sendHeight);
-        ro.observe(document.body);
-      }
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100); // 렌더링 안정화를 위한 미세 지연
+        };
     </script>
 </body>
 </html>
