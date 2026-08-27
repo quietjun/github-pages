@@ -310,34 +310,32 @@
                     <span id="int8-loss-badge" class="self-start md:self-auto text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">L1 평균 오차: 계산 중</span>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                    <div class="lg:col-span-4 flex flex-col h-full space-y-3">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-                            <div class="space-y-1.5">
-                                <label class="text-sm font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
-                                <input type="text" id="int8-sim-weights" oninput="runINT8Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-blue-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
-                            </div>
-                            <div class="border-t border-slate-100 pt-2 text-sm font-mono text-slate-500">
-                                • Scale 배율: <span id="int8-meta-scale" class="font-bold text-slate-700">0.00</span>
-                            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-4 space-y-3">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
+                            <input type="text" id="int8-sim-weights" oninput="runINT8Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-blue-500" value="-1.5, -0.3, 0.8, 2.1, 2.8">
                         </div>
- 
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
+                            <div>• Scale 배율: <span id="int8-meta-scale" class="font-bold text-slate-700">0.00</span></div>
+                        </div>
+
                         <!-- 그림으로 그려보는 3단계 변환 과정 -->
-                        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-sm leading-relaxed text-slate-600 flex-1">
+                        <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-[11px] leading-relaxed text-slate-600">
                             <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-blue-500"></i> 3단계 변환 과정:</span>
                             <p><strong>1. 극단값 기준 설정:</strong> 부호 상관없이 크기가 가장 큰 실수(예: 2.8)를 범위 기준값으로 정함.</p>
                             <p><strong>2. 배율 계산:</strong> 기준값(2.8)이 INT8 정밀도 최대 칸(127)에 닿는 배율을 구함. (예: 127 / 2.8 = 약 45.3배)</p>
                             <p><strong>3. 정수 반올림 매핑:</strong> 실수에 배율을 곱해 부풀린 후 가까운 정수(-128 ~ 127)로 매핑함.</p>
                         </div>
                     </div>
- 
+
                     <div class="lg:col-span-8 space-y-3">
                         <!-- INT8 SVG -->
                         <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="int8-graph-container"></div>
                         
                         <!-- INT8 Table -->
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5">
-                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2">
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-[11px] text-slate-700 space-y-1.5">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-[10px] gap-2">
                                 <div class="col-span-1">원본</div>
                                 <div class="col-span-5">양자화 연산 (원본 * 배율)</div>
                                 <div class="col-span-4">역양자화 연산 (정수 / 배율)</div>
@@ -361,47 +359,50 @@
                         그 결과, 대부분의 가중치 원소가 집중되어 있는 <strong>0 주변의 미세한 값들</strong>은 다 같이 뭉개지고, 드물게 존재하는 아웃라이어(큰 값) 영역에만 넓은 바구니들이 낭비되어 복원 성능의 정확도 낙폭이 심해짐.
                     </p>
                     <!-- 신발 사이즈 비유 상징적 SVG 도해 -->
-                    <div class="flex flex-col md:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-3">
-                        <div class="text-center space-y-1 md:border-r md:border-slate-200 md:pr-4 flex-shrink-0" style="min-width: 180px;">
-                            <i class="fa-solid fa-shoe-prints text-3xl text-rose-500/80" style="transform: rotate(-10deg);"></i>
-                            <div class="text-xs font-bold text-rose-600" style="white-space: nowrap;">Uniform Size (20mm 간격)</div>
+                    <div class="flex flex-col sm:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-3">
+                        <div class="text-center space-y-1 sm:border-r sm:border-slate-200 sm:pr-4 flex-shrink-0">
+                            <i class="fa-solid fa-shoe-prints text-3xl text-rose-500/80"></i>
+                            <div class="text-[10px] font-bold text-rose-600">Uniform Size (20mm 간격)</div>
                         </div>
                         <div class="w-full overflow-x-auto">
-                            <svg width="650" height="70" viewBox="0 0 650 70" class="mx-auto overflow-visible text-slate-400">
+                            <svg width="450" height="70" viewBox="0 0 450 70" class="mx-auto overflow-visible text-slate-400">
                                 <!-- 가로 자 축 -->
-                                <line x1="30" y1="25" x2="620" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
+                                <line x1="20" y1="25" x2="430" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
                                 <!-- 20mm 단위의 일정하고 듬성듬성한 눈금들 -->
                                 <!-- 150 -->
-                                <line x1="30" y1="13" x2="30" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
-                                <text x="30" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
+                                <line x1="20" y1="13" x2="20" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                                <text x="20" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
                                 <!-- 170 -->
-                                <line x1="89" y1="17" x2="89" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="61" y1="17" x2="61" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                                 <!-- 190 -->
-                                <line x1="148" y1="17" x2="148" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="102" y1="17" x2="102" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                                 <!-- 210 -->
-                                <line x1="207" y1="17" x2="207" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="143" y1="17" x2="143" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                                 <!-- 230 (수렴 대상 1) -->
-                                <line x1="266" y1="13" x2="266" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                                <text x="266" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">230</text>
+                                <line x1="184" y1="13" x2="184" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="184" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">230</text>
                                 <!-- 250 (수렴 대상 2) -->
-                                <line x1="325" y1="13" x2="325" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                                <text x="325" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">250</text>
+                                <line x1="225" y1="13" x2="225" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="225" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">250</text>
                                 <!-- 270 (수렴 대상 3) -->
-                                <line x1="384" y1="13" x2="384" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                                <text x="384" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">270</text>
+                                <line x1="266" y1="13" x2="266" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="266" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">270</text>
                                 <!-- 290 -->
-                                <line x1="443" y1="13" x2="443" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                                <text x="443" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">290</text>
+                                <line x1="307" y1="13" x2="307" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="307" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">290</text>
                                 <!-- 310 -->
-                                <line x1="502" y1="17" x2="502" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="348" y1="17" x2="348" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                                 <!-- 330 -->
-                                <line x1="561" y1="17" x2="561" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                                <line x1="389" y1="17" x2="389" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                                 <!-- 350 -->
-                                <line x1="620" y1="13" x2="620" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
-                                <text x="620" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
+                                <line x1="430" y1="13" x2="430" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                                <text x="430" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
                             </svg>
                         </div>
                     </div>
+                </div>
+                <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
+                    💡 **클리핑 &amp; 반올림 오차**: 이로 인해 환경 변화 입력(오타/노이즈)이 발생하면 모델의 추론 방향이 흐트러지게 됨.
                 </div>
             </div>
         </section>
@@ -516,59 +517,59 @@
                 </div>
 
                 <!-- NF4 신발 사이즈 비유 상징적 SVG 도해 (INT8의 Uniform Size 도해와 완벽히 동일한 마진 및 레이아웃 구조) -->
-                <div class="flex flex-col md:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-6 w-full">
-                    <div class="text-center space-y-1 md:border-r md:border-slate-200 md:pr-4 flex-shrink-0" style="min-width: 180px;">
-                        <i class="fa-solid fa-shoe-prints text-3xl text-indigo-500/80" style="transform: rotate(-10deg); color: #4f46e5 !important;"></i>
-                        <div class="text-xs font-bold" style="white-space: nowrap; color: #4f46e5;">Quantile Size (비선형 간격)</div>
+                <div class="flex flex-col sm:flex-row items-center justify-center bg-slate-50/70 p-4 rounded-2xl border border-slate-150 gap-4 mt-6 w-full">
+                    <div class="text-center space-y-1 sm:border-r sm:border-slate-200 sm:pr-4 flex-shrink-0">
+                        <i class="fa-solid fa-shoe-prints text-3xl text-indigo-500/80"></i>
+                        <div class="text-[10px] font-bold text-indigo-600">NF4 Size (중앙 조밀 배치)</div>
                     </div>
                     <div class="w-full overflow-x-auto">
-                        <svg width="650" height="70" viewBox="0 0 650 70" class="mx-auto overflow-visible text-slate-400">
+                        <svg width="450" height="70" viewBox="0 0 450 70" class="mx-auto overflow-visible text-slate-400">
                             <!-- 가로 자 축 -->
-                            <line x1="30" y1="25" x2="620" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
-                            <!-- 비선형 눈금들 -->
+                            <line x1="20" y1="25" x2="430" y2="25" stroke="#cbd5e1" stroke-width="2.5"/>
+                            <!-- 비선형 눈금들 (INT8과 가로 폭 및 주요 포인트 좌표 정렬) -->
                             <!-- 150 -->
-                            <line x1="30" y1="13" x2="30" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
-                            <text x="30" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
+                            <line x1="20" y1="13" x2="20" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                            <text x="20" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">150</text>
                             
                             <!-- 190 (외곽은 넓게 건너뜀) -->
-                            <line x1="148" y1="17" x2="148" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text x="148" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">190</text>
+                            <line x1="102" y1="17" x2="102" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <text x="102" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">190</text>
                             
                             <!-- 220 -->
-                            <line x1="236.5" y1="17" x2="236.5" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <line x1="163.5" y1="17" x2="163.5" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
                             
                             <!-- 230 (중앙 조밀 지대 시작) -->
-                            <line x1="266" y1="13" x2="266" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                            <text x="266" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">230</text>
+                            <line x1="184" y1="13" x2="184" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <text x="184" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">230</text>
                             
                             <!-- 240 -->
-                            <line x1="295.5" y1="13" x2="295.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <line x1="204.5" y1="13" x2="204.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
                             
                             <!-- 250 (가운데 최대 밀집) -->
-                            <line x1="325" y1="13" x2="325" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                            <text x="325" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">250</text>
+                            <line x1="225" y1="13" x2="225" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <text x="225" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">250</text>
                             
                             <!-- 260 -->
-                            <line x1="354.5" y1="13" x2="354.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <line x1="245.5" y1="13" x2="245.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
                             
                             <!-- 270 (중앙 조밀 지대 끝) -->
-                            <line x1="384" y1="13" x2="384" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                            <text x="384" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">270</text>
+                            <line x1="266" y1="13" x2="266" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <text x="266" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">270</text>
                             
                             <!-- 280 -->
-                            <line x1="413.5" y1="13" x2="413.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <line x1="286.5" y1="13" x2="286.5" y2="37" stroke="#ef4444" stroke-width="2.5"/>
                             
                             <!-- 290 -->
-                            <line x1="443" y1="13" x2="443" y2="37" stroke="#ef4444" stroke-width="2.5"/>
-                            <text x="443" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">290</text>
+                            <line x1="307" y1="13" x2="307" y2="37" stroke="#ef4444" stroke-width="2.5"/>
+                            <text x="307" y="56" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="800">290</text>
                             
                             <!-- 310 (다시 넓게 배치) -->
-                            <line x1="502" y1="17" x2="502" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text x="502" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">310</text>
+                            <line x1="348" y1="17" x2="348" y2="33" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <text x="348" y="56" text-anchor="middle" font-size="12" fill="#cbd5e1" font-weight="600">310</text>
                             
                             <!-- 350 -->
-                            <line x1="620" y1="13" x2="620" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
-                            <text x="620" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
+                            <line x1="430" y1="13" x2="430" y2="37" stroke="#94a3b8" stroke-width="2.5"/>
+                            <text x="430" y="56" text-anchor="middle" font-size="14" fill="#94a3b8" font-weight="700">350</text>
                         </svg>
                     </div>
                 </div>
@@ -584,63 +585,43 @@
                     <span id="nf4-loss-badge" class="self-start md:self-auto text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">L1 평균 오차: 계산 중</span>
                 </div>
 
-
+                <!-- 핵심 오해 방지 단독 카드 배치 (타이틀 설명문 바로 밑으로 이동 및 블로그 스킨 본문 폰트 규격 14px 반영) -->
+                <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-sm leading-relaxed">
+                    💡 **핵심 오해 방지**: NF4 분위수 자의 16개 눈금 값(B0부터 B15까지의 값)은 표준정규분포를 기준으로 사전에 약속되어 고정된 상수이다. 가중치가 입력될 때마다 자의 눈금이 새로 변하는 것이 아니며, 가중치의 전체 대장 배율(Block Scaler)만 구한 후 고정 눈금 자에 대조하여 가장 가까운 칸에 담는 원리이다.
+                </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <div class="lg:col-span-4 space-y-3">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-                            <div class="space-y-1.5">
-                                <label class="text-sm font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
-                                <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.1, -0.3, 0.4, 0.8, 2.8">
-                            </div>
-                            <div class="border-t border-slate-100 pt-2 text-sm font-mono text-slate-500 space-y-2">
-                                <div class="mb-1">• Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span></div>
-                                <div class="border-t border-slate-100 pt-2">
-                                    <span class="font-bold text-slate-700 block mb-1.5" style="font-size: 14px;"><i class="fa-solid fa-list-ol mr-1 text-indigo-500"></i> NF4 표준 분위수 눈금 (고정 상수값):</span>
-                                    <div class="grid grid-cols-4 gap-1 text-center text-sm">
-                                        <div><span class="text-slate-400">B0:</span> -1.00</div>
-                                        <div><span class="text-slate-400">B1:</span> -0.70</div>
-                                        <div><span class="text-slate-400">B2:</span> -0.53</div>
-                                        <div><span class="text-slate-400">B3:</span> -0.39</div>
-                                        <div><span class="text-slate-400">B4:</span> -0.28</div>
-                                        <div><span class="text-slate-400">B5:</span> -0.18</div>
-                                        <div><span class="text-slate-400">B6:</span> -0.09</div>
-                                        <div><span class="text-slate-400">B7:</span> 0.00</div>
-                                        <div><span class="text-slate-400">B8:</span> 0.00</div>
-                                        <div><span class="text-slate-400">B9:</span> 0.08</div>
-                                        <div><span class="text-slate-400">B10:</span> 0.17</div>
-                                        <div><span class="text-slate-400">B11:</span> 0.27</div>
-                                        <div><span class="text-slate-400">B12:</span> 0.37</div>
-                                        <div><span class="text-slate-400">B13:</span> 0.50</div>
-                                        <div><span class="text-slate-400">B14:</span> 0.68</div>
-                                        <div><span class="text-slate-400">B15:</span> 1.00</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">FP32 가중치 입력 (최대 5개)</label>
+                            <input type="text" id="nf4-sim-weights" oninput="runNF4Simulation()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500" value="-1.1, -0.3, 0.4, 0.8, 2.8">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
+                            <div>• Block Scaler: <span id="nf4-meta-scale" class="font-bold text-slate-700">0.00</span></div>
+                        </div>
+
+                        <!-- 그림으로 그려보는 3단계 변환 과정 -->
+                        <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-[11px] leading-relaxed text-slate-600">
+                            <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-emerald-500"></i> NF4 3단계 양자화 과정:</span>
+                            <p><strong>1. Block Scaler(배율) 추출:</strong> 입력된 가중치 블록의 절대값 중 최댓값(예: 2.8)을 구하여 Scaler 스케일 상수로 지정함.</p>
+                            <p><strong>2. 실수 정규화:</strong> 각 FP32 가중치를 Scaler 값으로 나누어 [-1.0 ~ 1.0] 범위 내로 부호와 정밀도를 정규화함. (예: -1.1 / 2.8 = -0.39)</p>
+                            <p><strong>3. 분위수 대표값 매핑:</strong> 정규화된 값이 16개 분위수 경계(Bins) 중 어디에 속하는지 검색하여 가장 가까운 대표값(Bin 인덱스)으로 변환함.</p>
                         </div>
                     </div>
- 
+
                     <div class="lg:col-span-8 space-y-3">
                         <!-- NF4 SVG -->
                         <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="nf4-graph-container"></div>
                         
                         <!-- NF4 Table -->
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5">
-                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2">
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-[11px] text-slate-700 space-y-1.5">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-[10px] gap-2">
                                 <div class="col-span-2">원본</div>
                                 <div class="col-span-5">정규화 & Bin 매핑 (원본 / 배율)</div>
                                 <div class="col-span-3">역양자화 (Bin값 × 배율)</div>
                                 <div class="col-span-2 text-right">절대오차</div>
                             </div>
                             <div class="space-y-1.5" id="nf4-table-body"></div>
-                        </div>
- 
-                        <!-- 그림으로 그려보는 3단계 변환 과정 -->
-                        <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-sm leading-relaxed text-slate-600">
-                            <span class="font-bold text-slate-800 block"><i class="fa-solid fa-list-ol mr-1 text-emerald-500"></i> NF4 3단계 양자화 과정:</span>
-                            <p><strong>1. Block Scaler(배율) 추출:</strong> 입력된 가중치 블록의 절대값 중 최댓값(예: 2.8)을 구하여 Scaler 스케일 상수로 지정함.</p>
-                            <p><strong>2. 실수 정규화:</strong> 각 FP32 가중치를 Scaler 값으로 나누어 [-1.0 ~ 1.0] 범위 내로 부호와 정밀도를 정규화함. (예: -1.1 / 2.8 = -0.39)</p>
-                            <p><strong>3. 분위수 대표값 매핑:</strong> 정규화된 값이 16개 분위수 경계(Bins) 중 어디에 속하는지 검색하여 가장 가까운 대표값(Bin 인덱스)으로 변환함.</p>
                         </div>
                     </div>
                 </div>
@@ -753,38 +734,38 @@
             const getX = (val) => 300 + (val / absoluteMax) * 220;
             document.getElementById('int8-graph-container').innerHTML = `
             <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
-                <text x="30" y="24" font-size="14" font-weight="bold" fill="#475569">FP32 실수 범위 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
-                <line x1="80" y1="45" x2="520" y2="45" stroke="#94a3b8" stroke-width="1.5" />
-                <line x1="300" y1="39" x2="300" y2="51" stroke="#475569" stroke-width="1.5" />
-                <text x="300" y="32" text-anchor="middle" font-size="14" fill="#64748b">0</text>
+                <text x="30" y="24" font-size="10" font-weight="bold" fill="#475569">FP32 실수 범위 [-${absoluteMax.toFixed(1)} ~ ${absoluteMax.toFixed(1)}]</text>
+                <line x1="80" y1="40" x2="520" y2="40" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="36" x2="300" y2="44" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="54" text-anchor="middle" font-size="9" fill="#64748b">0</text>
                 
                 ${int8Points.map((p, i) => {
                     let cx_orig = getX(p.orig);
                     let cx_quant = 300 + (p.quant / 127) * 220;
                     let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
                     return `
-                    <circle cx="${cx_orig}" cy="45" r="4.5" fill="${colors[i]}" />
-                    <text x="${cx_orig}" y="32" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <circle cx="${cx_orig}" cy="40" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="28" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
                     
                     <!-- 매핑 가이드 점선 -->
-                    <path d="M ${cx_orig},50 L ${cx_quant},100" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
+                    <path d="M ${cx_orig},46 L ${cx_quant},94" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
                     
-                    <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
+                    <circle cx="${cx_quant}" cy="100" r="4.5" fill="${colors[i]}" />
                     `;
                 }).join('')}
- 
-                <text x="300" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#3b82f6">정수 스케일링 &amp; 반올림</text>
- 
-                <text x="30" y="100" font-size="14" font-weight="bold" fill="#1e293b">INT8 정수 축 [-128 ~ 127]</text>
-                <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="1.5" />
-                <line x1="300" y1="99" x2="300" y2="111" stroke="#000000" stroke-width="1.8" />
-                <text x="300" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">0</text>
- 
+
+                <text x="300" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#3b82f6">정수 스케일링 &amp; 반올림</text>
+
+                <text x="30" y="96" font-size="10" font-weight="bold" fill="#1e293b">INT8 정수 축 [-128 ~ 127]</text>
+                <line x1="80" y1="100" x2="520" y2="100" stroke="#1e293b" stroke-width="1.5" />
+                <line x1="300" y1="94" x2="300" y2="106" stroke="#000000" stroke-width="1.8" />
+                <text x="300" y="116" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">0</text>
+
                 <!-- INT8 극단값 가이드라인 표시 -->
-                <line x1="80" y1="99" x2="80" y2="111" stroke="#ef4444" stroke-width="1.5" />
-                <text x="80" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">-128</text>
-                <line x1="520" y1="99" x2="520" y2="111" stroke="#ef4444" stroke-width="1.5" />
-                <text x="520" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">127</text>
+                <line x1="80" y1="94" x2="80" y2="106" stroke="#ef4444" stroke-width="1.5" />
+                <text x="80" y="116" text-anchor="middle" font-size="8" font-weight="bold" fill="#ef4444">-128</text>
+                <line x1="520" y1="94" x2="520" y2="106" stroke="#ef4444" stroke-width="1.5" />
+                <text x="520" y="116" text-anchor="middle" font-size="8" font-weight="bold" fill="#ef4444">127</text>
             </svg>`;
         }
         
@@ -827,13 +808,12 @@
             document.getElementById('nf4-table-body').innerHTML = tableHtml;
 
             const getX = (val) => 300 + (val / maxVal) * 220;
-            const activeBins = new Set(nf4Points.map(p => p.binIdx));
             document.getElementById('nf4-graph-container').innerHTML = `
-            <svg viewBox="0 0 600 160" class="w-full h-auto bg-slate-50 rounded-lg p-1">
-                <text x="30" y="24" font-size="14" font-weight="bold" fill="#475569">FP32 실수값 분포 [-${maxVal.toFixed(1)} ~ ${maxVal.toFixed(1)}]</text>
-                <line x1="80" y1="45" x2="520" y2="45" stroke="#94a3b8" stroke-width="1.5" />
-                <line x1="300" y1="39" x2="300" y2="51" stroke="#475569" stroke-width="1.5" />
-                <text x="300" y="32" text-anchor="middle" font-size="14" fill="#64748b">0</text>
+            <svg viewBox="0 0 600 180" class="w-full h-auto bg-slate-50 rounded-lg p-1">
+                <text x="30" y="24" font-size="10" font-weight="bold" fill="#475569">FP32 실수값 분포 [-${maxVal.toFixed(1)} ~ ${maxVal.toFixed(1)}]</text>
+                <line x1="80" y1="60" x2="520" y2="60" stroke="#94a3b8" stroke-width="1.5" />
+                <line x1="300" y1="56" x2="300" y2="64" stroke="#475569" stroke-width="1.5" />
+                <text x="300" y="80" text-anchor="middle" font-size="9" fill="#64748b">0</text>
                 
                 ${(() => {
                     let polygonsHtml = "";
@@ -861,14 +841,17 @@
                         let x_nf4_center = 300 + nf4Table[i] * 220;
                         
                         polygonsHtml += `
-                        <polygon points="${x_fp32_left},45 ${x_fp32_right},45 ${x_nf4_center},105" fill="${palette[i]}" fill-opacity="0.15" stroke="${palette[i]}" stroke-opacity="0.2" stroke-width="0.5" />
+                        <polygon points="${x_fp32_left},60 ${x_fp32_right},60 ${x_nf4_center},116" fill="${palette[i]}" fill-opacity="0.15" stroke="${palette[i]}" stroke-opacity="0.2" stroke-width="0.5" />
                         `;
                     }
                     return polygonsHtml;
                 })()}
- 
+
                 <!-- Bin 14 수용 영역 포인트 강조 (괄호와 설명 텍스트 오버레이, 0.68 분위수 지점) -->
                 ${(() => {
+                    // nf4Table[14] = 0.677029 (0.68 지점)
+                    // Bin 13 ~ Bin 14 경계: (nf4Table[13] + nf4Table[14]) / 2 = (0.502599 + 0.677029) / 2
+                    // Bin 14 ~ Bin 15 경계: (nf4Table[14] + nf4Table[15]) / 2 = (0.677029 + 1.0) / 2
                     let mid13_14 = (nf4Table[13] + nf4Table[14]) / 2;
                     let mid14_15 = (nf4Table[14] + nf4Table[15]) / 2;
                     
@@ -877,53 +860,51 @@
                     
                     let val_left = mid13_14 * scale;
                     let val_right = mid14_15 * scale;
- 
+
                     return `
                     <!-- FP32 축상의 범위 바(괄호)와 설명 텍스트 -->
-                    <line x1="${x_fp32_left}" y1="45" x2="${x_fp32_right}" y2="45" stroke="#2563eb" stroke-width="3" />
-                    <line x1="${x_fp32_left}" y1="37" x2="${x_fp32_left}" y2="53" stroke="#2563eb" stroke-width="1.8" />
-                    <line x1="${x_fp32_right}" y1="37" x2="${x_fp32_right}" y2="53" stroke="#2563eb" stroke-width="1.8" />
+                    <line x1="${x_fp32_left}" y1="60" x2="${x_fp32_right}" y2="60" stroke="#2563eb" stroke-width="3" />
+                    <line x1="${x_fp32_left}" y1="52" x2="${x_fp32_left}" y2="68" stroke="#2563eb" stroke-width="1.8" />
+                    <line x1="${x_fp32_right}" y1="52" x2="${x_fp32_right}" y2="68" stroke="#2563eb" stroke-width="1.8" />
                     
-                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="74" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
-                        Bin 14 범위
-                    </text>
-                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">
-                        [${val_left.toFixed(2)} ~ ${val_right.toFixed(2)}]
+                    <text x="${(x_fp32_left + x_fp32_right) / 2}" y="28" text-anchor="middle" font-size="8" font-weight="900" fill="#2563eb">
+                        Bin 14 범위: [${val_left.toFixed(2)} ~ ${val_right.toFixed(2)}]
                     </text>
                     `;
                 })()}
- 
+
                 ${nf4Points.map((p, i) => {
                     let cx_orig = getX(p.orig);
                     let normQuant = nf4Table[p.binIdx];
                     let cx_quant = 300 + normQuant * 220;
                     let colors = ["#ef4444", "#f59e0b", "#10b981", "#6366f1", "#3b82f6"];
                     return `
-                    <circle cx="${cx_orig}" cy="45" r="4.5" fill="${colors[i]}" />
-                    <text x="${cx_orig}" y="32" text-anchor="middle" font-size="14" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
+                    <circle cx="${cx_orig}" cy="60" r="4.5" fill="${colors[i]}" />
+                    <text x="${cx_orig}" y="48" text-anchor="middle" font-size="9" font-weight="bold" fill="${colors[i]}">${p.orig.toFixed(1)}</text>
                     <!-- 양자화 수렴 연산 점선 경로 -->
-                    <path d="M ${cx_orig},50 L ${cx_quant},100" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
-                    <circle cx="${cx_quant}" cy="105" r="4.5" fill="${colors[i]}" />
+                    <path d="M ${cx_orig},66 L ${cx_quant},114" stroke="${colors[i]}" stroke-width="1.2" stroke-dasharray="2,2" />
+                    <circle cx="${cx_quant}" cy="120" r="4.5" fill="${colors[i]}" />
                     `;
                 }).join('')}
- 
-                <text x="30" y="100" font-size="14" font-weight="bold" fill="#1e293b">NF4 분위수 자 [16 Bins]</text>
-                <line x1="80" y1="105" x2="520" y2="105" stroke="#1e293b" stroke-width="1.5" />
+
+                <text x="300" y="94" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">정규화 &amp; 분위수 검색</text>
+                <text x="30" y="116" font-size="10" font-weight="bold" fill="#1e293b">NF4 분위수 자 [16 Bins]</text>
+                <line x1="80" y1="120" x2="520" y2="120" stroke="#1e293b" stroke-width="1.5" />
                 
-                <!-- 16개의 분위수 Bins 눈금선 전체 표시 및 실제 매핑된 경우에만 수치 + Bin 번호 라벨 추가 -->
+                <!-- 16개의 분위수 Bins 눈금선 전체 표시 및 수치 + Bin 번호 라벨 추가 -->
                 ${nf4Table.map((binVal, idx) => {
                     let tickX = 300 + binVal * 220;
-                    let showLabel = activeBins.has(idx);
                     return `
-                    <line x1="${tickX}" y1="100" x2="${tickX}" y2="110" stroke="#64748b" stroke-width="1.2" />
-                    ${showLabel ? `
+                    <line x1="${tickX}" y1="115" x2="${tickX}" y2="125" stroke="#64748b" stroke-width="1.2" />
                     <!-- 첫째 줄: 분위수 실제값 -->
-                    <text x="${tickX}" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#64748b">${binVal.toFixed(2)}</text>
+                    <text x="${tickX}" y="136" text-anchor="middle" font-size="6" font-weight="bold" fill="#64748b">${binVal.toFixed(2)}</text>
                     <!-- 둘째 줄: 대응되는 Bin 번호 -->
-                    <text x="${tickX}" y="142" text-anchor="middle" font-size="14" font-weight="800" fill="#475569">B${idx}</text>
-                    ` : ''}
+                    <text x="${tickX}" y="145" text-anchor="middle" font-size="5.5" font-weight="800" fill="#475569">B${idx}</text>
                     `;
                 }).join('')}
+
+                <line x1="300" y1="114" x2="300" y2="126" stroke="#000000" stroke-width="1.8" />
+                <text x="300" y="156" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e293b">0</text>
             </svg>`;
         }
 
