@@ -103,7 +103,7 @@
             "path": "ai/langchain/rag_evaluation.html"
           },
           {
-            "label": "RecursiveCharacterTextSplitter 시뮬레이터",
+            "label": "RecursiveCharacterTextSplitter 정밀 시뮬레이터",
             "path": "ai/langchain/recursivechartextspliter.html"
           }
         ]
