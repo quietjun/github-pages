@@ -37,7 +37,7 @@ description: >-
 - **기본 스택**: Bootstrap 5, Highlight.js (atom-one-light 테마)를 사용한다.
 - **화면 규격**: 최대 너비 1280px의 반응형 컨테이너를 사용하며, 빔프로젝터 가독성을 위해 배경은 흰색(`#FFF`), 글자는 검정(`#000`)으로 설정한다.
 - **SVG 규칙**: `<svg>` 태그에 실제 픽셀 단위의 `width`, `height`를 명시하고 `viewBox`와 1:1로 일치시킨다. 절대 확대/축소하지 않으며, 폰트 크기는 최소 14px를 유지한다.
-- **내비게이션**: 마우스 오버 시에만 나타나는 **플로팅 목차(TOC Drawer)**를 구현하되, 콘텐츠를 가리지 않도록 핸들과 본체를 분리한다.
+- **내비게이션**: 마우스 오버 시에만 나타나는 **플로팅 목차(TOC Drawer)**를 구현하되, 콘텐츠를 가리지 않도록 핸들과 본체를 분리한다. (⚠️ **목차 구성 규칙**: `0. 도입 및 개요` 또는 `#header` 항목은 목차 목록에 포함하지 않으며, 본문의 실질적인 1번 섹션부터 목차를 구성한다.)
 
 ## 4. 문체 규정
 - **서술문**: "~한다" 형태의 평어체로 간결하게 작성한다.
@@ -47,20 +47,25 @@ description: >-
 문서 최하단(`</body>` 바로 직전)에 항상 다음 스크립트를 포함한다:
 
 ```html
-<script>
-  function sendHeight() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  }
-  window.onload = sendHeight;
-  [50, 200, 500, 1000, 2000].forEach(function(delay) {
-    setTimeout(sendHeight, delay);
-  });
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(sendHeight);
-    ro.observe(document.body);
-  }
-</script>
+    <script>
+        // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            } else {
+                console.error('Highlight.js 로드 실패');
+            }
+        });
+
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100); // 렌더링 안정화를 위한 미세 지연
+        };
+    </script>
 ```
 
 ## 6. 기본 템플릿 리소스
