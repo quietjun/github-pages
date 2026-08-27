@@ -87,11 +87,11 @@
             "path": "ai/langchain/langfuse.html"
           },
           {
-            "label": "LangGraph 시각화",
+            "label": "LangGraph 시각화 및 실무 가이드",
             "path": "ai/langchain/langgraph.html"
           },
           {
-            "label": "Multi-Agent 협업 디자인 패턴 (Part 4)",
+            "label": "Multi-Agent 협업 디자인 패턴",
             "path": "ai/langchain/multiagent.html"
           },
           {
