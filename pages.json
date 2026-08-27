@@ -27,15 +27,6 @@
     "label": "ai",
     "children": [
       {
-        "label": "basic",
-        "children": [
-          {
-            "label": "신경망 아키텍처의 진화 과정",
-            "path": "ai/basic/flow.html"
-          }
-        ]
-      },
-      {
         "label": "cnn",
         "children": [
           {
@@ -43,23 +34,31 @@
             "path": "ai/cnn/clip.html"
           },
           {
-            "label": "CLIP 개념 개요",
-            "path": "ai/cnn/clip_백업.html"
+            "label": "CNN (Convolutional Neural Network) — 합성곱 신경망 마스터 가이드",
+            "path": "ai/cnn/cnn_2.html"
           },
           {
-            "label": "CNN — 합성곱 신경망",
-            "path": "ai/cnn/cnn.html"
+            "label": "HuggingFace 모델 활용 - 1. Hugging Face 소개 & 사용법",
+            "path": "ai/cnn/huggingface_1.html"
           },
           {
-            "label": "HuggingFace 모델 활용",
-            "path": "ai/cnn/huggingface.html"
+            "label": "HuggingFace 모델 활용 - 2. SANA 이미지 생성",
+            "path": "ai/cnn/huggingface_2.html"
           },
           {
-            "label": "Linear Probing & Fine-tuning — 전이학습 전략",
+            "label": "HuggingFace 모델 활용 - 3. CLIP Zero-shot 분류",
+            "path": "ai/cnn/huggingface_3.html"
+          },
+          {
+            "label": "HuggingFace 모델 활용 - 4. ResNet-50 이미지 분류",
+            "path": "ai/cnn/huggingface_4.html"
+          },
+          {
+            "label": "Linear Probing &amp; Fine-tuning — 전이학습 전략 가이드",
             "path": "ai/cnn/linearprobing.html"
           },
           {
-            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처",
+            "label": "Vision Transformer (ViT) — 이미지를 토큰으로 처리하는 아키텍처 가이드",
             "path": "ai/cnn/vit.html"
           }
         ]
