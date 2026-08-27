@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuggingFace 모델 활용 - 4. ResNet-50 이미지 분류</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Highlight.js (Python Syntax Highlighting) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <!-- Pretendard & Fira Code & JetBrains Mono Fonts -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.1);
+            --secondary: #ea580c;
+            --accent: #16a34a;
+            --accent-glow: rgba(22, 163, 74, 0.1);
+            --purple: #7c3aed;
+            --amber: #d97706;
+            --rose: #e11d48;
+            --bg-light: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            font-size: 18px;
+            line-height: 1.75;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            padding: 0;
+            margin: 0;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Floating TOC Drawer */
+        .toc-drawer {
+            position: fixed;
+            top: 100px;
+            right: -260px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e2e8f0;
+            border-right: none;
+            border-radius: 16px 0 0 16px;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1050;
+            padding: 20px;
+        }
+
+        .toc-drawer:hover {
+            right: 0;
+        }
+
+        .toc-handle {
+            position: absolute;
+            left: -48px;
+            top: 20px;
+            width: 48px;
+            height: 48px;
+            background: #16a34a;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px 0 0 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            box-shadow: -3px 0 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .toc-content h5 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .toc-content ul {
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .toc-content li {
+            margin-bottom: 8px;
+        }
+
+        .toc-content a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toc-content a:hover {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        /* Header Style */
+        .page-header {
+            text-align: center;
+            padding: 40px 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .page-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(22, 163, 74, 0.1);
+            border: 1px solid rgba(22, 163, 74, 0.25);
+            color: #16a34a;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 840px;
+            margin: 0 auto;
+        }
+
+        /* Top 4-Tab Navigation Bar */
+        .nav-tabs-custom {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab-item-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 12px 22px;
+            border-radius: 12px 12px 0 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-item-btn:hover {
+            color: #16a34a;
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .tab-item-btn.active {
+            background: #16a34a;
+            color: #ffffff;
+            border-color: #16a34a;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        }
+
+        /* Section & Content Blocks */
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .block {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .block-hd {
+            padding: 18px 24px;
+            border-bottom: 1px solid #eef1f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafc;
+        }
+        .block-hd.green { background: #f0fdf4; }
+        .block-hd.blue { background: #eff6ff; }
+        .block-hd.purple { background: #f5f3ff; }
+
+        .bicon {
+            font-size: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .bname {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .block-body {
+            padding: 24px;
+        }
+
+        .bdesc {
+            font-size: 16px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        /* Callout Box (hbox) */
+        .hbox {
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .hbox.green { background: #f0fdf4; border-color: #16a34a; }
+        .hbox.blue { background: #eff6ff; border-color: #2563eb; }
+        .hbox.purple { background: #f5f3ff; border-color: #7c3aed; }
+
+        .hbox-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .hbox-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .hbox.green .hbox-title { color: #16a34a; }
+        .hbox.blue .hbox-title { color: #2563eb; }
+        .hbox.purple .hbox-title { color: #7c3aed; }
+        .hbox-text { font-size: 15px; color: #475569; line-height: 1.7; }
+        .hbox-text strong { color: #0f172a; }
+
+        /* SVG Wrapper */
+        .svg-wrapper {
+            overflow-x: auto;
+            background: #ffffff;
+            padding: 20px;
+            text-anchor: middle;
+        }
+
+        .step-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            height: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .step-num-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        /* Code & Tables */
+        pre {
+            margin: 16px 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        pre code {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 16px !important;
+            line-height: 1.7 !important;
+            padding: 18px !important;
+            display: block !important;
+            text-align: left !important;
+        }
+
+        .table-custom {
+            font-size: 16px;
+            margin: 16px 0;
+            border-top: 2px solid var(--accent);
+        }
+
+        .verification-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- [플로팅 목차] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-resnet-theory">1. ResNet-50 개념 &amp; 잔차 학습 시각화</a></li>
+                <li><a href="#sec-resnet-code">2. 3단계 작동 과정 &amp; PyTorch 실행 코드</a></li>
+                <li><a href="#sec-compare">3. CLIP vs ResNet-50 특성 상세 비교</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <article>
+            <!-- Header Section -->
+            <header class="page-header">
+                <span class="page-badge">Part 4. Deep Residual Learning Vision Backbone</span>
+                <h1>ResNet-50 이미지 분류</h1>
+                <p>
+                    잔차 학습(Residual Learning) 및 Skip Connection 아키텍처를 통해 심층 신경망의 기울기 소실 문제를 해결한 대표적 50계층 CNN 백본 모델과 CLIP 멀티모달 패러다임을 상세 비교한다.
+                </p>
+            </header>
+
+            <!-- 1. ResNet-50 개념 & 잔차 학습 시각화 -->
+            <section id="sec-resnet-theory">
+                <h2>1. ResNet-50 개념 &amp; 잔차 학습 시각화</h2>
+
+                <!-- TL;DR Callout Banner (Standalone Top Level) -->
+                <div class="hbox green mb-4">
+                    <div class="hbox-icon">💡</div>
+                    <div>
+                        <div class="hbox-title">ResNet-50 핵심 요약</div>
+                        <div class="hbox-text">
+                            층이 50층 이상으로 깊어질 때 발생하는 기울기 소실(Vanishing Gradient) 문제를 해결하기 위해 <strong>지름길(Skip Connection)</strong>을 도입하여 <strong>잔차 H(x) = F(x) + x</strong>를 학습하는 대표적 CNN 아키텍처이다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problem vs Solution Cards (Standalone 2-Column Grid) -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 h-100">
+                            <div class="fw-bold text-danger mb-2 fs-6">❌ 기존 심층 CNN의 한계 (Degradation Problem)</div>
+                            <div class="fs-6 text-secondary">
+                                신경망 층을 더 깊게 쌓을수록 기울기 소실/폭발 현상이 발생하여, 오버피팅이 아님에도 불구하고 50층 이상의 단순 CNN(Plain Net)이 20층 모델보다 에러율이 높아지는 성능 저하 문제 발생
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 h-100">
+                            <div class="fw-bold text-success mb-2 fs-6">✅ ResNet의 해결책 (Skip Connection / 잔차 학습)</div>
+                            <div class="fs-6 text-secondary">
+                                입력 데이터를 뒤쪽 레이어로 100% 전달하는 <strong>지름길(Shortcut Connection)</strong>을 구축하여, 미세한 차이점(잔차 F(x))만 배우도록 유도하여 100층 이상의 초심층 모델 수렴 달성
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SVG 1: Standalone Card Block -->
+                <div class="block">
+                    <div class="block-hd green">
+                        <div class="bicon">🖼️</div>
+                        <div class="bname">1. 특징 추출 관점에서의 '잔차(Residual)' 매핑 개념</div>
+                    </div>
+                    <div class="block-body p-3">
+                        <div class="svg-wrapper">
+                            <svg width="100%" viewBox="0 0 660 140" xmlns="http://www.w3.org/2000/svg" style="max-width:660px; display:block; margin:0 auto;">
+                                <defs>
+                                    <filter id="blurFilter"><feGaussianBlur stdDeviation="2.2"/></filter>
+                                </defs>
+
+                                <!-- 1. Input x (Blurred Input) -->
+                                <g transform="translate(10, 10)">
+                                    <rect width="165" height="115" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+                                    <text x="82" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#2563eb">1. 입력 특징 맵 (x)</text>
+                                    
+                                    <g filter="url(#blurFilter)">
+                                        <circle cx="82" cy="62" r="22" fill="#e2e8f0"/>
+                                        <circle cx="65" cy="47" r="9" fill="#cbd5e1"/>
+                                        <circle cx="99" cy="47" r="9" fill="#cbd5e1"/>
+                                        <ellipse cx="74" cy="61" rx="5" ry="7" fill="#cbd5e1"/>
+                                        <ellipse cx="90" cy="61" rx="5" ry="7" fill="#cbd5e1"/>
+                                    </g>
+                                    <text x="82" y="102" text-anchor="middle" font-size="10.5" fill="#64748b">이전 층의 개략 형체 특징</text>
+                                </g>
+
+                                <text x="195" y="75" text-anchor="middle" font-size="16" font-weight="700" fill="#64748b">+</text>
+
+                                <!-- 2. Residual F(x) (Wireframe Edge Map) -->
+                                <g transform="translate(225, 10)">
+                                    <rect width="165" height="115" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+                                    <text x="82" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#16a34a">2. 잔차 특징 맵 F(x)</text>
+                                    
+                                    <circle cx="82" cy="62" r="22" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="3 2"/>
+                                    <circle cx="65" cy="47" r="8" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+                                    <circle cx="99" cy="47" r="8" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+                                    <ellipse cx="74" cy="61" rx="4" ry="6" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+                                    <ellipse cx="90" cy="61" rx="4" ry="6" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+                                    <circle cx="74" cy="60" r="1.5" fill="#16a34a"/>
+                                    <circle cx="90" cy="60" r="1.5" fill="#16a34a"/>
+                                    
+                                    <text x="82" y="102" text-anchor="middle" font-size="10.5" fill="#16a34a" font-weight="600">추가 세부 텍스처/윤곽 보완 정보</text>
+                                </g>
+
+                                <text x="410" y="75" text-anchor="middle" font-size="16" font-weight="700" fill="#64748b">➔</text>
+
+                                <!-- 3. Output H(x) = F(x) + x (Clear Panda Image) -->
+                                <g transform="translate(440, 10)">
+                                    <rect width="210" height="115" rx="10" fill="#f0fdf4" stroke="#ea580c" stroke-width="1.5"/>
+                                    <text x="105" y="22" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ea580c">3. 누적 특징 맵 H(x)=F(x)+x</text>
+                                    
+                                    <circle cx="105" cy="62" r="22" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                                    <circle cx="88" cy="47" r="9" fill="#090d16"/>
+                                    <circle cx="122" cy="47" r="9" fill="#090d16"/>
+                                    <ellipse cx="97" cy="61" rx="5" ry="7" fill="#090d16"/>
+                                    <ellipse cx="113" cy="61" rx="5" ry="7" fill="#090d16"/>
+                                    <circle cx="98" cy="59" r="1.8" fill="#fff"/>
+                                    <circle cx="112" cy="59" r="1.8" fill="#fff"/>
+                                    
+                                    <text x="105" y="102" text-anchor="middle" font-size="10.5" fill="#ea580c" font-weight="700">정교화된 특징 ➔ 🎯 "판다" 클래스 분류</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SVG 2: Standalone Card Block -->
+                <div class="block">
+                    <div class="block-hd green">
+                        <div class="bicon">🚀</div>
+                        <div class="bname">2. ResNet-50 3-Stage 직렬 잔차 블록 (Serial Bottleneck Layers) 통합 파이프라인</div>
+                    </div>
+                    <div class="block-body p-3">
+                        <div class="svg-wrapper mb-3">
+                            <svg width="100%" viewBox="0 0 950 220" xmlns="http://www.w3.org/2000/svg" style="max-width:950px; min-width:650px; display:block; margin:0 auto;">
+                                <defs>
+                                    <marker id="master-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                        <path d="M2 1L8 5L2 9" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </marker>
+                                </defs>
+
+                                <!-- 0. Input Node (x0) -->
+                                <g transform="translate(20, 56)">
+                                    <rect x="0" y="0" width="65" height="68" rx="10" fill="rgba(37, 99, 235, 0.1)" stroke="#2563eb" stroke-width="1.5"/>
+                                    <text x="32" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2563eb">📥 입력</text>
+                                    <text x="32" y="48" text-anchor="middle" font-family="monospace" font-size="11.5" font-weight="700" fill="#0f172a">x₀</text>
+                                </g>
+
+                                <!-- Split 0 Line & Point -->
+                                <line x1="85" y1="90" x2="102" y2="90" stroke="#2563eb" stroke-width="2"/>
+                                <circle cx="102" cy="90" r="4" fill="#2563eb"/>
+
+                                <!-- STAGE 1 BLOCK -->
+                                <rect x="120" y="24" width="165" height="20" rx="10" fill="rgba(56, 189, 248, 0.15)" stroke="#2563eb" stroke-width="0.8"/>
+                                <text x="202.5" y="37.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2563eb">🔍 [저수준] 에지·질감 추출</text>
+
+                                <line x1="102" y1="90" x2="118" y2="90" stroke="#2563eb" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+                                
+                                <g transform="translate(120, 52)">
+                                    <rect x="0" y="0" width="165" height="76" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+                                    <text x="82.5" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2563eb">Stage 1 F₁(x₀)</text>
+                                    
+                                    <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="30" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="30" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">축소</text>
+                                    
+                                    <line x1="48" y1="45" x2="59" y2="45" stroke="#2563eb" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(61, 79, 196, 0.15)" stroke="#2563eb" stroke-width="1.2"/>
+                                    <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#2563eb" font-weight="700">3x3</text>
+                                    <text x="87.5" y="55" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="600">특징추출</text>
+
+                                    <line x1="115" y1="45" x2="120" y2="45" stroke="#2563eb" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="139" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="139" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">확장</text>
+                                </g>
+
+                                <line x1="285" y1="90" x2="304" y2="90" stroke="#2563eb" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+
+                                <circle cx="320" cy="90" r="14" fill="rgba(37, 99, 235, 0.1)" stroke="#2563eb" stroke-width="2"/>
+                                <text x="320" y="95" text-anchor="middle" font-size="18" font-weight="800" fill="#2563eb">+</text>
+                                <text x="320" y="64" text-anchor="middle" font-family="monospace" font-size="11.5" font-weight="700" fill="#2563eb">x₁=x₀+F₁</text>
+
+                                <path d="M 102 90 L 102 170 L 320 170 L 320 107" stroke="#2563eb" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+                                <text x="211" y="188" text-anchor="middle" font-size="11.5" fill="#2563eb">🚀 Skip Connection</text>
+
+                                <!-- Split 1 Line & Point -->
+                                <line x1="334" y1="90" x2="351" y2="90" stroke="#d97706" stroke-width="2"/>
+                                <circle cx="351" cy="90" r="4" fill="#d97706"/>
+
+                                <!-- STAGE 2 BLOCK -->
+                                <rect x="370" y="24" width="165" height="20" rx="10" fill="rgba(245, 158, 11, 0.15)" stroke="#d97706" stroke-width="0.8"/>
+                                <text x="452.5" y="37.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="#d97706">🧩 [중수준] 부위·패턴 합성</text>
+
+                                <line x1="351" y1="90" x2="368" y2="90" stroke="#d97706" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+                                
+                                <g transform="translate(370, 52)">
+                                    <rect x="0" y="0" width="165" height="76" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+                                    <text x="82.5" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#d97706">Stage 2 F₂(x₁)</text>
+                                    
+                                    <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="30" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="30" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">축소</text>
+                                    
+                                    <line x1="48" y1="45" x2="59" y2="45" stroke="#d97706" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(245, 158, 11, 0.25)" stroke="#d97706" stroke-width="1.2"/>
+                                    <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#d97706" font-weight="700">3x3</text>
+                                    <text x="87.5" y="55" text-anchor="middle" font-size="10" fill="#d97706" font-weight="600">특징추출</text>
+
+                                    <line x1="115" y1="45" x2="120" y2="45" stroke="#d97706" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="139" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="139" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">확장</text>
+                                </g>
+
+                                <line x1="535" y1="90" x2="554" y2="90" stroke="#d97706" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+
+                                <circle cx="570" cy="90" r="14" fill="rgba(245, 158, 11, 0.2)" stroke="#d97706" stroke-width="2"/>
+                                <text x="570" y="95" text-anchor="middle" font-size="18" font-weight="800" fill="#d97706">+</text>
+                                <text x="570" y="64" text-anchor="middle" font-family="monospace" font-size="11.5" font-weight="700" fill="#d97706">x₂=x₁+F₂</text>
+
+                                <path d="M 351 90 L 351 170 L 570 170 L 570 107" stroke="#d97706" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+                                <text x="460.5" y="188" text-anchor="middle" font-size="11.5" fill="#d97706">🚀 Skip Connection</text>
+
+                                <!-- Split 2 Line & Point -->
+                                <line x1="584" y1="90" x2="601" y2="90" stroke="#ea580c" stroke-width="2"/>
+                                <circle cx="601" cy="90" r="4" fill="#ea580c"/>
+
+                                <!-- STAGE 3 BLOCK -->
+                                <rect x="620" y="24" width="165" height="20" rx="10" fill="rgba(168, 85, 247, 0.15)" stroke="#7c3aed" stroke-width="0.8"/>
+                                <text x="702.5" y="37.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7c3aed">🎯 [고수준] 객체 형상 완성</text>
+
+                                <line x1="601" y1="90" x2="618" y2="90" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+                                
+                                <g transform="translate(620, 52)">
+                                    <rect x="0" y="0" width="165" height="76" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+                                    <text x="82.5" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7c3aed">Stage 3 F₃(x₂)</text>
+                                    
+                                    <rect x="12" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="30" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="30" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="30" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">축소</text>
+                                    
+                                    <line x1="48" y1="45" x2="59" y2="45" stroke="#7c3aed" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="60" y="20" width="55" height="50" rx="3" fill="rgba(168, 85, 247, 0.25)" stroke="#7c3aed" stroke-width="1.2"/>
+                                    <text x="87.5" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#7c3aed" font-weight="700">3x3</text>
+                                    <text x="87.5" y="55" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="600">특징추출</text>
+
+                                    <line x1="115" y1="45" x2="120" y2="45" stroke="#7c3aed" stroke-width="1" marker-end="url(#master-arrow)"/>
+
+                                    <rect x="121" y="24" width="36" height="42" rx="3" fill="rgba(244, 63, 94, 0.25)" stroke="#e11d48" stroke-width="1"/>
+                                    <text x="139" y="38" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#e11d48" font-weight="700">1x1</text>
+                                    <text x="139" y="49" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">채널</text>
+                                    <text x="139" y="60" text-anchor="middle" font-size="10" fill="#e11d48" font-weight="600">확장</text>
+                                </g>
+
+                                <line x1="785" y1="90" x2="804" y2="90" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#master-arrow)"/>
+
+                                <circle cx="820" cy="90" r="14" fill="rgba(124, 58, 237, 0.1)" stroke="#7c3aed" stroke-width="2"/>
+                                <text x="820" y="95" text-anchor="middle" font-size="18" font-weight="800" fill="#7c3aed">+</text>
+                                <text x="820" y="64" text-anchor="middle" font-family="monospace" font-size="11.5" font-weight="700" fill="#7c3aed">x₃=x₂+F₃</text>
+
+                                <path d="M 601 90 L 601 170 L 820 170 L 820 107" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#master-arrow)"/>
+                                <text x="710.5" y="188" text-anchor="middle" font-size="11.5" fill="#7c3aed">🚀 Skip Connection</text>
+
+                                <line x1="834" y1="90" x2="849" y2="90" stroke="#16a34a" stroke-width="2" marker-end="url(#master-arrow)"/>
+
+                                <!-- Output Node -->
+                                <g transform="translate(850, 56)">
+                                    <rect x="0" y="0" width="38" height="68" rx="8" fill="rgba(16, 185, 129, 0.2)" stroke="#16a34a" stroke-width="1.5"/>
+                                    <text x="19" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16a34a">🏆</text>
+                                    <text x="19" y="46" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16a34a">판다</text>
+                                    <text x="19" y="58" text-anchor="middle" font-family="monospace" font-size="11.5" fill="#64748b">99%</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- Bottleneck Explanation Callout -->
+                        <div class="hbox blue mb-0">
+                            <div class="hbox-icon">💡</div>
+                            <div>
+                                <div class="hbox-title">Bottleneck (병목) 아키텍처와 채널 압축 원리</div>
+                                <div class="hbox-text">
+                                    ResNet-50의 잔차 블록은 연산량과 컴퓨터 메모리를 아끼기 위해 <strong>채널 축소 ➔ 특징 추출 ➔ 채널 확장</strong> 단계로 설계된 <strong>Bottleneck(병목) 구조</strong>를 채택했다.
+                                    <ul class="mt-2 mb-2 ps-3">
+                                        <li><strong>1×1 conv ➔ 채널 축소 역할</strong>: 3×3에서의 연산 비용을 절감하기 위해 입력 채널 수(예: 256)를 작은 규모(예: 64)로 압축</li>
+                                        <li><strong>3×3 conv ➔ 특징 추출 역할</strong>: 압축되어 가벼워진 소규모 채널 위에서만 공간적 이미지 특징을 효율적으로 연산</li>
+                                        <li><strong>1×1 conv ➔ 채널 확장 역할</strong>: 특징 추출이 완료된 데이터를 원래 신경망의 깊이(256 채널)로 다시 확장하여 복원</li>
+                                    </ul>
+                                    <div class="p-2 bg-white border border-success rounded-2 text-success font-weight-semibold">
+                                        🏫 <strong>쉽게 배우는 비전 비유:</strong> 무거운 짐(256 채널)을 통째로 들고 연산 비용이 9배나 비싼 복잡한 관문(3×3 연산)을 통과하는 것보다, 일단 압축 팩(1×1 채널축소)으로 부피를 64로 줄여서 저렴하고 가볍게 통과한 뒤, 관문을 지나서 다시 본래 부피(1×1 채널확장)로 부풀리는 현명한 다이어트 연산 전략이다.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 3단계 작동 과정 & PyTorch 실행 코드 -->
+            <section id="sec-resnet-code">
+                <h2>2. 3단계 작동 과정 &amp; PyTorch 실행 코드</h2>
+
+                <!-- 3-Step Process (Standalone 3-Card Grid) -->
+                <h3 class="fs-5 fw-bold text-dark mb-3">🔄 ResNet-50 핵심 작동 과정 3단계</h3>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="step-card">
+                            <div class="step-num-badge">1</div>
+                            <div class="fw-bold text-dark mb-2 fs-6">계층적 특징 추출 (Feature Pyramid)</div>
+                            <div class="fs-6 text-secondary">
+                                낮은 층에서는 점, 선, 질감 등 국소 특징을 다루고, 깊은 층으로 갈수록 사물의 고차원 시각 특징 계층적 추출
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="step-card">
+                            <div class="step-num-badge">2</div>
+                            <div class="fw-bold text-dark mb-2 fs-6">잔차 합산 (Residual Addition)</div>
+                            <div class="fs-6 text-secondary">
+                                Bottleneck 블록 연산 결과 F(x)에 입력 x를 덧셈하여 기울기 전달 최단경로 최적화 보장
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="step-card">
+                            <div class="step-num-badge">3</div>
+                            <div class="fw-bold text-dark mb-2 fs-6">Global Avg Pooling &amp; 분류</div>
+                            <div class="fs-6 text-secondary">
+                                특징 맵 공간을 1×1로 축약(GAP)하여 파라미터를 대폭 줄인 뒤, FC 레이어를 통해 <strong>ImageNet 1,000개 클래스 확률</strong> 출력
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PyTorch / Transformers Code Example Block -->
+                <div class="block">
+                    <div class="block-hd">
+                        <div class="bicon">💻</div>
+                        <div class="bname">PyTorch &amp; Transformers 기반 ResNet-50 추론 코드</div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc mb-2">
+                            Hugging Face <code>transformers</code> 라이브러리를 통해 사전학습된 ResNet-50 모델을 로드하고 이미지를 분류하는 소스 코드이다.
+                            <br><br>
+                            <a href="https://huggingface.co/microsoft/resnet-50" target="_blank" class="d-inline-flex align-items-center gap-2 text-decoration-none px-3 py-2 bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-3 font-weight-bold fs-6">
+                                🔗 Hugging Face - microsoft/resnet-50 모델 페이지 바로가기
+                            </a>
+                        </div>
+
+                        <pre><code class="language-python">from transformers import AutoImageProcessor, AutoModelForImageClassification
+import torch
+from PIL import Image
+
+# 1. Hugging Face 허브에서 이미지 전처리기 및 ResNet-50 모델 로드
+processor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
+model = AutoModelForImageClassification.from_pretrained("microsoft/resnet-50").eval()
+
+# 2. 이미지 로드 및 모델 전용 텐서 전처리 실행
+image = Image.open("sample_fox.jpg")
+inputs = processor(images=image, return_tensors="pt")
+
+# 3. 모델 순전파 연산
+with torch.no_grad():
+    logits = model(**inputs).logits
+
+# 4. Softmax 확률 계산 및 예측 레이블 매칭
+probs = logits.softmax(dim=-1)
+predicted_label = logits.argmax(-1).item()
+
+# 5. 설정된 config로부터 사람이 읽을 수 있는 클래스 명칭 출력
+category_name = model.config.id2label[predicted_label]
+print(f"Top-1 예측 결과: {category_name} ({probs[0][predicted_label].item()*100:.2f}%)")</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. CLIP vs ResNet-50 특성 상세 비교 -->
+            <section id="sec-compare">
+                <h2>3. CLIP vs ResNet-50 모델 특성 상세 비교</h2>
+
+                <!-- Comparison Table Card Block -->
+                <div class="block">
+                    <div class="block-hd">
+                        <div class="bicon">⚔️</div>
+                        <div class="bname">전통 지도학습(ResNet-50) vs 멀티모달(CLIP) 패러다임 비교</div>
+                    </div>
+                    <div class="block-body">
+                        <div class="bdesc">
+                            동일한 이미지(수채화 여우 그림)를 처리할 때 지도학습 기반 ResNet-50과 멀티모달 대조학습 기반 CLIP 모델의 주요 차이점이다.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-custom text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 20%;">비교 항목</th>
+                                        <th style="width: 40%;">ResNet-50 (전통 지도학습 CNN)</th>
+                                        <th style="width: 40%;">CLIP (멀티모달 파운데이션 모델)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold">학습 방식</td>
+                                        <td>ImageNet 1,000개 클래스 단일 라벨 지도학습</td>
+                                        <td>4억 개 이미지-텍스트 대조학습 (Contrastive)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">분류 방식</td>
+                                        <td>사전 정의된 1,000개 범주 정적 출력</td>
+                                        <td>임의 작성한 텍스트 임베딩과의 유사도 (Zero-Shot)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">화풍/스타일 인식</td>
+                                        <td><span class="badge bg-danger fs-6">불가</span> (객체 종류에만 국한)</td>
+                                        <td><span class="badge bg-success fs-6">가능</span> ("watercolor" 화풍 세부 구분)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Zero-shot 유연성</td>
+                                        <td>새 클래스 등장 시 수천 장 데이터 및 FC 재학습 필수</td>
+                                        <td>텍스트 레이블만 수정하면 코드/재학습 없이 구동</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">여우 수채화 예시</td>
+                                        <td><code>red fox (85.2%)</code></td>
+                                        <td><code>a watercolor painting of a fox (92.4%)</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perspective Comparison Cards Grid -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light border border-primary border-opacity-25 rounded-3 h-100">
+                            <div class="fw-bold text-primary mb-2 fs-6">🔍 ResNet-50의 핵심 시각 관점</div>
+                            <div class="fs-6 text-secondary">
+                                객체의 <strong>시각적 국소 형태(주둥이, 귀, 털 색상 패턴)</strong>에 집중하여 사물 종류를 분류한다. 화풍(수채화/유화/사진) 정보는 클래스 정의에 없으므로 무시되거나 분류 노이즈로 작용한다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light border border-purple border-opacity-25 rounded-3 h-100">
+                            <div class="fw-bold text-purple mb-2 fs-6" style="color:#7c3aed;">🎨 CLIP의 핵심 시각 관점</div>
+                            <div class="fs-6 text-secondary">
+                                이미지 전체의 <strong>의미적 맥락(Semantic Context)</strong>을 파악한다. 객체 명칭뿐만 아니라 화풍, 미술 스타일, 배경 분위기까지 텍스트 임베딩 차원에서 완벽 대조한다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </div>
+
+    <!-- 필수 라이브러리 및 높이 조절 스크립트 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script>
+        // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            } else {
+                console.error('Highlight.js 로드 실패');
+            }
+        });
+
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100); // 렌더링 안정화를 위한 미세 지연
+        };
+    </script>
+</body>
+</html>

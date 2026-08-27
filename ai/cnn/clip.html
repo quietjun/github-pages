@@ -176,7 +176,6 @@
                 <li><a href="#sec-steps">3. 작동 원리 3단계</a></li>
                 <li><a href="#sec-zeroshot">4. Zero-shot 분류 시뮬레이션</a></li>
                 <li><a href="#sec-why">5. CLIP의 핵심 중요성</a></li>
-                <li><a href="#sec-verification">6. 무결성 검증 대조표</a></li>
             </ul>
         </div>
     </nav>
@@ -424,67 +423,6 @@
                 </table>
             </section>
 
-            <!-- 6. 무결성 검증 대조표 -->
-            <section id="sec-verification">
-                <h2>6. 리팩토링 무결성 검증 대조표 (Verification Table)</h2>
-                <p>원문(clip_백업.html) 대비 리팩토링 결과물의 정보 일치성 및 무결성 검증 기록이다.</p>
-
-                <table class="table table-bordered table-custom text-center align-middle">
-                    <thead>
-                        <tr>
-                            <th>핵심 항목</th>
-                            <th>원문(clip_백업.html) 내용</th>
-                            <th>재작성 상태</th>
-                            <th>일치 여부</th>
-                            <th>변경 사유 및 개선점</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>개요 및 요약</td>
-                            <td>OpenAI 2021, 이미지와 언어 동시 이해, "이 사진은 고양이야" 학습</td>
-                            <td>HTML header 및 .tldr-box 로 변환</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>Pretendard 및 Bootstrap 스타일로 시각적 가독성 개선</td>
-                        </tr>
-                        <tr>
-                            <td>기존 한계 vs CLIP</td>
-                            <td>고정 카테고리 한계 vs 임베딩 공간 매핑 및 텍스트 설명 인식</td>
-                            <td>Table 구조로 도표 비교 정렬</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>장황한 카드 스타일을 명확한 비교 Table로 전환</td>
-                        </tr>
-                        <tr>
-                            <td>공유 임베딩 다이어그램</td>
-                            <td>ViT/ResNet 이미지 인코더, Transformer 텍스트 인코더, 유사도 다이어그램</td>
-                            <td>SVG 다이어그램 및 코사인 유사도 수식 추가</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>마스터 템플릿 SVG 규격 준수 및 수식(.equation) 추가</td>
-                        </tr>
-                        <tr>
-                            <td>작동 원리 3단계</td>
-                            <td>1. 4억개 수집, 2. 대조학습(거리 가깝게/멀게), 3. Zero-shot 선택</td>
-                            <td>3단계 카드 리스트로 시각화</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>Step 1~3 배지와 개조식 불렛포인트로 가독성 강화</td>
-                        </tr>
-                        <tr>
-                            <td>Zero-shot 분류 예시</td>
-                            <td>🐶(강아지), 🌅(일몰) 텍스트 후보 태그 매칭 예시</td>
-                            <td>Zero-shot 태그 카드 배치</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>승자 태그(.winner) 및 설명 노트를 깔끔하게 재배치</td>
-                        </tr>
-                        <tr>
-                            <td>CLIP의 중요성</td>
-                            <td>범용성, 언어로 제어, 기반 모델, 평가 지표(CLIP Score) 4가지</td>
-                            <td>HTML Table 4대 특징 분석 표 작성</td>
-                            <td><span class="badge bg-success">100% 일치</span></td>
-                            <td>그리드 카드를 구조화된 요약 테이블로 직관성 향상</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
 
             <footer id="summary" class="summary-box">
                 <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">핵심 요약</h2>
@@ -503,28 +441,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
 
     <script>
+        // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
         document.addEventListener('DOMContentLoaded', (event) => {
             if (typeof hljs !== 'undefined') {
                 hljs.configure({ ignoreUnescapedHTML: true });
                 hljs.highlightAll();
+            } else {
+                console.error('Highlight.js 로드 실패');
             }
         });
-    </script>
 
-    <!-- [필수] Iframe 높이 조절 스크립트 (AGENTS.md 규칙) -->
-    <script>
-      function sendHeight() {
-        const height = document.body.scrollHeight;
-        window.parent.postMessage({ height: height }, "*");
-      }
-      window.onload = sendHeight;
-      [50, 200, 500, 1000, 2000].forEach(function(delay) {
-        setTimeout(sendHeight, delay);
-      });
-      if (window.ResizeObserver) {
-        const ro = new ResizeObserver(sendHeight);
-        ro.observe(document.body);
-      }
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100); // 렌더링 안정화를 위한 미세 지연
+        };
     </script>
 </body>
 </html>
