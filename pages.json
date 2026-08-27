@@ -1,5 +1,29 @@
 [
   {
+    "label": ".agents",
+    "children": [
+      {
+        "label": "skills",
+        "children": [
+          {
+            "label": "create-page",
+            "children": [
+              {
+                "label": "resources",
+                "children": [
+                  {
+                    "label": "강의 자료 최종 마스터 템플릿",
+                    "path": ".agents/skills/create-page/resources/template.html"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "label": "ai",
     "children": [
       {
@@ -15,8 +39,12 @@
         "label": "cnn",
         "children": [
           {
-            "label": "CLIP 개념 개요",
+            "label": "CLIP 개념 개요 - OpenAI 2021",
             "path": "ai/cnn/clip.html"
+          },
+          {
+            "label": "CLIP 개념 개요",
+            "path": "ai/cnn/clip_백업.html"
           },
           {
             "label": "CNN — 합성곱 신경망",
