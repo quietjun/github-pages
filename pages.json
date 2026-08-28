@@ -172,12 +172,12 @@
             "path": "ai/rnn/lstm.html"
           },
           {
-            "label": "LSTM (Long Short-Term Memory)",
-            "path": "ai/rnn/lstm_백업.html"
+            "label": "RNN & Seq2Seq 시각화 및 메커니즘",
+            "path": "ai/rnn/rnn.html"
           },
           {
             "label": "Seq2Seq RNN 시각화",
-            "path": "ai/rnn/rnn.html"
+            "path": "ai/rnn/rnn_백업.html"
           },
           {
             "label": "텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해",
