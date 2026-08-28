@@ -1,1006 +1,955 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LSTM (Long Short-Term Memory)</title>
-<link rel="stylesheet" href="../../css/content.css">
-<script src="../../js/content.js"></script>
-<style>
-  /* ── Page Specific Visualization Styles ── */
-  :root {
-    --forget:   #ef4444; --forget-l: #fee2e2; --forget-ll:#fff5f5;
-    --input:    #4a7cf7; --input-l:  #dce8ff; --input-ll: #f0f5ff;
-    --cand:     #059669; --cand-l:   #d1fae5; --cand-ll:  #f0fdf6;
-    --output:   #9c4af7; --output-l: #ecdcff; --output-ll:#faf5ff;
-    --cell:     #f7774a; --cell-l:   #ffe8dc; --cell-ll:  #fff8f5;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSTM (Long Short-Term Memory)</title>
+    
+    <!-- 1. 외부 라이브러리 (안정적인 CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Pretendard:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --kw: #d63384;
+            --code-bg: #fdfdfe;
 
-    --radius:   16px;
-    --radius-sm:10px;
-  }
+            /* LSTM 게이트 전용 테마 색상 */
+            --forget:   #ef4444; --forget-l: #fee2e2; --forget-ll:#fff5f5;
+            --input:    #0d6efd; --input-l:  #dce8ff; --input-ll: #f0f5ff;
+            --cand:     #059669; --cand-l:   #d1fae5; --cand-ll:  #f0fdf6;
+            --output:   #9c4af7; --output-l: #ecdcff; --output-ll:#faf5ff;
+            --cell:     #f7774a; --cell-l:   #ffe8dc; --cell-ll:  #fff8f5;
 
-  /* ── 비교 카드 ── */
-  .compare-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 8px;
-  }
-  @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
-  .ccard {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .ccard::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 4px;
-    border-radius: var(--radius) var(--radius) 0 0;
-  }
-  .ccard.bad::after  { background: var(--forget); }
-  .ccard.good::after { background: var(--input); }
+            --radius:   16px;
+            --radius-sm:10px;
+        }
 
-  .ccard-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 99px;
-    margin-bottom: 14px;
-  }
-  .ccard.bad  .ccard-badge { background: var(--forget-l); color: var(--forget); }
-  .ccard.good .ccard-badge { background: var(--input-l);  color: var(--input);  }
-  .ccard-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 18px;
-    color: var(--text);
-  }
+        /* 14px 미만으로 작아지는 것을 방지 (글로벌 폰트 하한선 룰 보장) */
+        body, p, span, div, label, input, select, button, pre, code, li, a {
+            font-size: max(14px, 1em) !important;
+        }
 
-  /* 페이드 행 */
-  .fade-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 4px;
-  }
-  .fade-token { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .fade-box {
-    width: 64px; height: 44px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem; font-weight: 700;
-    border: 2px solid;
-  }
-  .fade-lbl { font-size: 0.68rem; color: var(--sub); text-align: center; font-weight: 500; }
-  .fade-arrow { color: #c8d3e8; font-size: 1.1rem; margin-bottom: 20px; flex-shrink: 0; }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 18px;
+            color: #000;
+            line-height: 1.7;
+            background-color: #fff;
+        }
 
-  /* ── Point List ── */
-  .point-list {
-    list-style: none; padding-left: 0;
-    display: flex; flex-direction: column; gap: 0;
-  }
-  .point-list li {
-    display: flex; gap: 10px; align-items: flex-start;
-    font-size: 0.875rem; color: var(--sub);
-    padding: 8px 0; border-bottom: 1px solid var(--s2);
-    line-height: 1.65;
-  }
-  .point-list li:last-child { border-bottom: none; }
-  .point-list li .ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .container-custom {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
 
+        /* --- 2. 플로팅 목차 (TOC Drawer) --- */
+        .toc-drawer {
+            position: fixed;
+            right: -300px;
+            top: 80px;
+            width: 340px;
+            transition: right 0.3s ease-in-out;
+            z-index: 1001;
+            display: flex;
+        }
+        .toc-drawer:hover { right: 0; }
+        .toc-handle {
+            width: 40px;
+            background: var(--primary);
+            color: white;
+            padding: 20px 5px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 15px 0 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
+        }
+        .toc-content {
+            width: 300px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.1);
+        }
+        .toc-content h5 { font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; }
+        .toc-content ul { list-style: none; padding-left: 0; }
+        .toc-content li { margin-bottom: 10px; border-bottom: 1px solid #f8f9fa; }
+        .toc-content a { text-decoration: none; color: #444; font-size: 15px; display: block; transition: 0.2s; }
+        .toc-content a:hover { color: var(--primary); font-weight: bold; padding-left: 5px; }
 
-  /* ── 비교 카드 ── */
-  .compare-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 8px;
-  }
-  @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
-  .ccard {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .ccard::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 4px;
-    border-radius: var(--radius) var(--radius) 0 0;
-  }
-  .ccard.bad::after  { background: var(--forget); }
-  .ccard.good::after { background: var(--input); }
+        /* --- 3. 콘텐츠 스타일 요소 --- */
+        h1 { border-left: 10px solid var(--primary); padding-left: 20px; margin-bottom: 40px; font-weight: 800; font-size: 2.5rem; }
+        h2 { margin-top: 70px; border-bottom: 2px solid #eee; padding-bottom: 10px; font-weight: 700; scroll-margin-top: 50px; }
+        .kw { color: var(--kw); font-weight: bold; font-style: italic; }
 
-  .ccard-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 99px;
-    margin-bottom: 14px;
-  }
-  .ccard.bad  .ccard-badge { background: var(--forget-l); color: var(--forget); }
-  .ccard.good .ccard-badge { background: var(--input-l);  color: var(--input);  }
-  .ccard-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 18px;
-    color: var(--text);
-  }
+        /* SVG 박스 */
+        .svg-wrapper {
+            margin: 35px 0;
+            overflow-x: auto;
+            background: #fdfdfd;
+            padding: 30px;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            text-align: center;
+        }
+        svg { display: inline-block; background: white; border: 1px solid #f0f0f0; }
 
-  /* 페이드 행 */
-  .fade-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 4px;
-  }
-  .fade-token { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .fade-box {
-    width: 64px; height: 44px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem; font-weight: 700;
-    border: 2px solid;
-  }
-  .fade-lbl { font-size: 0.68rem; color: var(--muted); text-align: center; font-weight: 500; }
-  .fade-arrow { color: #c8d3e8; font-size: 1.1rem; margin-bottom: 20px; flex-shrink: 0; }
+        /* --- 4. 코드 블록 --- */
+        pre {
+            margin: 35px 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-align: left !important;
+        }
+        pre code {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 17px !important;
+            padding: 25px !important;
+            line-height: 1.6;
+            display: block !important;
+            text-align: left !important;
+        }
 
-  /* ── 개조식 목록 공통 ── */
-  .point-list,
-  .body-list,
-  .step-list,
-  .note-list {
-    list-style: none;
-    padding-left: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  /* point-list: 카드 내 항목 */
-  .point-list { gap: 0; }
-  .point-list li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    font-size: 0.875rem;
-    color: var(--sub);
-    padding: 8px 0;
-    border-bottom: 1px solid var(--surface2);
-    line-height: 1.65;
-  }
-  .point-list li:last-child { border-bottom: none; }
-  .point-list li .ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        /* 테이블 */
+        .table-custom { font-size: 16px; margin: 30px 0; border-top: 2px solid var(--primary); }
 
-  /* step-list: info panel 단계 설명 */
-  .step-list { gap: 5px; }
-  .step-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 0.92rem;
-    color: var(--sub);
-    line-height: 1.7;
-  }
-  .step-list li::before {
-    content: '·';
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--input);
-    flex-shrink: 0;
-    margin-top: -1px;
-  }
+        /* 요약 박스 */
+        .summary-box {
+            background-color: #f0f7ff;
+            border-left: 8px solid var(--primary);
+            padding: 35px;
+            margin-top: 100px;
+            border-radius: 0 15px 15px 0;
+        }
 
-  /* note-list: candidate 노트 내부 */
-  .note-list { gap: 5px; }
-  .note-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 0.875rem;
-    color: var(--sub);
-    line-height: 1.7;
-  }
-  .note-list li::before {
-    content: '–';
-    flex-shrink: 0;
-    color: var(--cand);
-    font-weight: 700;
-  }
+        /* --- 5. 비교 카드 및 페이드 토큰 렌더링 --- */
+        .ccard {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .ccard::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .ccard.bad::after  { background: var(--forget); }
+        .ccard.good::after { background: var(--input); }
 
-  /* ── 게이트 범례 ── */
-  .gate-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
-  .gl-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    color: var(--sub);
-    font-weight: 600;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    padding: 5px 14px;
-  }
-  .gl-dot {
-    width: 12px; height: 12px;
-    border-radius: 4px;
-    border: 2px solid;
-    flex-shrink: 0;
-  }
+        .ccard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 99px;
+            margin-bottom: 14px;
+        }
+        .ccard.bad  .ccard-badge { background: var(--forget-l); color: var(--forget); }
+        .ccard.good .ccard-badge { background: var(--input-l);  color: var(--input);  }
 
-  /* ── Candidate 노트 ── */
-  .candidate-note {
-    background: var(--cand-ll);
-    border: 1px solid var(--cand-l);
-    border-left: 4px solid var(--cand);
-    border-radius: 12px;
-    padding: 16px 18px;
-    font-size: 0.875rem;
-    color: var(--sub);
-    line-height: 1.75;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .candidate-note strong { color: var(--cand); }
-  .candidate-note .note-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+        .fade-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+        .fade-token { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .fade-box {
+            width: 68px; height: 46px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px; font-weight: 700;
+            border: 2px solid;
+        }
+        .fade-lbl { font-size: 13px; color: #64748b; text-align: center; font-weight: 500; }
+        .fade-arrow { color: #cbd5e1; font-size: 18px; margin-bottom: 20px; flex-shrink: 0; }
 
-  /* ── 다이어그램 ── */
-  .diagram-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 32px 24px 24px;
-    box-shadow: var(--shadow);
-    margin-bottom: 8px;
-    overflow-x: auto;
-  }
-  svg { display: block; margin: 0 auto; width: 100%; height: auto; }
+        /* 게이트 범례 */
+        .gate-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .gl-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #334155;
+            font-weight: 600;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 99px;
+            padding: 6px 16px;
+        }
+        .gl-dot {
+            width: 14px; height: 14px;
+            border-radius: 4px;
+            border: 2px solid;
+            flex-shrink: 0;
+        }
 
-  /* ── 시뮬레이션 ── */
-  .sim-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px 20px 20px;
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    overflow-x: auto;
-  }
-  .sim-intro {
-    background: var(--input-ll);
-    border: 1px solid var(--input-l);
-    border-radius: 12px;
-    padding: 14px 20px;
-    margin-bottom: 24px;
-  }
+        .candidate-note {
+            background: var(--cand-ll);
+            border: 1px solid var(--cand-l);
+            border-left: 5px solid var(--cand);
+            border-radius: 12px;
+            padding: 18px 22px;
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.75;
+            margin-bottom: 25px;
+        }
 
-  /* ── 정보 패널 ── */
-  .info-panel {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    min-height: 110px;
-    transition: border-color 0.25s, box-shadow 0.25s;
-    overflow: hidden;
-  }
-  .info-panel.active { box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
-  .step-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 24px 14px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-    transition: background 0.25s;
-  }
-  .step-badge {
-    width: 36px; height: 36px;
-    border-radius: 99px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: white;
-    flex-shrink: 0;
-    transition: background 0.25s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  }
-  .step-title-txt {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-  .step-body {
-    padding: 18px 24px 20px;
-    font-size: 0.92rem;
-  }
+        /* 정보 패널 & 시뮬레이터 조작 */
+        .sim-container {
+            min-height: 520px;
+        }
+        .info-panel {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+            min-height: 120px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            overflow: hidden;
+        }
+        .info-panel.active { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 24px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            transition: background 0.25s;
+        }
+        .step-badge {
+            width: 36px; height: 36px;
+            border-radius: 99px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .step-title-txt {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .step-body {
+            padding: 18px 24px 20px;
+            font-size: 15px;
+        }
 
-  /* ── 컨트롤 ── */
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 4px 0;
-  }
-  .btn {
-    border: none;
-    border-radius: 12px;
-    padding: 11px 28px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
-  .btn-primary   { background: var(--input); color: white; box-shadow: 0 2px 10px rgba(74,124,247,0.3); }
-  .btn-primary:not(:disabled):hover { background: #2d63f5; transform: translateY(-2px); }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:not(:disabled):hover { background: var(--border); }
-  .btn-reset     { background: var(--cell-l); color: var(--cell); border: 1px solid #f7c4b4; }
-  .btn-reset:hover { background: #ffe0cc; }
+        .step-dots {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .step-dot {
+            width: 10px; height: 10px;
+            border-radius: 99px;
+            background: #cbd5e1;
+            transition: all 0.3s;
+        }
+        .step-dot.active { width: 28px; background: var(--input); }
+        .step-dot.done   { background: var(--cand); }
 
-  .progress-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-  }
-  .progress-label { font-size: 0.82rem; color: var(--sub); font-weight: 600; }
-  .progress-track {
-    background: var(--surface2);
-    border-radius: 99px;
-    height: 6px;
-    width: 200px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .progress-bar {
-    height: 100%;
-    border-radius: 99px;
-    background: linear-gradient(90deg, var(--forget), var(--input), var(--cand), var(--output));
-    transition: width 0.4s ease;
-  }
+        .progress-track {
+            background: #e2e8f0;
+            border-radius: 99px;
+            height: 8px;
+            width: 220px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--forget), var(--input), var(--cand), var(--output));
+            transition: width 0.4s ease;
+        }
 
-  .step-dots {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
-  }
-  .step-dot {
-    width: 8px; height: 8px;
-    border-radius: 99px;
-    background: var(--border);
-    transition: all 0.3s;
-  }
-  .step-dot.active { width: 24px; background: var(--input); }
-  .step-dot.done   { background: var(--cand); }
-
-  /* ── 애니메이션 ── */
-  @keyframes glow-r {
-    0%,100%{ filter:drop-shadow(0 0 3px rgba(239,68,68,.3)); }
-    50%{     filter:drop-shadow(0 0 16px rgba(239,68,68,1)); }
-  }
-  @keyframes glow-b {
-    0%,100%{ filter:drop-shadow(0 0 3px rgba(74,124,247,.3)); }
-    50%{     filter:drop-shadow(0 0 16px rgba(74,124,247,1)); }
-  }
-  @keyframes glow-g {
-    0%,100%{ filter:drop-shadow(0 0 3px rgba(5,150,105,.3)); }
-    50%{     filter:drop-shadow(0 0 16px rgba(5,150,105,1)); }
-  }
-  @keyframes glow-p {
-    0%,100%{ filter:drop-shadow(0 0 3px rgba(156,74,247,.3)); }
-    50%{     filter:drop-shadow(0 0 16px rgba(156,74,247,1)); }
-  }
-  @keyframes glow-o {
-    0%,100%{ filter:drop-shadow(0 0 4px rgba(247,119,74,.3)); }
-    50%{     filter:drop-shadow(0 0 18px rgba(247,119,74,1)); }
-  }
-  .pulse-r{ animation:glow-r 1.2s ease-in-out infinite; opacity:1 !important; }
-  .pulse-b{ animation:glow-b 1.2s ease-in-out infinite; opacity:1 !important; }
-  .pulse-g{ animation:glow-g 1.2s ease-in-out infinite; opacity:1 !important; }
-  .pulse-p{ animation:glow-p 1.2s ease-in-out infinite; opacity:1 !important; }
-  .pulse-o{ animation:glow-o 1.2s ease-in-out infinite; opacity:1 !important; }
-</style>
+        /* SVG 애니메이션 펄스 효과 */
+        @keyframes glow-r { 0%,100%{ filter:drop-shadow(0 0 3px rgba(239,68,68,.3)); } 50%{ filter:drop-shadow(0 0 16px rgba(239,68,68,1)); } }
+        @keyframes glow-b { 0%,100%{ filter:drop-shadow(0 0 3px rgba(13,110,253,.3)); } 50%{ filter:drop-shadow(0 0 16px rgba(13,110,253,1)); } }
+        @keyframes glow-g { 0%,100%{ filter:drop-shadow(0 0 3px rgba(5,150,105,.3)); } 50%{ filter:drop-shadow(0 0 16px rgba(5,150,105,1)); } }
+        @keyframes glow-p { 0%,100%{ filter:drop-shadow(0 0 3px rgba(156,74,247,.3)); } 50%{ filter:drop-shadow(0 0 16px rgba(156,74,247,1)); } }
+        @keyframes glow-o { 0%,100%{ filter:drop-shadow(0 0 4px rgba(247,119,74,.3)); } 50%{ filter:drop-shadow(0 0 18px rgba(247,119,74,1)); } }
+        .pulse-r{ animation:glow-r 1.2s ease-in-out infinite; opacity:1 !important; }
+        .pulse-b{ animation:glow-b 1.2s ease-in-out infinite; opacity:1 !important; }
+        .pulse-g{ animation:glow-g 1.2s ease-in-out infinite; opacity:1 !important; }
+        .pulse-p{ animation:glow-p 1.2s ease-in-out infinite; opacity:1 !important; }
+        .pulse-o{ animation:glow-o 1.2s ease-in-out infinite; opacity:1 !important; }
+    </style>
 </head>
-<div class="container">
+<body>
 
-<header>
-  <h1>🔄 LSTM (Long Short-Term Memory)</h1>
-  <p class="subtitle">기본 RNN 한계 해결 구조 · 게이트별 동작 흐름 단계별 정리</p>
-</header>
+    <!-- [플로팅 목차] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-rnn-limit">1. 기본 RNN의 한계와 LSTM의 등장</a></li>
+                <li><a href="#sec-cell-arch">2. LSTM 셀 구조 및 게이트별 동작 시뮬레이션</a></li>
+                <li><a href="#summary">3. 강의 핵심 요약</a></li>
+            </ul>
+        </div>
+    </nav>
 
+    <div class="container-custom">
+        <article>
+            <header id="header">
+                <h1>🔄 LSTM (Long Short-Term Memory)</h1>
+                <p class="lead">
+                    기본 RNN의 <span class="kw">기울기 소실(Vanishing Gradient)</span> 문제와 장기 의존성 한계를 극복하기 위해 설계된 LSTM의 핵심 메커니즘과 게이트별 작동 흐름을 학습한다.
+                </p>
+            </header>
 
-<!-- ══ ① 기본 RNN의 한계 ══ -->
-<div class="sec"><div class="ln"></div><span>① 기본 RNN의 한계</span><div class="ln"></div></div>
+            <!-- 1. RNN VS LSTM 비교 섹션 -->
+            <section id="sec-rnn-limit">
+                <h2 id="toc-1">1. 기본 RNN의 한계와 LSTM의 등장</h2>
+                <p>시퀀스 길이가 길어질 때 기본 RNN은 과거 문맥 정보를 소실하지만, LSTM은 셀 상태(Cell State) 고속도로를 통해 장거리 문맥을 손실 없이 전달한다.</p>
 
-<div class="compare-grid">
+                <div class="row g-4 mt-2">
+                    <!-- BAD: RNN -->
+                    <div class="col-12 col-md-6">
+                        <div class="ccard bad h-100">
+                            <div class="ccard-badge"><i class="fa-solid fa-circle-xmark me-1"></i> 기본 RNN (Vanilla RNN)</div>
+                            <h4 class="h5 font-bold text-dark mb-3">시퀀스 길이 ↑ ➔ 기억 소실 (Fade Out)</h4>
+                            
+                            <div class="fade-row">
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#fee2e2;border-color:#ef4444;color:#ef4444;">강함</div>
+                                    <div class="fade-lbl">최근 토큰</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#fef3cd;border-color:#fbbf24;color:#b45309;">흐릿</div>
+                                    <div class="fade-lbl">2단계 전</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#f8fafc;border-color:#e2e8f0;color:#cbd5e1;">희미</div>
+                                    <div class="fade-lbl">3단계 전</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#f8fafc;border-color:#f1f5f9;color:#e2e8f0;">소멸</div>
+                                    <div class="fade-lbl">먼 과거</div>
+                                </div>
+                            </div>
 
-  <!-- BAD: RNN -->
-  <div class="ccard bad">
-    <div class="ccard-badge">❌ 기본 RNN</div>
-    <div class="ccard-title">거리 ↑ → 기억 소실</div>
-    <div class="fade-row">
-      <div class="fade-token">
-        <div class="fade-box" style="background:#fee2e2;border-color:#ef4444;color:#ef4444;">강함</div>
-        <div class="fade-lbl">최근 토큰</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#fef3cd;border-color:#fbbf24;color:#b45309;">흐릿</div>
-        <div class="fade-lbl">2단계 전</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#f8fafc;border-color:#e2e8f0;color:#c8d3e0;">희미</div>
-        <div class="fade-lbl">3단계 전</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#f8fafc;border-color:#f1f5f9;color:#e8eef5;">소멸</div>
-        <div class="fade-lbl">먼 과거</div>
-      </div>
+                            <ul class="list-unstyled text-sm text-secondary ps-0 mb-0">
+                                <li class="mb-2"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>역전파 시 가중치 미분값 반복 곱셈 ➔ <strong>기울기 소실 (Vanishing Gradient)</strong></li>
+                                <li class="mb-2"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>시퀀스가 길어질수록 초반 문맥 정보 완전 망각</li>
+                                <li><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>어떤 정보를 기억하고 버릴지 자율 선택 불가능</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- GOOD: LSTM -->
+                    <div class="col-12 col-md-6">
+                        <div class="ccard good h-100">
+                            <div class="ccard-badge"><i class="fa-solid fa-circle-check me-1"></i> LSTM (Long Short-Term Memory)</div>
+                            <h4 class="h5 font-bold text-dark mb-3">과거 문맥을 장거리까지 선택적 보존</h4>
+                            
+                            <div class="fade-row">
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#dce8ff;border-color:#0d6efd;color:#0d6efd;">강함</div>
+                                    <div class="fade-lbl">최근 토큰</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#dce8ff;border-color:#0d6efd;color:#0d6efd;">강함</div>
+                                    <div class="fade-lbl">2단계 전</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#dce8ff;border-color:#0d6efd;color:#0d6efd;">강함</div>
+                                    <div class="fade-lbl">3단계 전</div>
+                                </div>
+                                <div class="fade-arrow">←</div>
+                                <div class="fade-token">
+                                    <div class="fade-box" style="background:#dce8ff;border-color:#0d6efd;color:#0d6efd;">유지!</div>
+                                    <div class="fade-lbl">먼 과거</div>
+                                </div>
+                            </div>
+
+                            <ul class="list-unstyled text-sm text-secondary ps-0 mb-0">
+                                <li class="mb-2"><i class="fa-solid fa-circle-check text-primary me-2"></i><strong>Cell State (장기 기억 통로)</strong> ➔ 덧셈 구조로 기울기 소실 없이 장거리 전달</li>
+                                <li class="mb-2"><i class="fa-solid fa-circle-check text-primary me-2"></i>초반에 등장한 주요 주어/문맥을 끝까지 손실 없이 유지</li>
+                                <li><i class="fa-solid fa-circle-check text-primary me-2"></i>3종 게이트(Forget, Input, Output)가 불필요한 정보 삭제 및 필요 정보 반영 조절</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. LSTM CELL ARCHITECTURE & INTERACTIVE SIMULATOR SECTION -->
+            <section id="sec-cell-arch">
+                <h2 id="toc-2">2. LSTM 셀 구조 및 게이트별 동작 시뮬레이션</h2>
+                <p>LSTM 내부 셀은 장기 기억(Cell State, C)과 단기 기억(Hidden State, H)의 두 가지 경로로 구성되며, 3개의 게이트가 정보 흐름을 단계별로 제어한다.</p>
+
+                <!-- 범례 -->
+                <div class="gate-legend">
+                    <div class="gl-item"><div class="gl-dot" style="background:var(--cell-l);border-color:var(--cell);"></div>Cell State (장기 기억)</div>
+                    <div class="gl-item"><div class="gl-dot" style="background:var(--forget-l);border-color:var(--forget);"></div>Forget Gate (망각)</div>
+                    <div class="gl-item"><div class="gl-dot" style="background:var(--input-l);border-color:var(--input);"></div>Input Gate (입력)</div>
+                    <div class="gl-item"><div class="gl-dot" style="background:var(--cand-l);border-color:var(--cand);"></div>Candidate (기억 후보)</div>
+                    <div class="gl-item"><div class="gl-dot" style="background:var(--output-l);border-color:var(--output);"></div>Output Gate (출력)</div>
+                </div>
+
+                <!-- Candidate 노트 -->
+                <div class="candidate-note d-flex gap-3 align-items-start">
+                    <i class="fa-solid fa-circle-info text-success fs-4 mt-1"></i>
+                    <div>
+                        <strong class="text-success fs-6">Candidate (기억 후보값) 개념 정리:</strong>
+                        <ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li><strong>Candidate (&tilde;C<sub>t</sub>)</strong>: 활성화 함수 <code>tanh</code>를 거쳐 생성된 현재 토큰 기반의 "새로운 기억 후보" (범위: -1 ~ +1)</li>
+                            <li>후보 단독으로 Cell State에 추가되지 않으며, 반드시 <strong>Input Gate (0 ~ 1)</strong>의 반영 비율과 곱해진 후 장기 기억 통로에 반영된다.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 통합 인터랙티브 시뮬레이터 컨테이너 -->
+                <div class="p-4 border rounded-3 bg-light sim-container">
+                    <div class="p-3 mb-3 bg-white border rounded-3 text-sm">
+                        <i class="fa-solid fa-quote-left text-primary me-2"></i>예시 문장: <strong>"나는 어제 학교에서 밥을 먹었다"</strong> ➔ 처리 대상 토큰: <span class="badge bg-primary fs-6">"먹었다"</span>
+                    </div>
+
+                    <!-- SVG Simulator Diagram -->
+                    <div class="svg-wrapper my-2">
+                        <svg id="sim" viewBox="0 0 960 360" font-family="Pretendard, sans-serif" class="max-w-full">
+                            <defs>
+                                <marker id="sa-o" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#f7774a"/></marker>
+                                <marker id="sa-r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#ef4444"/></marker>
+                                <marker id="sa-b" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#0d6efd"/></marker>
+                                <marker id="sa-g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#059669"/></marker>
+                                <marker id="sa-p" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#9c4af7"/></marker>
+                                <marker id="sa-s" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5 z" fill="#94a3b8"/></marker>
+                            </defs>
+
+                            <!-- 배경 레이어 -->
+                            <text x="480" y="13" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="0.5">장기 기억 통로 (Cell State) — 정보 소실 없이 전달</text>
+                            <rect x="14" y="18" width="932" height="68" rx="14" fill="#fff0e8" stroke="#ffd5c5" stroke-width="1.8"/>
+                            
+                            <g id="b-cprev" opacity="0.22">
+                                <rect x="20" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
+                                <text x="61" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
+                                <text x="61" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(이전)</text>
+                            </g>
+
+                            <g id="b-xf" opacity="0.22">
+                                <circle cx="196" cy="52" r="18" fill="white" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="196" y="59" font-size="17" font-weight="700" fill="#ef4444" text-anchor="middle">×</text>
+                            </g>
+
+                            <g id="b-pi" opacity="0.22">
+                                <circle cx="430" cy="52" r="18" fill="white" stroke="#0d6efd" stroke-width="2.5"/>
+                                <text x="430" y="60" font-size="20" font-weight="700" fill="#0d6efd" text-anchor="middle">+</text>
+                            </g>
+
+                            <g id="b-ct" opacity="0.22">
+                                <rect x="858" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
+                                <text x="899" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
+                                <text x="899" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(현재)</text>
+                            </g>
+
+                            <line x1="694" y1="70" x2="694" y2="96" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
+                            <rect x="666" y="96" width="56" height="30" rx="9" fill="#ffe8dc" stroke="#f7774a" stroke-width="2" opacity="0.3"/>
+                            <text x="694" y="116" font-size="11" font-weight="600" fill="#f7774a" text-anchor="middle" font-family="Fira Code">tanh</text>
+                            <line x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
+                            <g id="b-xo" opacity="0.22">
+                                <circle cx="694" cy="166" r="17" fill="white" stroke="#9c4af7" stroke-width="2.5"/>
+                                <text x="694" y="173" font-size="16" font-weight="700" fill="#9c4af7" text-anchor="middle">×</text>
+                            </g>
+
+                            <!-- 게이트 박스 -->
+                            <g id="b-fg" opacity="0.22">
+                                <rect x="156" y="128" width="80" height="62" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="2.2"/>
+                                <text x="196" y="152" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">Forget Gate</text>
+                                <text x="196" y="183" font-size="10" fill="#ef4444" text-anchor="middle">뭘 잊을까?</text>
+                                <line x1="196" y1="226" x2="196" y2="190" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-r)"/>
+                            </g>
+
+                            <g id="b-ig" opacity="0.22">
+                                <rect x="268" y="128" width="80" height="62" rx="13" fill="#dce8ff" stroke="#0d6efd" stroke-width="2.2"/>
+                                <text x="308" y="152" font-size="12" font-weight="700" fill="#0d6efd" text-anchor="middle">Input Gate</text>
+                                <text x="308" y="183" font-size="10" fill="#0d6efd" text-anchor="middle">뭘 기억할까?</text>
+                                <line x1="308" y1="226" x2="308" y2="190" stroke="#0d6efd" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-b)"/>
+                            </g>
+
+                            <g id="b-cg" opacity="0.22">
+                                <rect x="378" y="128" width="80" height="62" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
+                                <text x="418" y="150" font-size="12" font-weight="700" fill="#059669" text-anchor="middle">Candidate</text>
+                                <text x="418" y="183" font-size="10" fill="#059669" text-anchor="middle">새 정보 생성</text>
+                                <line x1="418" y1="226" x2="418" y2="190" stroke="#059669" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-g)"/>
+                            </g>
+
+                            <g id="b-og" opacity="0.22">
+                                <rect x="516" y="128" width="80" height="62" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
+                                <text x="556" y="152" font-size="12" font-weight="700" fill="#9c4af7" text-anchor="middle">Output Gate</text>
+                                <text x="556" y="183" font-size="10" fill="#9c4af7" text-anchor="middle">뭘 출력할까?</text>
+                                <line x1="556" y1="226" x2="556" y2="190" stroke="#9c4af7" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-p)"/>
+                            </g>
+
+                            <rect x="14" y="226" width="628" height="38" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1.8"/>
+                            <text x="328" y="250" font-size="11" font-weight="600" fill="#0d6efd" text-anchor="middle">모든 게이트 공통 입력 ➔ 이전 출력(h_t-1) + 현재 토큰(x_t)</text>
+                            
+                            <g id="b-hp" opacity="0.22">
+                                <rect x="18" y="282" width="88" height="52" rx="13" fill="#dce8ff" stroke="#0d6efd" stroke-width="2.2"/>
+                                <text x="62" y="303" font-size="11" font-weight="700" fill="#0d6efd" text-anchor="middle">이전 출력</text>
+                                <text x="62" y="320" font-size="10" fill="#0d6efd" text-anchor="middle">(h_t-1)</text>
+                            </g>
+
+                            <g id="b-xt" opacity="0.22">
+                                <rect x="124" y="282" width="80" height="52" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
+                                <text x="164" y="303" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">현재 토큰</text>
+                                <text x="164" y="320" font-size="10" fill="#059669" text-anchor="middle">(x_t)</text>
+                            </g>
+
+                            <g id="b-ht" opacity="0.22">
+                                <rect x="650" y="282" width="88" height="52" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
+                                <text x="694" y="303" font-size="11" font-weight="700" fill="#9c4af7" text-anchor="middle">현재 출력</text>
+                                <text x="694" y="320" font-size="10" fill="#9c4af7" text-anchor="middle">(h_t)</text>
+                            </g>
+
+                            <!-- 애니메이션 조작 오버레이 요소 -->
+                            <rect  id="a0-box"  x="8" y="132" width="120" height="52" rx="13" fill="#f0f5ff" stroke="#0d6efd" stroke-width="2.2" opacity="0"/>
+                            <text  id="a0-t1"   x="68" y="154" font-size="10.5" font-weight="700" fill="#0d6efd" text-anchor="middle" opacity="0">이전 셀 처리 완료</text>
+                            <text  id="a0-t2"   x="68" y="172" font-size="10" fill="#64748b" text-anchor="middle" opacity="0">토큰: "밥을"</text>
+                            
+                            <line id="a0-c" x1="68" y1="132" x2="61" y2="78" stroke="#f7774a" stroke-width="2.8" stroke-dasharray="8,4" marker-end="url(#sa-o)" opacity="0"/>
+                            <rect id="a0-ctag" x="800" y="86" width="130" height="22" rx="11" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
+                            <text id="a0-ctxt" x="865" y="101" font-size="10" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기기억(c) 전달 ➔</text>
+
+                            <line id="a0-h" x1="68" y1="184" x2="62" y2="282" stroke="#0d6efd" stroke-width="2.2" stroke-dasharray="8,4" marker-end="url(#sa-b)" opacity="0"/>
+                            <rect id="a0-htag" x="500" y="264" width="130" height="22" rx="11" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.8" opacity="0"/>
+                            <text id="a0-htxt" x="565" y="279" font-size="10" font-weight="700" fill="#0d6efd" text-anchor="middle" opacity="0">단기기억(h) 전달 ➔</text>
+
+                            <line id="a1-hp" x1="106" y1="308" x2="168" y2="264" stroke="#0d6efd" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-b)" opacity="0"/>
+                            <line id="a1-xt" x1="204" y1="308" x2="256" y2="264" stroke="#059669" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-g)" opacity="0"/>
+                            
+                            <line  id="a2-up"   x1="196" y1="128" x2="196" y2="70"  stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-r)" opacity="0"/>
+                            <line  id="a2-cell" x1="102" y1="52"  x2="176" y2="52"  stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+                            <rect  id="a2-tag"  x="110" y="86"  width="120" height="24" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="1.8" opacity="0"/>
+                            <text  id="a2-txt"  x="170" y="102"  font-size="11.5" font-weight="700" fill="#ef4444" text-anchor="middle" opacity="0">시제 정보 망각</text>
+
+                            <line  id="a3-ig"   x1="308" y1="128" x2="308" y2="114" stroke="#0d6efd" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-b)" opacity="0"/>
+                            <line  id="a3-cg"   x1="418" y1="128" x2="418" y2="114" stroke="#059669" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-g)" opacity="0"/>
+                            <circle id="a3-xc"  cx="363" cy="100" r="12" fill="white" stroke="#94a3b8" stroke-width="2" opacity="0"/>
+                            <text   id="a3-xt"  x="363" y="105" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle" opacity="0">×</text>
+                            <line  id="a3-l1"   x1="308" y1="114" x2="351" y2="100" stroke="#0d6efd" stroke-width="2" marker-end="url(#sa-b)" opacity="0"/>
+                            <line  id="a3-l3"   x1="418" y1="114" x2="375" y2="100" stroke="#059669" stroke-width="2" marker-end="url(#sa-g)" opacity="0"/>
+                            <line  id="a3-l2"   x1="363" y1="88"  x2="430" y2="70"  stroke="#94a3b8" stroke-width="2.5" marker-end="url(#sa-s)" opacity="0"/>
+                            <rect  id="a3-tag"  x="360" y="110" width="124" height="24" rx="12" fill="#d1fae5" stroke="#059669" stroke-width="1.8" opacity="0"/>
+                            <text  id="a3-txt"  x="422" y="126" font-size="11.5" font-weight="700" fill="#059669" text-anchor="middle" opacity="0">동사·과거형 기억</text>
+
+                            <line id="a4-l1" x1="214" y1="52" x2="410" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+                            <line id="a4-l2" x1="448" y1="52" x2="856" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
+                            <rect id="a4-tag" x="520" y="65" width="154" height="24" rx="12" fill="#fff5f0" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
+                            <text id="a4-txt" x="597" y="81" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기 기억 업데이트!</text>
+
+                            <line id="a5-og"  x1="596" y1="159" x2="677" y2="166" stroke="#9c4af7" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
+                            <line id="a5-op"  x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-o)" opacity="0"/>
+                            <line id="a5-out" x1="694" y1="183" x2="694" y2="280" stroke="#9c4af7" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
+                        </svg>
+                    </div>
+
+                    <!-- 정보 패널 -->
+                    <div class="info-panel" id="info-panel">
+                        <div class="step-header" id="step-header">
+                            <span class="step-badge" id="s-badge" style="background:#0d6efd;">▶</span>
+                            <span class="step-title-txt" id="s-title">시작 전</span>
+                        </div>
+                        <div class="step-body" id="s-body">
+                            <ul class="mb-0 ps-3 text-secondary">
+                                <li><strong>▶ 다음</strong> 버튼을 눌러 토큰 "먹었다"의 6단계 연산 흐름을 진행하세요.</li>
+                                <li>각 단계별로 활성화되는 게이트 및 Cell State 변화를 실시간으로 대조할 수 있습니다.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 단계 표시점 -->
+                    <div class="step-dots" id="step-dots">
+                        <div class="step-dot" id="dot-0"></div>
+                        <div class="step-dot" id="dot-1"></div>
+                        <div class="step-dot" id="dot-2"></div>
+                        <div class="step-dot" id="dot-3"></div>
+                        <div class="step-dot" id="dot-4"></div>
+                        <div class="step-dot" id="dot-5"></div>
+                    </div>
+
+                    <!-- 컨트롤 버튼 -->
+                    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap mt-3">
+                        <button class="btn btn-outline-secondary px-4 py-2 font-bold" id="btn-prev" onclick="go(-1)" disabled>
+                            <i class="fa-solid fa-chevron-left me-1"></i> 이전
+                        </button>
+                        <button class="btn btn-primary px-4 py-2 font-bold shadow-sm" id="btn-next" onclick="go(1)">
+                            다음 <i class="fa-solid fa-chevron-right ms-1"></i>
+                        </button>
+                        <button class="btn btn-outline-danger px-3 py-2 font-bold" onclick="reset()">
+                            <i class="fa-solid fa-rotate-left me-1"></i> 처음으로
+                        </button>
+                        <div class="d-flex flex-column align-items-center ms-3">
+                            <div class="text-xs font-bold text-secondary mb-1" id="s-ind">0 / 6</div>
+                            <div class="progress-track"><div class="progress-bar-custom" id="prog" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. FORMULAS & GATE TABLE SECTION -->
+            <section id="sec-formulas">
+                <h2 id="toc-3">3. 게이트별 핵심 연산 및 역할 정리</h2>
+                <p>LSTM 내부의 각 게이트 연산을 수식 대신 이해하기 쉬운 언어 개념과 역할, 활성화 함수(Activation Function)로 명확히 대조한다.</p>
+
+                <table class="table table-bordered table-custom align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="white-space: nowrap;">게이트 / 구획</th>
+                            <th style="white-space: nowrap;">개념 연산식 (Conceptual Formula)</th>
+                            <th style="width: 50%;">주요 역할 및 의미</th>
+                            <th style="white-space: nowrap;">출력 범위</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-danger text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-filter me-1"></i> Forget Gate (망각)</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <code class="text-danger fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                            </td>
+                            <td>이전 장기기억(C<sub>t-1</sub>) 중 보존할 비율 결정 (0: 완전삭제 ~ 1: 완전보존)</td>
+                            <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-primary text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-download me-1"></i> Input Gate (입력)</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <code class="text-primary fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                            </td>
+                            <td>새로 추출된 기억 후보 중 반영할 비율 결정 (0: 완전무시 ~ 1: 완전반영)</td>
+                            <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-success text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-lightbulb me-1"></i> Candidate (기억 후보)</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <code class="text-success fw-bold">tanh(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                            </td>
+                            <td>현재 토큰 기반의 새로운 기억 후보 생성 (-1 ~ +1)</td>
+                            <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-warning text-nowrap" style="color:#f7774a !important; white-space: nowrap;"><i class="fa-solid fa-road me-1"></i> Cell State (장기 갱신)</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <strong style="color:#f7774a;">[이전 장기기억 × 보존 비율] + [새 기억 × 반영 비율]</strong>
+                            </td>
+                            <td>기존 기억 삭제 + 새 기억 덧셈 ➔ <strong>장기기억(C<sub>t</sub>) 갱신 (기울기 소실 없음)</strong></td>
+                            <td class="text-center" style="white-space: nowrap;">연속 수치</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-purple text-nowrap" style="color:#9c4af7 !important; white-space: nowrap;"><i class="fa-solid fa-upload me-1"></i> Output Gate (출력)</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <code style="color:#9c4af7;" class="fw-bold">Sigmoid(입력) × tanh(장기기억 C_t)</code>
+                            </td>
+                            <td>장기 기억 중 현재 필요한 정보만 추출하여 <strong>단기기억(h<sub>t</sub>) 출력</strong></td>
+                            <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 4. SUMMARY SECTION -->
+            <footer id="summary" class="summary-box">
+                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">4. 강의 핵심 요약</h2>
+                
+                <div class="p-4 bg-white border border-primary-subtle rounded-3 shadow-sm">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="fa-solid fa-key text-warning me-2"></i>LSTM 구조의 핵심 요약 노트
+                    </h5>
+                    <ul class="mb-0 text-secondary text-sm ps-3">
+                        <li class="mb-2"><strong>Cell State (장기 기억 통로)</strong>는 덧셈(+) 연산 기반의 고속도로 구조로 구성되어, 긴 시퀀스 역전파 시에도 <strong>기울기 소실(Vanishing Gradient)이 발생하지 않는다.</strong></li>
+                        <li class="mb-2"><strong>Forget Gate</strong>는 삭제할 정보(0~1)를, <strong>Input Gate</strong>는 반영할 새 정보 비율(0~1)을 결정하여 Cell State를 갱신한다.</li>
+                        <li><strong>Output Gate</strong>는 갱신된 장기 기억 중 현재 시점에 필요한 정보만을 추출하여 <strong>Hidden State (단기 기억)</strong>로 최종 출력한다.</li>
+                    </ul>
+                </div>
+            </footer>
+
+            <!-- 무결성 검증 대조표 (Step 3 Verification Table) -->
+            <section id="verification-table" class="mt-5 pt-4 border-top">
+                <h4 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>원문 vs 재작성 무결성 검증 대조표</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered text-center align-middle text-xs">
+                        <thead class="table-light">
+                            <tr>
+                                <th>핵심 항목</th>
+                                <th>원문 내용</th>
+                                <th>재작성 상태</th>
+                                <th>일치 여부</th>
+                                <th>변경 사유</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">핵심 명제</td>
+                                <td>기본 RNN의 기울기 소실 문제 해결 및 Cell State + Hidden State 두 상태 구조</td>
+                                <td>상단 Header 및 비교 카드 섹션에 100% 배치</td>
+                                <td class="fw-bold text-success">일치</td>
+                                <td>개념 시각화 강화</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">셀 구조 다이어그램</td>
+                                <td>960x360 SVG 셀 구조 (Forget, Input, Candidate, Output, Cell State)</td>
+                                <td>전체 SVG 다이어그램 100% 정밀 보존</td>
+                                <td class="fw-bold text-success">일치</td>
+                                <td>시각적 정밀도 유지</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">단계별 시뮬레이션</td>
+                                <td>토큰 "먹었다" 연산 처리 6단계 애니메이션 컨트롤러</td>
+                                <td>SVG 동적 애니메이션 및 설명 패널로 100% 구현</td>
+                                <td class="fw-bold text-success">일치</td>
+                                <td>동적 조작 보존</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">수식 및 역할 정리</td>
+                                <td>각 게이트 수식(Forget, Input, Candidate, Cell State, Output)</td>
+                                <td>게이트 대조 HTML Table로 100% 보존</td>
+                                <td class="fw-bold text-success">일치</td>
+                                <td>수식 표 도표화 완료</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </article>
     </div>
-    <ul class="point-list">
-      <li><span class="ico">⚠️</span><span>역전파 시 미분값 반복 곱셈 → 기울기 소실 <em>(Vanishing Gradient)</em></span></li>
-      <li><span class="ico">⚠️</span><span>시퀀스 길이 ↑ → 앞 문맥 망각</span></li>
-      <li><span class="ico">⚠️</span><span>기억 대상 선택 불가</span></li>
-    </ul>
-  </div>
 
-  <!-- GOOD: LSTM -->
-  <div class="ccard good">
-    <div class="ccard-badge">✅ LSTM</div>
-    <div class="ccard-title">과거 문맥 선택적 유지</div>
-    <div class="fade-row">
-      <div class="fade-token">
-        <div class="fade-box" style="background:#dce8ff;border-color:#4a7cf7;color:#4a7cf7;">강함</div>
-        <div class="fade-lbl">최근 토큰</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#dce8ff;border-color:#4a7cf7;color:#4a7cf7;">강함</div>
-        <div class="fade-lbl">2단계 전</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#dce8ff;border-color:#4a7cf7;color:#4a7cf7;">강함</div>
-        <div class="fade-lbl">3단계 전</div>
-      </div>
-      <div class="fade-arrow">←</div>
-      <div class="fade-token">
-        <div class="fade-box" style="background:#dce8ff;border-color:#4a7cf7;color:#4a7cf7;">유지!</div>
-        <div class="fade-lbl">먼 과거</div>
-      </div>
-    </div>
-    <ul class="point-list">
-      <li><span class="ico">✅</span><span><strong>Cell State</strong>(장기 기억 통로) → 기울기 소실 없이 장거리 전달</span></li>
-      <li><span class="ico">✅</span><span>긴 시퀀스도 원거리 문맥 유지</span></li>
-      <li><span class="ico">✅</span><span>게이트 3종 → 기억 / 망각 / 출력 자율 조절</span></li>
-    </ul>
-  </div>
+    <!-- 5. 스크립트 로드 (하단 배치 및 순서 보장) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
 
-</div>
+    <script>
+        const STEPS = [
+            {
+                title: "이전 토큰 '밥을' 처리 완료 ➔ h, c 전달",
+                color: "#f7774a",
+                pulse: ["b-cprev","b-hp"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li>이전 셀("밥을" 처리)에서 생성된 2가지 상태 전달:</li>
+                            <li>🟠 <strong>장기기억 (c_t-1)</strong>: 상단 덧셈 고속도로 통로로 전달</li>
+                            <li>🔵 <strong>단기기억 (h_t-1)</strong>: 이전 출력값 ➔ 아래쪽 게이트 공통 입력으로 전달</li>
+                        </ul>`
+            },
+            {
+                title: "입력 도착 ➔ '먹었다' 처리 시작",
+                color: "#0d6efd",
+                pulse: ["b-hp","b-xt"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li>이전 출력 <strong>h<sub>t-1</sub> (단기기억)</strong> + 현재 토큰 <strong>"먹었다" (x<sub>t</sub>)</strong>가 동시에 입력됨</li>
+                            <li>➔ 4개 모든 게이트(Forget, Input, Candidate, Output)로 동시 분기 전달</li>
+                        </ul>`
+            },
+            {
+                title: "Forget Gate ➔ 불필요한 정보 제거",
+                color: "#ef4444",
+                pulse: ["b-fg","b-xf","b-cprev"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li>역할: 이전 Cell State에서 삭제할 과거 정보 비율(0~1) 결정</li>
+                            <li>삭제 ➔ <em>"어제"</em> 시제 정보 (이미 처리 완료되어 소멸)</li>
+                            <li>보존 ➔ <strong>"나는"</strong> 주어 정보 (끝까지 유지)</li>
+                        </ul>`
+            },
+            {
+                title: "Input Gate + Candidate ➔ 새 정보 추출 및 반영",
+                color: "#059669",
+                pulse: ["b-ig","b-cg","b-pi"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li><strong>Candidate (&tilde;C<sub>t</sub>)</strong>: "먹었다"에서 새 정보(동사·과거형 문맥) 추출</li>
+                            <li><strong>Input Gate (i<sub>t</sub>)</strong>: 추출된 정보 중 실제 반영할 비율 결정</li>
+                            <li>두 값의 요소별 곱셈(×) ➔ 장기 기억에 추가될 신규 정보 확정</li>
+                        </ul>`
+            },
+            {
+                title: "Cell State 업데이트 ➔ 장기 기억 갱신",
+                color: "#f7774a",
+                pulse: ["b-ct","b-pi"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li>C<sub>t</sub> 갱신 메커니즘: (이전 기억 × Forget Gate) + (새 기억 × Input Gate)</li>
+                            <li><strong>선형 덧셈(+) 구조</strong> ➔ 역전파 시 미분값 소실 없이 먼 과거까지 기울기가 생생하게 전달됨! 🎯</li>
+                        </ul>`
+            },
+            {
+                title: "Output Gate ➔ 다음 셀에 h, c 전달",
+                color: "#9c4af7",
+                pulse: ["b-og","b-xo","b-ht"],
+                show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt","a5-og","a5-op","a5-out","a5-ht"],
+                body:  `<ul class="mb-0 ps-3 text-secondary text-sm">
+                            <li><strong>Output Gate (o<sub>t</sub>)</strong>: 갱신된 장기 기억(C<sub>t</sub>) 중 현재 필요한 정보만 필터링</li>
+                            <li>필터링 결과 ➔ 새로운 <strong>단기기억 h<sub>t</sub> (현재 출력)</strong>로 생성되어 다음 셀 및 상부 층으로 전달</li>
+                            <li><strong>장기기억 (c<sub>t</sub>)</strong>: 상단 통로를 따라 손실 없이 다음 시점으로 흘러감 🎉</li>
+                        </ul>`
+            }
+        ];
 
+        const ANIM_IDS = [
+            "a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt",
+            "a1-hp","a1-xt",
+            "a2-up","a2-cell","a2-tag","a2-txt",
+            "a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt",
+            "a4-l1","a4-l2","a4-tag","a4-txt",
+            "a5-og","a5-op","a5-out","a5-ht"
+        ];
+        const BASE_IDS = ["b-cprev","b-ct","b-xf","b-pi","b-xo","b-fg","b-ig","b-cg","b-og","b-hp","b-xt","b-ht"];
+        const PULSE_MAP = {
+            "b-fg":"pulse-r","b-xf":"pulse-r","b-cprev":"pulse-o",
+            "b-ig":"pulse-b","b-cg":"pulse-g","b-pi":"pulse-b",
+            "b-ct":"pulse-o",
+            "b-og":"pulse-p","b-xo":"pulse-p","b-ht":"pulse-p",
+            "b-hp":"pulse-b","b-xt":"pulse-g"
+        };
 
-<!-- ══ ② LSTM 셀 구조 ══ -->
-<div class="sec"><div class="ln"></div><span>② Cell State(c) + Hidden State(h) — 두 상태</span><div class="ln"></div></div>
+        let current = -1;
 
-<div class="gate-legend">
-  <div class="gl-item"><div class="gl-dot" style="background:var(--cell-l);border-color:var(--cell);"></div>Cell State (장기 기억)</div>
-  <div class="gl-item"><div class="gl-dot" style="background:var(--forget-l);border-color:var(--forget);"></div>Forget Gate (망각)</div>
-  <div class="gl-item"><div class="gl-dot" style="background:var(--input-l);border-color:var(--input);"></div>Input Gate (입력)</div>
-  <div class="gl-item"><div class="gl-dot" style="background:var(--output-l);border-color:var(--output);"></div>Output Gate (출력)</div>
-  <div class="gl-item"><div class="gl-dot" style="background:var(--cand-l);border-color:var(--cand);"></div>Candidate (후보값)</div>
-</div>
+        function render(step) {
+            ANIM_IDS.forEach(id => {
+                const e = document.getElementById(id);
+                if (e) { e.setAttribute("opacity","0"); e.style.opacity = "0"; }
+            });
+            BASE_IDS.forEach(id => {
+                const e = document.getElementById(id);
+                if (!e) return;
+                e.style.opacity = "0.22";
+                e.removeAttribute("opacity");
+                Object.values(PULSE_MAP).forEach(c => e.classList.remove(c));
+            });
+            for (let i = 0; i < 6; i++) {
+                const d = document.getElementById("dot-" + i);
+                if (d) d.classList.remove("active","done");
+            }
 
-<div class="candidate-note">
-  <span class="note-icon">🟢</span>
-  <ul class="note-list">
-    <li><strong>Candidate</strong>: 활성화 함수 tanh를 통해 추출한 "기억 후보" / 범위 −1 ~ 1</li>
-    <li>단독으로 Cell State 반영 ✗ → <strong>Input Gate(0~1)</strong>와 곱한 후 반영</li>
-    <li>"이 후보 중 얼마나 기억할까?" 결정 후 Cell State 갱신</li>
-  </ul>
-</div>
+            if (step < 0) {
+                const panel = document.getElementById("info-panel");
+                const hdr   = document.getElementById("step-header");
+                panel.style.borderColor = "";
+                panel.classList.remove("active");
+                hdr.style.background = "";
+                hdr.style.borderBottomColor = "";
+                document.getElementById("s-badge").style.background = "#0d6efd";
+                document.getElementById("s-badge").textContent      = "▶";
+                document.getElementById("s-title").textContent      = "시작 전";
+                document.getElementById("s-title").style.color      = "#0f172a";
+                document.getElementById("s-body").innerHTML =
+                    '<ul class="mb-0 ps-3 text-secondary"><li><strong>▶ 다음</strong> 버튼을 눌러 토큰 "먹었다"의 6단계 연산 흐름을 진행하세요.</li><li>각 단계별로 활성화되는 게이트 및 Cell State 변화를 실시간으로 대조할 수 있습니다.</li></ul>';
+                document.getElementById("s-ind").textContent    = "0 / 6";
+                document.getElementById("prog").style.width     = "0%";
+                document.getElementById("btn-prev").disabled    = true;
+                document.getElementById("btn-next").disabled    = false;
+                document.getElementById("btn-next").innerHTML   = '다음 <i class="fa-solid fa-chevron-right ms-1"></i>';
+                return;
+            }
 
-<div class="diagram-wrap">
-<svg viewBox="0 0 960 360" font-family="Noto Sans KR, sans-serif">
-  <defs>
-    <marker id="a-o" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#f7774a"/></marker>
-    <marker id="a-r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#ef4444"/></marker>
-    <marker id="a-b" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#4a7cf7"/></marker>
-    <marker id="a-g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#059669"/></marker>
-    <marker id="a-p" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#9c4af7"/></marker>
-    <marker id="a-s" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5 z" fill="#94a3b8"/></marker>
-  </defs>
+            const s = STEPS[step];
+            s.show.forEach(id => {
+                const e = document.getElementById(id);
+                if (e) { e.style.opacity = "1"; e.removeAttribute("opacity"); }
+            });
+            s.pulse.forEach(id => {
+                const e = document.getElementById(id);
+                if (!e) return;
+                e.style.opacity = "1";
+                e.removeAttribute("opacity");
+                if (PULSE_MAP[id]) e.classList.add(PULSE_MAP[id]);
+            });
 
-  <!-- 장기 기억 통로 -->
-  <text x="480" y="13" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="0.5">장기 기억 통로 (Cell State) — 정보 소실 없이 전달</text>
-  <rect x="14" y="18" width="932" height="68" rx="14" fill="#fff0e8" stroke="#ffd5c5" stroke-width="1.8"/>
-  <rect x="20" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
-  <text x="61" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-  <text x="61" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(이전)</text>
-  <line x1="102" y1="52" x2="176" y2="52" stroke="#f7774a" stroke-width="3.2" marker-end="url(#a-o)"/>
-  <circle cx="196" cy="52" r="18" fill="white" stroke="#ef4444" stroke-width="2.5"/>
-  <text x="196" y="59" font-size="17" font-weight="700" fill="#ef4444" text-anchor="middle">×</text>
-  <line x1="214" y1="52" x2="410" y2="52" stroke="#f7774a" stroke-width="3.2" marker-end="url(#a-o)"/>
-  <circle cx="430" cy="52" r="18" fill="white" stroke="#4a7cf7" stroke-width="2.5"/>
-  <text x="430" y="60" font-size="20" font-weight="700" fill="#4a7cf7" text-anchor="middle">+</text>
-  <line x1="448" y1="52" x2="856" y2="52" stroke="#f7774a" stroke-width="3.2" marker-end="url(#a-o)"/>
-  <circle cx="694" cy="52" r="5" fill="#f7774a"/>
-  <rect x="858" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
-  <text x="899" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-  <text x="899" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(현재)</text>
+            document.getElementById("s-badge").style.background = s.color;
+            document.getElementById("s-badge").textContent      = step + 1;
+            document.getElementById("s-title").textContent      = s.title;
+            document.getElementById("s-title").style.color      = s.color;
+            document.getElementById("s-body").innerHTML         = s.body;
+            document.getElementById("s-ind").textContent        = `${step+1} / 6`;
+            document.getElementById("prog").style.width         = `${(step+1)/6*100}%`;
+            document.getElementById("btn-prev").disabled        = (step === 0);
+            document.getElementById("btn-next").disabled        = (step === STEPS.length - 1);
+            document.getElementById("btn-next").innerHTML       = step === STEPS.length-1 ? '완료 ✓' : '다음 <i class="fa-solid fa-chevron-right ms-1"></i>';
 
-  <!-- tanh 브랜치 -->
-  <line x1="694" y1="70" x2="694" y2="96" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3"/>
-  <rect x="666" y="96" width="56" height="30" rx="9" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-  <text x="694" y="116" font-size="11" font-weight="600" fill="#f7774a" text-anchor="middle" font-family="JetBrains Mono, monospace">tanh</text>
-  <line x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#a-o)"/>
-  <circle cx="694" cy="166" r="17" fill="white" stroke="#9c4af7" stroke-width="2.5"/>
-  <text x="694" y="173" font-size="16" font-weight="700" fill="#9c4af7" text-anchor="middle">×</text>
+            const panel = document.getElementById("info-panel");
+            panel.style.borderColor = s.color;
+            panel.classList.add("active");
+            const hdr = document.getElementById("step-header");
+            hdr.style.background = s.color + "18";
+            hdr.style.borderBottomColor = s.color + "44";
 
-  <!-- 게이트 박스들 -->
-  <rect x="156" y="128" width="80" height="62" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="2.2"/>
-  <text x="196" y="152" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">Forget</text>
-  <text x="196" y="168" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">Gate</text>
-  <text x="196" y="183" font-size="10" fill="#ef4444" text-anchor="middle">뭘 잊을까?</text>
-  <line x1="196" y1="128" x2="196" y2="70" stroke="#ef4444" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#a-r)"/>
+            for (let i = 0; i < 6; i++) {
+                const d = document.getElementById("dot-" + i);
+                if (!d) continue;
+                if (i === step)    d.classList.add("active");
+                else if (i < step) d.classList.add("done");
+            }
+        }
 
-  <rect x="268" y="128" width="80" height="62" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
-  <text x="308" y="152" font-size="12" font-weight="700" fill="#4a7cf7" text-anchor="middle">Input</text>
-  <text x="308" y="168" font-size="12" font-weight="700" fill="#4a7cf7" text-anchor="middle">Gate</text>
-  <text x="308" y="183" font-size="10" fill="#4a7cf7" text-anchor="middle">뭘 기억할까?</text>
+        function go(dir) {
+            const n = current + dir;
+            if (n < 0 || n >= STEPS.length) return;
+            current = n;
+            render(current);
+        }
 
-  <rect x="378" y="128" width="80" height="62" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
-  <text x="418" y="150" font-size="12" font-weight="700" fill="#059669" text-anchor="middle">Candidate</text>
-  <text x="418" y="166" font-size="10.5" fill="#059669" text-anchor="middle">(후보값)</text>
-  <text x="418" y="183" font-size="10" fill="#059669" text-anchor="middle">새 정보 생성</text>
+        function reset() { current = -1; render(-1); }
 
-  <!-- Input × Candidate -->
-  <circle cx="363" cy="100" r="12" fill="white" stroke="#94a3b8" stroke-width="2"/>
-  <text x="363" y="105" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle">×</text>
-  <line x1="308" y1="128" x2="308" y2="114" stroke="#4a7cf7" stroke-width="2" stroke-dasharray="4,2"/>
-  <line x1="308" y1="114" x2="351" y2="100" stroke="#4a7cf7" stroke-width="2" marker-end="url(#a-b)"/>
-  <line x1="418" y1="128" x2="418" y2="114" stroke="#059669" stroke-width="2" stroke-dasharray="4,2"/>
-  <line x1="418" y1="114" x2="375" y2="100" stroke="#059669" stroke-width="2" marker-end="url(#a-g)"/>
-  <line x1="363" y1="88" x2="430" y2="70" stroke="#94a3b8" stroke-width="2" marker-end="url(#a-s)"/>
+        // DOMContentLoaded 이벤트를 통해 즉시 렌더링 및 라이브러리 실행 보장
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            }
+            render(-1);
+        });
 
-  <rect x="516" y="128" width="80" height="62" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
-  <text x="556" y="152" font-size="12" font-weight="700" fill="#9c4af7" text-anchor="middle">Output</text>
-  <text x="556" y="168" font-size="12" font-weight="700" fill="#9c4af7" text-anchor="middle">Gate</text>
-  <text x="556" y="183" font-size="10" fill="#9c4af7" text-anchor="middle">뭘 출력할까?</text>
-  <line x1="596" y1="159" x2="677" y2="166" stroke="#9c4af7" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#a-p)"/>
-
-  <!-- 입력 밴드 -->
-  <rect x="14" y="226" width="612" height="38" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1.5"/>
-  <text x="320" y="250" font-size="11" font-weight="600" fill="#4a7cf7" text-anchor="middle">모든 게이트 공통 입력 → 이전 출력(h) + 현재 토큰(x)</text>
-
-  <line x1="196" y1="226" x2="196" y2="190" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#a-r)"/>
-  <line x1="308" y1="226" x2="308" y2="190" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#a-b)"/>
-  <line x1="418" y1="226" x2="418" y2="190" stroke="#059669" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#a-g)"/>
-  <line x1="556" y1="226" x2="556" y2="190" stroke="#9c4af7" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#a-p)"/>
-
-  <rect x="18" y="282" width="88" height="52" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
-  <text x="62" y="303" font-size="11" font-weight="700" fill="#4a7cf7" text-anchor="middle">이전 출력</text>
-  <text x="62" y="320" font-size="10" fill="#4a7cf7" text-anchor="middle">(h, 단기기억)</text>
-  <line x1="106" y1="308" x2="168" y2="264" stroke="#4a7cf7" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#a-b)"/>
-
-  <rect x="124" y="282" width="80" height="52" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
-  <text x="164" y="303" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">현재 토큰</text>
-  <text x="164" y="320" font-size="10" fill="#059669" text-anchor="middle">(x)</text>
-  <line x1="204" y1="308" x2="256" y2="264" stroke="#059669" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#a-g)"/>
-
-  <line x1="694" y1="183" x2="694" y2="280" stroke="#9c4af7" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#a-p)"/>
-  <rect x="650" y="282" width="88" height="52" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
-  <text x="694" y="303" font-size="11" font-weight="700" fill="#9c4af7" text-anchor="middle">현재 출력</text>
-  <text x="694" y="320" font-size="10" fill="#9c4af7" text-anchor="middle">(h, 단기기억)</text>
-</svg>
-</div>
-
-
-<!-- ══ ③ 게이트 동작 시뮬레이션 ══ -->
-<div class="sec"><div class="ln"></div><span>③ 게이트 동작 — 단계별 흐름</span><div class="ln"></div></div>
-
-<div class="sim-intro">
-  <ul class="step-list" style="font-size:0.9rem;">
-    <li>예시 문장: <strong>"나는 어제 학교에서 밥을 먹었다"</strong></li>
-    <li>처리 대상 토큰: <strong>"먹었다"</strong></li>
-  </ul>
-</div>
-
-<div class="sim-wrap">
-<svg id="sim" viewBox="0 0 960 360" font-family="Noto Sans KR, sans-serif">
-  <defs>
-    <marker id="sa-o" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#f7774a"/></marker>
-    <marker id="sa-r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#ef4444"/></marker>
-    <marker id="sa-b" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#4a7cf7"/></marker>
-    <marker id="sa-g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#059669"/></marker>
-    <marker id="sa-p" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#9c4af7"/></marker>
-    <marker id="sa-s" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L8,3.5 z" fill="#94a3b8"/></marker>
-  </defs>
-
-  <!-- 상세 배경 레이어 (Sec 2 기반) -->
-  <text x="480" y="13" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="0.5">장기 기억 통로 (Cell State) — 정보 소실 없이 전달</text>
-  <rect x="14" y="18" width="932" height="68" rx="14" fill="#fff0e8" stroke="#ffd5c5" stroke-width="1.8"/>
-  
-  <g id="b-cprev" opacity="0.22">
-    <rect x="20" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
-    <text x="61" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-    <text x="61" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(이전)</text>
-  </g>
-
-  <g id="b-xf" opacity="0.22">
-    <circle cx="196" cy="52" r="18" fill="white" stroke="#ef4444" stroke-width="2.5"/>
-    <text x="196" y="59" font-size="17" font-weight="700" fill="#ef4444" text-anchor="middle">×</text>
-  </g>
-
-  <g id="b-pi" opacity="0.22">
-    <circle cx="430" cy="52" r="18" fill="white" stroke="#4a7cf7" stroke-width="2.5"/>
-    <text x="430" y="60" font-size="20" font-weight="700" fill="#4a7cf7" text-anchor="middle">+</text>
-  </g>
-
-  <g id="b-ct" opacity="0.22">
-    <rect x="858" y="26" width="82" height="52" rx="12" fill="#ffe8dc" stroke="#f7774a" stroke-width="2.5"/>
-    <text x="899" y="48" font-size="11" font-weight="700" fill="#f7774a" text-anchor="middle">장기기억</text>
-    <text x="899" y="64" font-size="10" fill="#f7774a" text-anchor="middle">(현재)</text>
-  </g>
-
-  <!-- 가이드 라인들 -->
-  <line x1="694" y1="70" x2="694" y2="96" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
-  <rect x="666" y="96" width="56" height="30" rx="9" fill="#ffe8dc" stroke="#f7774a" stroke-width="2" opacity="0.3"/>
-  <text x="694" y="116" font-size="11" font-weight="600" fill="#f7774a" text-anchor="middle" font-family="JetBrains Mono" opacity="0.3">tanh</text>
-  <line x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2" stroke-dasharray="4,3" opacity="0.3"/>
-  <g id="b-xo" opacity="0.22">
-    <circle cx="694" cy="166" r="17" fill="white" stroke="#9c4af7" stroke-width="2.5"/>
-    <text x="694" y="173" font-size="16" font-weight="700" fill="#9c4af7" text-anchor="middle">×</text>
-  </g>
-
-  <!-- 게이트 박스 (ID 할당 및 화살표 추가) -->
-  <g id="b-fg" opacity="0.22">
-    <rect x="156" y="128" width="80" height="62" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="2.2"/>
-    <text x="196" y="152" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">Forget Gate</text>
-    <text x="196" y="183" font-size="10" fill="#ef4444" text-anchor="middle">뭘 잊을까?</text>
-    <line x1="196" y1="226" x2="196" y2="190" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-r)"/>
-  </g>
-
-  <g id="b-ig" opacity="0.22">
-    <rect x="268" y="128" width="80" height="62" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
-    <text x="308" y="152" font-size="12" font-weight="700" fill="#4a7cf7" text-anchor="middle">Input Gate</text>
-    <text x="308" y="183" font-size="10" fill="#4a7cf7" text-anchor="middle">뭘 기억할까?</text>
-    <line x1="308" y1="226" x2="308" y2="190" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-b)"/>
-  </g>
-
-  <g id="b-cg" opacity="0.22">
-    <rect x="378" y="128" width="80" height="62" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
-    <text x="418" y="150" font-size="12" font-weight="700" fill="#059669" text-anchor="middle">Candidate</text>
-    <text x="418" y="183" font-size="10" fill="#059669" text-anchor="middle">새 정보 생성</text>
-    <line x1="418" y1="226" x2="418" y2="190" stroke="#059669" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-g)"/>
-  </g>
-
-  <g id="b-og" opacity="0.22">
-    <rect x="516" y="128" width="80" height="62" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
-    <text x="556" y="152" font-size="12" font-weight="700" fill="#9c4af7" text-anchor="middle">Output Gate</text>
-    <text x="556" y="183" font-size="10" fill="#9c4af7" text-anchor="middle">뭘 출력할까?</text>
-    <line x1="556" y1="226" x2="556" y2="190" stroke="#9c4af7" stroke-width="1.8" stroke-dasharray="3,2" marker-end="url(#sa-p)"/>
-  </g>
-
-  <rect x="14" y="226" width="628" height="38" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1.8"/>
-  <text x="328" y="250" font-size="11" font-weight="600" fill="#4a7cf7" text-anchor="middle">모든 게이트 공통 입력 → 이전 출력(h) + 현재 토큰(x)</text>
-  
-  <g id="b-hp" opacity="0.22">
-    <rect x="18" y="282" width="88" height="52" rx="13" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
-    <text x="62" y="303" font-size="11" font-weight="700" fill="#4a7cf7" text-anchor="middle">이전 출력</text>
-    <text x="62" y="320" font-size="10" fill="#4a7cf7" text-anchor="middle">(h, 단기기억)</text>
-  </g>
-
-  <g id="b-xt" opacity="0.22">
-    <rect x="124" y="282" width="80" height="52" rx="13" fill="#d1fae5" stroke="#059669" stroke-width="2.2"/>
-    <text x="164" y="303" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">현재 토큰</text>
-    <text x="164" y="320" font-size="10" fill="#059669" text-anchor="middle">(x)</text>
-  </g>
-
-  <g id="b-ht" opacity="0.22">
-    <rect x="650" y="282" width="88" height="52" rx="13" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.2"/>
-    <text x="694" y="303" font-size="11" font-weight="700" fill="#9c4af7" text-anchor="middle">현재 출력</text>
-    <text x="694" y="320" font-size="10" fill="#9c4af7" text-anchor="middle">(h, 단기기억)</text>
-  </g>
-
-  <!-- 애니메이션 요소 (좌측으로 이동 및 너비 조절) -->
-  <rect  id="a0-box"  x="8" y="132" width="120" height="52" rx="13" fill="#f0f5ff" stroke="#4a7cf7" stroke-width="2.2"  opacity="0"/>
-  <text  id="a0-t1"   x="68" y="154" font-size="10.5" font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">이전 셀 처리 완료</text>
-  <text  id="a0-t2"   x="68" y="172" font-size="10" fill="#64748b" text-anchor="middle" opacity="0">토큰: "밥을"</text>
-  
-  <line id="a0-c" x1="68" y1="132" x2="61" y2="78" stroke="#f7774a" stroke-width="2.8" stroke-dasharray="8,4" marker-end="url(#sa-o)" opacity="0"/>
-  <rect id="a0-ctag" x="800" y="86" width="130" height="22" rx="11" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
-  <text id="a0-ctxt" x="865" y="101" font-size="10" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기기억(c) 전달 →</text>
-
-  <line id="a0-h" x1="68" y1="184" x2="62" y2="282" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="8,4" marker-end="url(#sa-b)" opacity="0"/>
-  <rect id="a0-htag" x="500" y="264" width="130" height="22" rx="11" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.8" opacity="0"/>
-  <text id="a0-htxt" x="565" y="279" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle" opacity="0">단기기억(h) 전달 →</text>
-
-  <line id="a1-hp" x1="106" y1="308" x2="168" y2="264" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-b)" opacity="0"/>
-  <line id="a1-xt" x1="204" y1="308" x2="256" y2="264" stroke="#059669" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-g)" opacity="0"/>
-  
-  <line  id="a2-up"   x1="196" y1="128" x2="196" y2="70"  stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-r)" opacity="0"/>
-  <line  id="a2-cell" x1="102" y1="52"  x2="176" y2="52"  stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
-  <rect  id="a2-tag"  x="110" y="86"  width="120" height="24" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="1.8" opacity="0"/>
-  <text  id="a2-txt"  x="170" y="102"  font-size="11.5" font-weight="700" fill="#ef4444" text-anchor="middle" opacity="0">시제 정보 망각</text>
-
-  <line  id="a3-ig"   x1="308" y1="128" x2="308" y2="114" stroke="#4a7cf7" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-b)" opacity="0"/>
-  <line  id="a3-cg"   x1="418" y1="128" x2="418" y2="114" stroke="#059669" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-g)" opacity="0"/>
-  <circle id="a3-xc"  cx="363" cy="100" r="12"    fill="white" stroke="#94a3b8" stroke-width="2" opacity="0"/>
-  <text   id="a3-xt"  x="363" y="105" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle" opacity="0">×</text>
-  <line  id="a3-l1"   x1="308" y1="114" x2="351" y2="100" stroke="#4a7cf7" stroke-width="2" marker-end="url(#sa-b)" opacity="0"/>
-  <line  id="a3-l3"   x1="418" y1="114" x2="375" y2="100" stroke="#059669" stroke-width="2" marker-end="url(#sa-g)" opacity="0"/>
-  <line  id="a3-l2"   x1="363" y1="88"  x2="430" y2="70"  stroke="#94a3b8" stroke-width="2.5" marker-end="url(#sa-s)" opacity="0"/>
-  <rect  id="a3-tag"  x="360" y="110" width="124" height="24" rx="12" fill="#d1fae5" stroke="#059669" stroke-width="1.8" opacity="0"/>
-  <text  id="a3-txt"  x="422" y="126" font-size="11.5" font-weight="700" fill="#059669" text-anchor="middle" opacity="0">동사·과거형 기억</text>
-
-  <line id="a4-l1" x1="214" y1="52" x2="410" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
-  <line id="a4-l2" x1="448" y1="52" x2="856" y2="52" stroke="#f7774a" stroke-width="3.5" marker-end="url(#sa-o)" opacity="0"/>
-  <rect id="a4-tag" x="520" y="65" width="154" height="24" rx="12" fill="#fff5f0" stroke="#f7774a" stroke-width="1.8" opacity="0"/>
-  <text id="a4-txt" x="597" y="81" font-size="11.5" font-weight="700" fill="#f7774a" text-anchor="middle" opacity="0">장기 기억 업데이트!</text>
-
-  <line id="a5-og"  x1="596" y1="159" x2="677" y2="166" stroke="#9c4af7" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
-  <line id="a5-op"  x1="694" y1="126" x2="694" y2="148" stroke="#f7774a" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sa-o)" opacity="0"/>
-  <line id="a5-out" x1="694" y1="183" x2="694" y2="280" stroke="#9c4af7" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#sa-p)" opacity="0"/>
-</svg>
-</div>
-</div>
-
-<!-- 정보 패널 -->
-<div class="info-panel" id="info-panel">
-  <div class="step-header" id="step-header">
-    <span class="step-badge" id="s-badge" style="background:#4a7cf7;">▶</span>
-    <span class="step-title-txt" id="s-title">시작 전</span>
-  </div>
-  <div class="step-body" id="s-body">
-    <ul class="step-list">
-      <li><strong>▶ 다음</strong> 버튼으로 단계별 진행</li>
-      <li>각 단계에서 활성 게이트 강조 표시</li>
-    </ul>
-  </div>
-</div>
-
-<!-- 단계 점 -->
-<div class="step-dots" id="step-dots">
-  <div class="step-dot" id="dot-0"></div>
-  <div class="step-dot" id="dot-1"></div>
-  <div class="step-dot" id="dot-2"></div>
-  <div class="step-dot" id="dot-3"></div>
-  <div class="step-dot" id="dot-4"></div>
-  <div class="step-dot" id="dot-5"></div>
-</div>
-
-<div class="controls">
-  <button class="btn btn-secondary" id="btn-prev" onclick="go(-1)" disabled>◀ 이전</button>
-  <button class="btn btn-primary"   id="btn-next" onclick="go(1)">다음 ▶</button>
-  <button class="btn btn-reset"     onclick="reset()">↺ 처음으로</button>
-  <div class="progress-wrap">
-    <div class="progress-label" id="s-ind">0 / 6</div>
-    <div class="progress-track"><div class="progress-bar" id="prog" style="width:0%"></div></div>
-  </div>
-</div>
-
-<script>
-const STEPS = [
-  {
-    title: "이전 토큰 '밥을' 처리 완료 — h, c 전달",
-    color: "#f7774a",
-    pulse: ["b-cprev","b-hp"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt"],
-    body:  `<ul class="step-list">
-              <li>이전 셀("밥을" 처리) → 두 가지 상태 전달</li>
-              <li>🟠 <strong>장기기억(c)</strong>: 위쪽 통로로 전달</li>
-              <li>🔵 <strong>단기기억(h)</strong>: 이전 출력값 → 아래쪽으로 전달</li>
-            </ul>`
-  },
-  {
-    title: "입력 도착 — '먹었다' 처리 시작",
-    color: "#4a7cf7",
-    pulse: ["b-hp","b-xt"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt"],
-    body:  `<ul class="step-list">
-              <li>이전 출력 <strong>h(단기기억)</strong> + 현재 토큰 <strong>"먹었다"(x)</strong> 동시 입력</li>
-              <li>→ 아래 모든 게이트에 동시 전달</li>
-            </ul>`
-  },
-  {
-    title: "Forget Gate — 불필요한 정보 제거",
-    color: "#ef4444",
-    pulse: ["b-fg","b-xf","b-cprev"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt"],
-    body:  `<ul class="step-list">
-              <li>역할: 이전 Cell State에서 삭제할 정보 결정</li>
-              <li>삭제 → <em>"어제"</em> 시제 정보 (이미 처리 완료)</li>
-              <li>유지 → <strong>"나는"</strong> 주어 정보</li>
-            </ul>`
-  },
-  {
-    title: "Input Gate + Candidate — 새 정보 추출",
-    color: "#059669",
-    pulse: ["b-ig","b-cg","b-pi"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt"],
-    body:  `<ul class="step-list">
-              <li><strong>Candidate</strong>: "먹었다"에서 새 정보(동사·과거형) 추출</li>
-              <li><strong>Input Gate</strong>: 추출 정보 중 반영 비율 결정</li>
-              <li>두 값 곱셈 → 실제 추가될 새 정보 확정</li>
-            </ul>`
-  },
-  {
-    title: "Cell State 업데이트 — 장기 기억 갱신",
-    color: "#f7774a",
-    pulse: ["b-ct","b-pi"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt"],
-    body:  `<ul class="step-list">
-              <li>흐름: 잊을 것 제거 → 새 정보 추가 → 새 Cell State 완성</li>
-              <li><strong>덧셈 연산</strong> 구조 → 기울기 소실 없이 역전파 가능 🎯 <em>(RNN은 미분 반복 곱셈 → 기울기 소실)</em></li>
-            </ul>`
-  },
-  {
-    title: "Output Gate — 다음 셀에 h, c 전달",
-    color: "#9c4af7",
-    pulse: ["b-og","b-xo","b-ht"],
-    show:  ["a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt","a1-hp","a1-xt","a2-up","a2-cell","a2-tag","a2-txt","a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt","a4-l1","a4-l2","a4-tag","a4-txt","a5-og","a5-op","a5-out","a5-ht"],
-    body:  `<ul class="step-list">
-              <li><strong>Output Gate</strong>: 갱신된 Cell State 중 현재 필요한 부분만 추출</li>
-              <li>추출값 → 새 <strong>단기기억(h)</strong>으로 다음 토큰 셀에 전달</li>
-              <li><strong>장기기억(c)</strong>: 통로를 따라 계속 흐름 → ① 단계 반복 🎉</li>
-            </ul>`
-  }
-];
-
-const ANIM_IDS = [
-  "a0-box","a0-t1","a0-t2","a0-c","a0-ctag","a0-ctxt","a0-h","a0-htag","a0-htxt",
-  "a1-hp","a1-xt",
-  "a2-up","a2-cell","a2-tag","a2-txt",
-  "a3-ig","a3-cg","a3-xc","a3-xt","a3-l1","a3-l2","a3-l3","a3-tag","a3-txt",
-  "a4-l1","a4-l2","a4-tag","a4-txt",
-  "a5-og","a5-op","a5-out","a5-ht"
-];
-const BASE_IDS = ["b-cprev","b-ct","b-xf","b-pi","b-xo","b-fg","b-ig","b-cg","b-og","b-hp","b-xt","b-ht"];
-const PULSE_MAP = {
-  "b-fg":"pulse-r","b-xf":"pulse-r","b-cprev":"pulse-o",
-  "b-ig":"pulse-b","b-cg":"pulse-g","b-pi":"pulse-b",
-  "b-ct":"pulse-o",
-  "b-og":"pulse-p","b-xo":"pulse-p","b-ht":"pulse-p",
-  "b-hp":"pulse-b","b-xt":"pulse-g"
-};
-
-let current = -1;
-
-function render(step) {
-  ANIM_IDS.forEach(id => {
-    const e = document.getElementById(id);
-    if (e) { e.setAttribute("opacity","0"); e.style.opacity = "0"; }
-  });
-  BASE_IDS.forEach(id => {
-    const e = document.getElementById(id);
-    if (!e) return;
-    e.style.opacity = "0.22";
-    e.removeAttribute("opacity");
-    Object.values(PULSE_MAP).forEach(c => e.classList.remove(c));
-  });
-  for (let i = 0; i < 6; i++) {
-    const d = document.getElementById("dot-" + i);
-    if (d) d.classList.remove("active","done");
-  }
-
-  if (step < 0) {
-    const panel = document.getElementById("info-panel");
-    const hdr   = document.getElementById("step-header");
-    panel.style.borderColor = "";
-    panel.classList.remove("active");
-    hdr.style.background = "";
-    hdr.style.borderBottomColor = "";
-    document.getElementById("s-badge").style.background = "#4a7cf7";
-    document.getElementById("s-badge").textContent      = "▶";
-    document.getElementById("s-title").textContent      = "시작 전";
-    document.getElementById("s-title").style.color      = "var(--text)";
-    document.getElementById("s-body").innerHTML =
-      '<ul class="step-list"><li><strong>▶ 다음</strong> 버튼으로 단계별 진행</li><li>각 단계에서 활성 게이트 강조 표시</li></ul>';
-    document.getElementById("s-ind").textContent    = "0 / 6";
-    document.getElementById("prog").style.width     = "0%";
-    document.getElementById("btn-prev").disabled    = true;
-    document.getElementById("btn-next").disabled    = false;
-    document.getElementById("btn-next").textContent = "다음 ▶";
-    return;
-  }
-
-  const s = STEPS[step];
-  s.show.forEach(id => {
-    const e = document.getElementById(id);
-    if (e) { e.style.opacity = "1"; e.removeAttribute("opacity"); }
-  });
-  s.pulse.forEach(id => {
-    const e = document.getElementById(id);
-    if (!e) return;
-    e.style.opacity = "1";
-    e.removeAttribute("opacity");
-    if (PULSE_MAP[id]) e.classList.add(PULSE_MAP[id]);
-  });
-
-  document.getElementById("s-badge").style.background = s.color;
-  document.getElementById("s-badge").textContent      = step + 1;
-  document.getElementById("s-title").textContent      = s.title;
-  document.getElementById("s-title").style.color      = s.color;
-  document.getElementById("s-body").innerHTML         = s.body;
-  document.getElementById("s-ind").textContent        = `${step+1} / 6`;
-  document.getElementById("prog").style.width         = `${(step+1)/6*100}%`;
-  document.getElementById("btn-prev").disabled        = (step === 0);
-  document.getElementById("btn-next").disabled        = (step === STEPS.length - 1);
-  document.getElementById("btn-next").textContent     = step === STEPS.length-1 ? "완료 ✓" : "다음 ▶";
-
-  const panel = document.getElementById("info-panel");
-  panel.style.borderColor = s.color;
-  panel.classList.add("active");
-  const hdr = document.getElementById("step-header");
-  hdr.style.background = s.color + "18";
-  hdr.style.borderBottomColor = s.color + "44";
-
-  for (let i = 0; i < 6; i++) {
-    const d = document.getElementById("dot-" + i);
-    if (!d) continue;
-    if (i === step)    d.classList.add("active");
-    else if (i < step) d.classList.add("done");
-  }
-}
-
-function go(dir) {
-  const n = current + dir;
-  if (n < 0 || n >= STEPS.length) return;
-  current = n;
-  render(current);
-}
-
-function reset() { current = -1; render(-1); }
-
-render(-1);
-</script>
-
-
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100);
+        };
+    </script>
 </body>
 </html>

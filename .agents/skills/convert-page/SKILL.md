@@ -58,4 +58,4 @@ description: >-
 - ⚠️ **LaTeX 표기법 절대 사용 금지**: KaTeX, MathJax 등 LaTeX 수식 라이브러리 및 LaTeX 표기법(`$...$`, `$$...$$`)은 **절대 절대 사용 금지**. 수식 및 연산 복잡도는 HTML 태그(`<sup>`, `<sub>`, `<code>`)로 직접 표현
 - **화면 규격**: 너비 1280px 반응형 컨테이너, 배경 `#FFF`, 글자 `#000`, 18px Pretendard 폰트
 - **필수 스크립트**: 문서 최하단(`</body>` 바로 직전) Iframe 높이 조절 스크립트 필수 포함
-- **기본 템플릿**: [create-page/resources/template.html](../create-page/resources/template.html) 구조 기반 작성
+- 🚨 **마스터 템플릿 철저 준수 (Strict Template Compliance)**: [create-page/resources/template.html](../create-page/resources/template.html)의 마크업 구조, CSS 변수(`:root { --primary: #0d6efd; --kw: #d63384; }`), 플로팅 목차(TOC Drawer) HTML/CSS, 문서 헤더(`<h1>`), 섹션 제목(`<h2>`), 코드 블록(`pre code`), 요약 박스(`<footer id="summary" class="summary-box">`) 구조를 **임의로 변경하거나 탈피하지 말고 100% 엄격하게 준수**하여 리팩토링 및 변환한다.

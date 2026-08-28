@@ -1,407 +1,568 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pandas axis 핵심 이해</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { 
-    font-family: 'Noto Sans KR', sans-serif; 
-    background: #fefdfb;
-    color: #3d3d3a;
-    line-height: 1.6;
-  }
-  body {
-    padding: 2rem 1rem;
-  }
-  
-  .container { 
-    max-width: 1024px;
-    margin: 0 auto;
-    overflow-x: hidden;
-  }
-  
-  .title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #1a1a18;
-  }
-  
-  .memory-text {
-    background: #f5f3ed;
-    border-left: 3px solid #d4a574;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    font-size: 14px;
-    border-radius: 4px;
-    line-height: 1.7;
-  }
-  
-  .memory-text strong { color: #7a6d5c; }
-  
-  .button-group {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-  }
-  
-  button {
-    padding: 10px 18px;
-    border: 1.5px solid #c9c5ba;
-    background: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: 'Noto Sans KR', sans-serif;
-    transition: all 0.2s;
-  }
-  
-  button:hover {
-    border-color: #888780;
-    background: #f9f7f2;
-  }
-  
-  button.active {
-    background: #534ab7;
-    color: white;
-    border-color: #534ab7;
-  }
-  
-  .demo-section {
-    margin-bottom: 2.5rem;
-  }
-  
-  .demo-section > .label {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-    color: #3d3d3a;
-  }
-  
-  .dataframe-container {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 2rem;
-  }
-  
-  table {
-    border-collapse: collapse;
-    background: white;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  
-  th, td {
-    border: 0.5px solid #d3d1c7;
-    padding: 10px 14px;
-    text-align: right;
-  }
-  
-  th {
-    background: #f1efe8;
-    font-weight: 600;
-    color: #3d3d3a;
-  }
-  
-  td {
-    background: white;
-  }
-  
-  th:first-child, td:first-child {
-    text-align: left;
-  }
-  
-  .axis-arrow {
-    position: absolute;
-    font-size: 24px;
-    font-weight: bold;
-    color: #185fa5;
-    transition: all 0.3s;
-  }
-  
-  .axis-arrow.axis0 { top: -45px; right: 40px; }
-  .axis-arrow.axis1 { top: 40px; right: -60px; }
-  
-  .highlight-row td { 
-    background: #e6f1fb !important;
-    color: #042c53;
-    font-weight: 500;
-  }
-  
-  .highlight-col { 
-    background: #e6f1fb !important;
-    color: #042c53 !important;
-    font-weight: 500;
-  }
-  
-  .explanation {
-    background: #e6f1fb;
-    border: 0.5px solid #85b7eb;
-    border-radius: 6px;
-    padding: 1.25rem;
-    margin-top: 1.5rem;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  
-  .explanation-title {
-    font-weight: 600;
-    color: #042c53;
-    margin-bottom: 0.75rem;
-    font-size: 15px;
-  }
-  
-  .code-block {
-    background: #f9f7f2;
-    border-left: 3px solid #ba7517;
-    padding: 0.75rem 1rem;
-    margin-top: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: #3d3d3a;
-    border-radius: 4px;
-    overflow-x: auto;
-    line-height: 1.5;
-  }
-  
-  .memory-key {
-    color: #534ab7;
-    font-weight: 600;
-  }
-  
-  .comparison-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-    margin-top: 2rem;
-  }
-  
-  .comparison-card {
-    border: 0.5px solid #d3d1c7;
-    padding: 1.25rem;
-    border-radius: 6px;
-    background: white;
-  }
-  
-  .comparison-card h3 {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #1a1a18;
-  }
-  
-  .comparison-card p {
-    font-size: 13px;
-    line-height: 1.7;
-    color: #5f5e5a;
-    margin-bottom: 0.75rem;
-  }
-  
-  .comparison-card code {
-    background: #f1efe8;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: #3d3d3a;
-  }
-  
-  .mnemonic {
-    background: #faeeda;
-    border: 0.5px solid #ef9f27;
-    border-radius: 6px;
-    padding: 1.25rem;
-    margin-top: 2rem;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  
-  .mnemonic-title {
-    font-weight: 600;
-    color: #854f0b;
-    margin-bottom: 1rem;
-    font-size: 15px;
-  }
-  
-  .mnemonic p {
-    margin-bottom: 0.75rem;
-  }
-  
-  @media (max-width: 640px) {
-    .comparison-grid {
-      grid-template-columns: 1fr;
-    }
-    .title {
-      font-size: 20px;
-    }
-    body {
-      padding: 1rem;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pandas axis 핵심 이해</title>
+    
+    <!-- 1. 외부 라이브러리 (안정적인 CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Pretendard:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --kw: #d63384;
+            --code-bg: #fdfdfe;
+        }
+
+        /* 14px 미만으로 작아지는 것을 방지 (글로벌 폰트 하한선 룰 보장) */
+        body, p, span, div, label, input, select, button, pre, code, li, a {
+            font-size: max(14px, 1em) !important;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 18px;
+            color: #000;
+            line-height: 1.7;
+            background-color: #fff;
+        }
+
+        .container-custom {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* --- 2. 플로팅 목차 (TOC Drawer) --- */
+        .toc-drawer {
+            position: fixed;
+            right: -300px;
+            top: 80px;
+            width: 340px;
+            transition: right 0.3s ease-in-out;
+            z-index: 1001;
+            display: flex;
+        }
+        .toc-drawer:hover { right: 0; }
+        .toc-handle {
+            width: 40px;
+            background: var(--primary);
+            color: white;
+            padding: 20px 5px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 15px 0 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
+        }
+        .toc-content {
+            width: 300px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.1);
+        }
+        .toc-content h5 { font-weight: bold; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; }
+        .toc-content ul { list-style: none; padding-left: 0; }
+        .toc-content li { margin-bottom: 10px; border-bottom: 1px solid #f8f9fa; }
+        .toc-content a { text-decoration: none; color: #444; font-size: 15px; display: block; transition: 0.2s; }
+        .toc-content a:hover { color: var(--primary); font-weight: bold; padding-left: 5px; }
+
+        /* --- 3. 콘텐츠 스타일 요소 --- */
+        h1 { border-left: 10px solid var(--primary); padding-left: 20px; margin-bottom: 40px; font-weight: 800; font-size: 2.5rem; }
+        h2 { margin-top: 70px; border-bottom: 2px solid #eee; padding-bottom: 10px; font-weight: 700; scroll-margin-top: 50px; }
+        .kw { color: var(--kw); font-weight: bold; font-style: italic; }
+
+        /* SVG 박스 */
+        .svg-wrapper {
+            margin: 35px 0;
+            overflow-x: auto;
+            background: #fdfdfd;
+            padding: 30px;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            text-align: center;
+        }
+        svg { display: inline-block; background: white; border: 1px solid #f0f0f0; }
+
+        /* --- 4. 코드 블록 --- */
+        pre {
+            margin: 35px 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-align: left !important;
+        }
+        pre code {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 17px !important;
+            padding: 25px !important;
+            line-height: 1.6;
+            display: block !important;
+            text-align: left !important;
+        }
+
+        /* 테이블 */
+        .table-custom { font-size: 16px; margin: 30px 0; border-top: 2px solid var(--primary); }
+
+        /* 요약 박스 */
+        .summary-box {
+            background-color: #f0f7ff;
+            border-left: 8px solid var(--primary);
+            padding: 35px;
+            margin-top: 100px;
+            border-radius: 0 15px 15px 0;
+        }
+
+        /* 시뮬레이터 전용 커스텀 스타일 및 크기 고정 (출렁임 방지) */
+        .df-table {
+            border-collapse: collapse;
+            background: white;
+            font-family: 'Fira Code', monospace;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+            table-layout: fixed;
+            width: 425px;
+        }
+        .df-table th, .df-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px 0;
+            text-align: center;
+            width: 85px;
+            height: 45px;
+            vertical-align: middle;
+        }
+        .df-table th { background: #f8f9fa; font-weight: bold; }
+        .highlight-col { background: #eff6ff !important; color: #1e40af !important; font-weight: bold; }
+        .highlight-row { background: #eff6ff !important; color: #1e40af !important; font-weight: bold; }
+        
+        /* 집계 결과 위치 하이라이트 스타일 */
+        .res-row-highlight {
+            background: #2563eb !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+        .res-col-highlight {
+            background: #d63384 !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+
+        .sim-btn-group button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="title">pandas axis 핵심 이해</div>
-  
-  <div class="memory-text">
-    <strong>핵심:</strong> axis = 이동 방향<br>
-    → axis=0: 위 → 아래 (↓) : 각 열 순회<br>
-    → axis=1: 좌 → 우 (→) : 각 행 순회
-  </div>
-  
-  <div class="demo-section">
-    <div class="label">축 선택:</div>
-    <div class="button-group">
-      <button class="active" onclick="switchAxis(0)">axis=0 (행 방향 ↓)</button>
-      <button onclick="switchAxis(1)">axis=1 (열 방향 →)</button>
+    <!-- [플로팅 목차] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-svg">1. 프로세스 시각화 (SVG)</a></li>
+                <li><a href="#sec-sim">2. 인터랙티브 축(axis) 시뮬레이터</a></li>
+                <li><a href="#sec-table">3. 기술 비교 분석 (Table)</a></li>
+                <li><a href="#summary">4. 강의 핵심 요약 및 암기법</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <article>
+            <header id="header">
+                <h1>pandas axis 핵심 이해</h1>
+                <p class="lead">
+                    Pandas 데이터프레임 연산 축(<span class="kw">axis=0</span>, <span class="kw">axis=1</span>)의 물리적 이동 방향과 집계 동작 원리를 시각화와 시뮬레이터로 습득한다.
+                </p>
+            </header>
+
+            <!-- 1. SVG 섹션 -->
+            <section id="sec-svg">
+                <h2 id="toc-1">1. 프로세스 시각화 (SVG)</h2>
+                <p>Pandas 2차원 데이터프레임 상에서 <span class="kw">axis=0</span>(위 ↓ 아래)과 <span class="kw">axis=1</span>(왼쪽 ➔ 오른쪽)이 가리키는 이동 방향 벡터는 다음과 같다.</p>
+                <div class="svg-wrapper">
+                    <svg width="800" height="240" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Matrix Container -->
+                        <rect x="250" y="40" width="300" height="160" rx="12" fill="#ffffff" stroke="#0d6efd" stroke-width="2"/>
+                        <line x1="250" y1="93" x2="550" y2="93" stroke="#f0f0f0" stroke-width="1.5"/>
+                        <line x1="250" y1="146" x2="550" y2="146" stroke="#f0f0f0" stroke-width="1.5"/>
+                        <line x1="350" y1="40" x2="350" y2="200" stroke="#f0f0f0" stroke-width="1.5"/>
+                        <line x1="450" y1="40" x2="450" y2="200" stroke="#f0f0f0" stroke-width="1.5"/>
+
+                        <text x="400" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="#6c757d">DataFrame (2D Matrix)</text>
+
+                        <!-- axis=0 Vector (Downward) -->
+                        <g transform="translate(225, 20)">
+                            <text x="-12" y="95" text-anchor="end" font-size="13" font-weight="bold" fill="#0d6efd">axis=0 (행 방향)</text>
+                            <text x="-12" y="115" text-anchor="end" font-size="12" fill="#6c757d">: 각 열(column) 단위 집계</text>
+                            <line x1="0" y1="40" x2="0" y2="175" stroke="#0d6efd" stroke-width="4" marker-end="url(#arrow-blue)"/>
+                        </g>
+
+                        <!-- axis=1 Vector (Rightward) -->
+                        <g transform="translate(210, 215)">
+                            <line x1="40" y1="-5" x2="355" y2="-5" stroke="#d63384" stroke-width="4" marker-end="url(#arrow-pink)"/>
+                            <text x="197" y="18" text-anchor="middle" font-size="13" font-weight="bold" fill="#d63384">axis=1 (열 방향 : 각 행(row) 단위 집계)</text>
+                        </g>
+
+                        <defs>
+                            <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                <polygon points="0 0, 6 3, 0 6" fill="#0d6efd"/>
+                            </marker>
+                            <marker id="arrow-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                <polygon points="0 0, 6 3, 0 6" fill="#d63384"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- 2. Simulator 섹션 -->
+            <section id="sec-sim">
+                <h2 id="toc-2">2. 인터랙티브 축(axis) 시뮬레이터</h2>
+                
+                <div class="my-4 p-4 border rounded-3 bg-light">
+                    <div class="sim-btn-group d-flex gap-3 mb-4">
+                        <button id="btn-axis0" class="btn btn-primary" onclick="switchAxis(0)">axis=0 (행 방향)</button>
+                        <button id="btn-axis1" class="btn btn-outline-secondary" onclick="switchAxis(1)">axis=1 (열 방향)</button>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6 text-center">
+                            <div class="p-3 bg-white border rounded-3 h-full">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-bold text-secondary text-sm">Sample DataFrame (3 x 3)</span>
+                                    <span id="arrow-badge" class="badge bg-primary">방향: 위 ↓ 아래 (axis=0)</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="df-table">
+                                        <thead>
+                                            <tr>
+                                                <th>index</th>
+                                                <th>A</th>
+                                                <th>B</th>
+                                                <th>C</th>
+                                                <th class="col-sum-cell res-col-highlight">sum</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr id="row-0">
+                                                <th>row_0</th>
+                                                <td>10</td>
+                                                <td>20</td>
+                                                <td>30</td>
+                                                <td class="col-sum-cell res-col-highlight">60</td>
+                                            </tr>
+                                            <tr id="row-1">
+                                                <th>row_1</th>
+                                                <td>40</td>
+                                                <td>50</td>
+                                                <td>60</td>
+                                                <td class="col-sum-cell res-col-highlight">150</td>
+                                            </tr>
+                                            <tr id="row-2">
+                                                <th>row_2</th>
+                                                <td>70</td>
+                                                <td>80</td>
+                                                <td>90</td>
+                                                <td class="col-sum-cell res-col-highlight">240</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot id="row-sum-footer">
+                                            <tr>
+                                                <th class="res-row-cell res-row-highlight">sum</th>
+                                                <td class="res-row-cell res-row-highlight">120</td>
+                                                <td class="res-row-cell res-row-highlight">150</td>
+                                                <td class="res-row-cell res-row-highlight">180</td>
+                                                <td class="res-row-cell col-sum-cell">-</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-4 bg-white border rounded-3 h-full">
+                                <h4 id="exp-title" class="fw-bold text-primary mb-3">axis=0 (행 방향 이동)</h4>
+                                <div id="exp-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Table 섹션 -->
+            <section id="sec-table">
+                <h2 id="toc-3">3. 기술 비교 분석 (Table)</h2>
+                <p>Pandas 축 파라미터의 핵심 특성을 <span class="kw">테이블</span>로 대조 분석한다.</p>
+                <table class="table table-bordered table-custom text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>구분</th>
+                            <th>axis = 0 (행 방향 ↓)</th>
+                            <th>axis = 1 (열 방향 →)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold bg-light">이동 방향</td>
+                            <td>위 ↓ 아래 (Vertical)</td>
+                            <td>왼쪽 ➔ 오른쪽 (Horizontal)</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold bg-light">순회 집계 단위</td>
+                            <td class="fw-bold text-primary">각 열(Column) 단위 순회</td>
+                            <td class="fw-bold text-danger">각 행(Row) 단위 순회</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold bg-light">결과 반환 개수</td>
+                            <td>열(Column) 개수 (3개)</td>
+                            <td>행(Row) 개수 (3개)</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold bg-light">대표 코드 연산</td>
+                            <td><code>df.sum(axis=0)</code> ➔ A:120, B:150, C:180</td>
+                            <td><code>df.sum(axis=1)</code> ➔ row_0:60, row_1:150, row_2:240</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold bg-light">주요 사용 시점</td>
+                            <td>변수(열)별 전체 평균, 최댓값 통계 집계 시</td>
+                            <td>샘플(행)별 개별 총점, 항목별 합산 계산 시</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- 4. Summary 섹션 -->
+            <footer id="summary" class="summary-box">
+                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">4. 강의 핵심 요약</h2>
+                
+                <div class="row g-4 items-stretch">
+                    <!-- Left Card: axis = 1 (우측 세로 1자) -->
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 bg-white border border-danger-subtle rounded-3 shadow-sm text-center h-100" style="border-color:#fbcfe8 !important;">
+                            <h5 class="fw-bold mb-2 text-sm" style="color:#d63384;">
+                                <i class="fa-solid fa-grip-lines-vertical me-1"></i>axis = 1 (우측 세로 1자 모양)
+                            </h5>
+                            <p class="text-secondary text-xs mb-2">
+                                우측에 결과가 <strong>세로 1줄('|')</strong>로 생성됨 ➔ <strong style="color:#d63384;">숫자 '1'</strong> 연상!
+                            </p>
+
+                            <!-- SVG Excel axis=1 -->
+                            <div class="svg-wrapper my-2 bg-light p-2 border rounded-3 d-inline-block w-100">
+                                <svg width="340" height="150" viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" class="max-w-full">
+                                    <rect x="10" y="5" width="320" height="20" rx="3" fill="#107c41"/>
+                                    <text x="20" y="19" font-size="10" font-weight="bold" fill="#ffffff">Excel - axis=1 (행별 소계)</text>
+
+                                    <g transform="translate(10, 30)" font-size="11" text-anchor="middle">
+                                        <rect x="0" y="0" width="60" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="30" y="15" font-weight="bold">index</text>
+                                        <rect x="60" y="0" width="55" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="87" y="15">A</text>
+                                        <rect x="115" y="0" width="55" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="142" y="15">B</text>
+                                        <rect x="170" y="0" width="55" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="197" y="15">C</text>
+                                        <rect x="225" y="0" width="75" height="22" fill="#d63384" stroke="#be185d"/><text x="262" y="15" font-weight="bold" fill="#ffffff">sum</text>
+
+                                        <!-- Rows -->
+                                        <rect x="0" y="22" width="60" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="30" y="37" font-weight="bold">row_0</text>
+                                        <rect x="60" y="22" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="87" y="37">10</text>
+                                        <rect x="115" y="22" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="142" y="37">20</text>
+                                        <rect x="170" y="22" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="197" y="37">30</text>
+                                        <rect x="225" y="22" width="75" height="22" fill="#fdf2f8" stroke="#fbcfe8"/><text x="262" y="37" font-weight="bold" fill="#d63384">60</text>
+
+                                        <rect x="0" y="44" width="60" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="30" y="59" font-weight="bold">row_1</text>
+                                        <rect x="60" y="44" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="87" y="59">40</text>
+                                        <rect x="115" y="44" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="142" y="59">50</text>
+                                        <rect x="170" y="44" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="197" y="59">60</text>
+                                        <rect x="225" y="44" width="75" height="22" fill="#fdf2f8" stroke="#fbcfe8"/><text x="262" y="59" font-weight="bold" fill="#d63384">150</text>
+
+                                        <rect x="0" y="66" width="60" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="30" y="81" font-weight="bold">row_2</text>
+                                        <rect x="60" y="66" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="87" y="81">70</text>
+                                        <rect x="115" y="66" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="142" y="81">80</text>
+                                        <rect x="170" y="66" width="55" height="22" fill="#ffffff" stroke="#e5e7eb"/><text x="197" y="81">90</text>
+                                        <rect x="225" y="66" width="75" height="22" fill="#fdf2f8" stroke="#fbcfe8"/><text x="262" y="81" font-weight="bold" fill="#d63384">240</text>
+
+                                        <!-- Digit 1 Overlay Indicator -->
+                                        <line x1="306" y1="2" x2="306" y2="86" stroke="#d63384" stroke-width="3" stroke-linecap="round"/>
+                                        <text x="318" y="52" font-size="24" font-weight="900" fill="#d63384">1</text>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Card: axis = 0 (하단 바닥 소계) -->
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 bg-white border border-primary-subtle rounded-3 shadow-sm text-center h-100">
+                            <h5 class="fw-bold text-primary mb-2 text-sm">
+                                <i class="fa-solid fa-window-minimize me-1"></i>axis = 0 (하단 바닥 소계행)
+                            </h5>
+                            <p class="text-secondary text-xs mb-2">
+                                하단 바닥에 결과가 <strong>가로 1줄('-')</strong>로 쫙 깔림 ➔ 열별 집계 (기본값)
+                            </p>
+
+                            <!-- SVG Excel axis=0 -->
+                            <div class="svg-wrapper my-2 bg-light p-2 border rounded-3 d-inline-block w-100">
+                                <svg width="340" height="150" viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" class="max-w-full">
+                                    <rect x="10" y="5" width="320" height="20" rx="3" fill="#107c41"/>
+                                    <text x="20" y="19" font-size="10" font-weight="bold" fill="#ffffff">Excel - axis=0 (열별 소계)</text>
+
+                                    <g transform="translate(10, 30)" font-size="11" text-anchor="middle">
+                                        <rect x="0" y="0" width="70" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="35" y="15" font-weight="bold">index</text>
+                                        <rect x="70" y="0" width="75" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="107" y="15">A</text>
+                                        <rect x="145" y="0" width="75" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="182" y="15">B</text>
+                                        <rect x="220" y="0" width="75" height="22" fill="#f3f4f6" stroke="#d1d5db"/><text x="257" y="15">C</text>
+
+                                        <!-- Rows -->
+                                        <rect x="0" y="22" width="70" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="35" y="36" font-weight="bold">row_0</text>
+                                        <rect x="70" y="22" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="107" y="36">10</text>
+                                        <rect x="145" y="22" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="182" y="36">20</text>
+                                        <rect x="220" y="22" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="257" y="36">30</text>
+
+                                        <rect x="0" y="42" width="70" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="35" y="56" font-weight="bold">row_1</text>
+                                        <rect x="70" y="42" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="107" y="56">40</text>
+                                        <rect x="145" y="42" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="182" y="56">50</text>
+                                        <rect x="220" y="42" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="257" y="56">60</text>
+
+                                        <rect x="0" y="62" width="70" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="35" y="76" font-weight="bold">row_2</text>
+                                        <rect x="70" y="62" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="107" y="76">70</text>
+                                        <rect x="145" y="62" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="182" y="76">80</text>
+                                        <rect x="220" y="62" width="75" height="20" fill="#ffffff" stroke="#e5e7eb"/><text x="257" y="76">90</text>
+
+                                        <!-- Bottom Summary Row (axis=0) -->
+                                        <rect x="0" y="82" width="70" height="22" fill="#0d6efd" stroke="#1d4ed8"/><text x="35" y="97" font-weight="bold" fill="#ffffff">sum</text>
+                                        <rect x="70" y="82" width="75" height="22" fill="#eff6ff" stroke="#bfdbfe"/><text x="107" y="97" font-weight="bold" fill="#1d4ed8">120</text>
+                                        <rect x="145" y="82" width="75" height="22" fill="#eff6ff" stroke="#bfdbfe"/><text x="182" y="97" font-weight="bold" fill="#1d4ed8">150</text>
+                                        <rect x="220" y="82" width="75" height="22" fill="#eff6ff" stroke="#bfdbfe"/><text x="257" y="97" font-weight="bold" fill="#1d4ed8">180</text>
+
+                                        <!-- Bottom Line Indicator -->
+                                        <line x1="70" y1="107" x2="295" y2="107" stroke="#0d6efd" stroke-width="3" stroke-linecap="round"/>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+        </article>
     </div>
-  </div>
-  
-  <div class="dataframe-container">
-    <svg style="position: absolute; top: -60px; right: 0; width: 120px; height: 120px;">
-      <text id="arrow-label" class="axis-arrow axis0" x="0" y="0">↓</text>
-    </svg>
-    <table id="dataframe-table">
-      <thead>
-        <tr>
-          <th>index</th>
-          <th>A</th>
-          <th>B</th>
-          <th>C</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr id="row-0">
-          <td>row_0</td>
-          <td>10</td>
-          <td>20</td>
-          <td>30</td>
-        </tr>
-        <tr id="row-1">
-          <td>row_1</td>
-          <td>40</td>
-          <td>50</td>
-          <td>60</td>
-        </tr>
-        <tr id="row-2">
-          <td>row_2</td>
-          <td>70</td>
-          <td>80</td>
-          <td>90</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div class="explanation">
-    <div class="explanation-title" id="exp-title">axis=0 설명</div>
-    <div id="exp-content"></div>
-  </div>
-  
-  <div class="comparison-grid">
-    <div class="comparison-card">
-      <h3>axis=0 (행 방향 ↓)</h3>
-      <p><strong>방향:</strong> 위 → 아래</p>
-      <p><strong>순회:</strong> 각 <span class="memory-key">열(column)</span></p>
-      <p><strong>결과:</strong> 열 개수 = 반환값 개수</p>
-      <p style="margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7;">
-        <code>df.sum(axis=0)</code><br>
-        → A:120, B:150, C:180
-      </p>
-    </div>
-    
-    <div class="comparison-card">
-      <h3>axis=1 (열 방향 →)</h3>
-      <p><strong>방향:</strong> 왼 → 오른</p>
-      <p><strong>순회:</strong> 각 <span class="memory-key">행(row)</span></p>
-      <p><strong>결과:</strong> 행 개수 = 반환값 개수</p>
-      <p style="margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7;">
-        <code>df.sum(axis=1)</code><br>
-        → row_0:60, row_1:150, row_2:240
-      </p>
-    </div>
-  </div>
-  
-  <div class="mnemonic">
-    <div class="mnemonic-title">💡 영구기억 법칙</div>
-    <p><strong>방법 1: 이름으로 기억</strong></p>
-    <p style="margin-top: 0.75rem;">
-      • 0 = "영(0)행" = 행 : ↓ 이동<br>
-      • 1 = "일(1)열" = 열 : → 이동
-    </p>
-    <p style="margin-top: 1rem;"><strong>방법 2: 변화로 기억</strong></p>
-    <p style="margin-top: 0.75rem;">
-      • axis=0 → <span class="memory-key">행 변함</span> (열 연산)<br>
-      • axis=1 → <span class="memory-key">열 변함</span> (행 연산)
-    </p>
-  </div>
-  
-</div>
 
-<script>
-function switchAxis(axis) {
-  document.querySelectorAll('.button-group button').forEach((btn, i) => {
-    btn.classList.toggle('active', i === axis);
-  });
-  
-  document.querySelectorAll('td').forEach(td => {
-    td.classList.remove('highlight-col', 'highlight-row');
-  });
-  
-  if (axis === 0) {
-    for (let colIdx = 1; colIdx <= 3; colIdx++) {
-      document.querySelectorAll(`th:nth-child(${colIdx + 1}), td:nth-child(${colIdx + 1})`).forEach(cell => {
-        if (cell.tagName !== 'TH') cell.classList.add('highlight-col');
-      });
-    }
-    
-    document.getElementById('arrow-label').textContent = '↓';
-    document.getElementById('arrow-label').className = 'axis-arrow axis0';
-    document.getElementById('exp-title').textContent = 'axis=0 (행 방향 이동)';
-    document.getElementById('exp-content').innerHTML = `
-      <p><strong>→ 위에서 아래로 이동 (↓)</strong></p>
-      <p style="margin-top: 0.75rem;">각 <span class="memory-key">열(A, B, C)</span> 따라 순회<br>→ 해당 열의 모든 값 연산</p>
-      <div class="code-block">df.sum(axis=0)
-→ A: 120, B: 150, C: 180
-  (열별 합)</div>
-      <p style="margin-top: 1rem;"><strong>사용 시점</strong><br>: 각 변수(열)별 통계 필요<br>: 전체 평균, 전체 합, 최댓값 등</p>
-    `;
-  } else {
-    document.querySelectorAll('tbody tr').forEach((row) => {
-      row.querySelectorAll('td').forEach(td => {
-        td.classList.add('highlight-row');
-      });
-    });
-    
-    document.getElementById('arrow-label').textContent = '→';
-    document.getElementById('arrow-label').className = 'axis-arrow axis1';
-    document.getElementById('exp-title').textContent = 'axis=1 (열 방향 이동)';
-    document.getElementById('exp-content').innerHTML = `
-      <p><strong>→ 왼쪽에서 오른쪽으로 이동 (→)</strong></p>
-      <p style="margin-top: 0.75rem;">각 <span class="memory-key">행(row_0, row_1, row_2)</span> 따라 순회<br>→ 해당 행의 모든 값 연산</p>
-      <div class="code-block">df.sum(axis=1)
-→ row_0: 60, row_1: 150, row_2: 240
-  (행별 합)</div>
-      <p style="margin-top: 1rem;"><strong>사용 시점</strong><br>: 각 샘플/기록(행)별 통계 필요<br>: 각 사람의 총점, 각 제품의 매출 등</p>
-    `;
-  }
-}
+    <!-- 5. 스크립트 로드 (하단 배치 및 순서 보장) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
 
-switchAxis(0);
+    <script>
+        function switchAxis(axis) {
+            const btn0 = document.getElementById('btn-axis0');
+            const btn1 = document.getElementById('btn-axis1');
+            const badge = document.getElementById('arrow-badge');
+            
+            if (axis === 0) {
+                btn0.className = 'btn btn-primary';
+                btn1.className = 'btn btn-outline-secondary';
+                badge.className = 'badge bg-primary';
+                badge.innerHTML = '방향: 위 ↓ 아래 (axis=0)';
+            } else {
+                btn0.className = 'btn btn-outline-secondary';
+                btn1.className = 'btn btn-primary';
+                badge.className = 'badge bg-danger';
+                badge.innerHTML = '방향: 왼쪽 ➔ 오른쪽 (axis=1)';
+            }
+            
+            document.querySelectorAll('.df-table td').forEach(td => {
+                td.classList.remove('highlight-col', 'highlight-row');
+            });
+            
+            if (axis === 0) {
+                // axis=0: 우측 소계 열 비가시화(visibility: hidden), 하단 소계 행 가시화(visibility: visible)
+                document.querySelectorAll('.col-sum-cell').forEach(el => el.style.visibility = 'hidden');
+                document.querySelectorAll('.res-row-cell').forEach(el => el.style.visibility = 'visible');
 
-window.onload = function() {
-  const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "*");
-};
-</script>
+                for (let colIdx = 1; colIdx <= 3; colIdx++) {
+                    document.querySelectorAll(`.df-table th:nth-child(${colIdx + 1}), .df-table td:nth-child(${colIdx + 1})`).forEach(cell => {
+                        if (cell.tagName !== 'TH') cell.classList.add('highlight-col');
+                    });
+                }
+                
+                document.getElementById('exp-title').textContent = 'axis=0 (행 방향 이동)';
+                document.getElementById('exp-content').innerHTML = `
+                    <p class="mb-1"><strong>위 ↓ 아래 이동 (Vertical)</strong></p>
+                    <p class="mb-2">각 <span class="kw">열(A, B, C)</span>을 따라 순회 ➔ 해당 열의 모든 값 연산</p>
+                    <div class="p-2.5 mb-2 bg-blue-50 border border-blue-200 rounded-3 text-xs">
+                        <strong class="text-primary"><i class="fa-solid fa-square-poll-vertical me-1"></i>결과 생성 위치:</strong><br>
+                        데이터프레임 <span class="badge bg-primary">하단(Bottom)</span>에 각 열별 소계 1개 행 생성<br>
+                        ➔ <strong>[120, 150, 180]</strong>
+                    </div>
+                    <pre><code class="language-python">df.sum(axis=0)
+# 결과 (하단 소계 행 생성):
+# A: 120, B: 150, C: 180</code></pre>
+                    <p class="mt-2 mb-0 text-sm"><strong>주요 사용 시점:</strong><br>• 각 변수(열)별 통계 필요 시 (전체 평균, 전체 합, 최댓값 등)</p>
+                `;
+            } else {
+                // axis=1: 하단 소계 행 비가시화(visibility: hidden), 우측 소계 열 가시화(visibility: visible)
+                document.querySelectorAll('.res-row-cell').forEach(el => el.style.visibility = 'hidden');
+                document.querySelectorAll('.col-sum-cell').forEach(el => el.style.visibility = 'visible');
 
+                document.querySelectorAll('.df-table tbody tr').forEach((row) => {
+                    row.querySelectorAll('td:not(.col-sum-cell)').forEach(td => {
+                        td.classList.add('highlight-row');
+                    });
+                });
+                
+                document.getElementById('exp-title').textContent = 'axis=1 (열 방향 이동)';
+                document.getElementById('exp-content').innerHTML = `
+                    <p class="mb-1"><strong>왼쪽 ➔ 오른쪽 이동 (Horizontal)</strong></p>
+                    <p class="mb-2">각 <span class="kw">행(row_0, row_1, row_2)</span>을 따라 순회 ➔ 해당 행의 모든 값 연산</p>
+                    <div class="p-2.5 mb-2 bg-pink-50 border border-pink-200 rounded-3 text-xs" style="background:#fdf2f8; border-color:#fbcfe8;">
+                        <strong style="color:#d63384;"><i class="fa-solid fa-square-poll-horizontal me-1"></i>결과 생성 위치:</strong><br>
+                        데이터프레임 <span class="badge bg-danger">우측(Right)</span>에 각 행별 소계 1개 열 생성<br>
+                        ➔ <strong>[60, 150, 240]</strong>
+                    </div>
+                    <pre><code class="language-python">df.sum(axis=1)
+# 결과 (우측 소계 열 생성):
+# row_0: 60, row_1: 150, row_2: 240</code></pre>
+                    <p class="mt-2 mb-0 text-sm"><strong>주요 사용 시점:</strong><br>• 각 샘플/기록(행)별 통계 필요 시 (각 사람의 총점, 각 제품의 매출 등)</p>
+                `;
+            }
+
+            if (typeof hljs !== 'undefined') {
+                document.querySelectorAll('#exp-content pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+        }
+
+        // DOMContentLoaded 이벤트를 통해 라이브러리 로드 후 즉시 실행 보장
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (typeof hljs !== 'undefined') {
+                hljs.configure({ ignoreUnescapedHTML: true });
+                hljs.highlightAll();
+            }
+            switchAxis(0);
+        });
+
+        // Iframe 높이 조절 및 렌더링 완료 알림
+        window.onload = function() {
+            setTimeout(function() {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ height: height }, "*");
+            }, 100);
+        };
+    </script>
 </body>
 </html>

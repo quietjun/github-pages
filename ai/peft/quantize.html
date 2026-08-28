@@ -39,9 +39,65 @@
             color: #1d4ed8 !important;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
         }
+
+        /* --- 플로팅 목차 (TOC Drawer) --- */
+        .toc-drawer {
+            position: fixed;
+            right: -280px;
+            top: 100px;
+            width: 320px;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+            display: flex;
+        }
+        .toc-drawer:hover { right: 0; }
+        .toc-handle {
+            width: 40px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            padding: 18px 6px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 14px 0 0 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-align: center;
+            box-shadow: -4px 0 15px rgba(59, 130, 246, 0.25);
+        }
+        .toc-content {
+            width: 280px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: -8px 8px 25px rgba(15, 23, 42, 0.08);
+            border-radius: 0 0 0 16px;
+        }
+        .toc-content h5 { font-weight: 700; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; margin-bottom: 12px; font-size: 14px; color: #0f172a; }
+        .toc-content ul { list-style: none; padding-left: 0; margin-bottom: 0; }
+        .toc-content li { margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+        .toc-content a { text-decoration: none; color: #475569; font-size: 13px; display: block; transition: all 0.2s ease; font-weight: 500; }
+        .toc-content a:hover { color: #2563eb; font-weight: 700; transform: translateX(3px); }
     </style>
 </head>
 <body class="min-h-screen pb-16">
+
+    <!-- 플로팅 목차 (TOC Drawer) -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 구조</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-1">1. 부동소수점 규격과 메모리 한계</a></li>
+                <li><a href="#sec-2">2. 실수형 비트 구조 비교 (FP32/16/BF16)</a></li>
+                <li><a href="#sec-3">3. 정수형 균등 양자화 (INT8)</a></li>
+                <li><a href="#sec-4">4. 분위수 기반 양자화 (NF4)</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <!-- Top Navbar -->
     <header class="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-50 shadow-sm">
@@ -66,7 +122,7 @@
         </div>
 
         <!-- 왜 양자화(Quantization)가 필요한가? 이론 요약 영역 -->
-        <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 card-shadow space-y-6">
+        <div id="sec-1" class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 card-shadow space-y-6 scroll-mt-20">
             <div class="border-b border-slate-100 pb-4">
                 <h3 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-circle-question text-indigo-600 mr-2"></i>1. 부동소수점(Float) 규격과 메모리 한계</h3>
                 <p class="text-slate-500 text-sm mt-1">거대 모델의 대중적 서빙을 가로막는 근본적인 하드웨어 장벽과 가중치 압축 전략에 관한 요약이다.</p>
@@ -146,7 +202,7 @@
                                     <strong>정밀도 다운캐스팅(Downcasting)</strong>: FP32에서 FP16 또는 BF16으로 변환하는 것으로, 실수라는 성질(경사로)을 그대로 유지한 채 표현 비트 크기만 줄이는 작업이다.
                                 </li>
                                 <li>
-                                    <strong>양자화(Quantization)</strong>: 연속적인 무한한 실수 데이터를 딱딱 끊어지는 고정된 정수 범위(INT8/INT4 등)로 매핑하여 도메인 자체를 바꾸는 작업이다. (비유하자면, <em>눈금 없는 부드러운 경사로(실수)를 칸칸이 나뉜 계단(정수)으로 바꾸는 것</em>과 같다.)
+                                    <strong>양자화(Quantization)</strong>: 연속적인 무한한 실수 데이터를 딱딱 끊어지는 유한한 개수의 이산적인 값(INT8/INT4, NF4 등)으로 매핑하여 도메인 자체를 바꾸는 작업이다. (비유하자면, <em>눈금 없는 부드러운 경사로(연속적 실수)를 칸칸이 나뉜 계단(이산적 값)으로 바꾸는 것</em>과 같다.)
                                 </li>
                             </ul>
                             <p class="mt-2.5 pt-2 border-t border-slate-200/40 text-[11px]">
@@ -159,7 +215,7 @@
         </div>
 
         <!-- SECTION 1: FP32, FP16, BF16 BIT STRUCTURE (THE ORIGINAL COMPARATIVE IMAGE FORMAT) -->
-        <section class="space-y-6">
+        <section id="sec-2" class="space-y-6 scroll-mt-20">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-layer-group text-blue-600 mr-2"></i>2. 실수형 정밀도 비트 구조 비교 (FP32 vs FP16 vs BF16)</h3>
                 <p class="text-slate-500 text-sm mt-1">부동소수점 형식이 메모리 상에서 어떻게 저장되는지 부호(Sign), 지수(Exponent), 가수(Mantissa)의 물리적 크기를 원본 도표 이미지 형태로 직관적으로 비교한다.</p>
@@ -284,7 +340,7 @@
         </section>
 
         <!-- SECTION 2: DEEP DIVE INT8 QUANTIZATION (CONVERSION PROCESS) -->
-        <section class="space-y-6">
+        <section id="sec-3" class="space-y-6 scroll-mt-20">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-calculator text-emerald-600 mr-2"></i>3. 정수형 균등 양자화 (INT8) 변환 원리</h3>
             </div>
@@ -336,14 +392,14 @@
                         <div class="w-full bg-white rounded-xl border border-slate-200 p-2" id="int8-graph-container"></div>
                         
                         <!-- INT8 Table -->
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5">
-                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2">
-                                <div class="col-span-1">원본</div>
-                                <div class="col-span-5">양자화 연산 (원본 * 배율)</div>
-                                <div class="col-span-4">역양자화 연산 (정수 / 배율)</div>
-                                <div class="col-span-2 text-right">절대오차</div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5 overflow-x-auto">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2 min-w-[500px]">
+                                <div class="col-span-1 whitespace-nowrap">원본</div>
+                                <div class="col-span-5 whitespace-nowrap">양자화 연산 (원본 * 배율)</div>
+                                <div class="col-span-4 whitespace-nowrap">역양자화 연산 (정수 / 배율)</div>
+                                <div class="col-span-2 text-right whitespace-nowrap">절대오차</div>
                             </div>
-                            <div class="space-y-1.5" id="int8-table-body"></div>
+                            <div class="space-y-1.5 min-w-[500px]" id="int8-table-body"></div>
                         </div>
                     </div>
                 </div>
@@ -407,7 +463,7 @@
         </section>
 
         <!-- SECTION 3: DEEP DIVE NF4 QUANTIZATION (THE MAGIC RULER PERFECT COPY) -->
-        <section class="space-y-6">
+        <section id="sec-4" class="space-y-6 scroll-mt-20">
             <div class="border-b border-slate-200 pb-4">
                 <h3 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-bezier-curve text-indigo-600 mr-2"></i>4. 분위수 기반 4-bit 양자화 (NF4) 변환 원리</h3>
                 <p class="text-slate-500 text-sm mt-1">가중치 텐서의 정규분포 분포를 기반으로 16개의 분위수 분할 경계면을 수학적으로 배치하여 오차 왜곡을 억제하는 NF4 방식의 핵심 원리이다.</p>
@@ -614,7 +670,7 @@
                         <!-- NF4 표준 분위수 눈금 고정 상수표 -->
                         <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-slate-700 space-y-2">
                             <div class="font-bold text-slate-800 text-xs uppercase tracking-wide flex items-center gap-1.5 pb-1 border-b border-slate-100">
-                                <i class="fa-solid fa-list-check text-indigo-500"></i> NF4 표준 분위수 눈금 고정 상수표
+                                <i class="fa-solid fa-list-check text-indigo-500"></i> NF4 표준 분위수 눈금 고정 상수표 (소수점 2자리 반올림 값)
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-center text-[11px] border-collapse">
@@ -636,13 +692,13 @@
                                             <td class="py-1.5 px-0.5 border-b border-slate-50">-0.18</td>
                                             <td class="py-1.5 px-0.5 border-b border-slate-50">-0.09</td>
                                             <td class="py-1.5 px-0.5 border-b border-slate-50">0.00</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.00</td>
                                             <td class="py-1.5 px-0.5 border-b border-slate-50">0.08</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.17</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.27</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.37</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.50</td>
-                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.68</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.16</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.25</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.34</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.44</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.56</td>
+                                            <td class="py-1.5 px-0.5 border-b border-slate-50">0.72</td>
                                             <td class="py-1.5 px-0.5 border-b border-slate-50">1.00</td>
                                         </tr>
                                     </tbody>
@@ -651,14 +707,14 @@
                         </div>
  
                         <!-- NF4 Table -->
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5">
-                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2">
-                                <div class="col-span-2">원본</div>
-                                <div class="col-span-5">정규화 & Bin 매핑 (원본 / 배율)</div>
-                                <div class="col-span-3">역양자화 (Bin값 × 배율)</div>
-                                <div class="col-span-2 text-right">절대오차</div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-3 font-mono text-sm text-slate-700 space-y-1.5 overflow-x-auto">
+                            <div class="grid grid-cols-12 border-b border-slate-100 pb-1 font-bold text-slate-500 text-sm gap-2 min-w-[500px]">
+                                <div class="col-span-2 whitespace-nowrap">원본</div>
+                                <div class="col-span-5 whitespace-nowrap">정규화 & Bin 매핑 (원본 / 배율)</div>
+                                <div class="col-span-3 whitespace-nowrap">역양자화 (Bin값 × 배율)</div>
+                                <div class="col-span-2 text-right whitespace-nowrap">절대오차</div>
                             </div>
-                            <div class="space-y-1.5" id="nf4-table-body"></div>
+                            <div class="space-y-1.5 min-w-[500px]" id="nf4-table-body"></div>
                         </div>
                     </div>
                 </div>
@@ -681,13 +737,13 @@
             -0.18477343022823334, 
             -0.09105003625154495, 
             0.0, 
-            0.0, 
             0.07958748191595078, 
-            0.16800000369548798, 
-            0.2651650309562683, 
-            0.3746069371700287, 
-            0.50259929895401, 
-            0.6770293712615967, 
+            0.16093257069587708, 
+            0.246112294171227, 
+            0.337915193902410, 
+            0.440709802118732, 
+            0.562616970962673, 
+            0.722956727834269, 
             1.0
         ];
 
@@ -754,13 +810,13 @@
                 int8Points.push({ orig: w, quant: quantized });
 
                 let qCalc = `
-                    <span class="w-[110px] text-left">${w.toFixed(2)} * ${scale.toFixed(1)}</span>
-                    <span class="w-[15px] text-center">=</span>
-                    <span class="w-[35px] text-right">${quantized}</span>`;
+                    <span class="w-[115px] text-left">${w.toFixed(2)} * ${scale.toFixed(1)}</span>
+                    <span class="w-[20px] text-center font-bold px-1">=</span>
+                    <span class="w-[45px] text-right">${quantized}</span>`;
                 let deqCalc = `
-                    <span class="w-[110px] text-left">${quantized} / ${scale.toFixed(1)}</span>
-                    <span class="w-[15px] text-center">=</span>
-                    <span class="w-[45px] text-right">${dequantized.toFixed(2)}</span>`;
+                    <span class="w-[115px] text-left">${quantized} / ${scale.toFixed(1)}</span>
+                    <span class="w-[20px] text-center font-bold px-1">=</span>
+                    <span class="w-[50px] text-right">${dequantized.toFixed(2)}</span>`;
 
                 htmlContent += `
                 <div class="grid grid-cols-12 font-mono text-xs py-1 border-b border-slate-50 items-center gap-1.5">
@@ -839,15 +895,15 @@
                     <div class="col-span-2 font-bold text-slate-800">${p.orig.toFixed(2)}</div>
                     <div class="col-span-5 text-blue-600 font-medium flex items-center whitespace-nowrap">
                         <span class="w-[115px] text-left">${p.orig.toFixed(2)} / ${scale.toFixed(2)}</span>
-                        <span class="w-[15px] text-center">=</span>
+                        <span class="w-[20px] text-center font-bold px-1">=</span>
                         <span class="w-[55px] text-right pr-2">${normVal.toFixed(2)}</span>
                         <span class="w-[25px] text-center">➡️</span>
                         <span class="bg-blue-50 text-blue-700 px-1 py-0.5 rounded font-bold border border-blue-100 min-w-[38px] text-center">${binBaseVal.toFixed(2)}</span>
                     </div>
                     <div class="col-span-3 text-emerald-600 font-medium flex items-center whitespace-nowrap">
-                        <span class="w-[100px] text-left">${binBaseVal.toFixed(2)} × ${scale.toFixed(2)}</span>
-                        <span class="w-[15px] text-center">=</span>
-                        <span class="w-[40px] text-right">${p.dequant.toFixed(2)}</span>
+                        <span class="w-[125px] text-left">${binBaseVal.toFixed(2)} × ${scale.toFixed(2)}</span>
+                        <span class="w-[20px] text-center font-bold px-1">=</span>
+                        <span class="w-[50px] text-right">${p.dequant.toFixed(2)}</span>
                     </div>
                     <div class="col-span-2 text-right text-rose-500 font-bold font-mono">${Math.abs(p.orig - p.dequant).toFixed(3)}</div>
                 </div>`;

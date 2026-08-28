@@ -68,5 +68,5 @@ description: >-
     </script>
 ```
 
-## 6. 기본 템플릿 리소스
-- 기본 템플릿은 [resources/template.html](./resources/template.html)을 기반으로 사용한다.
+## 6. 기본 템플릿 리소스 및 철저 준수 규칙
+- 🚨 **마스터 템플릿 철저 준수 (Strict Template Compliance)**: 모든 문서는 반드시 [resources/template.html](./resources/template.html)의 마크업 구조, CSS 변수(`:root { --primary: #0d6efd; --kw: #d63384; }`), 플로팅 목차(TOC Drawer) HTML/CSS, 문서 헤더(`<h1>`), 섹션 제목(`<h2>`), 코드 블록(`pre code`), 요약 박스(`<footer id="summary" class="summary-box">`) 구조를 **임의로 바꾸지 않고 100% 철저히 준수**하여 작성한다.
