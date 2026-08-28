@@ -238,7 +238,7 @@
             <ul class="list-unstyled mb-0">
                 <li><a href="#sec-1">1. 기존 신경망의 한계와 RNN의 필요성</a></li>
                 <li><a href="#sec-2">2. RNN 셀 언롤링 (Unrolling)</a></li>
-                <li><a href="#sec-3">3. PyTorch nn.RNN vs nn.RNNCell 비교</a></li>
+                <li><a href="#sec-3">3. PyTorch nn.RNN 파라미터 및 사용법</a></li>
                 <li><a href="#sec-4">4. Seq2Seq 인코더-디코더 & 시뮬레이션</a></li>
                 <li><a href="#summary">5. 강의 핵심 요약</a></li>
                 <li><a href="#sec-verification">6. 무결성 검증 대조표</a></li>
@@ -283,23 +283,23 @@
                         <div class="col-md-7 text-center">
                             <svg width="100%" height="auto" viewBox="0 0 540 270" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Title -->
-                                <text x="270" y="24" font-family="Pretendard, sans-serif" font-size="13.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">기존 심층 MLP 신경망 구조 (고정 차원 &amp; 맥락 단절)</text>
+                                <text x="270" y="24" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">기존 심층 MLP 신경망 구조 (고정 차원 &amp; 맥락 단절)</text>
 
                                 <!-- Layer Labels (Top) -->
-                                <text x="130" y="48" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">입력층 (Fixed)</text>
-                                <text x="235" y="48" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" fill="#64748b" text-anchor="middle">은닉층 1</text>
-                                <text x="345" y="48" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" fill="#64748b" text-anchor="middle">은닉층 2</text>
-                                <text x="460" y="48" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">출력층</text>
+                                <text x="130" y="48" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle">입력층 (Fixed)</text>
+                                <text x="235" y="48" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#64748b" text-anchor="middle">은닉층 1</text>
+                                <text x="345" y="48" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#64748b" text-anchor="middle">은닉층 2</text>
+                                <text x="460" y="48" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle">출력층</text>
 
                                 <!-- 1. "언제끝?" 말풍선 & 가변 길이 넘침 시각화 (x3와 x4 사이 수직 중심 이동) -->
                                 <g transform="translate(10, 108)">
                                     <rect x="0" y="0" width="68" height="44" rx="7" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
-                                    <text x="34" y="19" font-family="Pretendard, sans-serif" font-size="10" font-weight="800" fill="#1e40af" text-anchor="middle">💬 "언제끝?"</text>
-                                    <text x="34" y="33" font-family="Pretendard, sans-serif" font-size="8.5" font-weight="600" fill="#2563eb" text-anchor="middle">(가변 시퀀스)</text>
+                                    <text x="34" y="19" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1e40af" text-anchor="middle">💬 "언제끝?"</text>
+                                    <text x="34" y="33" font-family="Pretendard, sans-serif" font-size="14" font-weight="600" fill="#2563eb" text-anchor="middle">(가변 시퀀스)</text>
                                     
-                                    <text x="34" y="58" font-family="Pretendard, sans-serif" font-size="9" font-weight="600" fill="#64748b" text-anchor="middle">x₅, x₆, x₇...</text>
+                                    <text x="34" y="58" font-family="Pretendard, sans-serif" font-size="14" font-weight="600" fill="#64748b" text-anchor="middle">x₅, x₆, x₇...</text>
                                     <line x1="68" y1="22" x2="84" y2="22" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2"/>
-                                    <text x="88" y="17" font-family="Pretendard, sans-serif" font-size="11" font-weight="800" fill="#dc2626" text-anchor="middle">⛔</text>
+                                    <text x="88" y="17" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#dc2626" text-anchor="middle">⛔</text>
                                 </g>
 
                                 <!-- Synapses: Input (x=150) -> Hidden 1 (x=235) -->
@@ -328,53 +328,53 @@
 
                                 <!-- Input Layer Nodes (Left Stack x1~x4, x=110 ~ 150) -->
                                 <rect x="110" y="56" width="40" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
-                                <text x="130" y="71" font-family="Fira Code, monospace" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₁</text>
+                                <text x="130" y="71" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₁</text>
 
                                 <rect x="110" y="88" width="40" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
-                                <text x="130" y="103" font-family="Fira Code, monospace" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₂</text>
+                                <text x="130" y="103" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₂</text>
 
                                 <rect x="110" y="120" width="40" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
-                                <text x="130" y="135" font-family="Fira Code, monospace" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₃</text>
+                                <text x="130" y="135" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₃</text>
 
                                 <rect x="110" y="152" width="40" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
-                                <text x="130" y="167" font-family="Fira Code, monospace" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₄</text>
+                                <text x="130" y="167" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">x₄</text>
 
                                 <!-- Hidden Layer 1 Nodes (h1_1 ~ h3_1, cx=235) -->
                                 <circle cx="235" cy="72" r="14" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-                                <text x="235" y="72" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₁¹</text>
+                                <text x="235" y="72" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₁¹</text>
 
                                 <circle cx="235" cy="112" r="14" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-                                <text x="235" y="112" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₂¹</text>
+                                <text x="235" y="112" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₂¹</text>
 
                                 <circle cx="235" cy="152" r="14" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-                                <text x="235" y="152" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₃¹</text>
+                                <text x="235" y="152" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="central">h₃¹</text>
 
                                 <!-- Hidden Layer 2 Nodes (h1_2 ~ h3_2, cx=345) -->
                                 <circle cx="345" cy="72" r="14" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
-                                <text x="345" y="72" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₁²</text>
+                                <text x="345" y="72" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₁²</text>
 
                                 <circle cx="345" cy="112" r="14" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
-                                <text x="345" y="112" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₂²</text>
+                                <text x="345" y="112" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₂²</text>
 
                                 <circle cx="345" cy="152" r="14" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
-                                <text x="345" y="152" font-family="Fira Code, monospace" font-size="9.5" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₃²</text>
+                                <text x="345" y="152" font-family="Fira Code, monospace" font-size="14" font-weight="600" fill="#334155" text-anchor="middle" dominant-baseline="central">h₃²</text>
 
                                 <!-- Output Layer Node (Right y, cx=460) -->
                                 <circle cx="460" cy="112" r="14" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-                                <text x="460" y="112" font-family="Fira Code, monospace" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">y</text>
+                                <text x="460" y="112" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">y</text>
 
                                 <!-- 2. 맥락 단절 시각화 (이전 타임스텝 기억 h_t-1 피드백 통로 차단) -->
                                 <g transform="translate(160, 174)">
                                     <rect x="0" y="0" width="280" height="40" rx="8" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.2"/>
-                                    <text x="140" y="17" font-family="Pretendard, sans-serif" font-size="10.5" font-weight="700" fill="#0369a1" text-anchor="middle">💭 이전 타임스텝 기억 (h_t-1)</text>
-                                    <text x="140" y="32" font-family="Pretendard, sans-serif" font-size="9.5" font-weight="800" fill="#dc2626" text-anchor="middle">⛔ 타임스텝 간 피드백 연결 통로 부재 (맥락 단절)</text>
+                                    <text x="140" y="17" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#0369a1" text-anchor="middle">💭 이전 타임스텝 기억 (h_t-1)</text>
+                                    <text x="140" y="32" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#dc2626" text-anchor="middle">⛔ 타임스텝 간 피드백 연결 통로 부재 (맥락 단절)</text>
                                 </g>
                                 <path d="M235,166 L235,174" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2"/>
                                 <path d="M345,166 L345,174" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,2"/>
 
                                 <!-- Bottom Summary Banner (Blue Theme) -->
                                 <rect x="18" y="226" width="504" height="26" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-                                <text x="270" y="243" font-family="Pretendard, sans-serif" font-size="10" font-weight="700" fill="#1e40af" text-anchor="middle">⚠️ 아무리 깊은 심층 MLP라도 고정 입력 한계(언제끝?) &amp; 시점 간 기억(h_t-1) 유입 불가!</text>
+                                <text x="270" y="243" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle">⚠️ 아무리 깊은 심층 MLP라도 고정 입력 한계(언제끝?) &amp; 시점 간 기억(h_t-1) 유입 불가!</text>
                             </svg>
                         </div>
                     </div>
@@ -421,63 +421,63 @@
 
     <!-- ── 단일 셀 ── -->
     <circle cx="75" cy="36" r="24" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="75" y="36"
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="75" y="36"
           fill="#6d28d9" text-anchor="middle" dominant-baseline="central">o</text>
     <line x1="75" y1="80" x2="75" y2="60" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
     <rect x="32" y="80" width="86" height="58" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2.2"/>
     <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="75" y="102"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="11" x="75" y="124"
+    <text font-family="JetBrains Mono" font-size="14" x="75" y="124"
           fill="#7c3aed" text-anchor="middle" dominant-baseline="central">h</text>
     <path d="M118,98 Q144,98 144,108 Q144,122 118,122"
           fill="none" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#cu-arr-enc)"/>
 
     <line x1="75" y1="184" x2="75" y2="138" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
     <circle cx="75" cy="208" r="24" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="15" font-weight="700" x="75" y="208"
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="75" y="208"
           fill="#14532d" text-anchor="middle" dominant-baseline="central">x</text>
-    <text font-family="Noto Sans KR" font-size="11" x="75" y="246" fill="#94a3b8" text-anchor="middle">단일 셀</text>
+    <text font-family="Noto Sans KR" font-size="14" x="75" y="246" fill="#94a3b8" text-anchor="middle">단일 셀</text>
 
     <!-- ── unroll 화살표 ── -->
-    <text font-family="Noto Sans KR" font-size="11" x="186" y="78" fill="#94a3b8" text-anchor="middle">unroll</text>
+    <text font-family="Noto Sans KR" font-size="14" x="186" y="78" fill="#94a3b8" text-anchor="middle">unroll</text>
     <line x1="156" y1="109" x2="216" y2="109" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#cu-arr-big)"/>
 
     <!-- ── 언롤된 셀 — cx: 290, 450, 610 ── -->
 
     <!-- o 원 -->
     <circle cx="290" cy="36" r="24" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="290" y="36"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="9" dy="4">t-1</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="290" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="14" dy="4">t-1</tspan></text>
     <line x1="290" y1="80" x2="290" y2="60" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
     <circle cx="450" cy="36" r="24" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="450" y="36"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="9" dy="4">t</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="450" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="14" dy="4">t</tspan></text>
     <line x1="450" y1="80" x2="450" y2="60" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
     <circle cx="610" cy="36" r="24" fill="#ecdcff" stroke="#9c4af7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="610" y="36"
-          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="9" dy="4">t+1</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="610" y="36"
+          fill="#6d28d9" text-anchor="middle" dominant-baseline="central"><tspan>o</tspan><tspan font-size="14" dy="4">t+1</tspan></text>
     <line x1="610" y1="80" x2="610" y2="60" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
 
     <!-- RNN 셀 박스 -->
     <rect x="247" y="80" width="86" height="58" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
     <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="290" y="101"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="10.5" x="290" y="123"
+    <text font-family="JetBrains Mono" font-size="14" x="290" y="123"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t-1}</text>
 
     <rect x="407" y="80" width="86" height="58" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
     <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="450" y="101"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="10.5" x="450" y="123"
+    <text font-family="JetBrains Mono" font-size="14" x="450" y="123"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_t</text>
 
     <rect x="567" y="80" width="86" height="58" rx="12" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
     <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="610" y="101"
           fill="#4a7cf7" text-anchor="middle" dominant-baseline="central">RNN</text>
-    <text font-family="JetBrains Mono" font-size="10.5" x="610" y="123"
+    <text font-family="JetBrains Mono" font-size="14" x="610" y="123"
           fill="#64748b" text-anchor="middle" dominant-baseline="central">h_{t+1}</text>
 
     <!-- 셀 간 h 흐름 화살표 -->
@@ -489,515 +489,510 @@
     <!-- x 입력 원 -->
     <line x1="290" y1="184" x2="290" y2="138" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
     <circle cx="290" cy="208" r="24" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="290" y="208"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="9" dy="4">t-1</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="290" y="208"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="14" dy="4">t-1</tspan></text>
 
     <line x1="450" y1="184" x2="450" y2="138" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
     <circle cx="450" cy="208" r="24" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="450" y="208"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="9" dy="4">t</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="450" y="208"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="14" dy="4">t</tspan></text>
 
     <line x1="610" y1="184" x2="610" y2="138" stroke="#64748b" stroke-width="1.8" marker-end="url(#cu-arr)"/>
     <circle cx="610" cy="208" r="24" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="610" y="208"
-          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="9" dy="4">t+1</tspan></text>
+    <text font-family="JetBrains Mono" font-size="14" font-weight="700" x="610" y="208"
+          fill="#14532d" text-anchor="middle" dominant-baseline="central"><tspan>x</tspan><tspan font-size="14" dy="4">t+1</tspan></text>
 
     <!-- 가중치 공유 -->
     <path d="M247,236 L247,246 L653,246 L653,236"
           fill="none" stroke="#4a7cf7" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.5"/>
-    <text font-family="Noto Sans KR" font-size="10.5" x="450" y="263"
+    <text font-family="Noto Sans KR" font-size="14" x="450" y="263"
           fill="#64748b" text-anchor="middle" opacity="0.9">가중치 공유 (Wₓ, Wₕ) — 시퀀스 만큼 펼친 표현 (unrolled)</text>
 
     <!-- ── 우측 공백: 은닉 상태(h_t) 기억 지수적 축소 패널 ── -->
     <g transform="translate(735, 12)">
         <!-- Outer Frame Panel -->
         <rect x="0" y="0" width="220" height="260" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
-        <text x="110" y="22" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="11.5" font-weight="800" fill="#1e293b" text-anchor="middle">🧠 은닉 상태(h_t) 기억 축소</text>
-        <text x="110" y="37" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="9" font-weight="600" fill="#64748b" text-anchor="middle">(신규 입력 유입 시 기존 기억 희석)</text>
+        <text x="110" y="22" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="14" font-weight="800" fill="#1e293b" text-anchor="middle">🧠 은닉 상태(h_t) 기억 축소</text>
+        <text x="110" y="37" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="14" font-weight="600" fill="#64748b" text-anchor="middle">(신규 입력 유입 시 기존 기억 희석)</text>
 
         <!-- 1. Step t-1 Bar -->
-        <text x="12" y="56" font-family="Pretendard, sans-serif" font-size="9.5" font-weight="800" fill="#2563eb">Step t-1 (x_{t-1} 입력)</text>
+        <text x="12" y="56" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#2563eb">Step t-1 (x_{t-1} 입력)</text>
         <g transform="translate(12, 62)">
             <rect x="0" y="0" width="110" height="22" rx="4" fill="#3b82f6"/>
-            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_{t-1} (55%)</text>
+            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_{t-1} (55%)</text>
             
             <rect x="112" y="0" width="84" height="22" rx="4" fill="#bfdbfe"/>
-            <text x="154" y="11" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">이전 기억 (45%)</text>
+            <text x="154" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#1e40af" text-anchor="middle" dominant-baseline="central">이전 기억 (45%)</text>
         </g>
 
         <!-- 2. Step t Bar -->
-        <text x="12" y="116" font-family="Pretendard, sans-serif" font-size="9.5" font-weight="800" fill="#16a34a">Step t (x_t 입력)</text>
+        <text x="12" y="116" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#16a34a">Step t (x_t 입력)</text>
         <g transform="translate(12, 122)">
             <rect x="0" y="0" width="110" height="22" rx="4" fill="#22c55e"/>
-            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_t (55%)</text>
+            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_t (55%)</text>
             
             <rect x="112" y="0" width="50" height="22" rx="4" fill="#86efac"/>
-            <text x="137" y="11" font-family="Pretendard, sans-serif" font-size="8.5" font-weight="700" fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t-1}(25%)</text>
+            <text x="137" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#14532d" text-anchor="middle" dominant-baseline="central">x_{t-1}(25%)</text>
 
             <rect x="164" y="0" width="32" height="22" rx="4" fill="#dcfce7"/>
-            <text x="180" y="11" font-family="Pretendard, sans-serif" font-size="8" font-weight="700" fill="#166534" text-anchor="middle" dominant-baseline="central">x₁... (20%)</text>
+            <text x="180" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#166534" text-anchor="middle" dominant-baseline="central">x₁... (20%)</text>
         </g>
 
         <!-- 3. Step t+1 Bar -->
-        <text x="12" y="176" font-family="Pretendard, sans-serif" font-size="9.5" font-weight="800" fill="#9333ea">Step t+1 (x_{t+1} 입력)</text>
+        <text x="12" y="176" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#9333ea">Step t+1 (x_{t+1} 입력)</text>
         <g transform="translate(12, 182)">
             <rect x="0" y="0" width="110" height="22" rx="4" fill="#a855f7"/>
-            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_{t+1} (55%)</text>
+            <text x="55" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">x_{t+1} (55%)</text>
             
             <rect x="112" y="0" width="42" height="22" rx="4" fill="#c084fc"/>
-            <text x="133" y="11" font-family="Pretendard, sans-serif" font-size="8" font-weight="700" fill="#581c87" text-anchor="middle" dominant-baseline="central">x_t (20%)</text>
+            <text x="133" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#581c87" text-anchor="middle" dominant-baseline="central">x_t (20%)</text>
 
             <rect x="156" y="0" width="24" height="22" rx="4" fill="#e9d5ff"/>
-            <text x="168" y="11" font-family="Pretendard, sans-serif" font-size="8" font-weight="700" fill="#6b21a8" text-anchor="middle" dominant-baseline="central">15%</text>
+            <text x="168" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#6b21a8" text-anchor="middle" dominant-baseline="central">15%</text>
 
             <rect x="182" y="0" width="14" height="22" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-width="1"/>
-            <text x="189" y="11" font-family="Pretendard, sans-serif" font-size="8" font-weight="700" fill="#dc2626" text-anchor="middle" dominant-baseline="central">⚠️</text>
+            <text x="189" y="11" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#dc2626" text-anchor="middle" dominant-baseline="central">⚠️</text>
         </g>
 
         <!-- Bottom Warning Caption -->
         <rect x="8" y="218" width="204" height="34" rx="6" fill="#fff1f2" stroke="#fca5a5" stroke-width="1"/>
-        <text x="110" y="231" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="9" font-weight="800" fill="#dc2626" text-anchor="middle">⚠️ 신규 입력마다 기존 기억 용량이 쪼그라듦</text>
-        <text x="110" y="244" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="8.5" font-weight="700" fill="#b91c1c" text-anchor="middle">➡️ 오래된 초기 기억(x₁)은 결국 소실!</text>
+        <text x="110" y="231" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="14" font-weight="800" fill="#dc2626" text-anchor="middle">⚠️ 신규 입력마다 기존 기억 용량이 쪼그라듦</text>
+        <text x="110" y="244" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="14" font-weight="700" fill="#b91c1c" text-anchor="middle">➡️ 오래된 초기 기억(x₁)은 결국 소실!</text>
     </g>
   </svg>
-                </div>
+</div>
 
-                <!-- RNN 셀 언롤링의 결과 및 장기 의존성 한계 노트 (컴팩트 리팩토링) -->
-                <div class="p-3 border rounded-3 bg-warning-subtle border-warning border-start border-4 my-3 d-flex align-items-center">
-                    <i class="fa-solid fa-triangle-exclamation text-warning-emphasis fs-4 me-3"></i>
-                    <div>
-                        <strong class="text-warning-emphasis d-block mb-1 fs-6">장기 의존성 한계 (Long-term Dependency Problem)</strong>
-                        <p class="mb-0 text-secondary" style="font-size: 14px !important; line-height: 1.5;">
-                            언롤링 구조에서 시퀀스가 길어지면 앞단의 은닉 상태 기억이 여러 셀을 거치며 점차 희석·소실되는 근본적 한계가 존재합니다.
-                        </p>
-                    </div>
-                </div>
-            </section>
+<!-- RNN 셀 언롤링의 결과 및 장기 의존성 한계 노트 (컴팩트 리팩토링) -->
+<div class="p-3 border rounded-3 bg-warning-subtle border-warning border-start border-4 my-3 d-flex align-items-center">
+    <i class="fa-solid fa-triangle-exclamation text-warning-emphasis fs-4 me-3"></i>
+    <div>
+        <strong class="text-warning-emphasis d-block mb-1 fs-6">장기 의존성 한계 (Long-term Dependency Problem)</strong>
+        <p class="mb-0 text-secondary" style="font-size: 14px !important; line-height: 1.5;">
+            언롤링 구조에서 시퀀스가 길어지면 앞단의 은닉 상태 기억이 여러 셀을 거치며 점차 희석·소실되는 근본적 한계가 존재합니다.
+        </p>
+    </div>
+</div>
+</section>
 
-            <!-- 3. PyTorch nn.RNN vs nn.RNNCell 비교 -->
+<!-- 3. PyTorch nn.RNN 파라미터 및 사용법 -->
             <section id="sec-3">
-                <h2 id="toc-3">3. PyTorch nn.RNN vs nn.RNNCell 비교</h2>
-                <p>PyTorch 프레임워크는 전체 시퀀스를 일괄 처리하는 <span class="kw">nn.RNN</span> 모듈과, 타임스텝별로 직접 루프를 제어하는 <span class="kw">nn.RNNCell</span> 모듈 두 가지 방식을 제공한다.</p>
+                <h2 id="toc-3">3. PyTorch nn.RNN 파라미터 및 사용법</h2>
+                <p>PyTorch 프레임워크에서 순환 신경망을 생성할 때 사용하는 <span class="kw">nn.RNN</span> 클래스의 생성자 시그니처와 핵심 파라미터의 역할을 학습한다.</p>
 
-                <div class="compare-grid">
-                    <div class="ccard enc">
-                        <h4 class="fw-bold text-primary mb-3"><i class="fa-solid fa-layer-group me-2"></i>nn.RNN (전체 시퀀스 일괄 처리)</h4>
-                        <p class="text-secondary" style="font-size: 15px !important;">입력 시퀀스 전체 텐서를 한 번에 입력받아 내부 루프를 자동 순회하여 최종 출력과 상태를 반환함.</p>
-                        <div class="svg-wrapper my-2 p-2">
-                            <svg viewBox="0 0 340 80" xmlns="http://www.w3.org/2000/svg">
-      <!-- vocab -->
-      <rect x="8" y="20" width="58" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="37" y="35" fill="#64748b" text-anchor="middle" dominant-baseline="central">vocab</text>
-      <text font-family="JetBrains Mono" font-size="8.5" x="37" y="49" fill="#94a3b8" text-anchor="middle" dominant-baseline="central">id</text>
-      <!-- vocab → Embedding -->
-      <line x1="66" y1="38" x2="86" y2="38" stroke="#94a3b8" stroke-width="1"/>
-      <polygon points="86,34 94,38 86,42" fill="#94a3b8"/>
-      <!-- Embedding -->
-      <rect x="94" y="14" width="76" height="44" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="132" y="31" fill="#b45309" text-anchor="middle" dominant-baseline="central">Embedding</text>
-      <text font-family="JetBrains Mono" font-size="8.5" x="132" y="46" fill="#b45309" text-anchor="middle" dominant-baseline="central">dim=768</text>
-      <!-- Embedding → RNN -->
-      <line x1="170" y1="38" x2="198" y2="38" stroke="#94a3b8" stroke-width="1"/>
-      <polygon points="198,34 206,38 198,42" fill="#94a3b8"/>
-      <!-- RNN -->
-      <rect x="206" y="10" width="56" height="52" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="10" x="234" y="36" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
-      <text font-family="Noto Sans KR" font-size="9" x="234" y="74" fill="#94a3b8" text-anchor="middle">input_size=768</text>
-    </svg>
+                <!-- 클래스 시그니처 상자 -->
+                <div class="p-3 bg-dark text-white rounded-3 mb-4 shadow-sm font-monospace" style="font-size: 15px; line-height: 1.6;">
+                    <div class="text-secondary mb-1" style="font-size: 13px;"># PyTorch nn.RNN 생성자 시그니처 (Constructor Signature)</div>
+                    <code class="text-white bg-transparent p-0"><span style="color:#c084fc; font-weight:700;">nn.RNN</span>(<span style="color:#60a5fa; font-weight:700;">input_size</span>, <span style="color:#4ade80; font-weight:700;">hidden_size</span>, <span style="color:#facc15; font-weight:700;">num_layers</span>=<span style="color:#f97316;">1</span>, <span style="color:#f472b6; font-weight:700;">bidirectional</span>=<span style="color:#f97316;">False</span>, <span style="color:#cbd5e1;">batch_first</span>=<span style="color:#f97316;">False</span>)</code>
+                </div>
+
+                <!-- 파라미터 4가지 단일 카드 그리드 (시각적 폰트 크기 100% 동일 균일화) -->
+                <div class="row g-3 mb-4">
+                    <!-- 1. input_size -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-primary border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-primary px-2 py-1" style="font-size: 12.5px; font-weight: 700;">input_size</span>
+                                <span class="text-primary fw-bold" style="font-size: 11.5px;">필수 (Required)</span>
+                            </div>
+                            <div class="text-center my-2">
+                                <svg width="100%" height="auto" viewBox="0 0 300 48" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- vocab id -->
+                                    <rect x="5" y="10" width="52" height="28" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="31" y="20" fill="#334155" text-anchor="middle" dominant-baseline="central">vocab</text>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" x="31" y="30" fill="#64748b" text-anchor="middle" dominant-baseline="central">id</text>
+                                    
+                                    <line x1="57" y1="24" x2="73" y2="24" stroke="#cbd5e1" stroke-width="1"/>
+                                    <polygon points="73,21 79,24 73,27" fill="#cbd5e1"/>
+                                    
+                                    <!-- Embedding -->
+                                    <rect x="79" y="6" width="86" height="36" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="122" y="17" fill="#b45309" text-anchor="middle" dominant-baseline="central">Embedding</text>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" x="122" y="29" fill="#d97706" text-anchor="middle" dominant-baseline="central">dim=768</text>
+                                    
+                                    <line x1="165" y1="24" x2="185" y2="24" stroke="#cbd5e1" stroke-width="1"/>
+                                    <polygon points="185,21 191,24 185,27" fill="#cbd5e1"/>
+                                    
+                                    <!-- RNN Cell -->
+                                    <rect x="191" y="4" width="104" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="243" y="17" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">RNN Cell</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="243" y="29" fill="#64748b" text-anchor="middle" dominant-baseline="central">input_size=768</text>
+                                </svg>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">
+                                입력 벡터 <strong>1개</strong>의 차원 수입니다. (예: 임베딩 차원이 768 ➔ <code>input_size=768</code>)
+                            </p>
                         </div>
                     </div>
-                    <div class="ccard dec">
-                        <h4 class="fw-bold text-purple mb-3" style="color: var(--dec-primary);"><i class="fa-solid fa-cube me-2"></i>nn.RNNCell (타임스텝별 단일 셀)</h4>
-                        <p class="text-secondary" style="font-size: 15px !important;">단일 타임스텝(x<sub>t</sub>)의 텐서만 입력받아 한 단계의 은닉 상태(h<sub>t</sub>)만 계산하므로 커스텀 루프에 유리함.</p>
-                        <div class="svg-wrapper my-2 p-2">
-                            <svg viewBox="0 0 354 84" xmlns="http://www.w3.org/2000/svg">
-      <!-- 왼쪽 대조군 (size=1024) -->
-      <rect x="10" y="22" width="44" height="32" rx="5" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="10" x="32" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
-      <line x1="54" y1="38" x2="70" y2="38" stroke="#16a34a" stroke-width="1.5"/>
-      <polygon points="70,34 78,38 70,42" fill="#16a34a"/>
-      <rect x="78" y="14" width="90" height="48" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="10" x="123" y="33" fill="#14532d" text-anchor="middle" dominant-baseline="central">hidden</text>
-      <text font-family="JetBrains Mono" font-size="9" x="123" y="49" fill="#166534" text-anchor="middle" dominant-baseline="central">size=1024</text>
-      <text font-family="Noto Sans KR" font-size="9" x="123" y="76" fill="#94a3b8" text-anchor="middle">넓은 기억</text>
 
-      <!-- 오른쪽 대조군 (size=64) -->
-      <rect x="186" y="22" width="44" height="32" rx="5" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="10" x="208" y="38" fill="#185FA5" text-anchor="middle" dominant-baseline="central">RNN</text>
-      <line x1="230" y1="38" x2="246" y2="38" stroke="#16a34a" stroke-width="1.5"/>
-      <polygon points="246,34 254,38 246,42" fill="#16a34a"/>
-      <rect x="254" y="14" width="90" height="48" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
-      <text font-family="JetBrains Mono" font-size="10" x="299" y="33" fill="#14532d" text-anchor="middle" dominant-baseline="central">hidden</text>
-      <text font-family="JetBrains Mono" font-size="9" x="299" y="49" fill="#166534" text-anchor="middle" dominant-baseline="central">size=64</text>
-      <text font-family="Noto Sans KR" font-size="9" x="299" y="76" fill="#94a3b8" text-anchor="middle">좁은 기억</text>
-    </svg>
+                    <!-- 2. hidden_size -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-success border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-success px-2 py-1" style="font-size: 12.5px; font-weight: 700;">hidden_size</span>
+                                <span class="text-success fw-bold" style="font-size: 11.5px;">필수 (Required)</span>
+                            </div>
+                            <div class="text-center my-2">
+                                <svg width="100%" height="auto" viewBox="0 0 300 48" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- 넓은 기억 -->
+                                    <rect x="5" y="10" width="45" height="28" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="27.5" y="24" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">RNN</text>
+                                    
+                                    <line x1="50" y1="24" x2="66" y2="24" stroke="#16a34a" stroke-width="1.2"/>
+                                    <polygon points="66,21 72,24 66,27" fill="#16a34a"/>
+                                    
+                                    <rect x="72" y="6" width="76" height="36" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="110" y="17" fill="#14532d" text-anchor="middle" dominant-baseline="central">hidden 1024</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="110" y="29" fill="#166534" text-anchor="middle" dominant-baseline="central">넓은 기억 용량</text>
+
+                                    <!-- 좁은 기억 -->
+                                    <rect x="156" y="10" width="45" height="28" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="178.5" y="24" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">RNN</text>
+                                    
+                                    <line x1="201" y1="24" x2="217" y2="24" stroke="#16a34a" stroke-width="1.2"/>
+                                    <polygon points="217,21 223,24 217,27" fill="#16a34a"/>
+                                    
+                                    <rect x="223" y="6" width="72" height="36" rx="5" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="259" y="17" fill="#14532d" text-anchor="middle" dominant-baseline="central">hidden 64</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="259" y="29" fill="#64748b" text-anchor="middle" dominant-baseline="central">좁은 기억 용량</text>
+                                </svg>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">
+                                은닉 상태(Hidden State, h) 벡터의 차원 수입니다. (크기가 클수록 문맥 기억 용량 ↑)
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 3. num_layers -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-warning border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 12.5px; font-weight: 700;">num_layers</span>
+                                <span class="text-warning-emphasis fw-bold" style="font-size: 11.5px;">기본값 = 1</span>
+                            </div>
+                            <div class="text-center my-2">
+                                <svg width="100%" height="auto" viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- num_layers = 1 -->
+                                    <rect x="15" y="64" width="66" height="18" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="48" y="73" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="48" y="98" fill="#64748b" text-anchor="middle">num_layers=1</text>
+
+                                    <!-- num_layers = 3 -->
+                                    <rect x="117" y="4" width="66" height="18" rx="4" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="150" y="13" fill="#1e3a8a" text-anchor="middle" dominant-baseline="central">Layer 3</text>
+                                    
+                                    <line x1="150" y1="34" x2="150" y2="25" stroke="#1d4ed8" stroke-width="1"/>
+                                    <polygon points="147,26 153,26 150,22" fill="#1d4ed8"/>
+                                    
+                                    <rect x="117" y="34" width="66" height="18" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="150" y="43" fill="#1e40af" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+                                    
+                                    <line x1="150" y1="64" x2="150" y2="55" stroke="#2563eb" stroke-width="1"/>
+                                    <polygon points="147,56 153,56 150,52" fill="#2563eb"/>
+                                    
+                                    <rect x="117" y="64" width="66" height="18" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="150" y="73" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="150" y="98" fill="#64748b" text-anchor="middle">num_layers=3</text>
+
+                                    <!-- num_layers = 2 -->
+                                    <rect x="219" y="34" width="66" height="18" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="252" y="43" fill="#1e40af" text-anchor="middle" dominant-baseline="central">Layer 2</text>
+                                    
+                                    <line x1="252" y1="64" x2="252" y2="55" stroke="#2563eb" stroke-width="1"/>
+                                    <polygon points="249,56 255,56 252,52" fill="#2563eb"/>
+
+                                    <rect x="219" y="64" width="66" height="18" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+                                    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="252" y="73" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">Layer 1</text>
+                                    <text font-family="Pretendard, sans-serif" font-size="14" x="252" y="98" fill="#64748b" text-anchor="middle">num_layers=2</text>
+                                </svg>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">
+                                RNN 셀의 수직 적층 수(Stacked Layers)입니다. (수직 고차원 패턴 추상화)
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4. bidirectional -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-danger border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-danger px-2 py-1" style="font-size: 12.5px; font-weight: 700;">bidirectional</span>
+                                <span class="text-danger fw-bold" style="font-size: 11.5px;">기본값 = False</span>
+                            </div>
+                            <div class="text-center my-2">
+                                <svg width="100%" height="auto" viewBox="0 0 300 90" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- False (단방향) -->
+                                    <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="70" y="12" fill="#64748b" text-anchor="middle">False (단방향)</text>
+                                    <g transform="translate(10, 18)">
+                                        <rect x="0" y="0" width="34" height="18" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="17" y="9" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+                                        
+                                        <line x1="34" y1="9" x2="43" y2="9" stroke="#16a34a" stroke-width="1"/>
+                                        
+                                        <rect x="43" y="0" width="34" height="18" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="60" y="9" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+
+                                        <line x1="77" y1="9" x2="86" y2="9" stroke="#16a34a" stroke-width="1"/>
+
+                                        <rect x="86" y="0" width="34" height="18" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="103" y="9" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+                                        
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="17" y="28" fill="#64748b" text-anchor="middle">나는</text>
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="60" y="28" fill="#64748b" text-anchor="middle">학교에</text>
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="103" y="28" fill="#64748b" text-anchor="middle">간다</text>
+                                    </g>
+
+                                    <!-- True (양방향) -->
+                                    <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="220" y="12" fill="#be185d" text-anchor="middle">True (양방향)</text>
+                                    <g transform="translate(160, 18)">
+                                        <!-- 순방향 -->
+                                        <rect x="0" y="0" width="34" height="16" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="17" y="8" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+                                        <line x1="34" y1="8" x2="43" y2="8" stroke="#16a34a" stroke-width="1"/>
+
+                                        <rect x="43" y="0" width="34" height="16" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="60" y="8" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+                                        <line x1="77" y1="8" x2="86" y2="8" stroke="#16a34a" stroke-width="1"/>
+
+                                        <rect x="86" y="0" width="34" height="16" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="103" y="8" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
+
+                                        <!-- 역방향 -->
+                                        <rect x="0" y="18" width="34" height="16" rx="3" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="17" y="26" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+                                        <line x1="34" y1="26" x2="43" y2="26" stroke="#be185d" stroke-width="1"/>
+
+                                        <rect x="43" y="18" width="34" height="16" rx="3" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="60" y="26" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+                                        <line x1="77" y1="26" x2="86" y2="26" stroke="#be185d" stroke-width="1"/>
+
+                                        <rect x="86" y="18" width="34" height="16" rx="3" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
+                                        <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="103" y="26" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
+
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="17" y="44" fill="#64748b" text-anchor="middle">나는</text>
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="60" y="44" fill="#64748b" text-anchor="middle">학교에</text>
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="103" y="44" fill="#64748b" text-anchor="middle">간다</text>
+
+                                        <text font-family="Pretendard, sans-serif" font-size="14" x="60" y="60" fill="#be185d" text-anchor="middle">➔ hidden_size × 2</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">
+                                <code>True</code> 설정 시 순방향(→) 및 역방향(←) 동시 읽기 (은닉 크기: <code>hidden_size × 2</code>)
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <h4 class="fw-bold mt-4 mb-3">nn.RNN vs nn.RNNCell 파라미터 및 텐서 형상 비교표</h4>
-                <table class="table table-bordered table-custom text-center align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>구분</th>
-                            <th>nn.RNN (Multi-step)</th>
-                            <th>nn.RNNCell (Single-step)</th>
-                            <th>비고</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>입력 텐서 형상 (Input Shape)</strong></td>
-                            <td><code>(seq_len, batch, input_size)</code></td>
-                            <td><code>(batch, input_size)</code></td>
-                            <td>nn.RNN은 seq_len 차원 포함</td>
-                        </tr>
-                        <tr>
-                            <td><strong>은닉 상태 형상 (Hidden Shape)</strong></td>
-                            <td><code>(num_layers * num_directions, batch, hidden_size)</code></td>
-                            <td><code>(batch, hidden_size)</code></td>
-                            <td>RNNCell은 단일 레이어 배치 형상</td>
-                        </tr>
-                        <tr>
-                            <td><strong>출력 텐서 형상 (Output Shape)</strong></td>
-                            <td><code>(seq_len, batch, num_directions * hidden_size)</code></td>
-                            <td><code>(batch, hidden_size)</code></td>
-                            <td>RNNCell의 출력은 다음 h<sub>t</sub>와 동일</td>
-                        </tr>
-                        <tr>
-                            <td><strong>주요 사용 목적</strong></td>
-                            <td>기존 표준 시퀀스 모델링 (Fast Batch)</td>
-                            <td>Seq2Seq 디코더, 커스텀 어텐션 루프 구현</td>
-                            <td>자유도: RNNCell > nn.RNN</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h4 class="fw-bold mt-4 mb-3">PyTorch 구현 비교 코드</h4>
-                <pre><code class="language-python">import torch
-import torch.nn as nn
-
-# 1. nn.RNN 사용 예시 (전체 시퀀스 일괄 연산)
-rnn = nn.RNN(input_size=10, hidden_size=20, num_layers=1, batch_first=True)
-inputs = torch.randn(5, 3, 10) # (batch=5, seq_len=3, input_size=10)
-out, h_n = rnn(inputs)
-print("nn.RNN Output Shape:", out.shape) # torch.Size([5, 3, 20])
-
-# 2. nn.RNNCell 사용 예시 (타임스텝 루프 수동 직접 제어)
-rnn_cell = nn.RNNCell(input_size=10, hidden_size=20)
-hx = torch.zeros(5, 20) # 초기 은닉 상태 (batch=5, hidden_size=20)
-outputs = []
-for t in range(inputs.size(1)):
-    hx = rnn_cell(inputs[:, t, :], hx) # 타임스텝별 갱신
-    outputs.append(hx)
-out_cell = torch.stack(outputs, dim=1)
-print("nn.RNNCell Output Shape:", out_cell.shape) # torch.Size([5, 3, 20])</code></pre>
             </section>
 
-            <!-- 4. Seq2Seq 인코더-디코더 & 시뮬레이션 -->
+            <!-- 4. Seq2Seq 인코더-디코더 & 대화형 시뮬레이터 -->
             <section id="sec-4">
-                <h2 id="toc-4">4. Seq2Seq 인코더-디코더 & 시뮬레이션</h2>
+                <h2 id="toc-4">4. Seq2Seq (Sequence to Sequence) 인코더-디코더 &amp; 대화형 시뮬레이터</h2>
                 <p>시퀀스-투-시퀀스(Seq2Seq)는 입력 시퀀스를 압축하는 <span class="kw">Encoder</span>와, 전달받은 <span class="kw">Context Vector</span> 기반으로 타겟 시퀀스를 생성하는 <span class="kw">Decoder</span> 구조로 이루어진다.</p>
 
-                <div class="row g-3 my-3">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-light">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge bg-primary fs-6">Encoder</span>
-                                <h6 class="fw-bold mb-0">인코더 (압축 메커니즘)</h6>
-                            </div>
-                            <p class="mb-2 text-secondary" style="font-size: 15px !important;">입력 문장의 토큰들을 차례대로 읽어 최종 은닉 상태인 Context Vector에 문맥을 응축함</p>
-                            <div class="svg-wrapper p-2 my-2">
-                                <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
-
-      <!-- num_layers=1 : Layer1 y=90~118 -->
-      <rect x="10" y="90" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="42" y="104" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <text font-family="Noto Sans KR" font-size="9" x="42" y="148" fill="#94a3b8" text-anchor="middle">num_layers=1</text>
-
-      <!-- num_layers=3 : L1 y=100~128 / gap=18 / L2 y=54~82 / gap=18 / L3 y=8~36 -->
-      <!-- Layer 1 -->
-      <rect x="109" y="100" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="141" y="114" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <!-- 화살표 L1→L2 (gap: y=82~100) -->
-      <line x1="141" y1="99" x2="141" y2="90" stroke="#185FA5" stroke-width="1.5"/>
-      <polygon points="137,90 145,90 141,83" fill="#185FA5"/>
-      <!-- Layer 2 -->
-      <rect x="109" y="54" width="64" height="28" rx="7" fill="#b5d4f4" stroke="#185FA5" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="141" y="68" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
-      <!-- 화살표 L2→L3 (gap: y=36~54) -->
-      <line x1="141" y1="53" x2="141" y2="44" stroke="#185FA5" stroke-width="1.5"/>
-      <polygon points="137,44 145,44 141,37" fill="#185FA5"/>
-      <!-- Layer 3 -->
-      <rect x="109" y="8" width="64" height="28" rx="7" fill="#85b7eb" stroke="#185FA5" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="141" y="22" fill="#042C53" text-anchor="middle" dominant-baseline="central">Layer 3</text>
-      <text font-family="Noto Sans KR" font-size="9" x="141" y="148" fill="#94a3b8" text-anchor="middle">num_layers=3</text>
-
-      <!-- num_layers=2 : L1 y=96~124 / gap=22 / L2 y=38~66 -->
-      <!-- Layer 1 -->
-      <rect x="205" y="96" width="64" height="28" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="237" y="110" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Layer 1</text>
-      <!-- 화살표 L1→L2 (gap: y=66~96) -->
-      <line x1="237" y1="95" x2="237" y2="84" stroke="#185FA5" stroke-width="1.5"/>
-      <polygon points="233,84 241,84 237,77" fill="#185FA5"/>
-      <!-- Layer 2 -->
-      <rect x="205" y="38" width="64" height="28" rx="7" fill="#b5d4f4" stroke="#185FA5" stroke-width="1.2"/>
-      <text font-family="JetBrains Mono" font-size="9" x="237" y="52" fill="#0C447C" text-anchor="middle" dominant-baseline="central">Layer 2</text>
-      <text font-family="Noto Sans KR" font-size="9" x="237" y="148" fill="#94a3b8" text-anchor="middle">num_layers=2</text>
-    </svg>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-light">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge bg-purple fs-6" style="background: var(--dec-primary);">Decoder</span>
-                                <h6 class="fw-bold mb-0">디코더 (생성 메커니즘)</h6>
-                            </div>
-                            <p class="mb-2 text-secondary" style="font-size: 15px !important;">Context Vector를 초기 상태로 받아 &lt;SOS&gt; 토큰부터 시작하여 &lt;EOS&gt; 토큰까지 타겟 언어 번역을 생성함</p>
-                            <div class="svg-wrapper p-2 my-2">
-                                <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
-      <text font-family="Noto Sans KR" font-size="9" x="74" y="22" fill="#94a3b8" text-anchor="middle">False (단방향)</text>
-      <rect x="18" y="32" width="36" height="24" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="10" x="36" y="44" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <rect x="62" y="32" width="36" height="24" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="10" x="80" y="44" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <rect x="106" y="32" width="36" height="24" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="10" x="124" y="44" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <line x1="54" y1="44" x2="62" y2="44" stroke="#16a34a" stroke-width="1"/>
-      <line x1="98" y1="44" x2="106" y2="44" stroke="#16a34a" stroke-width="1"/>
-      <text font-family="Noto Sans KR" font-size="9" x="36" y="68" fill="#94a3b8" text-anchor="middle">나는</text>
-      <text font-family="Noto Sans KR" font-size="9" x="80" y="68" fill="#94a3b8" text-anchor="middle">학교에</text>
-      <text font-family="Noto Sans KR" font-size="9" x="124" y="68" fill="#94a3b8" text-anchor="middle">간다</text>
-
-      <text font-family="Noto Sans KR" font-size="9" x="222" y="22" fill="#94a3b8" text-anchor="middle">True (양방향)</text>
-      <rect x="162" y="32" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="180" y="43" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <rect x="204" y="32" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="222" y="43" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <rect x="246" y="32" width="36" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="264" y="43" fill="#14532d" text-anchor="middle" dominant-baseline="central">→</text>
-      <line x1="198" y1="43" x2="204" y2="43" stroke="#16a34a" stroke-width="1"/>
-      <line x1="240" y1="43" x2="246" y2="43" stroke="#16a34a" stroke-width="1"/>
-      <rect x="162" y="60" width="36" height="22" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="180" y="71" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
-      <rect x="204" y="60" width="36" height="22" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="222" y="71" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
-      <rect x="246" y="60" width="36" height="22" rx="4" fill="#fce7f3" stroke="#be185d" stroke-width="0.8"/>
-      <text font-family="JetBrains Mono" font-size="9" x="264" y="71" fill="#9d174d" text-anchor="middle" dominant-baseline="central">←</text>
-      <line x1="240" y1="71" x2="246" y2="71" stroke="#be185d" stroke-width="1"/>
-      <line x1="198" y1="71" x2="204" y2="71" stroke="#be185d" stroke-width="1"/>
-      <text font-family="Noto Sans KR" font-size="9" x="180" y="96" fill="#94a3b8" text-anchor="middle">나는</text>
-      <text font-family="Noto Sans KR" font-size="9" x="222" y="96" fill="#94a3b8" text-anchor="middle">학교에</text>
-      <text font-family="Noto Sans KR" font-size="9" x="264" y="96" fill="#94a3b8" text-anchor="middle">간다</text>
-      <text font-family="Noto Sans KR" font-size="9" x="162" y="114" fill="#16a34a">순방향</text>
-      <text font-family="Noto Sans KR" font-size="9" x="162" y="130" fill="#be185d">역방향 → hidden×2</text>
-    </svg>
-                            </div>
-                        </div>
                 <!-- 핵심 수식 및 활성화 함수 해설 카드 -->
-                <div class="p-4 border rounded-3 bg-white shadow-sm my-4 border-start border-info border-4">
-                    <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-lightbulb text-warning me-2"></i>💡 핵심 수식 및 활성화 함수 해설</h5>
+                <div class="p-3.5 p-3 border rounded-3 bg-white shadow-sm mb-4 border-start border-info border-4">
+                    <h6 class="fw-bold text-dark mb-2.5"><i class="fa-solid fa-lightbulb text-warning me-2"></i>💡 핵심 수식 및 활성화 함수 해설</h6>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 h-100 border">
-                                <h6 class="fw-bold text-purple mb-2" style="color: #7c3aed;">📐 tanh (하이퍼볼릭 탄젠트)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 text-xs">
+                                <h6 class="fw-bold text-purple mb-2" style="color: #7c3aed; font-size: 13.5px;">📐 tanh (하이퍼볼릭 탄젠트)</h6>
+                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
                                     <code>h<sub>t</sub> = tanh(W<sub>x</sub>·x<sub>t</sub> + W<sub>h</sub>·h<sub>t-1</sub> + b)</code>
                                 </div>
-                                <p class="mb-0 text-secondary text-sm" style="font-size: 14px !important;">새로운 은닉 상태의 모든 값 범위를 <strong>-1에서 1 사이</strong>로 스케일링하여 수치 폭발이나 소실을 방지함</p>
+                                <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">새로운 은닉 상태의 모든 값 범위를 <strong>-1에서 1 사이</strong>로 스케일링하여 수치 폭발이나 소실을 방지함</p>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 h-100 border">
-                                <h6 class="fw-bold text-primary mb-2" style="color: #9c4af7;">🗜️ 컨텍스트 벡터 (Context Vector)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 text-xs">
+                                <h6 class="fw-bold text-primary mb-2" style="color: #9c4af7; font-size: 13.5px;">🗜️ 컨텍스트 벡터 (Context Vector)</h6>
+                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
                                     <code>c = h<sub>enc_last</sub></code>
                                 </div>
-                                <p class="mb-0 text-secondary text-sm" style="font-size: 14px !important;">인코더의 <strong>마지막 은닉 상태</strong>로, 전체 문장의 문맥 의미가 고밀도로 축약되어 디코더의 최초 기억으로 제공됨</p>
+                                <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">인코더의 <strong>마지막 은닉 상태</strong>로, 전체 문장의 문맥 의미가 고밀도로 축약되어 디코더의 최초 기억으로 제공됨</p>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 h-100 border">
-                                <h6 class="fw-bold text-success mb-2" style="color: #059669;">📊 softmax (소프트맥스)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 text-xs">
+                                <h6 class="fw-bold text-success mb-2" style="color: #059669; font-size: 13.5px;">📊 softmax (소프트맥스)</h6>
+                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
                                     <code>y<sub>t</sub> = softmax(W<sub>y</sub>·s<sub>t</sub> + b)</code>
                                 </div>
-                                <p class="mb-0 text-secondary text-sm" style="font-size: 14px !important;">디코더 셀의 실수 수치 벡터를 어휘 사전 단어별 <strong>확률 분포(합 1.0)</strong>로 정규화하여 최선의 단어를 선택함</p>
+                                <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">최종 은닉 상태를 받아 각 단어별 <strong>확률 값(0~1 사이, 합=1)</strong>으로 변환하여 가장 높은 확률의 단어를 출력함</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 시뮬레이터 컨테이너 -->
-                <div class="p-4 border rounded-3 bg-light sim-container my-4">
-                    <!-- 상단 바: 예시 문장 + 컨트롤러 버튼 (우측 배치) -->
-                    <div class="p-3 mb-3 bg-white border rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                        <div class="text-sm">
-                            <i class="fa-solid fa-quote-left text-primary me-2"></i>Seq2Seq 번역 시뮬레이션: <strong>"나는 학교에 간다"</strong> ➔ <strong>"I go to school"</strong>
-                        </div>
-                        
-                        <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                            <button class="btn btn-outline-secondary btn-sm px-3 font-bold" id="btn-prev" onclick="go(-1)" disabled>
-                                <i class="fa-solid fa-chevron-left me-1"></i> 이전
-                            </button>
-                            <button class="btn btn-primary btn-sm px-3 font-bold shadow-sm" id="btn-next" onclick="go(1)">
-                                다음 <i class="fa-solid fa-chevron-right ms-1"></i>
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm px-2 font-bold" onclick="reset()" title="처음으로">
-                                <i class="fa-solid fa-rotate-left me-1"></i> 처음으로
-                            </button>
-                            <div class="d-flex flex-column align-items-center ms-2" style="min-width: 110px;">
-                                <div class="text-xs font-bold text-secondary mb-1" id="s-ind">0 / 6</div>
-                                <div class="progress-track" style="width: 100px;"><div class="progress-bar-custom" id="prog" style="width:0%"></div></div>
-                            </div>
+                <!-- 메인 Seq2Seq 번역 시뮬레이션 통합 카드 (단일 메인 카드) -->
+                <div class="p-4 border rounded-3 bg-white shadow-sm my-4 border-start border-primary border-4">
+                    <!-- 카드 상단: 제목 및 컨트롤 버튼 바 -->
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                        <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-play text-primary me-2"></i>🎬 Seq2Seq 번역 프로세스 대화형 시뮬레이션</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="btn-prev" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center justify-content-center" style="height: 31px; font-size: 13px;" onclick="go(-1)" disabled><i class="fa-solid fa-chevron-left me-1"></i>이전</button>
+                            <button id="btn-next" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center justify-content-center" style="height: 31px; font-size: 13px;" onclick="go(1)">다음 ▶</button>
+                            <button class="btn btn-outline-danger btn-sm px-2.5 d-inline-flex align-items-center justify-content-center" style="height: 31px; font-size: 13px;" onclick="reset()"><i class="fa-solid fa-rotate-right me-1"></i>처음으로</button>
+                            <span id="step-ind" class="badge bg-primary px-3 d-inline-flex align-items-center justify-content-center" style="height: 31px; font-size: 13px; min-width: 58px;">0 / 9</span>
                         </div>
                     </div>
 
-                    <!-- 메인 시뮬레이터 SVG -->
-                    <div class="svg-wrapper my-2">
-                        <svg id="main-svg" viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 진행 상태 바 -->
+                    <div class="progress mb-3" style="height: 5px;">
+                        <div id="prog" class="progress-bar bg-primary" role="progressbar" style="width: 0%;"></div>
+                    </div>
+
+                    <!-- 시뮬레이션 카드 내부 2열 (좌측 다이어그램: col-lg-9 = 75%, 우측 해설 카드: col-lg-3 = 기존 반으로 축소!) -->
+                    <div class="row g-3 align-items-stretch">
+                        <!-- 좌측: Encoder & Decoder SVG 다이어그램 (col-lg-9 = 75% 영역 확보) -->
+                        <div class="col-lg-9 d-flex">
+                            <div class="p-2 text-center w-100 h-100 d-flex align-items-center justify-content-center">
+                                <svg id="main-svg" viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto;">
     <defs>
       <marker id="arr-enc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L8,3 z" fill="#4a7cf7"/>
+        <path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/>
       </marker>
       <marker id="arr-dec" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L8,3 z" fill="#f7774a"/>
+        <path d="M0,0 L0,6 L8,3 z" fill="#ea580c"/>
       </marker>
       <marker id="arr-ctx" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L0,6 L8,3 z" fill="#9c4af7"/>
+        <path d="M0,0 L0,6 L8,3 z" fill="#7c3aed"/>
       </marker>
     </defs>
 
-    <!-- 섹션 배경 -->
-    <rect x="14"  y="58" width="355" height="188" rx="14" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="1"/>
-    <rect x="451" y="58" width="355" height="188" rx="14" fill="#fff5f0" stroke="#ffd5c5" stroke-width="1"/>
-    <text x="191" y="44" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="#4a7cf7" text-anchor="middle" letter-spacing="1">ENCODER</text>
-    <text x="628" y="44" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="#f7774a" text-anchor="middle" letter-spacing="1">DECODER</text>
+    <!-- 영역 헤더 제목 (16px 굵은 Pretendard) -->
+    <text x="190" y="24" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700" fill="#1d4ed8" text-anchor="middle">ENCODER (입력 문장 압축)</text>
+    <text x="670" y="24" font-family="Pretendard, Noto Sans KR, sans-serif" font-size="16" font-weight="700" fill="#6d28d9" text-anchor="middle">DECODER (번역 출력 생성)</text>
 
-    <!-- 인코더 셀 (항상 표시) -->
-    <rect id="enc1" x="30"  y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="68"  y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
-    <rect x="44"  y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
-    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="68"  y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+    <!-- 섹션 겉틀 배경 (y=38~325) -->
+    <rect x="10" y="38" width="375" height="285" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <rect x="495" y="38" width="375" height="285" rx="10" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1.2"/>
 
-    <rect id="enc2" x="140" y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="178" y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
-    <rect x="154" y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
-    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="178" y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+    <!-- 인코더 셀 (y=140~200, height=60, width=90, 15px+ 폰트 스킬 지침 보장) -->
+    <rect id="enc1" x="25" y="140" width="90" height="60" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="70" y="161" fill="#1d4ed8" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="38" y="178" width="64" height="17" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="70" y="186.5" fill="#1e40af" text-anchor="middle" dominant-baseline="middle">tanh</text>
 
-    <rect id="enc3" x="250" y="116" width="76" height="64" rx="14" fill="#dce8ff" stroke="#4a7cf7" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="288" y="142" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle">RNN</text>
-    <rect x="264" y="156" width="48" height="16" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
-    <text font-family="JetBrains Mono" font-size="9" font-weight="700" x="288" y="164" fill="#6d28d9" text-anchor="middle" dominant-baseline="middle">tanh</text>
+    <rect id="enc2" x="152" y="140" width="90" height="60" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="197" y="161" fill="#1d4ed8" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="165" y="178" width="64" height="17" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="197" y="186.5" fill="#1e40af" text-anchor="middle" dominant-baseline="middle">tanh</text>
 
-    <!-- 디코더 셀 (항상 표시) -->
-    <rect id="dec1" x="470" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="508" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect id="enc3" x="279" y="140" width="90" height="60" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="324" y="161" fill="#1d4ed8" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect x="292" y="178" width="64" height="17" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="324" y="186.5" fill="#1e40af" text-anchor="middle" dominant-baseline="middle">tanh</text>
 
-    <rect id="dec2" x="578" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="616" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <!-- 디코더 셀 (y=140~200, height=60, width=90) -->
+    <rect id="dec1" x="510" y="140" width="90" height="60" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="555" y="170" fill="#6b21a8" text-anchor="middle" dominant-baseline="middle">RNN</text>
 
-    <rect id="dec3" x="686" y="116" width="76" height="64" rx="14" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-    <text font-family="JetBrains Mono" font-size="13" font-weight="600" x="724" y="149" fill="#f7774a" text-anchor="middle" dominant-baseline="middle">RNN</text>
+    <rect id="dec2" x="637" y="140" width="90" height="60" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="682" y="170" fill="#6b21a8" text-anchor="middle" dominant-baseline="middle">RNN</text>
 
-    <!-- ── 애니메이션 요소 (초기 opacity=0) ── -->
+    <rect id="dec3" x="764" y="140" width="90" height="60" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+    <text font-family="JetBrains Mono, monospace" font-size="15" font-weight="700" x="809" y="170" fill="#6b21a8" text-anchor="middle" dominant-baseline="middle">RNN</text>
 
-    <!-- 인코더 은닉 상태 레이블 -->
-    <text id="h1" font-family="JetBrains Mono" font-size="11" x="68"  y="108" fill="#64748b" text-anchor="middle" opacity="0">h₁</text>
-    <text id="h2" font-family="JetBrains Mono" font-size="11" x="178" y="108" fill="#64748b" text-anchor="middle" opacity="0">h₂</text>
-    <text id="h3" font-family="JetBrains Mono" font-size="11" x="288" y="108" fill="#64748b" text-anchor="middle" opacity="0">h₃</text>
+    <!-- ── 애니메이션 동적 레이어 (14px+ 폰트 하한선 100% 충족) ── -->
 
-    <!-- 인코더 내부 흐름 화살표 -->
-    <line id="a-e1e2" x1="106" y1="148" x2="140" y2="148" stroke="#4a7cf7" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
-    <line id="a-e2e3" x1="216" y1="148" x2="250" y2="148" stroke="#4a7cf7" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
+    <!-- 인코더 은닉 상태 레이블 (화살표 겹침 방지: x축 -10px 이동) -->
+    <text id="h1" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="60" y="126" fill="#2563eb" text-anchor="middle" opacity="0">h₁</text>
+    <text id="h2" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="187" y="126" fill="#2563eb" text-anchor="middle" opacity="0">h₂</text>
+    <text id="h3" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="314" y="126" fill="#2563eb" text-anchor="middle" opacity="0">h₃</text>
 
-    <!-- 입력 토큰 -->
-    <rect id="ti1" x="40"  y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
-    <text id="tt1" font-family="Noto Sans KR" font-size="12" font-weight="600" x="68"  y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">나는</text>
-    <rect id="ti2" x="150" y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
-    <text id="tt2" font-family="Noto Sans KR" font-size="12" font-weight="600" x="178" y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">학교에</text>
-    <rect id="ti3" x="260" y="242" width="56" height="30" rx="8" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5" opacity="0"/>
-    <text id="tt3" font-family="Noto Sans KR" font-size="12" font-weight="600" x="288" y="257" fill="#4a7cf7" text-anchor="middle" dominant-baseline="middle" opacity="0">간다</text>
+    <!-- 인코더 내부 전달 화살표 -->
+    <line id="a-e1e2" x1="115" y1="170" x2="152" y2="170" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
+    <line id="a-e2e3" x1="242" y1="170" x2="279" y2="170" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-enc)" opacity="0"/>
 
-    <!-- 입력 → 인코더 화살표 -->
-    <line id="a-i1" x1="68"  y1="242" x2="68"  y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
-    <line id="a-i2" x1="178" y1="242" x2="178" y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
-    <line id="a-i3" x1="288" y1="242" x2="288" y2="184" stroke="#4a7cf7" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-enc)" opacity="0"/>
+    <!-- 입력 단어 토큰 및 화살표 -->
+    <rect id="ti1" x="30" y="270" width="80" height="32" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" opacity="0"/>
+    <text id="tt1" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="70" y="286" fill="#334155" text-anchor="middle" dominant-baseline="central" opacity="0">나는</text>
+    <line id="a-i1" x1="70" y1="270" x2="70" y2="200" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-enc)" opacity="0"/>
 
-    <!-- 컨텍스트 벡터 -->
-    <rect id="ctx" x="374" y="124" width="72" height="52" rx="12" fill="#ecdcff" stroke="#9c4af7" stroke-width="2.5" opacity="0"/>
-    <text id="ctx-t1" font-family="JetBrains Mono" font-size="10" font-weight="700" x="410" y="146" fill="#9c4af7" text-anchor="middle" opacity="0">Context</text>
-    <text id="ctx-t2" font-family="JetBrains Mono" font-size="10" font-weight="700" x="410" y="161" fill="#9c4af7" text-anchor="middle" opacity="0">Vector</text>
+    <rect id="ti2" x="157" y="270" width="80" height="32" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" opacity="0"/>
+    <text id="tt2" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="197" y="286" fill="#334155" text-anchor="middle" dominant-baseline="central" opacity="0">학교에</text>
+    <line id="a-i2" x1="197" y1="270" x2="197" y2="200" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-enc)" opacity="0"/>
 
-    <!-- enc3 → 컨텍스트, 컨텍스트 → dec1 -->
-    <line id="a-ec" x1="326" y1="148" x2="374" y2="148" stroke="#9c4af7" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
-    <line id="a-cd" x1="446" y1="148" x2="470" y2="148" stroke="#9c4af7" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
+    <rect id="ti3" x="284" y="270" width="80" height="32" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" opacity="0"/>
+    <text id="tt3" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="324" y="286" fill="#334155" text-anchor="middle" dominant-baseline="central" opacity="0">간다</text>
+    <line id="a-i3" x1="324" y1="270" x2="324" y2="200" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-enc)" opacity="0"/>
 
-    <!-- SOS 토큰 -->
-    <rect id="sos-r" x="480" y="76"  width="56" height="28" rx="8" fill="#ecdcff" stroke="#9c4af7" stroke-width="1.5" opacity="0"/>
-    <text id="sos-t" font-family="JetBrains Mono" font-size="10" font-weight="600" x="508" y="90" fill="#9c4af7" text-anchor="middle" dominant-baseline="middle" opacity="0">&lt;SOS&gt;</text>
-    <line id="sos-a" x1="508" y1="104" x2="508" y2="116" stroke="#9c4af7" stroke-width="1.5" marker-end="url(#arr-ctx)" opacity="0"/>
+    <!-- 컨텍스트 벡터 매개체 -->
+    <line id="a-ec" x1="369" y1="170" x2="415" y2="170" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
+    
+    <rect id="ctx" x="415" y="142" width="60" height="56" rx="10" fill="#c084fc" stroke="#7c3aed" stroke-width="2" opacity="0"/>
+    <text id="ctx-t1" font-family="JetBrains Mono, monospace" font-size="16" font-weight="800" x="445" y="161" fill="#ffffff" text-anchor="middle" dominant-baseline="central" opacity="0">c</text>
+    <text id="ctx-t2" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="445" y="182" fill="#ffffff" text-anchor="middle" dominant-baseline="central" opacity="0">Context</text>
 
-    <!-- 디코더 은닉 상태 레이블 -->
-    <text id="s1" font-family="JetBrains Mono" font-size="11" x="508" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₁</text>
-    <text id="s2" font-family="JetBrains Mono" font-size="11" x="616" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₂</text>
-    <text id="s3" font-family="JetBrains Mono" font-size="11" x="724" y="108" fill="#64748b" text-anchor="middle" opacity="0">s₃</text>
+    <line id="a-cd" x1="475" y1="170" x2="510" y2="170" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arr-ctx)" opacity="0"/>
 
-    <!-- 디코더 흐름 화살표 -->
-    <line id="a-d1d2" x1="546" y1="148" x2="578" y2="148" stroke="#f7774a" stroke-width="2" marker-end="url(#arr-dec)" opacity="0"/>
-    <line id="a-d2d3" x1="654" y1="148" x2="686" y2="148" stroke="#f7774a" stroke-width="2" marker-end="url(#arr-dec)" opacity="0"/>
+    <!-- 디코더 입력 <SOS> 및 화살표 -->
+    <rect id="sos-r" x="515" y="270" width="80" height="32" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2" opacity="0"/>
+    <text id="sos-t" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="555" y="286" fill="#b45309" text-anchor="middle" dominant-baseline="central" opacity="0">&lt;SOS&gt;</text>
+    <line id="sos-a" x1="555" y1="270" x2="555" y2="200" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
 
-    <!-- 출력 토큰 -->
-    <rect id="to1" x="480" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
-    <text id="tot1" font-family="Noto Sans KR" font-size="12" font-weight="600" x="508" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">I</text>
-    <rect id="to2" x="588" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
-    <text id="tot2" font-family="Noto Sans KR" font-size="12" font-weight="600" x="616" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">go</text>
-    <rect id="to3" x="696" y="242" width="56" height="30" rx="8" fill="#ffe8dc" stroke="#f7774a" stroke-width="1.5" opacity="0"/>
-    <text id="tot3" font-family="Noto Sans KR" font-size="11" font-weight="600" x="724" y="257" fill="#f7774a" text-anchor="middle" dominant-baseline="middle" opacity="0">to school</text>
+    <!-- 디코더 은닉 상태 레이블 및 내부 전달 화살표 (화살표 겹침 방지: x축 -10px 이동) -->
+    <text id="s1" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="545" y="126" fill="#7c3aed" text-anchor="middle" opacity="0">s₁</text>
+    <text id="s2" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="672" y="126" fill="#7c3aed" text-anchor="middle" opacity="0">s₂</text>
+    <text id="s3" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="799" y="126" fill="#7c3aed" text-anchor="middle" opacity="0">s₃</text>
 
-    <!-- 디코더 → softmax 화살표 -->
-    <line id="a-d1o" x1="508" y1="180" x2="508" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
-    <line id="a-d2o" x1="616" y1="180" x2="616" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
-    <line id="a-d3o" x1="724" y1="180" x2="724" y2="200" stroke="#f7774a" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-dec)" opacity="0"/>
+    <line id="a-d1d2" x1="600" y1="170" x2="637" y2="170" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-ctx)" opacity="0"/>
+    <line id="a-d2d3" x1="727" y1="170" x2="764" y2="170" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-ctx)" opacity="0"/>
 
-    <!-- softmax 박스 -->
-    <rect id="sm1" x="480" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
-    <text id="sm-t1" font-family="JetBrains Mono" font-size="9" font-weight="700" x="508" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
-    <rect id="sm2" x="588" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
-    <text id="sm-t2" font-family="JetBrains Mono" font-size="9" font-weight="700" x="616" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
-    <rect id="sm3" x="696" y="200" width="56" height="22" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5" opacity="0"/>
-    <text id="sm-t3" font-family="JetBrains Mono" font-size="9" font-weight="700" x="724" y="211" fill="#065f46" text-anchor="middle" dominant-baseline="middle" opacity="0">softmax</text>
+    <!-- 디코더 출력 화살표 & softmax & 최종 단어 -->
+    <!-- Output 1 -->
+    <line id="a-d1o" x1="555" y1="140" x2="555" y2="110" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-ctx)" opacity="0"/>
+    <rect id="sm1" x="518" y="86" width="74" height="24" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1" opacity="0"/>
+    <text id="sm-t1" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="555" y="98" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">softmax</text>
+    <line id="a-s1o" x1="555" y1="86" x2="555" y2="72" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <rect id="to1" x="515" y="44" width="80" height="28" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2" opacity="0"/>
+    <text id="tot1" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="555" y="58" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">"I"</text>
 
-    <!-- softmax → 출력 화살표 -->
-    <line id="a-s1o" x1="508" y1="222" x2="508" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
-    <line id="a-s2o" x1="616" y1="222" x2="616" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
-    <line id="a-s3o" x1="724" y1="222" x2="724" y2="242" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)" opacity="0"/>
-  </svg>
-                    </div>
+    <!-- Output 2 -->
+    <line id="a-d2o" x1="682" y1="140" x2="682" y2="110" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-ctx)" opacity="0"/>
+    <rect id="sm2" x="645" y="86" width="74" height="24" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1" opacity="0"/>
+    <text id="sm-t2" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="682" y="98" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">softmax</text>
+    <line id="a-s2o" x1="682" y1="86" x2="682" y2="72" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <rect id="to2" x="642" y="44" width="80" height="28" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2" opacity="0"/>
+    <text id="tot2" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="682" y="58" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">"go"</text>
 
-                    <!-- 정보 패널 -->
-                    <div class="info-panel" id="info-panel">
-                        <div class="step-header" id="step-header">
-                            <div class="step-badge" id="s-badge">▶</div>
-                            <div class="fw-bold" id="s-title" style="font-size: 18px !important;">시작 전</div>
+    <!-- Output 3 -->
+    <line id="a-d3o" x1="809" y1="140" x2="809" y2="110" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-ctx)" opacity="0"/>
+    <rect id="sm3" x="772" y="86" width="74" height="24" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1" opacity="0"/>
+    <text id="sm-t3" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" x="809" y="98" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">softmax</text>
+    <line id="a-s3o" x1="809" y1="86" x2="809" y2="72" stroke="#059669" stroke-width="1.5" opacity="0"/>
+    <rect id="to3" x="764" y="44" width="90" height="28" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2" opacity="0"/>
+    <text id="tot3" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="809" y="58" fill="#047857" text-anchor="middle" dominant-baseline="central" opacity="0">"to school"</text>
+</svg>
+                            </div>
                         </div>
-                        <div class="step-body" id="s-body">
-                            <ul class="mb-0 ps-3 text-secondary">
-                                <li><strong>▶ 다음</strong> 버튼을 눌러 Seq2Seq 인코더-디코더 번역 6단계 동작 흐름을 진행하세요.</li>
-                                <li>Encoder의 Context Vector 압축 과정과 Decoder의 단계별 단어 생성을 실시간으로 대조할 수 있습니다.</li>
-                            </ul>
+
+                        <!-- 우측: 단계별 결과 해설 카드 (col-lg-3 = 기존 너비의 절반인 25%로 축소!) -->
+                        <div class="col-lg-3 d-flex">
+                            <div class="p-3 bg-light rounded-3 border w-100 h-100 d-flex flex-column justify-content-start">
+                                <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                                    <span id="step-num" class="badge px-2.5 py-1" style="background: #9333ea; font-size: 13px; color:#fff;">▶</span>
+                                    <h6 id="step-title-text" class="fw-bold mb-0 text-dark" style="font-size: 15px;">시작 전</h6>
+                                </div>
+                                <div id="step-desc" class="text-secondary flex-grow-1" style="font-size: 13.5px; line-height: 1.6;">
+                                    <ul class="mb-0 ps-3">
+                                        <li><strong>▶ 다음</strong> 버튼을 눌러 단계별로 진행한다.</li>
+                                        <li>각 단계에서 활성화된 요소가 강조 표시된다.</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 5. 강의 핵심 요약 -->
+<!-- 5. 강의 핵심 요약 -->
             <footer id="summary" class="summary-box">
                 <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">5. 강의 핵심 요약</h2>
                 <ul class="mb-0">
                     <li><strong>RNN 은닉 상태 (h<sub>t</sub>)</strong>: 이전 타임스텝의 은닉 상태와 현재 입력을 결합하여 문맥 정보를 갱신 및 유지한다.</li>
-                    <li><strong>nn.RNN vs nn.RNNCell</strong>: <code>nn.RNN</code>은 전체 시퀀스 자동 배치 처리, <code>nn.RNNCell</code>은 타임스텝별 개별 루프 수동 연산용 모듈이다.</li>
+                    <li><strong>nn.RNN 핵심 파라미터</strong>: <code>input_size</code>, <code>hidden_size</code>, <code>num_layers</code>, <code>bidirectional</code> 4가지 핵심 생성자 파라미터로 네트워크 구조를 설정한다.</li>
                     <li><strong>Seq2Seq 구조</strong>: 입력 시퀀스 전체를 고정 길이의 Context Vector로 압축하는 Encoder와, 이를 받아 새로운 시퀀스를 차례대로 생성하는 Decoder로 구성된다.</li>
                 </ul>
             </footer>
@@ -1033,8 +1028,8 @@ print("nn.RNNCell Output Shape:", out_cell.shape) # torch.Size([5, 3, 20])</code
                             <td>시각적 표현 유지 및 14px 폰트 보장</td>
                         </tr>
                         <tr>
-                            <td>nn.RNN vs nn.RNNCell</td>
-                            <td>파라미터/텐서 형상 비교표 및 PyTorch 구현 코드</td>
+                            <td>PyTorch nn.RNN 파라미터 및 예시</td>
+                            <td>파라미터 설명 및 PyTorch 구현 예시 코드</td>
                             <td>HTML Table 및 Highlight.js 적용 17px Fira Code 구성</td>
                             <td><span class="badge bg-success">일치</span></td>
                             <td>마스터 템플릿 코드/테이블 규격 적용</td>
