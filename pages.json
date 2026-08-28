@@ -143,10 +143,6 @@
           {
             "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
             "path": "ai/peft/quantize.html"
-          },
-          {
-            "label": "LLM 양자화(Quantization) 핵심 시각화 가이드",
-            "path": "ai/peft/quantize_백업.html"
           }
         ]
       },
@@ -174,6 +170,10 @@
           {
             "label": "LSTM (Long Short-Term Memory)",
             "path": "ai/rnn/lstm.html"
+          },
+          {
+            "label": "LSTM (Long Short-Term Memory)",
+            "path": "ai/rnn/lstm_백업.html"
           },
           {
             "label": "Seq2Seq RNN 시각화",
