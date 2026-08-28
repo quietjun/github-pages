@@ -443,10 +443,86 @@
                     </div>
                 </div>
 
+                <!-- 게이트별 핵심 연산 및 역할 대조표 -->
+                <div class="table-responsive my-4">
+                    <table class="table table-bordered table-custom align-middle">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="white-space: nowrap;">게이트 / 구획</th>
+                                <th style="white-space: nowrap;">개념 연산식 (Conceptual Formula)</th>
+                                <th style="width: 50%;">주요 역할 및 의미</th>
+                                <th style="white-space: nowrap;">출력 범위</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold text-danger text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-filter me-1"></i> Forget Gate (망각)</td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <code class="text-danger fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                                </td>
+                                <td>이전 장기기억(C<sub>t-1</sub>) 중 보존할 비율 결정 (0: 완전삭제 ~ 1: 완전보존)</td>
+                                <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-primary text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-download me-1"></i> Input Gate (입력)</td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <code class="text-primary fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                                </td>
+                                <td>새로 추출된 기억 후보 중 반영할 비율 결정 (0: 완전무시 ~ 1: 완전반영)</td>
+                                <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-success text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-lightbulb me-1"></i> Candidate (기억 후보)</td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <code class="text-success fw-bold">tanh(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
+                                </td>
+                                <td>현재 토큰 기반의 새로운 기억 후보 생성 (-1 ~ +1)</td>
+                                <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-warning text-nowrap" style="color:#f7774a !important; white-space: nowrap;"><i class="fa-solid fa-road me-1"></i> Cell State (장기 갱신)</td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <strong style="color:#f7774a;">[이전 장기기억 × 보존 비율] + [새 기억 × 반영 비율]</strong>
+                                </td>
+                                <td>기존 기억 삭제 + 새 기억 덧셈 ➔ <strong>장기기억(C<sub>t</sub>) 갱신 (기울기 소실 없음)</strong></td>
+                                <td class="text-center" style="white-space: nowrap;">연속 수치</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-purple text-nowrap" style="color:#9c4af7 !important; white-space: nowrap;"><i class="fa-solid fa-upload me-1"></i> Output Gate (출력)</td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <code style="color:#9c4af7;" class="fw-bold">Sigmoid(입력) × tanh(장기기억 C_t)</code>
+                                </td>
+                                <td>장기 기억 중 현재 필요한 정보만 추출하여 <strong>단기기억(h<sub>t</sub>) 출력</strong></td>
+                                <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <!-- 통합 인터랙티브 시뮬레이터 컨테이너 -->
                 <div class="p-4 border rounded-3 bg-light sim-container">
-                    <div class="p-3 mb-3 bg-white border rounded-3 text-sm">
-                        <i class="fa-solid fa-quote-left text-primary me-2"></i>예시 문장: <strong>"나는 어제 학교에서 밥을 먹었다"</strong> ➔ 처리 대상 토큰: <span class="badge bg-primary fs-6">"먹었다"</span>
+                    <!-- 시뮬레이터 상단 바: 예시 문장 (좌측) + 컨트롤 버튼 (우측) -->
+                    <div class="p-3 mb-3 bg-white border rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="text-sm">
+                            <i class="fa-solid fa-quote-left text-primary me-2"></i>예시 문장: <strong>"나는 어제 학교에서 밥을 먹었다"</strong> ➔ 처리 대상 토큰: <span class="badge bg-primary fs-6">"먹었다"</span>
+                        </div>
+
+                        <!-- 컨트롤 버튼 및 진행바 -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                            <button class="btn btn-outline-secondary btn-sm px-3 font-bold" id="btn-prev" onclick="go(-1)" disabled>
+                                <i class="fa-solid fa-chevron-left me-1"></i> 이전
+                            </button>
+                            <button class="btn btn-primary btn-sm px-3 font-bold shadow-sm" id="btn-next" onclick="go(1)">
+                                다음 <i class="fa-solid fa-chevron-right ms-1"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm px-2 font-bold" onclick="reset()" title="처음으로">
+                                <i class="fa-solid fa-rotate-left me-1"></i> 처음으로
+                            </button>
+                            <div class="d-flex flex-column align-items-center ms-2" style="min-width: 110px;">
+                                <div class="text-xs font-bold text-secondary mb-1" id="s-ind">0 / 6</div>
+                                <div class="progress-track" style="width: 100px;"><div class="progress-bar-custom" id="prog" style="width:0%"></div></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- SVG Simulator Diagram -->
@@ -611,88 +687,12 @@
                         <div class="step-dot" id="dot-4"></div>
                         <div class="step-dot" id="dot-5"></div>
                     </div>
-
-                    <!-- 컨트롤 버튼 -->
-                    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap mt-3">
-                        <button class="btn btn-outline-secondary px-4 py-2 font-bold" id="btn-prev" onclick="go(-1)" disabled>
-                            <i class="fa-solid fa-chevron-left me-1"></i> 이전
-                        </button>
-                        <button class="btn btn-primary px-4 py-2 font-bold shadow-sm" id="btn-next" onclick="go(1)">
-                            다음 <i class="fa-solid fa-chevron-right ms-1"></i>
-                        </button>
-                        <button class="btn btn-outline-danger px-3 py-2 font-bold" onclick="reset()">
-                            <i class="fa-solid fa-rotate-left me-1"></i> 처음으로
-                        </button>
-                        <div class="d-flex flex-column align-items-center ms-3">
-                            <div class="text-xs font-bold text-secondary mb-1" id="s-ind">0 / 6</div>
-                            <div class="progress-track"><div class="progress-bar-custom" id="prog" style="width:0%"></div></div>
-                        </div>
-                    </div>
                 </div>
             </section>
 
-            <!-- 3. FORMULAS & GATE TABLE SECTION -->
-            <section id="sec-formulas">
-                <h2 id="toc-3">3. 게이트별 핵심 연산 및 역할 정리</h2>
-                <p>LSTM 내부의 각 게이트 연산을 수식 대신 이해하기 쉬운 언어 개념과 역할, 활성화 함수(Activation Function)로 명확히 대조한다.</p>
-
-                <table class="table table-bordered table-custom align-middle">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th style="white-space: nowrap;">게이트 / 구획</th>
-                            <th style="white-space: nowrap;">개념 연산식 (Conceptual Formula)</th>
-                            <th style="width: 50%;">주요 역할 및 의미</th>
-                            <th style="white-space: nowrap;">출력 범위</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="fw-bold text-danger text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-filter me-1"></i> Forget Gate (망각)</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <code class="text-danger fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
-                            </td>
-                            <td>이전 장기기억(C<sub>t-1</sub>) 중 보존할 비율 결정 (0: 완전삭제 ~ 1: 완전보존)</td>
-                            <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-primary text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-download me-1"></i> Input Gate (입력)</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <code class="text-primary fw-bold">Sigmoid(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
-                            </td>
-                            <td>새로 추출된 기억 후보 중 반영할 비율 결정 (0: 완전무시 ~ 1: 완전반영)</td>
-                            <td class="text-center" style="white-space: nowrap;"><code>0 ~ 1</code></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-success text-nowrap" style="white-space: nowrap;"><i class="fa-solid fa-lightbulb me-1"></i> Candidate (기억 후보)</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <code class="text-success fw-bold">tanh(이전 단기기억 h_t-1 + 현재 토큰 x_t)</code>
-                            </td>
-                            <td>현재 토큰 기반의 새로운 기억 후보 생성 (-1 ~ +1)</td>
-                            <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-warning text-nowrap" style="color:#f7774a !important; white-space: nowrap;"><i class="fa-solid fa-road me-1"></i> Cell State (장기 갱신)</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <strong style="color:#f7774a;">[이전 장기기억 × 보존 비율] + [새 기억 × 반영 비율]</strong>
-                            </td>
-                            <td>기존 기억 삭제 + 새 기억 덧셈 ➔ <strong>장기기억(C<sub>t</sub>) 갱신 (기울기 소실 없음)</strong></td>
-                            <td class="text-center" style="white-space: nowrap;">연속 수치</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-purple text-nowrap" style="color:#9c4af7 !important; white-space: nowrap;"><i class="fa-solid fa-upload me-1"></i> Output Gate (출력)</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <code style="color:#9c4af7;" class="fw-bold">Sigmoid(입력) × tanh(장기기억 C_t)</code>
-                            </td>
-                            <td>장기 기억 중 현재 필요한 정보만 추출하여 <strong>단기기억(h<sub>t</sub>) 출력</strong></td>
-                            <td class="text-center" style="white-space: nowrap;"><code>-1 ~ +1</code></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- 4. SUMMARY SECTION -->
+            <!-- 3. SUMMARY SECTION -->
             <footer id="summary" class="summary-box">
-                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">4. 강의 핵심 요약</h2>
+                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);">3. 강의 핵심 요약</h2>
                 
                 <div class="p-4 bg-white border border-primary-subtle rounded-3 shadow-sm">
                     <h5 class="fw-bold text-primary mb-3">
@@ -705,54 +705,6 @@
                     </ul>
                 </div>
             </footer>
-
-            <!-- 무결성 검증 대조표 (Step 3 Verification Table) -->
-            <section id="verification-table" class="mt-5 pt-4 border-top">
-                <h4 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>원문 vs 재작성 무결성 검증 대조표</h4>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered text-center align-middle text-xs">
-                        <thead class="table-light">
-                            <tr>
-                                <th>핵심 항목</th>
-                                <th>원문 내용</th>
-                                <th>재작성 상태</th>
-                                <th>일치 여부</th>
-                                <th>변경 사유</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="fw-bold">핵심 명제</td>
-                                <td>기본 RNN의 기울기 소실 문제 해결 및 Cell State + Hidden State 두 상태 구조</td>
-                                <td>상단 Header 및 비교 카드 섹션에 100% 배치</td>
-                                <td class="fw-bold text-success">일치</td>
-                                <td>개념 시각화 강화</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold">셀 구조 다이어그램</td>
-                                <td>960x360 SVG 셀 구조 (Forget, Input, Candidate, Output, Cell State)</td>
-                                <td>전체 SVG 다이어그램 100% 정밀 보존</td>
-                                <td class="fw-bold text-success">일치</td>
-                                <td>시각적 정밀도 유지</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold">단계별 시뮬레이션</td>
-                                <td>토큰 "먹었다" 연산 처리 6단계 애니메이션 컨트롤러</td>
-                                <td>SVG 동적 애니메이션 및 설명 패널로 100% 구현</td>
-                                <td class="fw-bold text-success">일치</td>
-                                <td>동적 조작 보존</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold">수식 및 역할 정리</td>
-                                <td>각 게이트 수식(Forget, Input, Candidate, Cell State, Output)</td>
-                                <td>게이트 대조 HTML Table로 100% 보존</td>
-                                <td class="fw-bold text-success">일치</td>
-                                <td>수식 표 도표화 완료</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
         </article>
     </div>
 
