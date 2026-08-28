@@ -124,7 +124,7 @@
             border-radius: 15px;
             text-align: center;
         }
-        svg { display: inline-block; background: white; border: 1px solid #f0f0f0; border-radius: 10px; }
+        svg { display: inline-block; background: white; border: none; border-radius: 10px; }
 
         /* 수식 박스 */
         .equation-box {
@@ -236,8 +236,7 @@
                 <li><a href="#sec-3">3. PyTorch nn.RNN 파라미터 및 사용법</a></li>
                 <li><a href="#sec-4">4. Seq2Seq 인코더-디코더 & 시뮬레이션</a></li>
                 <li><a href="#summary">5. 강의 핵심 요약</a></li>
-                <li><a href="#sec-verification">6. 무결성 검증 대조표</a></li>
-            </ul>
+                            </ul>
         </div>
     </nav>
 
@@ -249,32 +248,44 @@
                 <p class="lead">순환 신경망(Recurrent Neural Network)의 기본 셀 연산 구조와 시퀀스-투-시퀀스(Seq2Seq) 모델의 인코더-디코더 동작 원리를 시각적으로 학습한다.</p>
             </header>
 
-            <!-- 1. 기존 신경망의 한계와 RNN의 필요성 -->
+                        <!-- 1. 기존 신경망의 한계와 RNN의 필요성 -->
             <section id="sec-1">
                 <h2 id="toc-1">1. 기존 신경망의 한계와 RNN의 필요성</h2>
-                <!-- 기존 신경망의 연속/시계열 데이터 처리 문제점 (1x2 레이아웃, 중첩 카드 제거 및 깔끔 통합) -->
-                <div class="p-4 border rounded-3 bg-white shadow-sm my-4 border-start border-primary border-4">
+                
+                <!-- 단일 1x2 통합 카드 (좌측 40%: 한계 및 해결책 텍스트 / 우측 60%: SVG 시각화) -->
+                <div class="p-4 border rounded-3 bg-white shadow-sm my-4">
                     <div class="row g-4 align-items-center">
-                        <!-- Left Column (col-md-5): 중첩 상자 제거, 단일 텍스트 흐름으로 깔끔화 -->
+                        <!-- Left Column (col-md-5, 40% 너비): 한계 지점 & RNN 해결책 통합 -->
                         <div class="col-md-5">
-                            <h5 class="fw-bold text-dark mb-4"><i class="fa-solid fa-circle-question text-primary me-2"></i>기존 신경망(Feedforward/MLP)의 한계</h5>
+                            <!-- 1. 한계 섹션 -->
+                            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-circle-question text-primary me-2"></i>기존 신경망(MLP)의 한계</h5>
                             
-                            <div class="mb-4">
-                                <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-ruler-horizontal me-2"></i>1. 가변 길이(Variable Length) 입력의 한계</h6>
-                                <p class="mb-0 text-secondary" style="font-size: 14.5px !important; line-height: 1.65;">
-                                    문장, 음성, 주가 등 연속 데이터는 시점마다 <strong>길이가 매번 가변적</strong>이지만, 기존 MLP는 입력 노드 수(Vector Dimension)가 <strong>고정(Fixed Size)</strong>되어 있어 다양한 길이의 시퀀스를 유연하게 수용하지 못합니다.
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-primary mb-1" style="font-size: 14.5px;"><i class="fa-solid fa-ruler-horizontal me-2"></i>1. 가변 길이 입력 수용 불가</h6>
+                                <p class="mb-0 text-secondary" style="font-size: 14px !important; line-height: 1.6;">
+                                    문장, 주가 등 연속 데이터는 시점마다 길이가 가변적이지만, MLP는 입력 노드 수(Vector Dimension)가 고정되어 유연한 처리가 불가능합니다.
                                 </p>
                             </div>
 
-                            <div>
-                                <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i>2. 순서 및 시간적 맥락(Context) 정보의 상실</h6>
-                                <p class="mb-0 text-secondary" style="font-size: 14.5px !important; line-height: 1.65;">
-                                    기존 신경망은 모든 입력 데이터를 <strong>독립적인 개체(Independent)</strong>로 취급하여 이전 타임스텝의 결과나 단어의 등장 순서를 기억하고 다음 연산에 전달하지 못합니다.
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-primary mb-1" style="font-size: 14.5px;"><i class="fa-solid fa-clock-rotate-left me-2"></i>2. 시간적 맥락(Context) 정보 상실</h6>
+                                <p class="mb-0 text-secondary" style="font-size: 14px !important; line-height: 1.6;">
+                                    모든 입력 데이터를 독립 객체(Independent)로 취급하여 이전 타임스텝의 정보나 단어 순서를 기억하지 못합니다.
+                                </p>
+                            </div>
+
+                            <hr class="my-3 text-secondary opacity-25">
+
+                            <!-- 2. RNN의 해결책 섹션 (단일 카드 내부 통합) -->
+                            <div class="p-3 rounded-3 bg-light border-0">
+                                <h6 class="fw-bold text-primary mb-2" style="font-size: 14.5px;"><i class="fa-solid fa-person-running me-2"></i>RNN의 해결책: 릴레이 바통 터치</h6>
+                                <p class="mb-2 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">
+                                    이전 타임스텝의 <strong>은닉 상태(Hidden State, h)</strong>를 바통처럼 넘겨 문맥을 보존하고, 동일한 <strong>가중치(W_xh, W_hh)를 공유</strong>하여 가변 시퀀스를 처리합니다.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Right Column (col-md-7): 중첩 박스 테두리 제거, 깔끔한 시각화 SVG -->
+                        <!-- Right Column (col-md-7, 60% 너비): SVG 시각화 -->
                         <div class="col-md-7 text-center">
                             <svg width="100%" height="auto" viewBox="0 0 710 375" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Title -->
@@ -374,25 +385,6 @@
                                 <rect x="20" y="332" width="670" height="32" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.2"/>
                                 <text x="355" y="348" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#991b1b" text-anchor="middle" dominant-baseline="central">⚠️ 심층 MLP는 고정 차원 한계 &amp; 시점 간 기억(h_t-1) 피드백 통로 부재로 순차 데이터 처리 불가!</text>
                             </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RNN 순환 개념 통합 하이라이트 카드 (단일 카드 통합) -->
-                <div class="p-4 border rounded-3 bg-light shadow-sm border-start border-primary border-4 my-4">
-                    <h6 class="fw-bold text-primary mb-3 fs-5">🏃‍♂️ RNN의 해결책: 릴레이 바통 터치 (순환 구조)</h6>
-                    <p class="mb-3 text-secondary" style="font-size: 15px !important; line-height: 1.75;">
-                        이러한 단절 문제를 해결하기 위해, RNN은 이전 단어를 처리할 때 만들어진 <strong>은닉 상태(Hidden State, h)</strong>를 다음 단어 처리 장치로 릴레이 바통처럼 끊임없이 넘겨주며 문맥과 기억을 보존합니다.
-                    </p>
-                    <hr class="my-3 text-secondary opacity-25">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-primary mb-1" style="font-size: 14.5px;"><i class="fa-solid fa-calculator me-2"></i>은닉 상태 (h<sub>t</sub>)의 역할</h6>
-                            <p class="mb-0 text-secondary" style="font-size: 14px !important;">과거 시점(t = 1부터 t-1까지) 축적된 문맥 정보를 고정 크기 벡터로 압축 보유함</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-success mb-1" style="font-size: 14.5px;"><i class="fa-solid fa-arrows-spin me-2"></i>가중치 공유 (Weight Sharing)</h6>
-                            <p class="mb-0 text-secondary" style="font-size: 14px !important;">모든 타임스텝에서 동일한 가중치 행렬 (W<sub>hh</sub>, W<sub>xh</sub>, W<sub>hy</sub>)을 재사용하여 시퀀스 길이에 유연함</p>
                         </div>
                     </div>
                 </div>
@@ -542,7 +534,7 @@
 </div>
 
 <!-- RNN 셀 언롤링의 결과 및 장기 의존성 한계 노트 (컴팩트 리팩토링) -->
-<div class="p-3 border rounded-3 bg-warning-subtle border-warning border-start border-4 my-3 d-flex align-items-center">
+<div class="p-3 rounded-3 bg-warning-subtle text-warning-emphasis my-3 d-flex align-items-center">
     <i class="fa-solid fa-triangle-exclamation text-warning-emphasis fs-4 me-3"></i>
     <div>
         <strong class="text-warning-emphasis d-block mb-1 fs-6">장기 의존성 한계 (Long-term Dependency Problem)</strong>
@@ -568,7 +560,7 @@
                 <div class="row g-3 mb-4">
                     <!-- 1. input_size -->
                     <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-primary border-4">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="badge bg-primary px-2 py-1" style="font-size: 12.5px; font-weight: 700;">input_size</span>
                                 <span class="text-primary fw-bold" style="font-size: 11.5px;">필수 (Required)</span>
@@ -605,7 +597,7 @@
 
                     <!-- 2. hidden_size -->
                     <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-success border-4">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="badge bg-success px-2 py-1" style="font-size: 12.5px; font-weight: 700;">hidden_size</span>
                                 <span class="text-success fw-bold" style="font-size: 11.5px;">필수 (Required)</span>
@@ -643,7 +635,7 @@
 
                     <!-- 3. num_layers -->
                     <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-warning border-4">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 12.5px; font-weight: 700;">num_layers</span>
                                 <span class="text-warning-emphasis fw-bold" style="font-size: 11.5px;">기본값 = 1</span>
@@ -692,7 +684,7 @@
 
                     <!-- 4. bidirectional -->
                     <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm border-start border-danger border-4">
+                        <div class="p-3 border rounded-3 bg-white h-100 shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="badge bg-danger px-2 py-1" style="font-size: 12.5px; font-weight: 700;">bidirectional</span>
                                 <span class="text-danger fw-bold" style="font-size: 11.5px;">기본값 = False</span>
@@ -780,31 +772,31 @@
                 <p>시퀀스-투-시퀀스(Seq2Seq)는 입력 시퀀스를 압축하는 <span class="kw">Encoder</span>와, 전달받은 <span class="kw">Context Vector</span> 기반으로 타겟 시퀀스를 생성하는 <span class="kw">Decoder</span> 구조로 이루어진다.</p>
 
                 <!-- 핵심 수식 및 활성화 함수 해설 카드 -->
-                <div class="p-3.5 p-3 border rounded-3 bg-white shadow-sm mb-4 border-start border-info border-4">
+                <div class="p-4 border rounded-3 bg-white shadow-sm mb-4">
                     <h6 class="fw-bold text-dark mb-2.5"><i class="fa-solid fa-lightbulb text-warning me-2"></i>💡 핵심 수식 및 활성화 함수 해설</h6>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded-3 h-100 border">
+                            <div class="p-3 bg-light rounded-3 h-100">
                                 <h6 class="fw-bold text-purple mb-2" style="color: #7c3aed; font-size: 13.5px;">📐 tanh (하이퍼볼릭 탄젠트)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
+                                <div class="bg-white p-2.5 rounded mb-2 font-monospace" style="font-size: 13px; border: 1px solid #e2e8f0;">
                                     <code>h<sub>t</sub> = tanh(W<sub>x</sub>·x<sub>t</sub> + W<sub>h</sub>·h<sub>t-1</sub> + b)</code>
                                 </div>
                                 <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">새로운 은닉 상태의 모든 값 범위를 <strong>-1에서 1 사이</strong>로 스케일링하여 수치 폭발이나 소실을 방지함</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded-3 h-100 border">
+                            <div class="p-3 bg-light rounded-3 h-100">
                                 <h6 class="fw-bold text-primary mb-2" style="color: #9c4af7; font-size: 13.5px;">🗜️ 컨텍스트 벡터 (Context Vector)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
+                                <div class="bg-white p-2.5 rounded mb-2 font-monospace" style="font-size: 13px; border: 1px solid #e2e8f0;">
                                     <code>c = h<sub>enc_last</sub></code>
                                 </div>
                                 <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">인코더의 <strong>마지막 은닉 상태</strong>로, 전체 문장의 문맥 의미가 고밀도로 축약되어 디코더의 최초 기억으로 제공됨</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-light rounded-3 h-100 border">
+                            <div class="p-3 bg-light rounded-3 h-100">
                                 <h6 class="fw-bold text-success mb-2" style="color: #059669; font-size: 13.5px;">📊 softmax (소프트맥스)</h6>
-                                <div class="bg-white p-2 rounded border mb-2 font-monospace" style="font-size: 12.5px;">
+                                <div class="bg-white p-2.5 rounded mb-2 font-monospace" style="font-size: 13px; border: 1px solid #e2e8f0;">
                                     <code>y<sub>t</sub> = softmax(W<sub>y</sub>·s<sub>t</sub> + b)</code>
                                 </div>
                                 <p class="mb-0 text-secondary" style="font-size: 13.5px !important; line-height: 1.55;">최종 은닉 상태를 받아 각 단어별 <strong>확률 값(0~1 사이, 합=1)</strong>으로 변환하여 가장 높은 확률의 단어를 출력함</p>
@@ -814,7 +806,7 @@
                 </div>
 
                 <!-- 메인 Seq2Seq 번역 시뮬레이션 통합 카드 (단일 메인 카드) -->
-                <div class="p-4 border rounded-3 bg-white shadow-sm my-4 border-start border-primary border-4">
+                <div class="p-4 border rounded-3 bg-white shadow-sm my-4">
                     <!-- 카드 상단: 제목 및 컨트롤 버튼 바 -->
                     <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
                         <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-play text-primary me-2"></i>🎬 Seq2Seq 번역 프로세스 대화형 시뮬레이션</h5>
@@ -959,7 +951,7 @@
 
                         <!-- 우측: 단계별 결과 해설 카드 (col-lg-3 = 기존 너비의 절반인 25%로 축소!) -->
                         <div class="col-lg-3 d-flex">
-                            <div class="p-3 bg-light rounded-3 border w-100 h-100 d-flex flex-column justify-content-start">
+                            <div class="p-3 bg-light rounded-3 w-100 h-100 d-flex flex-column justify-content-start">
                                 <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
                                     <span id="step-num" class="badge px-2.5 py-1" style="background: #9333ea; font-size: 13px; color:#fff;">▶</span>
                                     <h6 id="step-title-text" class="fw-bold mb-0 text-dark" style="font-size: 15px;">시작 전</h6>
@@ -986,53 +978,7 @@
                 </ul>
             </footer>
 
-            <!-- 6. 무결성 검증 대조표 -->
-            <section id="sec-verification" class="mt-5">
-                <h2 id="toc-6">원문 vs 재작성 무결성 검증 대조표</h2>
-                <p>기존 원본 파일(<code>rnn_백업.html</code>)과 리팩토링된 마스터 템플릿 간의 1:1 무결성 검증 결과를 기록한다.</p>
-
-                <table class="table table-bordered table-custom text-center align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>핵심 항목</th>
-                            <th>원문 내용</th>
-                            <th>재작성 상태</th>
-                            <th>일치 여부</th>
-                            <th>변경 사유</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>RNN 핵심 수식</td>
-                            <td>은닉 상태 갱신 수식 및 출력 수식</td>
-                            <td>HTML 태그(<code>, <sub>, <sup>) 기반 도표 및 수식 박스화</td>
-                            <td><span class="badge bg-success">일치</span></td>
-                            <td>LaTeX 금지 지침 준수 및 가독성 향상</td>
-                        </tr>
-                        <tr>
-                            <td>Unrolling 다이어그램</td>
-                            <td>920x285 Unrolling SVG 다이어그램</td>
-                            <td>SVG viewBox (920x285) 및 명시적 너비/높이 규격 보존</td>
-                            <td><span class="badge bg-success">일치</span></td>
-                            <td>시각적 표현 유지 및 14px 폰트 보장</td>
-                        </tr>
-                        <tr>
-                            <td>PyTorch nn.RNN 파라미터 및 예시</td>
-                            <td>파라미터 설명 및 PyTorch 구현 예시 코드</td>
-                            <td>HTML Table 및 Highlight.js 적용 17px Fira Code 구성</td>
-                            <td><span class="badge bg-success">일치</span></td>
-                            <td>마스터 템플릿 코드/테이블 규격 적용</td>
-                        </tr>
-                        <tr>
-                            <td>Seq2Seq 시뮬레이터</td>
-                            <td>820x330 메인 시뮬레이터 SVG 및 6단계 동작 스크립트</td>
-                            <td>상단 우측 통합 컨트롤바 및 스크립트 100% 동작 보존</td>
-                            <td><span class="badge bg-success">일치</span></td>
-                            <td>공간 활용성 개선 및 동적 조작 보존</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+            
         </article>
     </div>
 

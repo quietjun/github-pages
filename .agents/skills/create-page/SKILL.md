@@ -33,3 +33,4 @@ description: >-
 3. **이중 중첩 카드 금지**: 2중/3중 테두리 상자를 금지하고, 단일 카드(`border rounded-3 bg-white`) 내부에 `row g-3` 및 `bg-light` 블록 배치.
 4. **LaTeX 사용 금지**: KaTeX/MathJax 및 `$...$` 절대 금지 ➔ HTML 태그(`<sub>`, `<sup>`, `<code>`) 활용.
 5. **마스터 템플릿 준수**: [resources/template.html](./resources/template.html) 구조, `:root` 변수, TOC Drawer, Fira Code 17px(`text-align: left !important`), iframe 자동 높이 조절 스크립트 100% 반영.
+6. **강의용 경어체 톤앤매너**: 문체 및 어조는 **[tone-standards 스킬](../tone-standards/SKILL.md)** 지침을 100% 적용하여 하십시오체/해요체 경어체(`~합니다`, `~입니다`)로 작성한다.

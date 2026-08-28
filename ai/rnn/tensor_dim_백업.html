@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해</title>
+  <!-- Google Fonts 적용 (가독성 향상) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --background: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --s2: #f8fafc;
+      --surface: #ffffff;
+      --dec-primary: #f97316;
+      --sub: #64748b;
+      --accent: rgba(249, 115, 22, 0.05);
+      --font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    /* Chirpy 스타일 다크/라이트 모드 지원 */
+    html[data-theme="dark"] {
+      --background: #121212;
+      --text: #e2e8f0;
+      --border: #2d2d2d;
+      --s2: #1e1e1e;
+      --surface: #121212;
+      --dec-primary: #f97316;
+      --sub: #94a3b8;
+      --accent: rgba(249, 115, 22, 0.1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --background: #121212;
+        --text: #e2e8f0;
+        --border: #2d2d2d;
+        --s2: #1e1e1e;
+        --surface: #121212;
+        --dec-primary: #f97316;
+        --sub: #94a3b8;
+        --accent: rgba(249, 115, 22, 0.1);
+      }
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 0;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 20px 80px 20px;
+    }
+
+    /* 상단 헤더 및 네비게이션 */
+    .header {
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--dec-primary);
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateX(-3px);
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--sub);
+      margin: 0;
+    }
+
+    /* 카드 베이스 */
+    .card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    /* 2단 그리드 레이아웃 */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    @media (max-width: 850px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .math-card {
+        margin-top: 0; /* 모바일 세로 누적 뷰 시에는 상단 여백 상쇄 */
+      }
+    }
+
+    /* 탭 컨트롤러 */
+    .tab-container {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--sub);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .tab-btn:hover {
+      border-color: var(--dec-primary);
+      color: var(--dec-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--dec-primary);
+      border-color: var(--dec-primary);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);
+    }
+
+    /* 비주얼 시뮬레이션 영역 (좌단) */
+    .visualization-box {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .vis-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .svg-wrapper {
+      max-width: 100%;
+      height: 155px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    svg {
+      max-width: 100%;
+      height: 100%;
+    }
+
+    .node {
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edge {
+      stroke: var(--border);
+      stroke-width: 1;
+      opacity: 0.3;
+      transition: all 0.8s ease;
+    }
+
+    .edge.active {
+      stroke: var(--dec-primary);
+      opacity: 0.8;
+      stroke-width: 1.5;
+    }
+
+    /* 요약 카드 정보 보드 (좌단 하단) */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+    }
+
+    .info-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--sub);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: var(--font-mono);
+    }
+
+    /* 현실의 의미 카드 (우단 상단) */
+    .meaning-card {
+      background: var(--surface);
+      border-left: 4px solid var(--dec-primary);
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-radius: 4px 12px 12px 4px;
+      padding: 16px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+
+    .meaning-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meaning-desc {
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .meaning-list {
+      margin: 6px 0 0 0;
+      padding-left: 18px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .meaning-list li {
+      margin-bottom: 4px;
+    }
+
+    /* 수학적 연산 및 결과 카드 (우단 하단) */
+    .math-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-sizing: border-box;
+      margin-top: 51px; /* 데스크톱에서 좌측 탭 버튼 한 줄 높이만큼 띄워서 상단선 얼라인 */
+    }
+
+    .math-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .code-block {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .math-sub-title {
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .sample-calc {
+      background: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .tensor-result-container {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--dec-primary);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.4;
+    }
+
+    /* 3D 큐브 공간 축 시각화 카드 */
+    .cube-guide-card {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  
+  <!-- 상단 헤더 -->
+  <div class="header">
+    <a href="rnn.html" class="back-btn">⬅️ RNN 시뮬레이터로 돌아가기</a>
+    <h1>💡 텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해</h1>
+  </div>
+
+  <!-- NLP 3차원 입력 기본 전제 안내 -->
+  <div style="font-size: 14px; line-height: 1.7; color: var(--text); background: var(--accent); border-left: 4px solid var(--dec-primary); padding: 14px 16px; border-radius: 4px 8px 8px 4px; margin-top: 10px; margin-bottom: 20px; box-sizing: border-box;">
+    💡 <strong>자연어 처리(NLP: Natural Language Processing)의 차원 전제 :</strong><br>
+    일반적으로 자연어 처리 분야의 딥러닝 모델에서는 문장 데이터를 임베딩하여 주입할 때, 무조건 <strong>3차원 텐서 규격 <code style="font-family: var(--font-mono); font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[Batch, Seq, Feature]</code> (단어장 점수의 경우 <code style="font-family: var(--font-mono); font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[Batch, Seq, Vocab]</code>)</strong>으로 입력을 처리하도록 규격화되어있다.
+  </div>
+
+
+
+  <!-- [1부] 📊 3차원 텐서 [Batch, Seq, Vocab]의 축(dim) 방향 시각화 -->
+  <div class="card cube-guide-card">
+    <div style="font-weight: 700; font-size: 14.5px; color: var(--text); margin-bottom: 12px;">📊 3차원 텐서 [Batch, Seq, Vocab]의 축(dim) 방향 시각화</div>
+    <svg viewBox="0 0 940 220" xmlns="http://www.w3.org/2000/svg" style="display:block; width:100%; min-width:850px; height:auto;">
+      <defs>
+        <marker id="axis-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+        </marker>
+        <linearGradient id="cube-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="var(--surface)"/>
+          <stop offset="100%" stop-color="var(--s2)"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 3D Tensor Box (우상향 투시도 완벽 반영) -->
+      <!-- 외곽 테두리 및 윗면/앞면 기본 채우기 -->
+      <path d="M 135 80 L 185 40 L 325 40 L 325 110 L 275 150 L 135 150 Z" fill="url(#cube-grad)" stroke="var(--border)" stroke-width="1.5" opacity="0.8"/>
+      
+      <!-- [실선] 겉으로 보이는 앞면/윗면 격자선 및 우측면 모서리 -->
+      <path d="M 135 80 L 275 80" fill="none" stroke="var(--border)"/>
+      <path d="M 135 115 L 275 115" fill="none" stroke="var(--border)"/>
+      <path d="M 185 80 L 185 150" fill="none" stroke="var(--border)"/>
+      <path d="M 235 80 L 235 150" fill="none" stroke="var(--border)"/>
+      <path d="M 275 80 L 275 150" fill="none" stroke="var(--border)"/>
+      <path d="M 185 80 L 235 40" fill="none" stroke="var(--border)"/>
+      <path d="M 235 80 L 285 40" fill="none" stroke="var(--border)"/>
+      <path d="M 275 80 L 325 40" fill="none" stroke="var(--border)"/>
+      <path d="M 275 115 L 325 75" fill="none" stroke="var(--border)"/>
+
+      <!-- [점선] 내부에 가려진 격자선 및 가이드선 -->
+      <path d="M 185 40 L 185 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 235 40 L 235 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 285 40 L 285 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 185 75 L 325 75" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 185 110 L 325 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 135 115 L 185 75" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 135 150 L 185 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 185 115 L 235 75" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 185 150 L 235 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 235 115 L 285 75" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+      <path d="M 235 150 L 285 110" fill="none" stroke="var(--border)" stroke-dasharray="2,2"/>
+
+      <!-- 깊이(k=1, 2, 3) 4분할 격자 점선 추가 (Vocab = 4 보완) -->
+      <!-- k=1 단면 (dx=12.5, dy=-10) -->
+      <path d="M 147.5 70 L 287.5 70" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 147.5 105 L 287.5 105" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 147.5 140 L 287.5 140" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 197.5 70 L 197.5 140" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 247.5 70 L 247.5 140" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      
+      <!-- k=2 단면 (dx=25, dy=-20) -->
+      <path d="M 160 60 L 300 60" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 160 95 L 300 95" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 160 130 L 300 130" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 210 60 L 210 130" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 260 60 L 260 130" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      
+      <!-- k=3 단면 (dx=37.5, dy=-30) -->
+      <path d="M 172.5 50 L 312.5 50" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 172.5 85 L 312.5 85" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 172.5 120 L 312.5 120" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 222.5 50 L 222.5 120" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+      <path d="M 272.5 50 L 272.5 120" fill="none" stroke="var(--border)" stroke-dasharray="1.5,1.5" opacity="0.4"/>
+
+      <!-- 축 1: dim=0 (배치 축) -->
+      <line x1="105" y1="40" x2="105" y2="140" stroke="#ef4444" stroke-width="2.5" marker-end="url(#axis-arrow)"/>
+      <text font-family="JetBrains Mono" font-size="13.5" font-weight="700" x="95" y="95" fill="#ef4444" text-anchor="end">dim=0 ⬇️</text>
+      <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="95" y="114" fill="#ef4444" text-anchor="end">배치 (Batch) 축</text>
+
+      <!-- 축 2: dim=1 (시퀀스 축) -->
+      <line x1="135" y1="175" x2="295" y2="175" stroke="#10b981" stroke-width="2.5" marker-end="url(#axis-arrow)"/>
+      <text font-family="JetBrains Mono" font-size="13.5" font-weight="700" x="215" y="168" fill="#10b981" text-anchor="middle">dim=1 ➡️</text>
+      <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="215" y="190" fill="#10b981" text-anchor="middle">시퀀스 (Sequence/Time) 축</text>
+
+      <!-- 축 3: dim=2 / dim=-1 (단어장 축) -->
+      <line x1="340" y1="140" x2="390" y2="100" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#axis-arrow)"/>
+      <text font-family="JetBrains Mono" font-size="13.5" font-weight="700" x="370" y="140" fill="#3b82f6">dim=2 (dim=-1) ↗️</text>
+      <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="370" y="159" fill="#3b82f6">단어장 (Vocab) 축</text>
+
+      <!-- 설명 박스 -->
+      <g transform="translate(530, 20)">
+        <rect x="0" y="0" width="380" height="158" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1"/>
+        <text font-family="Noto Sans KR" font-size="14.5" font-weight="700" x="15" y="25" fill="var(--text)">💡 핵심 용어 정의</text>
+        
+        <!-- 용어 설명 -->
+        <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="15" y="52" fill="var(--dec-primary)">• Batch (배치) :</text>
+        <text font-family="Noto Sans KR" font-size="13" x="135" y="52" fill="var(--sub)">동시에 처리할 문장 개수 (예: 32)</text>
+        
+        <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="15" y="76" fill="var(--dec-primary)">• Seq (시퀀스) :</text>
+        <text font-family="Noto Sans KR" font-size="13" x="135" y="76" fill="var(--sub)">문장 내 단어(토큰) 개수 (예: 10)</text>
+        
+        <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="15" y="100" fill="var(--dec-primary)">• Vocab (단어장) :</text>
+        <text font-family="Noto Sans KR" font-size="13" x="135" y="100" fill="var(--sub)">어휘 사전 속 총 단어 개수 (예: 30,000)</text>
+        
+        <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="15" y="124" fill="var(--dec-primary)">• 처리 방식 :</text>
+        <text font-family="Noto Sans KR" font-size="13" x="135" y="124" fill="var(--sub)">단어 단위 시퀀스로 쪼개어 입력하고</text>
+        <text font-family="Noto Sans KR" font-size="13" x="135" y="144" fill="var(--sub)">모든 Vocab과의 관계(연관성)를 연산</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 차원 조작 당위성 브릿지 안내 및 목적 카드 -->
+  <div style="font-size: 14px; line-height: 1.7; color: var(--text); margin-top: 15px; margin-bottom: 15px; box-sizing: border-box;">
+    📢 일반적으로 자연어 처리(NLP)에서는 위와 같이 입력 규격을 3차원 텐서 형태로 정의하여 연산하지만, <strong>실제 모델의 내부 구동 과정에서는 이 차원 규격을 그대로만 유지하는 것이 아니라 필요에 따라 차원을 인위적으로 줄이거나(Squeeze) 늘리는(Unsqueeze) 조작을 끊임없이 동반하며 활용함.</strong> 차원을 줄이고 늘리며 사용하는 구체적인 대표 사례는 다음과 같음.
+  </div>
+
+  <!-- 🤔 텐서 차원을 줄이고 늘리는 근본적인 두 가지 목적 -->
+  <div class="card" style="margin-bottom: 20px; padding: 18px;">
+    <strong style="color: var(--dec-primary); font-size: 14.5px; display: block; margin-bottom: 8px;">🤔 텐서 차원(Shape)을 줄이고 늘리는 근본적인 두 가지 목적</strong>
+    <ul style="margin: 0; padding-left: 20px; color: var(--sub); font-size: 13.5px; line-height: 1.65;">
+      <li style="margin-bottom: 6px;"><strong>1. 최종 결과 도출 및 균형 잡힌 가중치 학습 (비즈니스/수학적 목적) :</strong>
+        <div style="margin-top: 4px; padding-left: 10px; color: var(--text);">
+          • <strong>최종 번역 단어 출력 :</strong> 최초 3차원 출력 텐서(<code style="font-family: var(--font-mono); font-size: 12px;">[1, 1, 30000]</code>)에서 squeeze를 거쳐 1차원 점수판(<code style="font-family: var(--font-mono); font-size: 12px;">[30000]</code>)을 얻고, 다시 argmax를 거쳐 최종 0차원 스칼라 정답 단어 딱 1개(예: `15`)를 선출하여 번역기의 최종 텍스트 화면에 보여주기 위해 압축.
+        </div>
+        <div style="margin-top: 4px; padding-left: 10px; color: var(--text);">
+          • <strong>균형 잡힌 가중치 업데이트 :</strong> 32개 문장의 개별 오답 점수들이 나열된 1차원 오차 텐서(<code style="font-family: var(--font-mono); font-size: 12px;">[32]</code>)를 배치 축(<code style="font-family: var(--font-mono); font-size: 12px;">dim=0</code>) 방향으로 평균 내어 단 하나의 대표 오차(0차원 스칼라 Loss)로 압축. 32개 문장 모두를 평균적으로 골고루 잘 번역하도록 모델 가중치를 안정적으로 업데이트하기 위해 사용.
+        </div>
+      </li>
+      <li><strong>2. 레이어 간 행렬곱 규격 매칭 (시스템적 목적) :</strong> 데이터 내용물은 똑같아도 다음 신경망 레이어(Embedding, RNN 셀 등)의 연산 입구가 강제하는 엄격한 텐서 차원 규격(예: 반드시 대괄호가 씌워진 2차원으로 입력할 것)에 형상을 맞추기 위해 차원을 늘려 포장(<code style="font-family: var(--font-mono); font-size: 12px;">unsqueeze</code>)하는 연산 수행.</li>
+    </ul>
+  </div>
+
+  <!-- [기본 텐서와 Shape 정의 영역 이식] -->
+  <div class="card" style="margin-bottom: 20px; padding: 16px;">
+    <strong style="font-size: 14.5px; color: var(--text); display: block; margin-bottom: 8px;">📋 원본 입력 데이터 정의 및 PyTorch 선언</strong>
+    <div style="font-size: 13.5px; font-weight: 600; color: var(--dec-primary); margin-bottom: 10px; font-family: var(--font-mono);">
+      Shape: [2, 3, 4] = [문장수, 단어수, vocab 수]
+    </div>
+    <pre class="code-block"># PyTorch 원본 3차원 텐서 선언 (Shape: [2, 3, 4] = [문장수, 단어수, vocab 수])
+tensor = torch.tensor([
+  # 배치 0 (첫 번째 문장의 3개 단어별 4개 단어장 점수판)
+  [[ 4.0,  1.0,  3.0,  2.0],
+   [ 5.0,  8.0,  6.0,  7.0],
+   [ 9.0, 10.0, 12.0, 11.0]],
+  
+  # 배치 1 (두 번째 문장의 3개 단어별 4개 단어장 점수판)
+  [[ 3.0,  2.0,  5.0,  4.0],
+   [ 6.0,  7.0,  9.0,  8.0],
+   [13.0, 11.0, 10.0, 12.0]]
+], dtype=torch.float32)
+
+print("원본 텐서 크기:", tensor.shape)  # 출력: torch.Size([2, 3, 4])</pre>
+  </div>
+
+  <!-- [2부: 2단 워크스페이스 레이아웃 신설] -->
+  <div class="workspace-grid">
+    
+    <!-- 좌단 영역: 탭 조작 + SVG 애니메이션 시뮬레이션 -->
+    <div style="display: flex; flex-direction: column;">
+      
+      <!-- 탭 제어 버튼 -->
+      <div class="tab-container">
+        <button class="tab-btn" onclick="switchDim(0)">dim=0 (배치)</button>
+        <button class="tab-btn" onclick="switchDim(1)">dim=1 (시퀀스)</button>
+        <button class="tab-btn" onclick="switchDim(2)">dim=2 (dim=-1) (피처)</button>
+        <button class="tab-btn active" onclick="switchDim(-1)">생략 (전체)</button>
+      </div>
+
+      <!-- SVG 그래픽 카드 -->
+      <div class="visualization-box">
+        <div class="vis-title" id="vis-title-text">Tensor [2, 3, 4] = 모든 24개 값 (전체 압축)</div>
+        <div class="svg-wrapper">
+          <svg width="450" height="185" viewBox="0 0 450 185" xmlns="http://www.w3.org/2000/svg" id="vis-svg">
+            <g id="grid-lines"></g>
+            <g id="node-group"></g>
+            
+            <!-- 최종 출력 수축 노드 기하학 (정보 중복으로 화면에서 숨김 처리) -->
+            <g id="output-tensor" transform="translate(170, 160)" style="display: none;">
+              <rect x="0" y="0" width="110" height="42" rx="6" fill="none" stroke="#f97316" stroke-width="1.8" id="output-box" />
+              <text x="55" y="20" font-family="JetBrains Mono" font-size="14.5" font-weight="700" fill="#f97316" text-anchor="middle" id="output-val">7.0</text>
+              <text x="55" y="34" font-family="Noto Sans KR" font-size="9.5" fill="#f97316" text-anchor="middle" id="output-label">0차원 스칼라</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 요약 정보 보드 (시각화 박스 하단 빈 공간으로 진입) -->
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">입력 Shape</div>
+            <div class="info-value">[2, 3, 4]</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">출력 Shape</div>
+            <div class="info-value" id="info-output-shape">[] (스칼라)</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">크기</div>
+            <div class="info-value" id="info-output-dim">0차원</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 우단 영역: 수학 연산 샘플 & 결과 텐서만 단독 배치 -->
+    <div style="display: flex; flex-direction: column;">
+
+      <!-- 🔢 수학적 연산 및 결과 -->
+      <div class="math-card">
+        <div class="math-title">🔢 수학 연산식 및 결과 텐서</div>
+        <pre class="code-block" id="math-code-text">result = t.mean() # 전체 평균</pre>
+        
+        <div class="math-sub-title">✏️ 샘플 수식 계산 예시 :</div>
+        <div class="sample-calc" id="sample-calc-text">
+          (전체 24개 데이터 총합 168) / 24 = 7.0
+        </div>
+
+        <div class="math-sub-title">📊 출력 텐서 (Tensor Output) :</div>
+        <div class="tensor-result-container" id="tensor-result-box">
+          tensor(7.0)
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- [이식] 🎓 현실의 의미 (가로로 길게 단독 배치하여 시인성 확보) -->
+  <div class="meaning-card" style="margin-top: 15px; margin-bottom: 20px;">
+    <div class="meaning-title">🎓 현실의 의미</div>
+    <div class="meaning-desc">
+      <div id="meaning-desc-text">
+        배치 전체, 시퀀스 전체의 모든 오차값들을 한 덩어리로 융합하여 평균을 구한 결과물.<br>
+        • <strong>실제 활용 :</strong> 학습 역전파(Backpropagation) 직전에 모델의 전체 오차 대표값 딱 1개를 계산하여 모델 최적화 지표로 활용함.
+      </div>
+      <div style="margin-top: 6px;" id="meaning-list-items">
+        • <strong>직관적 이해 :</strong> 2개 문장(Batch=2) 내의 3개 단어(Seq=3)들이 가진 4개 단어장(Vocab=4) 값들(총 24개)을 축 구분 없이 싹 평균 내어, <strong>전체 데이터의 종합 평균 딱 1개만 남겨 압축</strong>하는 개념.<br>
+        • <strong>핵심 용도 :</strong> 학습을 위한 최종 오차 전파
+      </div>
+    </div>
+  </div>
+
+  <!-- 📥 단일 문장(Batch=1) 인코더 내 텐서 차원 변화 -->
+  <div class="card" style="margin-bottom: 25px; padding: 22px;">
+    <strong style="color: var(--dec-primary); font-size: 14.5px; display: block; margin-bottom: 8px;">📥 단일 문장(Batch=1) 인코더 내 텐서 차원 변화</strong>
+    <div class="algo-desc" style="font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 18px;">
+      인코더(Encoder)의 주 역할은 전체 입력 문장을 통째로 읽어 단 하나의 고정된 크기의 벡터(**문맥 벡터, Context Vector**)로 압축하는 것입니다. 입력된 1차원 토큰 ID 시퀀스는 임베딩과 RNN을 거치면서 차원이 순차적으로 확장되며 문장의 의미 정보를 축적합니다.
+    </div>
+
+    <!-- 인코더 텐서 차원 흐름 SVG -->
+    <svg viewBox="0 0 940 180" xmlns="http://www.w3.org/2000/svg" style="display:block; width:100%; min-width:850px; height:auto; margin-bottom: 18px;">
+      <defs>
+        <!-- 오른쪽 방향 화살표 마커 -->
+        <marker id="arrow-right" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--sub)"/>
+        </marker>
+        <!-- 주황색 강조 오른쪽 방향 화살표 마커 -->
+        <marker id="arrow-right-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--dec-primary)"/>
+        </marker>
+      </defs>
+
+      <!-- input_ids [seq_len] -->
+      <rect x="25" y="55" width="100" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="75" y="73" fill="var(--text)" text-anchor="middle">input_ids</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="75" y="91" fill="var(--dec-primary)" text-anchor="middle">[seq_len]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="75" y="117" fill="var(--sub)" text-anchor="middle">(1차원 텐서)</text>
+
+      <!-- 화살표 1 (Embedding 진입 전 여백 x2=145 적용) -->
+      <line x1="130" y1="77.5" x2="145" y2="77.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-right)"/>
+
+      <!-- Embedding 연산 박스 -->
+      <rect x="150" y="62.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="190" y="81" fill="var(--text)" text-anchor="middle">Embedding</text>
+
+      <!-- 화살표 2 (input_embeds 진입 전 여백 x2=245 적용) -->
+      <line x1="230" y1="77.5" x2="245" y2="77.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-right)"/>
+
+      <!-- input_embeds [seq_len, 768] -->
+      <rect x="250" y="55" width="110" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="305" y="73" fill="var(--text)" text-anchor="middle">input_embeds</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="305" y="91" fill="var(--dec-primary)" text-anchor="middle">[seq_len, 768]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="305" y="117" fill="var(--sub)" text-anchor="middle">(2차원 텐서)</text>
+
+      <!-- 화살표 3 (nn.RNN 진입 전 여백 x2=380 적용) -->
+      <line x1="365" y1="77.5" x2="380" y2="77.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-right)"/>
+
+      <!-- nn.RNN 연산 박스 -->
+      <rect x="385" y="62.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="425" y="81" fill="var(--text)" text-anchor="middle">nn.RNN</text>
+
+      <!-- 화살표 4 (분기 시작점: RNN 우측 끝인 x=465에서 출발하여 각각 위/아래 텐서 박스로 분기) -->
+      <!-- hidden_states행으로 올라가는 꺾임 화살표 -->
+      <path d="M 465,77.5 L 485,77.5 A 10,10 0 0 0 495,67.5 L 495,35 A 10,10 0 0 1 505,25 L 515,25" fill="none" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-right)"/>
+      
+      <!-- context_vector행으로 내려가는 꺾임 화살표 (최종 압축 결과물이므로 주황색 화살표 적용) -->
+      <path d="M 465,77.5 L 485,77.5 A 10,10 0 0 1 495,87.5 L 495,120 A 10,10 0 0 0 505,130 L 515,130" fill="none" stroke="var(--dec-primary)" stroke-width="2" marker-end="url(#arrow-right-orange)"/>
+
+      <!-- hidden_states [seq_len, 1024] -->
+      <rect x="520" y="5" width="160" height="40" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="600" y="22" fill="var(--text)" text-anchor="middle">hidden_states</text>
+      <text font-family="JetBrains Mono" font-size="12.5" font-weight="700" x="600" y="34" fill="var(--dec-primary)" text-anchor="middle">[seq_len, 1024]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="695" y="30" fill="var(--sub)">(단어별 은닉 벡터 &rarr; Attention용)</text>
+
+      <!-- context_vector (h_n) [1, 1024] -->
+      <rect x="520" y="110" width="160" height="40" rx="6" fill="var(--surface)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="600" y="127" fill="var(--text)" text-anchor="middle">context_vector (h_n)</text>
+      <text font-family="JetBrains Mono" font-size="12.5" font-weight="700" x="600" y="139" fill="var(--dec-primary)" text-anchor="middle">[1, 1024]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="695" y="135" fill="var(--dec-primary)" font-weight="700">(문장 최종 문맥 벡터 &rarr; Decoder h_0 주입!)</text>
+    </svg>
+
+    <div class="meaning-desc" style="font-size: 13.5px; line-height: 1.65; color: var(--text); padding-top: 12px; border-top: 1px solid var(--border);">
+      <div class="algo-ex-title" style="font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 6px;">💡 인코더 차원 변화 해설</div>
+      • <strong>입력 ID 시퀀스 :</strong> `"나는 학교에 간다."`의 5개 토큰에 대응하는 1차원 텐서 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[5]</code>이 인코더에 들어옵니다.<br>
+      • <strong>Embedding :</strong> 토큰을 고차원 실수의 벡터 표현으로 변경해 2차원 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[5, 768]</code>로 확장합니다.<br>
+      • <strong>nn.RNN :</strong> 시퀀스를 따라 순차적으로 정보들을 누적 연산하며 최종적으로 모든 단어의 은닉 상태를 묶은 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">hidden_states [5, 1024]</code>와 마지막 시퀀스 단계의 최종 요약 상태인 문맥 벡터 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">context_vector (h_n) [1, 1024]</code>로 출력 분기합니다.
+    </div>
+  </div>
+
+  <!-- 📥 단일 문장(Batch=1) 디코더 내 텐서 차원 변화 -->
+  <div class="card" style="margin-bottom: 25px; padding: 22px;">
+    <strong style="color: var(--dec-primary); font-size: 14.5px; display: block; margin-bottom: 8px;">📥 단일 문장(Batch=1) 디코더 내 텐서 차원 변화</strong>
+    <div class="algo-desc" style="font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 18px;">
+      디코더(Decoder)의 RNN 루프는 인코더의 최종 요약 은닉 상태인 문맥 벡터(`encoder h_n`)를 초기 기억(`h_0`)으로 주입받아 동작합니다. 매 시점 예측된 `output_token`은 단어장 공간의 점수(`logit`)를 거치고 `argmax`로 디코딩된 후, 다음 시점의 입력으로 순환 피드백됩니다.
+    </div>
+
+    <!-- 디코더 텐서 차원 흐름 SVG -->
+    <svg viewBox="0 0 940 330" xmlns="http://www.w3.org/2000/svg" style="display:block; width:100%; min-width:850px; height:auto; margin-bottom: 18px;">
+      <defs>
+        <!-- 오른쪽 방향 클래식 화살표 마커 (오른쪽 0도 기준) -->
+        <marker id="arrow-classic" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--sub)"/>
+        </marker>
+        <!-- 주황색 강조 오른쪽 방향 클래식 화살표 마커 -->
+        <marker id="arrow-classic-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--dec-primary)"/>
+        </marker>
+      </defs>
+
+      <!-- input_token [1] -->
+      <rect x="25" y="80" width="90" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="70" y="98" fill="var(--text)" text-anchor="middle">input_token</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="70" y="116" fill="var(--dec-primary)" text-anchor="middle">[1]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="70" y="142" fill="var(--sub)" text-anchor="middle">(1차원 텐서)</text>
+
+      <!-- 화살표 1 (Embedding 박스 x=135 진입 전 여백 x2=130 적용) -->
+      <line x1="115" y1="102.5" x2="130" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- Embedding 연산 박스 -->
+      <rect x="135" y="87.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="175" y="106" fill="var(--text)" text-anchor="middle">Embedding</text>
+
+      <!-- 화살표 2 (embedded 박스 x=235 진입 전 여백 x2=230 적용) -->
+      <line x1="215" y1="102.5" x2="230" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- embedded [1, 768] -->
+      <rect x="235" y="80" width="90" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="280" y="98" fill="var(--text)" text-anchor="middle">embedded</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="280" y="116" fill="var(--dec-primary)" text-anchor="middle">[1, 768]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="280" y="142" fill="var(--sub)" text-anchor="middle">(2차원 텐서)</text>
+
+      <!-- 화살표 3 (nn.RNN 박스 x=350 진입 전 여백 x2=345 적용) -->
+      <line x1="325" y1="102.5" x2="345" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- 외부 입력 h_n 박스 (위에서 아래로 주입) -->
+      <rect x="340" y="10" width="100" height="30" rx="4" fill="var(--surface)" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,2"/>
+      <text font-family="JetBrains Mono" font-size="9.5" font-weight="700" x="390" y="28" fill="#ef4444" text-anchor="middle">encoder h_n [1, 1024]</text>
+      <!-- 수직 화살표 (nn.RNN 상단 y=87.5 진입 전 여백 y2=82.5 적용) -->
+      <path d="M 390,40 L 390,82.5" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2" marker-end="url(#arrow-classic)"/>
+
+      <!-- nn.RNN 연산 박스 -->
+      <rect x="350" y="87.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="390" y="106" fill="var(--text)" text-anchor="middle">nn.RNN</text>
+
+      <!-- 화살표 4 (new h_n 박스 x=450 진입 전 여백 x2=445 적용) -->
+      <line x1="430" y1="102.5" x2="445" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- new h_n [1, 1024] -->
+      <rect x="450" y="80" width="100" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="500" y="98" fill="var(--text)" text-anchor="middle">new h_n</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="500" y="116" fill="var(--dec-primary)" text-anchor="middle">[1, 1024]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="500" y="142" fill="var(--sub)" text-anchor="middle">(2차원 텐서)</text>
+
+      <!-- 화살표 5 (Linear 박스 x=575 진입 전 여백 x2=570 적용) -->
+      <line x1="550" y1="102.5" x2="570" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- Linear 연산 박스 -->
+      <rect x="575" y="87.5" width="70" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="610" y="106" fill="var(--text)" text-anchor="middle">Linear</text>
+
+      <!-- 화살표 6 (logit 박스 x=665 진입 전 여백 x2=660 적용) -->
+      <line x1="645" y1="102.5" x2="660" y2="102.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- logit [1, 30000] -->
+      <rect x="665" y="80" width="110" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="720" y="98" fill="var(--text)" text-anchor="middle">logit</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="720" y="116" fill="var(--dec-primary)" text-anchor="middle">[1, 30000]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="720" y="142" fill="var(--sub)" text-anchor="middle">(2차원 텐서)</text>
+
+      <!-- === 꺾임 피드백 선: logit -> squeeze (squeeze 박스 우측 경계인 x=765에 가기 전 여백 x2=770 적용) === -->
+      <path d="M 775,102.5 L 805,102.5 A 15,15 0 0 1 820,117.5 L 820,187.5 A 15,15 0 0 1 805,202.5 L 770,202.5" fill="none" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- === 2행: squeeze된 logit -> argmax -> 스칼라 ID -> unsqueeze(0) -> output_token === -->
+
+      <!-- squeeze() 연산 박스 -->
+      <rect x="685" y="187.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="725" y="206" fill="var(--text)" text-anchor="middle">.squeeze()</text>
+
+      <!-- 화살표 7 (logit squeezed 박스 우측 경계 x=665 도달 전 여백 x2=670 적용) -->
+      <line x1="685" y1="202.5" x2="670" y2="202.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- logit (squeezed) [30000] -->
+      <rect x="555" y="180" width="110" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="610" y="198" fill="var(--text)" text-anchor="middle">logit</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="610" y="216" fill="var(--dec-primary)" text-anchor="middle">[30000]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="610" y="242" fill="var(--sub)" text-anchor="middle">(1차원 텐서)</text>
+
+      <!-- 화살표 8 (argmax 박스 우측 경계 x=535 도달 전 여백 x2=540 적용) -->
+      <line x1="555" y1="202.5" x2="540" y2="202.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- argmax() 연산 박스 -->
+      <rect x="455" y="187.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="495" y="206" fill="var(--text)" text-anchor="middle">.argmax()</text>
+
+      <!-- 화살표 9 (Token ID 박스 우측 경계 x=435 도달 전 여백 x2=440 적용) -->
+      <line x1="455" y1="202.5" x2="440" y2="202.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- Token ID [스칼라] -->
+      <rect x="335" y="180" width="100" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="385" y="198" fill="var(--text)" text-anchor="middle">Token ID</text>
+      <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="385" y="216" fill="var(--dec-primary)" text-anchor="middle">스칼라 (0차원)</text>
+      <!-- 최종 텍스트 추출 흐름 가이드 -->
+      <path d="M 385,225 L 385,255" stroke="var(--sub)" stroke-width="1.5" stroke-dasharray="2,2" marker-end="url(#arrow-classic)"/>
+      <text font-family="JetBrains Mono" font-size="11" x="385" y="270" fill="var(--text)" text-anchor="middle">.item() 추출</text>
+      <text font-family="Noto Sans KR" font-size="13" x="385" y="288" fill="var(--sub)" text-anchor="middle">최종 텍스트 생성용 리스트 저장</text>
+
+      <!-- 화살표 10 (unsqueeze(0) 박스 우측 경계 x=315 도달 전 여백 x2=320 적용) -->
+      <line x1="335" y1="202.5" x2="320" y2="202.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- unsqueeze(0) 연산 박스 -->
+      <rect x="235" y="187.5" width="80" height="30" rx="15" fill="var(--s2)" stroke="var(--dec-primary)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="275" y="206" fill="var(--text)" text-anchor="middle">.unsqueeze(0)</text>
+
+      <!-- 화살표 11 (output_token 박스 우측 경계 x=215 도달 전 여백 x2=220 적용) -->
+      <line x1="235" y1="202.5" x2="220" y2="202.5" stroke="var(--border)" stroke-width="2" marker-end="url(#arrow-classic)"/>
+
+      <!-- output_token [1] -->
+      <rect x="105" y="180" width="110" height="45" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+      <text font-family="JetBrains Mono" font-size="11" font-weight="700" x="160" y="198" fill="var(--text)" text-anchor="middle">output_token</text>
+      <text font-family="JetBrains Mono" font-size="13" font-weight="700" x="160" y="216" fill="var(--dec-primary)" text-anchor="middle">[1]</text>
+      <text font-family="Noto Sans KR" font-size="13" x="160" y="242" fill="var(--sub)" text-anchor="middle">(1차원 텐서)</text>
+
+      <!-- === 피드백 루프: output_token -> input_token (input_token 시작점인 x=25 도달 전 여백 x2=20 적용 후 x=30에서 꽂히게 정렬) === -->
+      <path d="M 105,202.5 L 20,202.5 A 15,15 0 0 1 5,187.5 L 5,117.5 A 15,15 0 0 1 20,102.5 L 23,102.5" fill="none" stroke="var(--dec-primary)" stroke-dasharray="3,3" stroke-width="2" marker-end="url(#arrow-classic-orange)"/>
+      <text font-family="Noto Sans KR" font-size="13" font-weight="700" x="125" y="320" fill="var(--dec-primary)" text-anchor="middle">다음 스텝의 input_token으로 피드백 (대입)</text>
+    </svg>
+
+    <div class="meaning-desc" style="font-size: 13.5px; line-height: 1.65; color: var(--text); padding-top: 12px; border-top: 1px solid var(--border);">
+      <div class="algo-ex-title" style="font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 6px;">💡 디코더 루프 차원 변화 해설</div>
+      • <strong>Squeeze (.squeeze()) :</strong> 배치=1 이기 때문에 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[1, 30000]</code> 크기의 logit 텐서에서 굳이 필요 없는 크기 1짜리 배치 축을 압축하여 순수 단어 가중치인 1차원 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[30000]</code>으로 바꿉니다.<br>
+      • <strong>Argmax (.argmax()) :</strong> 1차원 단어장 배열에서 가장 큰 값(가장 확률이 높은 단어)의 인덱스인 0차원의 단일 스칼라(정수)로 최종 단어를 찾아냅니다.<br>
+      • <strong>Unsqueeze (.unsqueeze(0)) :</strong> 다음 루프에서 임베딩 레이어로 넘기기 전, PyTorch 모듈의 규격에 맞추어 0차원 스칼라를 다시 대괄호가 씌워진 1차원 텐서 <code style="font-family: JetBrains Mono; font-size: 12.5px; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border);">[1]</code>로 포장합니다.
+    </div>
+  </div>
+<script>
+  // 3차원 데이터 배치 구조 생성 (2 * 3 * 4 = 24개 노드)
+  const sizes = [2, 3, 4];
+  
+  // 데이터 선언 (사용자가 제공한 원본 데이터 값 매핑)
+  // 배치 0: [[1..4], [5..8], [9..12]]
+  // 배치 1: [[2..5], [6..9], [10..13]]
+  const batchData = [
+    [
+      [4, 1, 3, 2],
+      [5, 8, 6, 7],
+      [9, 10, 12, 11]
+    ],
+    [
+      [3, 2, 5, 4],
+      [6, 7, 9, 8],
+      [13, 11, 10, 12]
+    ]
+  ];
+  
+  // Isometric SVG 3D 좌표 변환용 오프셋 매칭 (상단 다이어그램 축 지침과 100% 동기화)
+  const base_x = 135;
+  const base_y = 45;
+  
+  const dx_i = 0;   // 배치 축 (i: 0~1) -> 위에서 아래로 수직 ⬇️
+  const dy_i = 54;
+  
+  const dx_j = 68;  // 시퀀스 축 (j: 0~2) -> 왼쪽에서 오른쪽으로 수평 ➡️
+  const dy_j = 0;
+  
+  const dx_k = 22;  // 피처/단어장 축 (k: 0~3) -> 대각선 오른쪽 위로 ↗️
+  const dy_k = -14;
+
+  const nodeGroup = document.getElementById('node-group');
+  const gridLines = document.getElementById('grid-lines');
+
+  // 노드 원소 정보 저장
+  const nodes = [];
+
+  // 노드 좌표 생성 및 데이터 매핑
+  for(let i=0; i<sizes[0]; i++) {
+    for(let j=0; j<sizes[1]; j++) {
+      for(let k=0; k<sizes[2]; k++) {
+        const val = batchData[i][j][k];
+        const x = base_x + (i * dx_i) + (j * dx_j) + (k * dx_k);
+        const y = base_y + (i * dy_i) + (j * dy_j) + (k * dy_k);
+        
+        nodes.push({ i, j, k, val, originX: x, originY: y });
+      }
+    }
+  }
+
+  // 1단계: SVG 노드 및 그리드라인 초기 드로잉
+  function drawBase() {
+    gridLines.innerHTML = '';
+    nodeGroup.innerHTML = '';
+
+    // 단어장/피처 방향 선 연결 (k선)
+    nodes.forEach(n => {
+      if(n.k < sizes[2]-1) {
+        const nextNode = nodes.find(next => next.i === n.i && next.j === n.j && next.k === n.k + 1);
+        if(nextNode) {
+          createLine(n.originX, n.originY, nextNode.originX, nextNode.originY, `edge-k-${n.i}-${n.j}-${n.k}`);
+        }
+      }
+      if(n.j < sizes[1]-1) {
+        const nextNode = nodes.find(next => next.i === n.i && next.j === n.j + 1 && next.k === n.k);
+        if(nextNode) {
+          createLine(n.originX, n.originY, nextNode.originX, nextNode.originY, `edge-j-${n.i}-${n.j}-${n.k}`);
+        }
+      }
+      if(n.i < sizes[0]-1) {
+        const nextNode = nodes.find(next => next.i === n.i + 1 && next.j === n.j && next.k === n.k);
+        if(nextNode) {
+          createLine(n.originX, n.originY, nextNode.originX, nextNode.originY, `edge-i-${n.i}-${n.j}-${n.k}`);
+        }
+      }
+    });
+
+    // 노드 원형 점 그리기 (Y 좌표 오름차순 정렬로 뒤쪽 노드를 먼저 그려 Z-Order 투시도 일관성 확보)
+    const sortedNodes = [...nodes].sort((a, b) => a.originY - b.originY);
+    sortedNodes.forEach(n => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'node');
+      g.setAttribute('id', `node-${n.i}-${n.j}-${n.k}`);
+      g.setAttribute('transform', `translate(${n.originX}, ${n.originY})`);
+      g.style.opacity = '1'; // 불투명도 리셋 초기화
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('r', '11.5');
+      circle.setAttribute('fill', '#94a3b8');
+      circle.setAttribute('stroke', '#ffffff');
+      circle.setAttribute('stroke-width', '1.5');
+      
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.textContent = n.val;
+      text.setAttribute('font-family', 'JetBrains Mono');
+      text.setAttribute('font-size', '10px');
+      text.setAttribute('font-weight', '700');
+      text.setAttribute('fill', '#ffffff');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('y', '3.5');
+
+      g.appendChild(circle);
+      g.appendChild(text);
+      nodeGroup.appendChild(g);
+    });
+  }
+
+  function createLine(x1, y1, x2, y2, id) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('class', 'edge');
+    line.setAttribute('id', id);
+    gridLines.appendChild(line);
+  }
+
+  // 탭 클릭 시 텐서 노드 압축 상태 및 설명 갱신
+  function switchDim(dim) {
+    // 탭 액티브 상태 변경
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    let btnIndex = dim === 0 ? 0 : dim === 1 ? 1 : dim === 2 ? 2 : 3;
+    document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+
+    // UI 요소 갱신 대상
+    const visTitle = document.getElementById('vis-title-text');
+    const outBox = document.getElementById('output-box');
+    const outVal = document.getElementById('output-val');
+    const outLabel = document.getElementById('output-label');
+    const outGroup = document.getElementById('output-tensor');
+
+    const infoOutputShape = document.getElementById('info-output-shape');
+    const infoOutputDim = document.getElementById('info-output-dim');
+
+    const meaningDesc = document.getElementById('meaning-desc-text');
+    const meaningList = document.getElementById('meaning-list-items');
+    const mathCode = document.getElementById('math-code-text');
+    const sampleCalc = document.getElementById('sample-calc-text');
+    const tensorResult = document.getElementById('tensor-result-box');
+
+    // 초기 상태 리셋
+    drawBase();
+
+    if (dim === 0) {
+      // 1. dim=0 (배치 압축)
+      visTitle.textContent = 'Tensor [2, 3, 4] ➡️ [3, 4] (배치 축 압축)';
+      infoOutputShape.textContent = '[3, 4]';
+      infoOutputDim.textContent = '2차원';
+      
+      meaningDesc.innerHTML = `
+        배치 축(dim=0) 방향으로 단어 점수들을 평균하여, 전체 문장들의 평균적인 오차 흐름을 1장으로 융합하는 공정.<br>
+        • <strong>실제 활용 :</strong> 배치 내 각 문장들에서 계산된 손실(Loss)이나 피처값들을 배치 축 방향으로 평균 내어 대표 텐서를 얻을 때 사용.
+      `;
+      meaningList.innerHTML = `
+        • <strong>직관적 이해 :</strong> 따로 있을 때는 각 문장에만 적합한 개별 통계지만, 배치 축(dim=0)을 따라 합쳐놓으면 모든 문장을 아우르는 공통의 보편적 통계(대표성)가 됨. 즉, 2개 문장[2, 3, 4]의 단어별 점수를 평균하여 <strong>두 문장 모두에 적합한 평균 점수판 1장 [3, 4]으로 압축하는 개념.</strong><br>
+        • <strong>핵심 용도 :</strong> 보편성 확보를 위한 데이터 융합 및 통계 분석
+      `;
+      
+      mathCode.textContent = `result = t.mean(dim=0)`;
+      sampleCalc.innerHTML = `result[0, 0] = (배치0의 4.0 + 배치1의 3.0) / 2 = <strong>3.5</strong>`;
+      tensorResult.textContent = `tensor([[ 3.5,  1.5,  4.0,  3.0],
+        [ 5.5,  7.5,  7.5,  7.5],
+        [11.0, 10.5, 11.0, 11.5]])`;
+
+      // 비주얼 연산 (i=0과 i=1이 서로 결합되는 수렴)
+      outGroup.setAttribute('transform', 'translate(170, 160)');
+      outVal.textContent = '[3, 4] 행렬';
+      outLabel.textContent = '배치 융합 평균본';
+      outBox.setAttribute('fill', 'var(--accent)');
+
+      // i 축 연결선(edge) 액티브
+      nodes.forEach(n => {
+        if(n.i === 0) {
+          const edge = document.getElementById(`edge-i-0-${n.j}-${n.k}`);
+          if(edge) edge.classList.add('active');
+          
+          // 노드를 아래로 당김 (배치 0과 배치 1의 중간지점으로 수렴)
+          const targetNode = nodes.find(next => next.i === 1 && next.j === n.j && next.k === n.k);
+          const midX = (n.originX + targetNode.originX) / 2;
+          const midY = (n.originY + targetNode.originY) / 2 + 10;
+          
+          const svgNode = document.getElementById(`node-0-${n.j}-${n.k}`);
+          const svgNodeTarget = document.getElementById(`node-1-${n.j}-${n.k}`);
+          
+          svgNode.setAttribute('transform', `translate(${midX}, ${midY})`);
+          svgNode.querySelector('circle').setAttribute('fill', '#f97316');
+          
+          // 중요! 실제 파이토치 연산 결과값인 평균값(1.5, 2.5...)으로 텍스트 업데이트!
+          const meanVal = (n.val + targetNode.val) / 2;
+          svgNode.querySelector('text').textContent = meanVal.toFixed(1);
+
+          svgNodeTarget.setAttribute('transform', `translate(${midX}, ${midY})`);
+          svgNodeTarget.querySelector('circle').setAttribute('fill', '#f97316');
+          svgNodeTarget.style.opacity = '0'; // 수렴되는 노드는 페이드 아웃 소멸
+        }
+      });
+
+    } else if (dim === 1) {
+      // 2. dim=1 (시퀀스 압축)
+      visTitle.textContent = 'Tensor [2, 3, 4] ➡️ [2, 4] (시퀀스 축 압축)';
+      infoOutputShape.textContent = '[2, 4]';
+      infoOutputDim.textContent = '2차원';
+      
+      meaningDesc.innerHTML = `
+        시퀀스 축(dim=1) 방향으로 문장 내 모든 단어 정보를 가로로 압축하여, 단어 순서는 없어지되 문장의 핵심 맥락 정보만 남기는 공정.<br>
+        • <strong>실제 활용 :</strong> 문장 전체의 감정 분류(긍정/부정)나 임베딩 유사도 계산 시 단어 순서와 무관하게 문장 요약 벡터를 뽑아낼 때 사용.
+      `;
+      meaningList.innerHTML = `
+        • <strong>직관적 이해 :</strong> 문장을 구성하는 단어 집합 전체의 평균을 내어 문장의 종합적인 맥락을 대표하게 만드는 개념. 각 문장별로 3개 단어(Seq=3)의 점수들을 가로 방향으로 싹 평균 내면 단어 순서가 사라지므로 번역 같은 정교한 작업은 불가능해지지만, **문장 전체의 의미 성분이 담긴 요약 성적표 2장 [2, 4]**으로 압축되어 **문장의 감정 분류(긍정/부정) 등을 쉽게 처리하는 개념.**<br>
+        • <strong>핵심 용도 :</strong> 문장 주제 파악 및 감정 분석
+      `;
+      
+      mathCode.textContent = `result = t.mean(dim=1)`;
+      sampleCalc.innerHTML = `result[0, 0] = (배치0의 첫번째 피처 4.0 + 5.0 + 9.0) / 3 = <strong>6.0</strong>`;
+      tensorResult.textContent = `tensor([[6.0, 6.3, 7.0, 6.7],
+        [7.3, 6.7, 8.0, 8.0]])`;
+
+      // 비주얼 연산 (j=0, j=1, j=2 가 수평 수렴)
+      outGroup.setAttribute('transform', 'translate(170, 160)');
+      outVal.textContent = '[2, 4] 행렬';
+      outLabel.textContent = '시퀀스 요약 평균본';
+      outBox.setAttribute('fill', 'var(--accent)');
+
+      // j 축 연결선 액티브
+      nodes.forEach(n => {
+        if(n.j === 0) {
+          const edge1 = document.getElementById(`edge-j-${n.i}-0-${n.k}`);
+          const edge2 = document.getElementById(`edge-j-${n.i}-1-${n.k}`);
+          if(edge1) edge1.classList.add('active');
+          if(edge2) edge2.classList.add('active');
+          
+          // 노드를 j=1 지점으로 수렴
+          const targetNode = nodes.find(next => next.i === n.i && next.j === 1 && next.k === n.k);
+          const midX = targetNode.originX;
+          const midY = targetNode.originY + 5;
+          
+          const svgNode0 = document.getElementById(`node-${n.i}-0-${n.k}`);
+          const svgNode1 = document.getElementById(`node-${n.i}-1-${n.k}`);
+          const svgNode2 = document.getElementById(`node-${n.i}-2-${n.k}`);
+          
+          svgNode0.setAttribute('transform', `translate(${midX}, ${midY})`);
+          svgNode0.querySelector('circle').setAttribute('fill', '#10b981');
+          svgNode0.style.opacity = '0'; // 사라짐
+          
+          // 중요! 실제 파이토치 연산 결과값인 평균값(5.0, 6.0...)으로 텍스트 업데이트!
+          const val0 = n.val;
+          const val1 = targetNode.val;
+          const val2 = nodes.find(next2 => next2.i === n.i && next2.j === 2 && next2.k === n.k).val;
+          const meanVal = (val0 + val1 + val2) / 3;
+          
+          svgNode1.setAttribute('transform', `translate(${midX}, ${midY})`);
+          svgNode1.querySelector('circle').setAttribute('fill', '#10b981');
+          svgNode1.querySelector('text').textContent = meanVal.toFixed(1);
+          
+          svgNode2.setAttribute('transform', `translate(${midX}, ${midY})`);
+          svgNode2.querySelector('circle').setAttribute('fill', '#10b981');
+          svgNode2.style.opacity = '0'; // 사라짐
+        }
+      });
+
+    } else if (dim === 2) {
+      // 3. dim=2 (피처/단어장 압축)
+      visTitle.textContent = 'Tensor [2, 3, 4] ➡️ [2, 3] (단어장 축 Argmax 선출)';
+      infoOutputShape.textContent = '[2, 3]';
+      infoOutputDim.textContent = '2차원 (정수)';
+      
+      meaningDesc.innerHTML = `
+        단어장/피처 축(dim=2) 방향으로 수렴하여, 각 단어가 가진 4차원 점수판 중 <strong>가장 높은 점수를 낸 정답 단어의 번호(인덱스)</strong>를 선출하는 공정.<br>
+        • <strong>실제 활용 :</strong> 디코더 마지막 출력단에서 4개 보기 중 가장 확률이 높은 최종 번역 단어를 선출하기 위해 <strong>torch.argmax()</strong>를 사용하여 인덱스를 뽑아낼 때 사용.
+      `;
+      meaningList.innerHTML = `
+        • <strong>직관적 이해 :</strong> 2개 문장(Batch=2)의 3개 단어(Seq=3)마다 부여된 4개 보기 점수 중 <strong>가장 높은 값을 득점한 보기 번호(0~3)</strong>를 뽑아내어, 최종 텍스트 번역 결과 정답지 1장 [2, 3]으로 압축하는 개념.<br>
+        • <strong>핵심 용도 :</strong> 모델의 최종 단어 예측 및 출력
+      `;
+      
+      mathCode.textContent = `result = t.argmax(dim=2)`;
+      sampleCalc.innerHTML = `result[0, 0] = 배치0의 첫번째 단어 [4.0, 1.0, 3.0, 2.0] 중 최대값의 인덱스 = <strong>0</strong>`;
+      tensorResult.textContent = `tensor([[0, 1, 2],
+        [2, 2, 0]], dtype=torch.int64)`;
+
+      // 비주얼 연산 (k=0~3 이 대각선 수렴)
+      outGroup.setAttribute('transform', 'translate(170, 160)');
+      outVal.textContent = '[2, 3] 인덱스';
+      outLabel.textContent = '단어 정답지';
+      outBox.setAttribute('fill', 'var(--accent)');
+
+      // k 축 연결선 액티브
+      nodes.forEach(n => {
+        if(n.k === 0) {
+          for(let kVal=0; kVal<3; kVal++) {
+            const edge = document.getElementById(`edge-k-${n.i}-${n.j}-${kVal}`);
+            if(edge) edge.classList.add('active');
+          }
+          
+          // 노드를 k=1.5의 가상 지점으로 수렴
+          const midX = n.originX + (1.5 * dx_k);
+          const midY = n.originY + (1.5 * dy_k);
+          
+          // 4개 보기 중 가장 큰 점수를 가진 인덱스(Argmax) 선출
+          let maxVal = -Infinity;
+          let argmaxVal = 0;
+          for(let kVal=0; kVal<4; kVal++) {
+            const nodeVal = nodes.find(next => next.i === n.i && next.j === n.j && next.k === kVal).val;
+            if(nodeVal > maxVal) {
+              maxVal = nodeVal;
+              argmaxVal = kVal;
+            }
+          }
+          
+          for(let kVal=0; kVal<4; kVal++) {
+            const svgNode = document.getElementById(`node-${n.i}-${n.j}-${kVal}`);
+            if(svgNode) {
+              svgNode.setAttribute('transform', `translate(${midX}, ${midY})`);
+              svgNode.querySelector('circle').setAttribute('fill', '#3b82f6');
+              if(kVal === 1) {
+                // 중요! 실제 파이토치 Argmax 연산 결과값인 인덱스로 텍스트 업데이트!
+                svgNode.querySelector('text').textContent = argmaxVal;
+              } else {
+                svgNode.style.opacity = '0'; // 대표점 1개 제외하고 수동 페이드 아웃
+              }
+            }
+          }
+        }
+      });
+
+    } else {
+      // 4. 생략 시 (전체 압축)
+      visTitle.textContent = 'Tensor [2, 3, 4] ➡️ [] (전체 0차원 스칼라 압축)';
+      infoOutputShape.textContent = '[] (스칼라)';
+      infoOutputDim.textContent = '0차원';
+      
+      meaningDesc.innerHTML = `
+        상자 안의 모든 축(문장, 단어, 단어장) 구분을 완전히 무시하고 전체 24개 값을 하나로 평균 내어 단 하나의 숫자로 요약하는 공정.<br>
+        • <strong>실제 활용 :</strong> 학습 시 전체 배치 문장 내 모든 단어의 오차를 싹 평균 내어 단 하나의 0차원 스칼라 손실(Loss)을 산출하고 역전파(Backpropagation) 학습을 진행할 때 사용.
+      `;
+      meaningList.innerHTML = `
+        • <strong>직관적 이해 :</strong> 딥러닝 학습 시 **"이 배치 안의 모든 문장(2개)과 모든 단어(3개)에서 발생한 모든 개별 오차들을 싹 모아서 단 하나의 최종 오차 점수(Loss)로 요약하는 과정"**임. 이 하나의 대표 실수값(예: 7.0)이 구해져야 비로소 모델 가중치를 학습시키기 위한 미분(역전파)을 개시할 수 있음.<br>
+        • <strong>핵심 용도 :</strong> 학습을 위한 최종 오차 전파
+      `;
+      
+      mathCode.textContent = `result = t.mean()`;
+      sampleCalc.innerHTML = `result = (배치0의 12개 값 합 78 + 배치1의 12개 값 합 90) / 24 = <strong>7.0</strong>`;
+      tensorResult.textContent = `tensor(7.0)`;
+
+      // 비주얼 연산 (모든 노드가 중앙 하단 스칼라 상자로 수렴)
+      outGroup.setAttribute('transform', 'translate(170, 160)');
+      outVal.textContent = '7.0';
+      outLabel.textContent = '0차원 대표 스칼라';
+      outBox.setAttribute('fill', 'rgba(249, 115, 22, 0.15)');
+
+      // 모든 연결선 액티브
+      document.querySelectorAll('.edge').forEach(edge => {
+        edge.classList.add('active');
+      });
+
+      // 모든 노드를 하단 수렴 중심으로 모으고 완전히 페이드 아웃 소멸 (Y=95로 중심 상향 조율)
+      nodes.forEach(n => {
+        const actualNode = document.getElementById(`node-${n.i}-${n.j}-${n.k}`);
+        if(actualNode) {
+          actualNode.setAttribute('transform', 'translate(225, 95)');
+          actualNode.querySelector('circle').setAttribute('fill', '#f97316');
+          actualNode.style.opacity = '0'; // 0차원 스칼라 붕괴 상태로 전원 소멸
+        }
+      });
+    }
+  }
+
+  // 초기 로드 시 생략(전체 압축) 상태 실행
+  drawBase();
+  switchDim(-1);
+
+// iframe 높이 동적 조절을 위한 크기 감지 및 postMessage 전송
+const resizeObserver = new ResizeObserver(entries => {
+  const height = document.documentElement.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+});
+resizeObserver.observe(document.body);
+</script>
+</body>
+</html>
