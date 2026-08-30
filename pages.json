@@ -6,14 +6,28 @@
         "label": "skills",
         "children": [
           {
-            "label": "create-page",
+            "label": "page-studio",
             "children": [
               {
                 "label": "resources",
                 "children": [
                   {
                     "label": "강의 자료 최종 마스터 템플릿",
-                    "path": ".agents/skills/create-page/resources/template.html"
+                    "path": ".agents/skills/page-studio/resources/template.html"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "style-standards",
+            "children": [
+              {
+                "label": "resources",
+                "children": [
+                  {
+                    "label": "svg_templates",
+                    "path": ".agents/skills/style-standards/resources/svg_templates.html"
                   }
                 ]
               }
@@ -180,15 +194,11 @@
             "path": "ai/rnn/tensor_dim.html"
           },
           {
-            "label": "텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해",
-            "path": "ai/rnn/tensor_dim_백업.html"
-          },
-          {
-            "label": "Transformer & Self-Attention 시각화",
+            "label": "Transformer & Self-Attention 구조와 원리",
             "path": "ai/rnn/transformer.html"
           },
           {
-            "label": "BertWordPiece Tokenizer",
+            "label": "BertWordPieceTokenizer — 서브워드 토큰화 & 임베딩",
             "path": "ai/rnn/wordpiecetokenizer.html"
           }
         ]
@@ -197,7 +207,7 @@
         "label": "spring",
         "children": [
           {
-            "label": "Spring AI — MCP 완전 가이드",
+            "label": "Spring AI — Model Context Protocol (MCP) 완전 가이드",
             "path": "ai/spring/mcp.html"
           },
           {
@@ -259,7 +269,7 @@
     "label": "git",
     "children": [
       {
-        "label": "CI/CD 구성 가이드 — GitHub & GitLab",
+        "label": "CI/CD 구성 가이드 — GitHub Actions & GitLab CI/CD",
         "path": "git/cicd.html"
       }
     ]
