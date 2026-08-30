@@ -1,350 +1,343 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spring AI 기반 Custom Agent 설계: Planner-Worker 패턴</title>
-  <link rel="stylesheet" href="../../css/content.css">
-  <script src="../../js/content.js"></script>
-  <style>
-    /* Spring AI 테마 전용 색상 토큰 정의 */
-    :root {
-      --spring-green: #6db33f;
-      --spring-dark: #457b24;
-      --spring-light: #f1f8ed;
-      --spring-border: #c2e5a7;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI 기반 Custom Agent 설계: Planner-Worker 패턴</title>
+    
+    <!-- 1. 외부 라이브러리 & 마스터 표준 스타일시트 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link rel="stylesheet" href="../../css/standards.css">
 
-      --code-bg: #1e2433;
-      --code-text: #e2e8f0;
-      --code-keyword: #7dd3fc;
-      --code-annotation: #86efac;
-      --code-string: #fca5a5;
-      --code-comment: #64748b;
-      --code-type: #c4b5fd;
-      --code-nm: #fbbf24;
-    }
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 36px 24px 60px;
-      font-size: 14.5px;
-      line-height: 1.75;
-    }
-    .container { max-width: 1024px; margin: 0 auto; }
-
-    /* ── 코드 블록 ── */
-    .code-block {
-      background: var(--code-bg); border-radius: var(--radius-md);
-      overflow: hidden; margin: 16px 0;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-    }
-    .code-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px; background: rgba(255,255,255,.04);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .code-lang {
-      font-family: 'JetBrains Mono', monospace; font-size: 11px;
-      color: rgba(255,255,255,.35); letter-spacing: .06em;
-    }
-    .code-title { font-size: 12px; color: rgba(255,255,255,.5); }
-    .code-body {
-      padding: 16px 20px; font-family: 'JetBrains Mono', monospace;
-      font-size: 12.5px; line-height: 1.8; color: var(--code-text);
-      overflow-x: auto; white-space: pre; margin: 0;
-    }
-    .kw { color: var(--code-keyword); }
-    .an { color: var(--code-annotation); }
-    .st { color: var(--code-string); }
-    .cm { color: var(--code-comment); font-style: italic; }
-    .ty { color: var(--code-type); }
-    .nm { color: var(--code-nm); }
-
-    /* ── 공통 컴포넌트 ── */
-    .section-title {
-      font-size: 17px; font-weight: 700; color: var(--text);
-      margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
-      border-left: 4px solid var(--spring-green); padding-left: 10px;
-    }
-    .section-sub { font-size: 13px; color: var(--sub); margin-bottom: 28px; line-height: 1.7; }
-
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 24px;
-      box-shadow: var(--shadow);
-      margin-bottom: 20px;
-    }
-    .card-title {
-      font-size: 14.5px; font-weight: 700; margin-bottom: 12px;
-      color: var(--text); display: flex; align-items: center; gap: 8px;
-    }
-
-    /* ── 강조 박스 (Callout) ── */
-    .callout {
-      display: flex; gap: 12px; padding: 14px 16px;
-      border-radius: var(--radius-md); border-left: 4px solid;
-      margin: 16px 0; font-size: 13.5px; line-height: 1.7;
-      box-shadow: var(--shadow);
-    }
-    .callout.info { background: var(--spring-light); border-color: var(--spring-green); color: var(--spring-dark); }
-    .callout.good { background: #f0fdf4; border-color: #22c55e; color: #166534; }
-    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  </style>
+    <!-- 2. 문서 전용 보조 스타일 -->
+    <style>
+        .badge-spring {
+            background-color: #dcfce7;
+            border: 1.5px solid #86efac;
+            color: #15803d;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- 포스트 헤더 -->
-  <header>
-    <h1>Spring AI 기반 Custom Agent 설계</h1>
-    <p class="subtitle">Planner-Worker 패턴을 활용한 엔터프라이즈 에이전트 오케스트레이션</p>
-  </header>
+    <!-- [마스터 표준 플로팅 목차 (TOC Drawer)] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5><i class="fa-solid fa-book-bookmark text-primary me-2"></i>문서 목차</h5>
+            <ul>
+                <li><a href="#sec-orchestration"><i class="fa-solid fa-sitemap text-primary me-2"></i>1. Agent 오케스트레이션</a></li>
+                <li><a href="#sec-code"><i class="fa-solid fa-laptop-code text-primary me-2"></i>2. 실무 Java 구현 코드</a></li>
+                <li><a href="#sec-benefits"><i class="fa-solid fa-shield-halved text-primary me-2"></i>3. Spring AI 핵심 강점</a></li>
+            </ul>
+        </div>
+    </nav>
 
-  <!-- 도입부 Callout -->
-  <div class="callout info">
-    <span class="callout-icon">💡</span>
-    <div class="callout-content">
-      Spring AI는 엔터프라이즈 환경에서 강력한 자바 기반 AI 연동을 제공한다. 이번 포스트에서는 Spring AI의 ChatClient 인터페이스를 오케스트레이션하여, 계획 수립(Planner)과 함수 호출 실행(Worker)을 명확히 이원화하는 Planner-Worker 패턴 Custom Agent를 Java로 구축한다.
-    </div>
-  </div>
+    <!-- Main Container -->
+    <div class="container-custom">
+        <article>
+            <header id="header">
+                <h1>Spring AI 기반 Custom Agent 설계: Planner-Worker 패턴</h1>
+                <p class="lead">Spring AI의 <code>ChatClient</code> 인터페이스와 Java <code>Record</code> 불변 상태 모델을 결합하여, 계획 수립(Planner)과 도구 실행(Worker)을 정교하게 이원화하는 엔터프라이즈 에이전트 오케스트레이션을 구축한다.</p>
+            </header>
 
-  <!-- 01. Spring AI와 Custom Agent의 오케스트레이션 -->
-  <section class="card">
-    <div class="section-title">01. Spring AI와 Custom Agent의 오케스트레이션</div>
-    <p style="margin-top: 12px; margin-bottom: 16px; color: var(--sub);">
-      Python 진영의 LangGraph처럼 상태를 관리하고 노드를 분기하는 완벽한 그래프 프레임워크가 자바에 존재하지 않더라도, <strong>Spring Boot의 서비스 레이어(Service Layer)</strong>와 <strong>Java Record 기반의 상태 컨테이너</strong>를 조율하면 매우 안정적이고 강력한 Custom Agent를 만들 수 있다.
-    </p>
-    <p style="margin-bottom: 20px; color: var(--sub);">
-      특히, Spring AI의 <code>ChatClient</code>는 흐름(System Prompt)과 동작 도구(Java Functions)를 Fluent API 형태로 명확히 바인딩할 수 있어, 다음과 같이 '계획자(Planner)'와 '실행자(Worker)'의 코드를 정교하게 분리해 내기에 최적의 요건을 갖추고 있다.
-    </p>
+            <!-- 1. Spring AI와 Custom Agent의 오케스트레이션 -->
+            <section id="sec-orchestration">
+                <h2 id="toc-1"><i class="fa-solid fa-sitemap text-primary me-2"></i>1. Spring AI와 Custom Agent의 오케스트레이션</h2>
+                <p>
+                    Spring Boot 환경에서는 <strong>서비스 계층(Service Layer)</strong>과 <strong>Java Record 기반 상태 컨테이너</strong>를 조합하여 매우 안정적인 Custom Agent를 설계할 수 있다.
+                </p>
+                <p>
+                    특히 Spring AI의 <code>ChatClient</code>는 시스템 프롬프트(System Prompt)와 실행 도구(Java Functions)를 Fluent API 형태로 명확하게 바인딩할 수 있으므로, <strong>계획자(Planner)</strong>와 <strong>실행자(Worker)</strong>의 역할을 명확히 격리하기에 최적화된 아키텍처를 제공한다.
+                </p>
 
-    <!-- 오케스트레이션 흐름 시각화 (SVG) -->
-    <div style="background: var(--bg-soft); border-radius: var(--radius-md); padding: 18px; border: 1px solid var(--border); margin-bottom: 16px;">
-      <span style="font-size: 14px; font-weight: 700; color: var(--spring-dark); display: block; margin-bottom: 12px;">🛡️ Spring AI Custom Agent 오케스트레이션 아키텍처</span>
-      
-      <div style="width: 100%; max-width: 800px; display: flex; justify-content: center; background: var(--surface); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin: 0 auto;">
-        <svg viewBox="0 0 710 220" width="100%" height="auto" style="aspect-ratio: 710/220; height: auto; display: block;">
-          <defs>
-            <marker id="arrow-spring" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"/>
-            </marker>
-          </defs>
-          
-          <!-- Orchestrator 영역 감싸기 -->
-          <rect x="65" y="25" width="550" height="175" rx="10" fill="none" stroke="var(--spring-green)" stroke-dasharray="4,4" stroke-width="1.8"/>
-          <text x="75" y="18" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="900" fill="var(--spring-dark)">Spring AI Custom Orchestrator (상태 제어기)</text>
-          
-          <!-- User (외부) -->
-          <rect x="10" y="85" width="45" height="30" rx="6" fill="var(--s2)" stroke="var(--border)" stroke-width="1.5"/>
-          <text x="32.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="14.5" font-weight="900" fill="var(--text)" text-anchor="middle" dominant-baseline="central">User</text>
-          
-          <!-- User -> Planner -->
-          <line x1="55" y1="100" x2="80" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          
-          <!-- PlannerAgent (Spring Service) -->
-          <rect x="80" y="85" width="110" height="30" rx="6" fill="var(--spring-light)" stroke="var(--spring-green)" stroke-width="1.8"/>
-          <text x="135" y="100" font-family="'Noto Sans KR', sans-serif" font-size="14.5" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">PlannerAgent</text>
-          <text x="135" y="60" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">Plan 작성</text>
-          
-          <!-- Planner -> Worker -->
-          <line x1="190" y1="100" x2="225" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          
-          <!-- WorkerAgent -->
-          <rect x="230" y="85" width="110" height="30" rx="6" fill="var(--spring-light)" stroke="var(--spring-green)" stroke-width="1.8"/>
-          <text x="285" y="100" font-family="'Noto Sans KR', sans-serif" font-size="14.5" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">WorkerAgent</text>
-          <text x="285" y="60" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">최종 실행</text>
-          
-          <!-- Worker -> END -->
-          <line x1="340" y1="100" x2="640" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="592.5" y="90" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="middle" fill="var(--muted)" dominant-baseline="central">필터완료</text>
-          
-          <!-- Response (외부) -->
-          <rect x="640" y="85" width="45" height="30" rx="6" fill="var(--spring-light)" stroke="var(--spring-green)" stroke-width="1.5"/>
-          <text x="662.5" y="100" font-family="'Noto Sans KR', sans-serif" font-size="14.5" font-weight="900" fill="var(--spring-dark)" text-anchor="middle" dominant-baseline="central">응답</text>
-          
-          <!-- Java AgentState Record (상태 보관소) -->
-          <rect x="70" y="150" width="280" height="30" rx="6" fill="var(--bg)" stroke="var(--spring-green)" stroke-dasharray="3,3" stroke-width="1.5"/>
-          <text x="210" y="165" font-family="'Noto Sans KR', sans-serif" font-size="14.5" font-weight="700" text-anchor="middle" fill="var(--spring-dark)" dominant-baseline="central">AgentState (Java Record)</text>
-          
-          <!-- Planner 데이터 흐름선 (Read request / Write plan) -->
-          <line x1="120" y1="150" x2="120" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="113" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">
-            <tspan x="113" dy="-6">요청</tspan>
-            <tspan x="113" dy="12">읽기</tspan>
-          </text>
-          
-          <line x1="150" y1="117" x2="150" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="157" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="start" fill="var(--muted)" dominant-baseline="central">
-            <tspan x="157" dy="-6">계획</tspan>
-            <tspan x="157" dy="12">저장</tspan>
-          </text>
-          
-          <!-- Worker 데이터 흐름선 (Read request & plan / Write result) -->
-          <line x1="270" y1="150" x2="270" y2="122" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="263" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="end" fill="var(--muted)" dominant-baseline="central">
-            <tspan x="263" dy="-6">계획 및 요청</tspan>
-            <tspan x="263" dy="12">읽기</tspan>
-          </text>
-          
-          <line x1="300" y1="117" x2="300" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow-spring)"/>
-          <text x="307" y="132.5" font-family="'Noto Sans KR', sans-serif" font-size="13.5" font-weight="700" text-anchor="start" fill="var(--muted)" dominant-baseline="central">
-            <tspan x="307" dy="-6">결과</tspan>
-            <tspan x="307" dy="12">저장</tspan>
-          </text>
-        </svg>
-      </div>
-    </div>
-  </section>
+                <!-- 오케스트레이션 아키텍처 다이어그램 (1240px 1:1 무축소 SVG) -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-diagram-project text-primary me-2"></i>Spring AI Custom Agent 오케스트레이션 아키텍처 다이어그램</h5>
+                    <div class="svg-container">
+                        <svg width="100%" height="280" viewBox="0 0 1240 280" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-spring-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+                                </marker>
+                                <marker id="arr-spring-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/>
+                                </marker>
+                            </defs>
 
-  <!-- 02. 실무 Java 구현 코드 -->
-  <section class="card">
-    <div class="section-title">02. 실무 Java 구현 코드</div>
-    <p style="margin-top: 12px; margin-bottom: 20px; color: var(--sub);">
-      스프링 부트 환경에서 <code>Record</code>를 활용해 스레드 세이프(Thread-safe)한 불변 상태 모델을 구성하고, <code>ChatClient</code> 인터페이스로 에이전트 노드를 구현하는 방식이다.
-    </p>
+                            <!-- 배경 컨테이너 -->
+                            <rect x="10" y="10" width="1220" height="260" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
 
-    <!-- Java Code Block 1 -->
-    <div class="code-block">
-      <div class="code-header">
-        <span class="code-lang">JAVA</span>
-        <span class="code-title">AgentState.java</span>
-      </div>
-      <pre class="code-body"><span class="kw">public</span> <span class="kw">record</span> <span class="ty">AgentState</span>(
-    <span class="ty">String</span> userRequest,   <span class="cm">// 사용자 최초 요청 질문</span>
-    <span class="ty">String</span> plan,          <span class="cm">// PlannerAgent가 정의한 실행 마일스톤</span>
-    <span class="ty">String</span> result         <span class="cm">// WorkerAgent가 도출한 최종 상세 결과물</span>
-) {}</pre>
-    </div>
+                            <!-- Orchestrator 영역 감싸기 -->
+                            <rect x="170" y="25" width="870" height="230" rx="10" fill="#ffffff" stroke="#6db33f" stroke-dasharray="6,4" stroke-width="1.8"/>
+                            <rect x="185" y="15" width="310" height="24" rx="4" fill="#6db33f"/>
+                            <text x="340" y="27" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Spring AI Custom Orchestrator (상태 제어기)</text>
 
-    <!-- Java Code Block 2 -->
-    <div class="code-block">
-      <div class="code-header">
-        <span class="code-lang">JAVA</span>
-        <span class="code-title">PlannerAgent.java</span>
-      </div>
-      <pre class="code-body"><span class="an">@Service</span>
-<span class="kw">public</span> <span class="kw">class</span> <span class="ty">PlannerAgent</span> {
-    <span class="kw">private</span> <span class="kw">final</span> <span class="ty">ChatClient</span> chatClient;
+                            <!-- User (외부) -->
+                            <rect x="25" y="85" width="105" height="50" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+                            <text x="77.5" y="110" font-size="16" font-weight="bold" fill="#1e293b" text-anchor="middle" dominant-baseline="central">User</text>
 
-    <span class="kw">public</span> <span class="ty">PlannerAgent</span>(<span class="ty">ChatClient.Builder</span> builder) {
-        <span class="kw">this</span>.chatClient = builder
-            .defaultSystem(<span class="st">"당신은 계획 수립 전담 Planner입니다. 사용자의 질문을 분석해 수행해야 할 작업을 Step 1, Step 2 형식의 텍스트 계획으로만 작성해 제출하세요."</span>)
+                            <!-- User -> Planner -->
+                            <line x1="130" y1="110" x2="220" y2="110" stroke="#64748b" stroke-width="2" marker-end="url(#arr-spring-arrow)"/>
+
+                            <!-- PlannerAgent (Spring Service) -->
+                            <text x="330" y="68" font-size="14" font-weight="bold" text-anchor="middle" fill="#2d5a1b" dominant-baseline="central">Plan 계획 수립</text>
+                            <rect x="220" y="85" width="220" height="50" rx="8" fill="#f0f7e9" stroke="#6db33f" stroke-width="1.8"/>
+                            <text x="330" y="110" font-size="16" font-weight="bold" fill="#166534" text-anchor="middle" dominant-baseline="central">PlannerAgent</text>
+
+                            <!-- Planner -> Worker -->
+                            <line x1="440" y1="110" x2="540" y2="110" stroke="#64748b" stroke-width="2" marker-end="url(#arr-spring-arrow)"/>
+
+                            <!-- WorkerAgent -->
+                            <text x="650" y="68" font-size="14" font-weight="bold" text-anchor="middle" fill="#2d5a1b" dominant-baseline="central">도구 최종 실행</text>
+                            <rect x="540" y="85" width="220" height="50" rx="8" fill="#f0f7e9" stroke="#6db33f" stroke-width="1.8"/>
+                            <text x="650" y="110" font-size="16" font-weight="bold" fill="#166534" text-anchor="middle" dominant-baseline="central">WorkerAgent</text>
+
+                            <!-- Worker -> Response -->
+                            <line x1="760" y1="110" x2="1080" y2="110" stroke="#64748b" stroke-width="2" marker-end="url(#arr-spring-arrow)"/>
+                            <text x="920" y="96" font-size="14" font-weight="bold" text-anchor="middle" fill="#64748b" dominant-baseline="central">결과 도출 완료</text>
+
+                            <!-- Response (외부) -->
+                            <rect x="1080" y="85" width="130" height="50" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+                            <text x="1145" y="110" font-size="16" font-weight="bold" fill="#15803d" text-anchor="middle" dominant-baseline="central">최종 응답</text>
+
+                            <!-- Java AgentState Record (상태 보관소) -->
+                            <rect x="220" y="180" width="540" height="50" rx="8" fill="#f8fafc" stroke="#6db33f" stroke-dasharray="5,3" stroke-width="1.5"/>
+                            <text x="490" y="205" font-size="16" font-weight="bold" fill="#2d5a1b" text-anchor="middle" dominant-baseline="central">AgentState (Java Record 불변 상태 컨테이너)</text>
+
+                            <!-- Planner 데이터 흐름선 -->
+                            <line x1="275" y1="180" x2="275" y2="140" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr-spring-arrow)"/>
+                            <text x="265" y="160" font-size="14" font-weight="bold" text-anchor="end" fill="#64748b" dominant-baseline="central">요청 읽기</text>
+
+                            <line x1="385" y1="135" x2="385" y2="175" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr-spring-arrow)"/>
+                            <text x="395" y="160" font-size="14" font-weight="bold" text-anchor="start" fill="#64748b" dominant-baseline="central">계획 저장</text>
+
+                            <!-- Worker 데이터 흐름선 -->
+                            <line x1="595" y1="180" x2="595" y2="140" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr-spring-arrow)"/>
+                            <text x="585" y="160" font-size="14" font-weight="bold" text-anchor="end" fill="#64748b" dominant-baseline="central">계획 조회</text>
+
+                            <line x1="705" y1="135" x2="705" y2="175" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr-spring-arrow)"/>
+                            <text x="715" y="160" font-size="14" font-weight="bold" text-anchor="start" fill="#64748b" dominant-baseline="central">결과 갱신</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 2계층 역할 요약 카드 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100" style="border-top: 3px solid #6db33f;">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">역할 1</span>
+                                <h6 class="fw-bold mb-0">PlannerAgent (계획 수립 노드)</h6>
+                            </div>
+                            <p class="text-secondary small mb-0">
+                                사용자의 원시 질문(Raw Query)을 면밀히 분석하여 수행해야 할 구체적 마일스톤(Step 1, Step 2 ...) 텍스트 계획만을 도출한다. 실행 도구(Tool)를 직접 호출하지 않고 순수 추론에만 집중한다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100" style="border-top: 3px solid #0ea5e9;">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">역할 2</span>
+                                <h6 class="fw-bold mb-0">WorkerAgent (도구 실행 노드)</h6>
+                            </div>
+                            <p class="text-secondary small mb-0">
+                                Planner가 생성한 세부 실행 계획을 전달받아, 스프링 빈으로 등록된 비즈니스 함수(Java Functions / Tools)를 적재적소에 호출하여 실제 데이터 조회 및 업무 로직을 수행한다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 실무 Java 구현 코드 -->
+            <section id="sec-code">
+                <h2 id="toc-2"><i class="fa-solid fa-laptop-code text-primary me-2"></i>2. 실무 Java 구현 코드</h2>
+                <p>스프링 부트 환경에서 <code>Record</code>를 활용해 스레드 세이프(Thread-safe)한 불변 상태 모델을 정의하고, <code>ChatClient</code> 인터페이스로 각각의 에이전트 노드를 구현하는 방식이다.</p>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <!-- Code 1: AgentState -->
+                    <div class="card-parent p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge-spring me-2">State Model</span>
+                                <h6 class="fw-bold mb-0">AgentState.java (불변 상태 레코드)</h6>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary bg-white" onclick="copyCode(this, 'code-agent-state')">
+                                <i class="fa-regular fa-copy me-1"></i>복사
+                            </button>
+                        </div>
+                        <p class="text-secondary small mb-2">Java 16+ Record를 활용하여 다중 스레드 환경에서도 안전한 불변 컨테이너를 구성한다.</p>
+                        <pre class="mb-0"><code id="code-agent-state" class="language-java">public record AgentState(
+    String userRequest,   // 사용자 최초 요청 질문
+    String plan,          // PlannerAgent가 정의한 실행 마일스톤
+    String result         // WorkerAgent가 도출한 최종 상세 결과물
+) {}</code></pre>
+                    </div>
+
+                    <!-- Code 2: PlannerAgent -->
+                    <div class="card-parent p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge-spring me-2">Planner Node</span>
+                                <h6 class="fw-bold mb-0">PlannerAgent.java (계획 수립 전담 서비스)</h6>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary bg-white" onclick="copyCode(this, 'code-planner-agent')">
+                                <i class="fa-regular fa-copy me-1"></i>복사
+                            </button>
+                        </div>
+                        <p class="text-secondary small mb-2">시스템 프롬프트를 통해 외부 도구 호출 없이 순수 계획(Plan) 텍스트만을 생성하도록 제한한다.</p>
+                        <pre class="mb-0"><code id="code-planner-agent" class="language-java">@Service
+public class PlannerAgent {
+
+    private final ChatClient chatClient;
+
+    public PlannerAgent(ChatClient.Builder builder) {
+        this.chatClient = builder
+            .defaultSystem("당신은 계획 수립 전담 Planner입니다. 사용자의 질문을 분석해 수행해야 할 작업을 Step 1, Step 2 형식의 텍스트 계획으로만 작성해 제출하세요.")
             .build();
     }
 
-    <span class="kw">public</span> <span class="ty">AgentState</span> <span class="ty">plan</span>(<span class="ty">AgentState</span> state) {
-        <span class="ty">String</span> plan = chatClient.prompt()
+    public AgentState plan(AgentState state) {
+        String plan = chatClient.prompt()
             .user(state.userRequest())
             .call()
             .content();
-        <span class="kw">return</span> <span class="kw">new</span> <span class="ty">AgentState</span>(state.userRequest(), plan, <span class="kw">null</span>);
+        return new AgentState(state.userRequest(), plan, null);
     }
-}</pre>
-    </div>
+}</code></pre>
+                    </div>
 
-    <!-- Java Code Block 3 -->
-    <div class="code-block">
-      <div class="code-header">
-        <span class="code-lang">JAVA</span>
-        <span class="code-title">WorkerAgent.java</span>
-      </div>
-      <pre class="code-body"><span class="an">@Service</span>
-<span class="kw">public</span> <span class="kw">class</span> <span class="ty">WorkerAgent</span> {
-    <span class="kw">private</span> <span class="kw">final</span> <span class="ty">ChatClient</span> chatClient;
+                    <!-- Code 3: WorkerAgent -->
+                    <div class="card-parent p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge-spring me-2">Worker Node</span>
+                                <h6 class="fw-bold mb-0">WorkerAgent.java (도구 실행 전담 서비스)</h6>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary bg-white" onclick="copyCode(this, 'code-worker-agent')">
+                                <i class="fa-regular fa-copy me-1"></i>복사
+                            </button>
+                        </div>
+                        <p class="text-secondary small mb-2">스프링 컨텍스트에 등록된 <code>@Bean Function</code>들을 바인딩하여 계획에 따른 도구 호출을 수행한다.</p>
+                        <pre class="mb-0"><code id="code-worker-agent" class="language-java">@Service
+public class WorkerAgent {
 
-    <span class="kw">public</span> <span class="ty">WorkerAgent</span>(<span class="ty">ChatClient.Builder</span> builder) {
-        <span class="kw">this</span>.chatClient = builder
-            .defaultSystem(<span class="st">"당신은 계획 이행 전담 Worker입니다. 제공받은 계획을 분석하여 Spring Bean으로 연동된 API 도구를 적극 활용해 구체적인 수행 결과를 도출하세요."</span>)
+    private final ChatClient chatClient;
+
+    public WorkerAgent(ChatClient.Builder builder) {
+        this.chatClient = builder
+            .defaultSystem("당신은 계획 이행 전담 Worker입니다. 제공받은 계획을 분석하여 Spring Bean으로 연동된 API 도구를 적극 활용해 구체적인 수행 결과를 도출하세요.")
             .build();
     }
 
-    <span class="kw">public</span> <span class="ty">AgentState</span> <span class="ty">execute</span>(<span class="ty">AgentState</span> state) {
-        <span class="cm">// Spring AI의 Fluent API를 기반으로 외부 등록 Bean Function 바인딩 및 계획 구동</span>
-        <span class="ty">String</span> result = chatClient.prompt()
-            .user(<span class="st">"계획: "</span> + state.plan() + <span class="st">"\n요청사항을 실행해 최종 답변을 작성하세요."</span>)
-            .functions(<span class="st">"couponRegistryFunction"</span>, <span class="st">"orderCheckFunction"</span>) <span class="cm">// Spring @Bean Function 바인딩</span>
+    public AgentState execute(AgentState state) {
+        // Spring AI의 Fluent API를 기반으로 스프링 빈 함수 바인딩 및 계획 구동
+        String result = chatClient.prompt()
+            .user("계획:\n" + state.plan() + "\n\n위 계획에 따라 요청사항을 실행하고 최종 답변을 작성하세요.")
+            .functions("couponRegistryFunction", "orderCheckFunction") // Spring @Bean Function 바인딩
             .call()
             .content();
-        <span class="kw">return</span> <span class="kw">new</span> <span class="ty">AgentState</span>(state.userRequest(), state.plan(), result);
+        return new AgentState(state.userRequest(), state.plan(), result);
     }
-}</pre>
-    </div>
+}</code></pre>
+                    </div>
 
-    <!-- Java Code Block 4 -->
-    <div class="code-block">
-      <div class="code-header">
-        <span class="code-lang">JAVA</span>
-        <span class="code-title">AgentOrchestrator.java</span>
-      </div>
-      <pre class="code-body"><span class="an">@Service</span>
-<span class="kw">public</span> <span class="kw">class</span> <span class="ty">AgentOrchestrator</span> {
-    <span class="kw">private</span> <span class="kw">final</span> <span class="ty">PlannerAgent</span> plannerAgent;
-    <span class="kw">private</span> <span class="kw">final</span> <span class="ty">WorkerAgent</span> workerAgent;
+                    <!-- Code 4: AgentOrchestrator -->
+                    <div class="card-parent p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge-spring me-2">Orchestrator</span>
+                                <h6 class="fw-bold mb-0">AgentOrchestrator.java (전체 파이프라인 조율기)</h6>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary bg-white" onclick="copyCode(this, 'code-orchestrator')">
+                                <i class="fa-regular fa-copy me-1"></i>복사
+                            </button>
+                        </div>
+                        <p class="text-secondary small mb-2">초기 상태 생성부터 Planner ➔ Worker 순차 파이프라인을 단일 트랜잭션/메서드로 제어한다.</p>
+                        <pre class="mb-0"><code id="code-orchestrator" class="language-java">@Service
+public class AgentOrchestrator {
 
-    <span class="kw">public</span> <span class="ty">AgentOrchestrator</span>(<span class="ty">PlannerAgent</span> plannerAgent, <span class="ty">WorkerAgent</span> workerAgent) {
-        <span class="kw">this</span>.plannerAgent = plannerAgent;
-        <span class="kw">this</span>.workerAgent = workerAgent;
+    private final PlannerAgent plannerAgent;
+    private final WorkerAgent workerAgent;
+
+    public AgentOrchestrator(PlannerAgent plannerAgent, WorkerAgent workerAgent) {
+        this.plannerAgent = plannerAgent;
+        this.workerAgent = workerAgent;
     }
 
-    <span class="kw">public</span> <span class="ty">String</span> <span class="ty">runWorkflow</span>(<span class="ty">String</span> userRequest) {
-        <span class="cm">// 초기 상태 객체 주입</span>
-        <span class="ty">AgentState</span> state = <span class="kw">new</span> <span class="ty">AgentState</span>(userRequest, <span class="kw">null</span>, <span class="kw">null</span>);
+    public String runWorkflow(String userRequest) {
+        // 1. 초기 불변 상태 생성
+        AgentState state = new AgentState(userRequest, null, null);
         
-        <span class="cm">// 1. Planner Agent 가동</span>
+        // 2. Planner Agent 가동 (계획 도출)
         state = plannerAgent.plan(state);
         
-        <span class="cm">// 2. Worker Agent 가동 (도구 실행)</span>
+        // 3. Worker Agent 가동 (도구 호출 및 실행)
         state = workerAgent.execute(state);
         
-        <span class="cm">// 3. 최종 상태물 리턴</span>
-        <span class="kw">return</span> state.result();
+        // 4. 최종 결과물 반환
+        return state.result();
     }
-}</pre>
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Spring AI 에이전트 아키텍처의 독보적인 강점 -->
+            <section id="sec-benefits">
+                <h2 id="toc-3"><i class="fa-solid fa-shield-halved text-primary me-2"></i>3. Spring AI 에이전트 아키텍처의 독보적인 강점</h2>
+                <p>엔터프라이즈 레벨의 상용 서비스를 구축할 때, Java 및 Spring Boot 기반의 이원화 커스텀 에이전트는 다음과 같은 독보적인 안정성과 생산성을 보장한다.</p>
+
+                <!-- 강점 2칼럼 카드 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100" style="border-top: 3px solid #6db33f;">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">강점 1</span>
+                                <h6 class="fw-bold mb-0">완벽한 Type-Safe 함수 바인딩</h6>
+                            </div>
+                            <p class="text-secondary small mb-0">
+                                도구를 정의할 때 문자열 스키마를 직접 하드코딩하는 방식과 달리, Java의 <code>Function&lt;Request, Response&gt;</code> 시그니처와 어노테이션 기반으로 Spring AI가 메타데이터 스키마를 JSON으로 안전하게 자동 빌드하므로 도구 오작동 및 런타임 타입 오류가 전무하다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100" style="border-top: 3px solid #0ea5e9;">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">강점 2</span>
+                                <h6 class="fw-bold mb-0">불변 Record 기반의 멀티스레드 안정성</h6>
+                            </div>
+                            <p class="text-secondary small mb-0">
+                                Java 16부터 도입된 <code>Record</code>를 상태 보관소로 채택함으로써 다중 스레드 동시성 환경에서도 상태 오염 없이 안전하게 대규모 에이전트 오케스트레이션 루프를 스레드 안전(Thread-safe)하게 구동할 수 있다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 핵심 요약 콜아웃 -->
+                <div class="p-3 bg-success-subtle border border-success-subtle rounded-3">
+                    <div class="fw-bold text-success mb-1 small"><i class="fa-solid fa-circle-check me-1"></i>아키텍처 결론</div>
+                    <p class="small text-secondary mb-0">
+                        Spring AI의 Fluent API와 Spring Boot의 견고한 DI 생태계를 결합하면, 외부 대형 프레임워크에 대한 과도한 의존 없이도 순수 Java 코드로 유지보수성이 뛰어난 맞춤형 에이전트 오케스트레이션을 완성할 수 있다.
+                    </p>
+                </div>
+            </section>
+        </article>
     </div>
-  </section>
 
-  <!-- 03. Spring AI 에이전트 아키텍처의 독보적인 강점 -->
-  <section class="card">
-    <div class="section-title">03. Spring AI 에이전트 아키텍처의 독보적인 강점</div>
-    <p style="margin-top: 12px; margin-bottom: 20px; color: var(--sub);">
-      엔터프라이즈 레벨의 상용 서비스를 구축할 때, Java/Spring 진영에서 이원화 커스텀 에이전트를 도입하면 다음과 같은 강력한 이점을 얻는다.
-    </p>
-
-    <!-- 강점 설명 카드 그리드 -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-      <div class="comp-card" style="border: 1px solid var(--spring-border); background: var(--bg-soft); padding: 18px; border-radius: 10px;">
-        <strong style="color: var(--spring-dark); font-size: 14.5px; display: block; margin-bottom: 8px;">1. 완벽한 Type-Safe 함수 바인딩</strong>
-        <span style="font-size: 14px; color: var(--sub); line-height: 1.6; display: block;">
-          도구를 정의할 때 문자열 스키마를 직접 파이썬에서 하드코딩하는 방식과 달리, Java의 <code>Function&lt;Request, Response&gt;</code> 시그니처와 어노테이션 기반으로 Spring AI가 메타데이터 스키마를 JSON으로 안전하게 자동 빌드하므로 도구 오작동 및 타입 런타임 오류가 전무하다.
-        </span>
-      </div>
-      <div class="comp-card" style="border: 1px solid var(--spring-border); background: var(--bg-soft); padding: 18px; border-radius: 10px;">
-        <strong style="color: var(--spring-dark); font-size: 14.5px; display: block; margin-bottom: 8px;">2. 불변 Record 기반의 완벽한 멀티스레드 안정성</strong>
-        <span style="font-size: 14px; color: var(--sub); line-height: 1.6; display: block;">
-          Java 16부터 도입된 <code>Record</code>를 상태 보관소로 채택함으로써 다중 스레드 동시성 환경에서도 상태 오염 없이 안전하게 대규모 에이전트 오케스트레이션 루프를 스레드 안전하게 돌릴 수 있다.
-        </span>
-      </div>
-    </div>
-  </section>
-
-</div>
-
-<!-- iframe 높이 자동 조절 스크립트 (AGENTS.md 규칙 필수 준수) -->
-<script>
-  function sendHeight() {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ height: height }, "*");
-  }
-  window.onload = sendHeight;
-  [50, 200, 500, 1000, 2000].forEach(function(delay) {
-    setTimeout(sendHeight, delay);
-  });
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(sendHeight);
-    ro.observe(document.body);
-  }
-</script>
+    <!-- Bootstrap 5.3.2 JS Bundle & Highlight.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- 마스터 표준 공통 스크립트 -->
+    <script src="../../js/standards.js"></script>
 </body>
 </html>

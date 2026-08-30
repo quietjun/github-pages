@@ -350,7 +350,7 @@
     <div class="container-custom">
         <article>
             <header>
-                <h1>💡 텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해</h1>
+                <h1><i class="fa-solid fa-cube text-primary" style="margin-right: 15px;"></i>텐서 차원(Shape) 변환 원리와 축(dim)의 실무적 이해</h1>
             </header>
 
                                                                                                                                                                                                                                     <!-- 1. NLP 3차원 텐서 규격과 개요 -->
@@ -370,8 +370,8 @@
                             </p>
 
                             <!-- 핵심 용어 정의 콜아웃 상자 -->
-                            <div class="p-3 bg-light rounded-3 mb-0" style="font-size: 14.5px; line-height: 1.7;">
-                                <div class="fw-bold text-dark mb-2"><i class="fa-solid fa-book-bookmark text-primary me-2"></i>💡 핵심 용어 정의</div>
+                            <div class="p-3 bg-light rounded-3 mb-0" style="font-size: 15px; line-height: 1.7;">
+                                <div class="fw-bold text-dark mb-2"><i class="fa-solid fa-book-bookmark text-primary" style="margin-right: 10px;"></i>핵심 용어 정의</div>
                                 <div class="row g-2 text-secondary" style="font-size: 14px;">
                                     <div class="col-sm-6 mb-1.5">
                                         <strong class="text-dark">• Batch (배치 크기 N) :</strong><br>동시에 처리할 문장 개수 (예: 32)
@@ -432,17 +432,17 @@
 
                                 <!-- 축 1: dim=0 (배치 축) -->
                                 <line x1="115" y1="20" x2="115" y2="130" stroke="#ef4444" stroke-width="2.5" marker-end="url(#axis-arrow-aligned)"/>
-                                <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="105" y="68" fill="#ef4444" text-anchor="end">dim=0 ⬇️</text>
+                                <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="105" y="68" fill="#ef4444" text-anchor="end">dim=0 ⬇️</text>
                                 <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="105" y="88" fill="#ef4444" text-anchor="end">배치 (Batch) 축</text>
 
                                 <!-- 축 2: dim=1 (시퀀스 축) -->
                                 <line x1="160" y1="155" x2="360" y2="155" stroke="#10b981" stroke-width="2.5" marker-end="url(#axis-arrow-aligned)"/>
-                                <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="260" y="148" fill="#10b981" text-anchor="middle">dim=1 ➡️</text>
+                                <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="260" y="148" fill="#10b981" text-anchor="middle">dim=1 ➡️</text>
                                 <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="260" y="172" fill="#10b981" text-anchor="middle">시퀀스 (Sequence/Time) 축</text>
 
                                 <!-- 축 3: dim=2 (단어장 축) -->
                                 <line x1="425" y1="120" x2="495" y2="73" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#axis-arrow-aligned)"/>
-                                <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="460" y="123" fill="#3b82f6">dim=2 (dim=-1) ↗️</text>
+                                <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="460" y="123" fill="#3b82f6">dim=2 (dim=-1) ↗️</text>
                                 <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="460" y="143" fill="#3b82f6">단어장 (Vocab) 축</text>
                             </svg>
                         </div>
@@ -469,20 +469,20 @@
                                     <span class="badge bg-danger fs-6 me-2"><i class="fa-solid fa-compress me-1"></i>목적 1</span>
                                     <h5 class="fw-bold text-dark mb-0">최종 결과 도출 & 가중치 학습 (차원 줄이기)</h5>
                                 </div>
-                                <p class="text-secondary mb-3" style="font-size: 14.5px; line-height: 1.7;">
+                                <p class="text-secondary mb-3" style="font-size: 15px; line-height: 1.7;">
                                     수학적/비즈니스적 필요에 의해 텐서 차원을 인위적으로 <strong>줄여서(Squeeze / Argmax / Mean)</strong> 최종 결과나 학습 지표를 추출한다.
                                 </p>
                                 
-                                <!-- 통합 ①번 항목 카드 (설명 텍스트 + 타이트밀착 SVG 그래픽) -->
-                                <div class="p-3 bg-light rounded-3 border mb-3">
-                                    <div class="fw-bold text-danger mb-1"><i class="fa-solid fa-font me-1.5"></i>① 최종 번역 단어 1개 출력</div>
-                                    <div class="text-secondary mb-2.5" style="font-size: 13.5px; line-height: 1.65;">
-                                        <code>[1, 1, 30000]</code> (3차원 출력) ➔ <code>squeeze</code> ➔ <code>[30000]</code> (1차원 점수판) ➔ <code>argmax</code> ➔ <strong>단어 ID '15' (0차원 스칼라)</strong>
+                                <!-- ①번 항목: 최종 번역 단어 1개 출력 -->
+                                <div class="mb-3.5">
+                                    <div class="fw-bold text-danger mb-1">① 최종 번역 단어 1개 출력</div>
+                                    <div class="text-secondary mb-2.5" style="font-size: 15px; line-height: 1.65;">
+                                        <code>[1, 1, 30000]</code> (3차원 출력) ➔ <code>squeeze</code><br>➔ <code>[30000]</code> (1차원 점수판) ➔ <code>argmax</code> ➔ <strong>단어 ID '15' (0차원 스칼라)</strong>
                                     </div>
 
-                                    <!-- ①번 항목 내장 타이트 밀착 SVG 파이프라인 그래프 (viewBox="0 0 530 80") -->
-                                    <div class="pt-2.5 border-top text-center">
-                                        <svg viewBox="0 0 530 80" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- 경계선 및 SVG 파이프라인 그래프 (viewBox="0 0 540 80") -->
+                                    <div class="pt-3 border-top text-center" style="margin-top: 10px;">
+                                        <svg viewBox="0 0 540 80" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
                                                 <marker id="arrow-red-pipe" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                                                     <path d="M0,0 L0,6 L6,3 z" fill="#ef4444"/>
@@ -492,36 +492,36 @@
                                                 </marker>
                                             </defs>
 
-                                            <!-- 3D Tensor Box (타이트 너비 115px) -->
-                                            <rect x="15" y="12" width="115" height="55" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
-                                            <text x="72.5" y="35" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#ef4444" text-anchor="middle">[1, 1, 30000]</text>
-                                            <text x="72.5" y="52" font-family="Pretendard, sans-serif" font-size="13" fill="#991b1b" text-anchor="middle">3차원 출력 텐서</text>
+                                            <!-- 3D Tensor Box (너비 120px로 확장) -->
+                                            <rect x="2" y="12" width="120" height="56" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+                                            <text x="62" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1, 1, 30000]</text>
+                                            <text x="62" y="51" font-family="Pretendard, sans-serif" font-size="14" fill="#991b1b" text-anchor="middle" dominant-baseline="central">3차원 출력 텐서</text>
 
-                                            <!-- 화살표 1 (여백 60px 확보) -->
-                                            <line x1="135" y1="39.5" x2="195" y2="39.5" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red-pipe)"/>
-                                            <text x="165" y="31" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#ef4444" text-anchor="middle">squeeze()</text>
+                                            <!-- 화살표 1 (길이 75px로 확장) -->
+                                            <line x1="127" y1="42" x2="202" y2="42" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red-pipe)"/>
+                                            <text x="164.5" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#ef4444" text-anchor="middle" dominant-baseline="central">squeeze()</text>
 
-                                            <!-- 1D Tensor Box (타이트 너비 85px) -->
-                                            <rect x="200" y="12" width="85" height="55" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
-                                            <text x="242.5" y="35" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#f97316" text-anchor="middle">[30000]</text>
-                                            <text x="242.5" y="52" font-family="Pretendard, sans-serif" font-size="13" fill="#c2410c" text-anchor="middle">1차원 점수판</text>
+                                            <!-- 1D Tensor Box (너비 90px로 확장) -->
+                                            <rect x="207" y="12" width="90" height="56" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+                                            <text x="252" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#f97316" text-anchor="middle" dominant-baseline="central">[30000]</text>
+                                            <text x="252" y="51" font-family="Pretendard, sans-serif" font-size="14" fill="#c2410c" text-anchor="middle" dominant-baseline="central">1차원 점수판</text>
 
-                                            <!-- 화살표 2 (여백 60px 확보) -->
-                                            <line x1="290" y1="39.5" x2="350" y2="39.5" stroke="#f97316" stroke-width="2" marker-end="url(#arrow-orange-pipe)"/>
-                                            <text x="320" y="31" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#f97316" text-anchor="middle">argmax()</text>
+                                            <!-- 화살표 2 (길이 75px로 확장) -->
+                                            <line x1="302" y1="42" x2="377" y2="42" stroke="#f97316" stroke-width="2" marker-end="url(#arrow-orange-pipe)"/>
+                                            <text x="339.5" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#f97316" text-anchor="middle" dominant-baseline="central">argmax()</text>
 
-                                            <!-- 0D Scalar Box (타이트 너비 150px) -->
-                                            <rect x="355" y="12" width="150" height="55" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
-                                            <text x="430" y="35" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#10b981" text-anchor="middle">15 ('사과')</text>
-                                            <text x="430" y="52" font-family="Pretendard, sans-serif" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">0차원 정답 스칼라 단어</text>
+                                            <!-- 0D Scalar Box (너비 156px로 조율 및 우측 끝 밀착) -->
+                                            <rect x="382" y="12" width="156" height="56" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
+                                            <text x="460" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#10b981" text-anchor="middle" dominant-baseline="central">15 ('사과')</text>
+                                            <text x="460" y="51" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#047857" text-anchor="middle" dominant-baseline="central">0차원 정답 스칼라 단어</text>
                                         </svg>
                                     </div>
                                 </div>
 
-                                <!-- 항목 2: 균형 잡힌 가중치 학습 (Loss 통합) -->
-                                <div class="p-3 bg-light rounded-3 border mb-0" style="font-size: 13.5px; line-height: 1.65;">
-                                    <div class="fw-bold text-danger mb-1"><i class="fa-solid fa-chart-line me-1.5"></i>② 균형 잡힌 가중치 학습 (Loss 통합)</div>
-                                    <div class="text-secondary">
+                                <!-- ②번 항목: 균형 잡힌 가중치 학습 (Loss 통합) -->
+                                <div class="mt-4">
+                                    <div class="fw-bold text-danger mb-1">② 균형 잡힌 가중치 학습 (Loss 통합)</div>
+                                    <div class="text-secondary" style="font-size: 15px; line-height: 1.65;">
                                         <code>[32]</code> (32개 문장 오차 1차원) ➔ <code>mean(dim=0)</code> ➔ <strong>단일 오차 Loss (0차원 대표 스칼라)</strong>
                                     </div>
                                 </div>
@@ -537,57 +537,57 @@
                                     <span class="badge bg-primary fs-6 me-2"><i class="fa-solid fa-expand me-1"></i>목적 2</span>
                                     <h5 class="fw-bold text-dark mb-0">레이어 간 행렬곱 규격 매칭 (차원 늘리기)</h5>
                                 </div>
-                                <p class="text-secondary mb-3" style="font-size: 14.5px; line-height: 1.7;">
+                                <p class="text-secondary mb-3" style="font-size: 15px; line-height: 1.7;">
                                     시스템적 필요에 의해 데이터 값은 동일하지만 다음 신경망 모듈(Embedding, RNN 등) 입구 규격에 맞추어 <strong>차원을 늘려 포장(Unsqueeze / Reshape)</strong>한다.
                                 </p>
 
-                                <!-- 통합 ①번 항목 카드 (설명 텍스트 + 타이트밀착 SVG 그래픽) -->
-                                <div class="p-3 bg-light rounded-3 border mb-3">
-                                    <div class="fw-bold text-primary mb-1"><i class="fa-solid fa-layer-group me-1.5"></i>① 신경망 입구 규격 맞춤 포장</div>
-                                    <div class="text-secondary mb-2.5" style="font-size: 13.5px; line-height: 1.65;">
-                                        단일 토큰 값 <code>15</code> (0차원) ➔ <code>unsqueeze(0)</code> ➔ <code>[15]</code> (1차원) ➔ <code>unsqueeze(0)</code> ➔ <strong><code>[[15]]</code> (2차원 <code>[Batch, Seq]</code> 입력 규격 완료)</strong>
+                                <!-- ①번 항목: 신경망 입구 규격 맞춤 포장 -->
+                                <div class="mb-3.5">
+                                    <div class="fw-bold text-primary mb-1">① 신경망 입구 규격 맞춤 포장</div>
+                                    <div class="text-secondary mb-2.5" style="font-size: 15px; line-height: 1.65;">
+                                        단일 토큰 값 <code>15</code> (0차원) ➔ <code>u.s(0)</code> ➔ <code>[15]</code> (1차원)<br>➔ <code>u.s(0)</code> ➔ <strong><code>[[15]]</code> (2차원 <code>[Batch, Seq]</code> 입력 규격 완료)</strong>
                                     </div>
 
-                                    <!-- ①번 항목 내장 타이트 밀착 SVG 파이프라인 그래프 (viewBox="0 0 535 80") -->
-                                    <div class="pt-2.5 border-top text-center">
-                                        <svg viewBox="0 0 535 80" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- 경계선 및 SVG 파이프라인 그래프 (viewBox="0 0 540 80") -->
+                                    <div class="pt-3 border-top text-center" style="margin-top: 10px;">
+                                        <svg viewBox="0 0 540 80" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
                                                 <marker id="arrow-blue-pipe" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                                                     <path d="M0,0 L0,6 L6,3 z" fill="#2563eb"/>
                                                 </marker>
                                             </defs>
 
-                                            <!-- 0D Scalar (타이트 너비 75px) -->
-                                            <rect x="15" y="12" width="75" height="55" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-                                            <text x="52.5" y="35" font-family="Fira Code, monospace" font-size="13" font-weight="700" fill="#2563eb" text-anchor="middle">15</text>
-                                            <text x="52.5" y="52" font-family="Pretendard, sans-serif" font-size="14" fill="#1d4ed8" text-anchor="middle">0차원 스칼라</text>
+                                            <!-- 0D Scalar (너비 90px) -->
+                                            <rect x="2" y="12" width="90" height="56" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+                                            <text x="47" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central">15</text>
+                                            <text x="47" y="51" font-family="Pretendard, sans-serif" font-size="14" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">0차원 스칼라</text>
 
-                                            <!-- 화살표 1 (여백 80px 충분 확보로 unsqueeze(0) 글자 겹침 방지) -->
-                                            <line x1="95" y1="39.5" x2="175" y2="39.5" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue-pipe)"/>
-                                            <text x="135" y="31" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle">unsqueeze(0)</text>
+                                            <!-- 화살표 1 (길이 75px로 조정) -->
+                                            <line x1="97" y1="42" x2="172" y2="42" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue-pipe)"/>
+                                            <text x="134.5" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central">u.s(0)</text>
 
-                                            <!-- 1D Tensor (타이트 너비 80px) -->
-                                            <rect x="180" y="12" width="80" height="55" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-                                            <text x="220" y="35" font-family="Fira Code, monospace" font-size="13" font-weight="700" fill="#2563eb" text-anchor="middle">[15]</text>
-                                            <text x="220" y="52" font-family="Pretendard, sans-serif" font-size="14" fill="#1d4ed8" text-anchor="middle">1차원 텐서</text>
+                                            <!-- 1D Tensor (너비 90px, 위치 보정) -->
+                                            <rect x="177" y="12" width="90" height="56" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+                                            <text x="222" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central">[15]</text>
+                                            <text x="222" y="51" font-family="Pretendard, sans-serif" font-size="14" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">1차원 텐서</text>
 
-                                            <!-- 화살표 2 (여백 80px 충분 확보) -->
-                                            <line x1="265" y1="39.5" x2="345" y2="39.5" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue-pipe)"/>
-                                            <text x="305" y="31" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle">unsqueeze(0)</text>
+                                            <!-- 화살표 2 (길이 75px, 위치 보정) -->
+                                            <line x1="272" y1="42" x2="347" y2="42" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue-pipe)"/>
+                                            <text x="309.5" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central">u.s(0)</text>
 
-                                            <!-- 2D Input Ready Tensor (타이트 너비 170px) -->
-                                            <rect x="350" y="12" width="170" height="55" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
-                                            <text x="435" y="35" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#10b981" text-anchor="middle">[[15]] = [Batch, Seq]</text>
-                                            <text x="435" y="52" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">2차원 레이어 입력 완료</text>
+                                            <!-- 2D Input Ready Tensor (너비 186px로 확장하여 좌우 여백 확보) -->
+                                            <rect x="352" y="12" width="186" height="56" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
+                                            <text x="445" y="32" font-family="Fira Code, monospace" font-size="14" font-weight="700" fill="#10b981" text-anchor="middle" dominant-baseline="central">[[15]] = [Batch, Seq]</text>
+                                            <text x="445" y="51" font-family="Pretendard, sans-serif" font-size="14" font-weight="700" fill="#047857" text-anchor="middle" dominant-baseline="central">2차원 레이어 입력 완료</text>
                                         </svg>
                                     </div>
                                 </div>
 
-                                <!-- 항목 2: 차원 강제 규격 주입 이유 -->
-                                <div class="p-3 bg-light rounded-3 border mb-0" style="font-size: 13.5px; line-height: 1.65;">
-                                    <div class="fw-bold text-primary mb-1"><i class="fa-solid fa-puzzle-piece me-1.5"></i>② 차원 강제 규격 주입 이유</div>
-                                    <div class="text-secondary">
-                                        PyTorch 내부 <code>nn.Embedding</code>, <code>nn.RNN</code> 등의 모듈은 대괄호 <code>[]</code>가 씌워진 특정 차원 형상만 입력을 수용하기 때문이다.
+                                <!-- ②번 항목: 차원 강제 규격 주입 이유 -->
+                                <div class="mt-4">
+                                    <div class="fw-bold text-primary mb-1">② 차원 강제 규격 주입 이유</div>
+                                    <div class="text-secondary" style="font-size: 15px; line-height: 1.65;">
+                                        PyTorch의 Embedding, RNN 모듈 등은 대괄호 <code>[]</code> 형식의 입력 규격만 수용하기 때문이다.
                                     </div>
                                 </div>
                             </div>
@@ -596,160 +596,145 @@
                 </div>
             </section>
 
-                                                            <!-- 3. 3차원 텐서 [2, 3, 4] 슬라이싱 & 연산 체험 시뮬레이터 -->
+            <!-- 3. 3차원 텐서 [2, 3, 4] 슬라이싱 & 연산 체험 시뮬레이터 -->
             <section id="sec-3" class="my-4">
                 <h2 id="toc-3">3. 3차원 텐서 [2, 3, 4] 슬라이싱 & 연산 체험 시뮬레이터</h2>
-                
-                <!-- 상단 데이터 정의 2단 비교 카드 (시원시원한 표준 폰트 크기 14px~15px 적용) -->
-                <div class="row g-4 mt-2 mb-4 align-items-stretch">
-                    <!-- Left Column (50% 너비, col-lg-6): 3차원 축 매핑 비주얼 명세 가이드 -->
-                    <div class="col-lg-6">
-                        <div class="p-4 rounded-3 border bg-white shadow-sm h-100 border-primary-subtle d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="d-flex align-items-center justify-content-between mb-3.5">
-                                    <strong class="text-dark fs-5 mb-0 fw-bold"><i class="fa-solid fa-cubes text-primary me-2"></i>💡 3차원 텐서 [2, 3, 4] 축 매핑 명세</strong>
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-3 py-1.5 fs-6" style="font-size: 13.5px !important;"><i class="fa-solid fa-calculator me-1"></i>총 24개 노드</span>
-                                </div>
-                                
-                                <!-- 축 1: Batch (폰트 14.5px) -->
-                                <div class="px-3.5 py-3 rounded-3 bg-danger-subtle border border-danger-subtle mb-3 d-flex align-items-center justify-content-between" style="font-size: 14.5px;">
-                                    <div>
-                                        <span class="badge bg-danger me-2 px-2.5 py-1.5 fs-6">dim=0</span>
-                                        <strong class="text-danger fs-6">배치 크기 (Batch = 2)</strong>
-                                    </div>
-                                    <span class="text-secondary fw-semibold">동시 처리 문장 2개 (배치 0, 1)</span>
-                                </div>
-
-                                <!-- 축 2: Seq (폰트 14.5px) -->
-                                <div class="px-3.5 py-3 rounded-3 bg-success-subtle border border-success-subtle mb-3 d-flex align-items-center justify-content-between" style="font-size: 14.5px;">
-                                    <div>
-                                        <span class="badge bg-success me-2 px-2.5 py-1.5 fs-6">dim=1</span>
-                                        <strong class="text-success fs-6">시퀀스 길이 (Seq = 3)</strong>
-                                    </div>
-                                    <span class="text-secondary fw-semibold">문장당 토큰 3개</span>
-                                </div>
-
-                                <!-- 축 3: Vocab (폰트 14.5px - Red Line 수평 기준선 연동) -->
-                                <div class="px-3.5 py-3 rounded-3 bg-primary-subtle border border-primary-subtle mb-0 d-flex align-items-center justify-content-between" style="font-size: 14.5px;">
-                                    <div>
-                                        <span class="badge bg-primary me-2 px-2.5 py-1.5 fs-6">dim=2</span>
-                                        <strong class="text-primary fs-6">단어장/피처 (Vocab = 4)</strong>
-                                    </div>
-                                    <span class="text-secondary fw-semibold">단어당 어휘 점수 4개</span>
-                                </div>
+                                                    <!-- 1행: 3차원 축 매핑 가이드 (col-12로 넓게 가로 배치) -->
+                <div class="row g-4 mt-2 mb-4">
+                    <div class="col-12">
+                        <div class="p-4 rounded-3 border bg-white shadow-sm border-primary-subtle">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <strong class="text-dark fs-5 mb-0 fw-bold"><i class="fa-solid fa-cubes text-primary" style="margin-right: 10px;"></i>3차원 텐서 [2, 3, 4] 축 매핑 명세</strong>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-3 py-1.5 fs-6" style="font-size: 15px !important;"><i class="fa-solid fa-calculator" style="margin-right: 8px;"></i>총 24개 노드</span>
                             </div>
-                        </div>
-                    </div>
+                            
+                            <div class="row g-3">
+                                <!-- 축 1: Batch (폰트 15px로 통일) -->
+                                <div class="col-md-4">
+                                    <div class="px-4 py-3 rounded-3 bg-danger-subtle border border-danger-subtle h-100 d-flex flex-column justify-content-center" style="font-size: 15px;">
+                                        <div class="mb-1.5">
+                                            <span class="badge bg-danger me-2 px-2.5 py-1.5 fs-6">dim=0</span>
+                                            <strong class="text-danger fs-6">배치 크기 (Batch = 2)</strong>
+                                        </div>
+                                        <span class="text-secondary fw-semibold">동시 처리 문장 2개 (배치 0, 1)</span>
+                                    </div>
+                                </div>
 
-                    <!-- Right Column (50% 너비, col-lg-6): PyTorch 원본 코드 선언 (선명한 14px 폰트 크기) -->
-                    <div class="col-lg-6">
-                        <div class="p-4 rounded-3 border bg-white shadow-sm h-100 border-primary-subtle d-flex flex-column justify-content-between">
-                            <div>
-                                <strong class="d-block mb-3.5 text-dark fs-5 fw-bold"><i class="fa-solid fa-code text-primary me-2"></i>📋 원본 입력 데이터 정의 및 PyTorch 선언</strong>
-                                <pre class="code-block m-0" style="font-size: 13.5px; line-height: 1.6;">tensor = torch.tensor([
-  [[ 4.0,  1.0,  3.0,  2.0],
-   [ 5.0,  8.0,  6.0,  7.0],
-   [ 9.0, 10.0, 12.0, 11.0]],  # 배치 0 (문장 1의 단어별 점수판)
-  
-  [[ 3.0,  2.0,  5.0,  4.0],
-   [ 6.0,  7.0,  9.0,  8.0],
-   [13.0, 11.0, 10.0, 12.0]]   # 배치 1 (문장 2의 단어별 점수판)
-], dtype=torch.float32)</pre>
+                                <!-- 축 2: Seq (폰트 15px로 통일) -->
+                                <div class="col-md-4">
+                                    <div class="px-4 py-3 rounded-3 bg-success-subtle border border-success-subtle h-100 d-flex flex-column justify-content-center" style="font-size: 15px;">
+                                        <div class="mb-1.5">
+                                            <span class="badge bg-success me-2 px-2.5 py-1.5 fs-6">dim=1</span>
+                                            <strong class="text-success fs-6">시퀀스 길이 (Seq = 3)</strong>
+                                        </div>
+                                        <span class="text-secondary fw-semibold">문장당 토큰 3개</span>
+                                    </div>
+                                </div>
+
+                                <!-- 축 3: Vocab (폰트 15px로 통일) -->
+                                <div class="col-md-4">
+                                    <div class="px-4 py-3 rounded-3 bg-primary-subtle border border-primary-subtle h-100 d-flex flex-column justify-content-center" style="font-size: 15px;">
+                                        <div class="mb-1.5">
+                                            <span class="badge bg-primary me-2 px-2.5 py-1.5 fs-6">dim=2</span>
+                                            <strong class="text-primary fs-6">단어장/피처 (Vocab = 4)</strong>
+                                        </div>
+                                        <span class="text-secondary fw-semibold">단어당 어휘 점수 4개</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                                    <!-- 2단 가로 분할 워크스페이스 레이아웃 (Bootstrap row g-4) -->
-                    <div class="row g-4 align-items-stretch mb-4">
-                        <!-- Left Column (50% 너비, col-lg-6): 탭 제어 & SVG 시뮬레이터 & 요약 카드 -->
-                        <div class="col-lg-6">
-                            <!-- 탭 제어 버튼 -->
-                            <div class="tab-container">
-                                <button class="tab-btn fs-6" onclick="switchDim(0)">dim=0 (배치)</button>
-                                <button class="tab-btn fs-6" onclick="switchDim(1)">dim=1 (시퀀스)</button>
-                                <button class="tab-btn fs-6" onclick="switchDim(2)">dim=2 (피처)</button>
-                                <button class="tab-btn fs-6 active" onclick="switchDim(-1)">생략 (전체)</button>
+                <!-- 2행: 2단 가로 분할 워크스페이스 레이아웃 (Bootstrap row g-4) -->
+                <div class="row g-4 align-items-stretch mb-4">
+                    <!-- Left Column (50% 너비, col-lg-6): 원본 데이터 & 실시간 연산 시뮬레이션 통합 카드 -->
+                    <div class="col-lg-6">
+                        <div class="p-4 rounded-3 border bg-white shadow-sm h-100 border-primary-subtle">
+                            <!-- 1. 원본 데이터 소제목 및 코드블록 -->
+                            <div style="margin-bottom: 20px;">
+                                <div class="fw-bold text-dark mb-2" style="font-size: 16px;"><i class="fa-solid fa-code text-primary" style="margin-right: 10px;"></i>원본 입력 데이터 (PyTorch 선언) :</div>
+                                <pre class="code-block m-0" style="font-size: 16px; line-height: 1.6;">tensor = torch.tensor([
+  [[ 4.0,  1.0,  3.0,  2.0],
+   [ 5.0,  8.0,  6.0,  7.0],    # 배치 0 : 
+   [ 9.0, 10.0, 12.0, 11.0]],   # 문장 1의 단어별 점수판
+   [[ 3.0,  2.0,  5.0,  4.0],
+   [ 6.0,  7.0,  9.0,  8.0],    # 배치 1 : 
+   [13.0, 11.0, 10.0, 12.0]]    # 문장 2의 단어별 점수판
+], dtype=torch.float32)</pre>
                             </div>
 
-                            <!-- SVG 그래픽 카드 -->
-                            <div class="visualization-box p-3.5">
-                                <div class="vis-title fw-bold text-dark mb-2 fs-6" id="vis-title-text">Tensor [2, 3, 4] ➡️ 모든 24개 값 (전체 압축)</div>
-                                <div class="svg-wrapper" style="height: 155px;">
-                                    <svg viewBox="0 0 450 185" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" id="vis-svg">
-                                        <g id="grid-lines"></g>
-                                        <g id="node-group"></g>
-                                        
-                                        <!-- 최종 출력 수축 노드 기하학 -->
-                                        <g id="output-tensor" transform="translate(170, 160)" style="display: none;">
-                                            <rect x="0" y="0" width="115" height="46" rx="6" fill="none" stroke="#2563eb" stroke-width="1.8" id="output-box" />
-                                            <text x="57.5" y="22" font-family="Fira Code, monospace" font-size="16" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central" id="output-val">7.0</text>
-                                            <text x="57.5" y="36" font-family="Pretendard, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" dominant-baseline="central" id="output-label">0차원 스칼라</text>
-                                        </g>
-                                    </svg>
+                            <!-- 2. 실시간 연산 및 결과 명세 -->
+                            <div class="mb-0 text-secondary" style="font-size: 16px; line-height: 1.8;">
+                                <div style="margin-bottom: 20px;">
+                                    <div class="fw-bold text-dark mb-1.5"><i class="fa-solid fa-calculator text-primary" style="margin-right: 10px;"></i>연산 :</div>
+                                    <pre class="code-block m-0 text-primary font-monospace bg-light border p-2.5 rounded fw-bold" id="math-code-text" style="font-size: 16px; line-height: 1.5;">t.mean() = (총합 168) / 24 = 7.0</pre>
                                 </div>
-
-                                <!-- 요약 정보 보드 -->
-                                <div class="info-grid mt-2.5">
-                                    <div class="info-card py-2">
-                                        <div class="info-label fs-6 fw-semibold">입력 SHAPE</div>
-                                        <div class="info-value fs-6 fw-bold">[2, 3, 4]</div>
-                                    </div>
-                                    <div class="info-card py-2">
-                                        <div class="info-label fs-6 fw-semibold">출력 SHAPE</div>
-                                        <div class="info-value fs-6 fw-bold" id="info-output-shape">[] (스칼라)</div>
-                                    </div>
-                                    <div class="info-card py-2">
-                                        <div class="info-label fs-6 fw-semibold">크기</div>
-                                        <div class="info-value fs-6 fw-bold" id="info-output-dim">0차원</div>
-                                    </div>
+                                <div style="margin-top: 20px;">
+                                    <div class="fw-bold text-dark mb-1.5"><i class="fa-solid fa-chart-column text-success" style="margin-right: 10px;"></i>출력 텐서 :</div>
+                                    <pre class="code-block m-0 text-success font-monospace bg-light border p-2.5 rounded fw-bold" id="tensor-result-box" style="font-size: 16px; line-height: 1.5;">7.0 (0차원 스칼라)</pre>
                                 </div>
                             </div>
-                        </div>
-
-                                                <!-- Right Column (50% 너비, col-lg-6): 수학 연산 수식 & 동적 연산 메커니즘 (중첩 소박스 전면 삭제, 단일 통합 카드) -->
-                        <div class="col-lg-6">
-                            <div class="p-4 rounded-3 border bg-white shadow-sm h-100 border-primary-subtle d-flex flex-column justify-content-between">
-                                <div>
-                                    <strong class="d-block mb-3 text-dark fs-5 fw-bold"><i class="fa-solid fa-calculator text-primary me-2"></i>🔢 수학 연산식 & 연산 결과</strong>
-                                    
-                                    <!-- 중첩 박스 없이 깔끔한 인라인 텍스트 및 코딩 칩 명세 -->
-                                    <div class="mb-3 text-secondary" style="font-size: 14px; line-height: 1.8;">
-                                        <div class="mb-2">
-                                            <i class="fa-solid fa-calculator text-primary me-1.5"></i><strong>연산 수식 & 계산 :</strong> 
-                                            <span class="text-primary font-monospace fw-bold ms-1" id="math-code-text" style="font-size: 14.5px;">t.mean() = (총합 168) / 24 = 7.0</span>
-                                        </div>
-                                        <div class="mt-2.5">
-                                            <div class="fw-bold text-dark mb-1"><i class="fa-solid fa-chart-column text-success me-1.5"></i>출력 텐서 (Tensor Output) :</div>
-                                            <pre class="code-block m-0 text-success font-monospace bg-light border p-2.5 rounded fw-bold" id="tensor-result-box" style="font-size: 13.5px; line-height: 1.5;">7.0 (0차원 스칼라)</pre>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 하단 메커니즘 해설 (중첩 카드 제거, 좌측 원포인트 강조 바 적용) -->
-                                <div class="p-3 rounded-3 bg-light border-start border-4 border-primary text-secondary" style="font-size: 14px; line-height: 1.65;">
-                                    <strong class="d-block mb-1 text-primary fs-6"><i class="fa-solid fa-lightbulb me-1.5"></i><span id="mech-title-text">💡 연산 원리</span></strong>
-                                    <div id="mech-desc-text">
-                                        3개 축의 모든 24개 데이터 원소를 싹 평균 내어 대표 오차 0차원 스칼라 값 (7.0)으로 압축합니다.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         </div>
                     </div>
 
-                    <!-- 하단 전체 폭(100% 너비) 🎓 현실의 의미 카드 (마스터 템플릿 규격) -->
-                    <div class="p-4 rounded-3 bg-primary-subtle border border-primary-subtle text-primary-emphasis mt-3" style="font-size: 14.5px; line-height: 1.7;">
-                        <strong class="d-block mb-2 text-primary-emphasis fs-5 fw-bold"><i class="fa-solid fa-graduation-cap me-2"></i>🎓 현실의 의미</strong>
-                        <div id="meaning-desc-text" class="mb-2 text-secondary-emphasis">
-                            배치 전체, 시퀀스 전체의 모든 오차값들을 한 덩어리로 융합하여 평균을 구한 결과물이다.<br>
-                            • <strong>실제 활용 :</strong> 학습 역전파(Backpropagation) 직전에 모델의 전체 오차 대표값 딱 1개를 계산하여 모델 최적화 지표로 활용한다.
-                        </div>
-                        <div id="meaning-list-items" class="text-secondary-emphasis" style="font-size: 14px;">
-                            • <strong>직관적 이해 :</strong> 2개 문장(Batch=2) 내의 3개 단어(Seq=3)들이 가진 4개 단어장(Vocab=4) 값들(총 24개)을 축 구분 없이 싹 평균 내어, <strong>전체 데이터의 종합 평균 딱 1개만 남겨 압축</strong>한다.<br>
-                            • <strong>핵심 용도 :</strong> 학습을 위한 최종 오차 전파
+                    <!-- Right Column (50% 너비, col-lg-6): 탭 제어 & SVG 시뮬레이터 & 요약 카드 + 해설 통합 -->
+                    <div class="col-lg-6">
+                        <div class="d-flex flex-column justify-content-between h-100">
+                            <div>
+                                <!-- 탭 제어 버튼 -->
+                                <div class="tab-container">
+                                    <button class="tab-btn fs-6" onclick="switchDim(0)">dim=0 (배치)</button>
+                                    <button class="tab-btn fs-6" onclick="switchDim(1)">dim=1 (시퀀스)</button>
+                                    <button class="tab-btn fs-6" onclick="switchDim(2)">dim=2 (피처)</button>
+                                    <button class="tab-btn fs-6 active" onclick="switchDim(-1)">생략 (전체)</button>
+                                </div>
+
+                                <!-- SVG 그래픽 카드 -->
+                                <div class="visualization-box p-3.5">
+                                    <div class="vis-title fw-bold text-dark mb-2 fs-6" id="vis-title-text">Tensor [2, 3, 4] ➡️ 모든 24개 값 (전체 압축)</div>
+                                    <div class="svg-wrapper" style="height: 155px;">
+                                        <svg viewBox="0 0 450 185" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" id="vis-svg">
+                                            <g id="grid-lines"></g>
+                                            <g id="node-group"></g>
+                                            
+                                            <!-- 최종 출력 수축 노드 기하학 -->
+                                            <g id="output-tensor" transform="translate(170, 160)" style="display: none;">
+                                                <rect x="0" y="0" width="115" height="46" rx="6" fill="none" stroke="#2563eb" stroke-width="1.8" id="output-box" />
+                                                <text x="57.5" y="22" font-family="Fira Code, monospace" font-size="16" font-weight="700" fill="#2563eb" text-anchor="middle" dominant-baseline="central" id="output-val">7.0</text>
+                                                <text x="57.5" y="36" font-family="Pretendard, sans-serif" font-size="14" fill="#2563eb" text-anchor="middle" dominant-baseline="central" id="output-label">0차원 스칼라</text>
+                                            </g>
+                                        </svg>
+                                    </div>
+
+                                    <!-- 요약 정보 보드 -->
+                                    <div class="info-grid mt-2.5">
+                                        <div class="info-card py-2">
+                                            <div class="info-label fs-6 fw-semibold">입력 SHAPE</div>
+                                            <div class="info-value fs-6 fw-bold">[2, 3, 4]</div>
+                                        </div>
+                                        <div class="info-card py-2">
+                                            <div class="info-label fs-6 fw-semibold">출력 SHAPE</div>
+                                            <div class="info-value fs-6 fw-bold" id="info-output-shape">[] (스칼라)</div>
+                                        </div>
+                                        <div class="info-card py-2">
+                                            <div class="info-label fs-6 fw-semibold">크기</div>
+                                            <div class="info-value fs-6 fw-bold" id="info-output-dim">0차원</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 하단 메커니즘 해설 (우측 이동 완료) -->
+                            <div class="p-3 rounded-3 bg-light border-start border-4 border-primary text-secondary mt-3" style="font-size: 15px; line-height: 1.65;">
+                                <strong class="d-block mb-1 text-primary fs-6"><i class="fa-solid fa-lightbulb" style="margin-right: 10px;"></i><span id="mech-title-text">연산 원리</span></strong>
+                                <div id="mech-desc-text">
+                                    3개 축의 모든 24개 데이터 원소를 싹 평균 내어 대표 오차 0차원 스칼라 값 (7.0)으로 압축합니다.
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
             </section>
 
             <!-- 4. 1문장(Batch=1) 인코더 내 텐서 차원 변화 -->
@@ -757,7 +742,7 @@
                 <h2 id="toc-4">4. 1문장(Batch=1) 인코더 내 텐서 차원 변화</h2>
                 
                 <div class="p-4 rounded-3 border bg-white shadow-sm mt-3">
-                    <p class="text-secondary mb-3 fs-6" style="line-height: 1.75;">
+                    <p class="text-secondary mb-3" style="font-size: 15px; line-height: 1.75;">
                         인코더(Encoder)의 주 역할은 전체 입력 문장을 통째로 읽어 단 하나의 고정된 크기의 벡터(<strong>문맥 벡터, Context Vector</strong>)로 압축하는 것이다. 입력된 1차원 토큰 ID 시퀀스는 임베딩과 RNN을 거치면서 차원이 순차적으로 확장되며 문장의 의미 정보를 축적한다.
                     </p>
 
@@ -775,7 +760,7 @@
 
                             <!-- input_ids [seq_len] -->
                             <rect x="30" y="55" width="120" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="90" y="73" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_ids</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="90" y="73" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_ids</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="90" y="91" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[seq_len]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="90" y="117" fill="#64748b" text-anchor="middle" dominant-baseline="central">(1차원 텐서)</text>
 
@@ -784,14 +769,14 @@
 
                             <!-- Embedding 연산 박스 -->
                             <rect x="190" y="62.5" width="110" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="245" y="77.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Embedding</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="245" y="77.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Embedding</text>
 
                             <!-- 화살표 2 -->
                             <line x1="305" y1="77.5" x2="335" y2="77.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-right-enc)"/>
 
                             <!-- input_embeds [seq_len, 768] -->
                             <rect x="340" y="55" width="140" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="410" y="73" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_embeds</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="410" y="73" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_embeds</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="410" y="91" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[seq_len, 768]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="410" y="117" fill="#64748b" text-anchor="middle" dominant-baseline="central">(2차원 텐서)</text>
 
@@ -800,7 +785,7 @@
 
                             <!-- nn.RNN 연산 박스 -->
                             <rect x="520" y="62.5" width="100" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="570" y="77.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">nn.RNN</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="570" y="77.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">nn.RNN</text>
 
                             <!-- 화살표 4 (분기 시작점 x=625) -->
                             <path d="M 625,77.5 L 650,77.5 A 10,10 0 0 0 660,67.5 L 660,35 A 10,10 0 0 1 670,25 L 690,25" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-right-enc)"/>
@@ -808,22 +793,22 @@
 
                             <!-- hidden_states [seq_len, 1024] -->
                             <rect x="695" y="5" width="180" height="40" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="785" y="20" fill="#0f172a" text-anchor="middle" dominant-baseline="central">hidden_states</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="785" y="20" fill="#0f172a" text-anchor="middle" dominant-baseline="central">hidden_states</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="785" y="34" fill="#2563eb" text-anchor="middle" dominant-baseline="central">[seq_len, 1024]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="885" y="27" fill="#64748b" dominant-baseline="central">(단어별 은닉 벡터 ➔ Attention용)</text>
 
                             <!-- context_vector (h_n) [1, 1024] -->
                             <rect x="695" y="110" width="180" height="40" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.8"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="785" y="125" fill="#0f172a" text-anchor="middle" dominant-baseline="central">context_vector (h_n)</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="785" y="125" fill="#0f172a" text-anchor="middle" dominant-baseline="central">context_vector (h_n)</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="785" y="139" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1, 1024]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="885" y="132" fill="#ef4444" font-weight="700" dominant-baseline="central">(문장 최종 문맥 벡터 ➔ Decoder h₀ 주입!)</text>
                         </svg>
                     </div>
 
                     <!-- 인코더 차원 변화 해설 카드 -->
-                    <div class="p-3.5 bg-light rounded-3 border">
-                        <strong class="d-block mb-2 text-dark fs-6"><i class="fa-solid fa-lightbulb text-primary me-2"></i>💡 인코더 차원 변화 해설</strong>
-                        <ul class="mb-0 text-secondary" style="font-size: 14px; line-height: 1.75; padding-left: 1.2rem;">
+                    <div class="p-4 bg-light rounded-3 border mt-4" style="font-size: 15px;">
+                        <strong class="d-block mb-2 text-dark fs-6"><i class="fa-solid fa-lightbulb text-primary" style="margin-right: 10px;"></i>인코더 차원 변화 해설</strong>
+                        <ul class="mb-0 text-secondary" style="line-height: 1.75; padding-left: 1.2rem;">
                             <li><strong>입력 ID 시퀀스 :</strong> <code>"나는 학교에 간다."</code>의 5개 토큰에 대응하는 1차원 텐서 <code>[5]</code>가 인코더에 들어온다.</li>
                             <li><strong>Embedding :</strong> 토큰을 고차원 실수의 벡터 표현으로 변경해 2차원 <code>[5, 768]</code>로 확장한다.</li>
                             <li><strong>nn.RNN :</strong> 시퀀스를 따라 순차적으로 정보들을 누적 연산하며 최종적으로 모든 단어의 은닉 상태를 묶은 <code>hidden_states [5, 1024]</code>와 마지막 시퀀스 단계의 최종 요약 상태인 문맥 벡터 <code>context_vector (h_n) [1, 1024]</code>로 출력 분기한다.</li>
@@ -837,7 +822,7 @@
                 <h2 id="toc-5">5. 1문장(Batch=1) 디코더 내 텐서 차원 변화</h2>
                 
                 <div class="p-4 rounded-3 border bg-white shadow-sm mt-3">
-                    <p class="text-secondary mb-3 fs-6" style="line-height: 1.75;">
+                    <p class="text-secondary mb-3" style="font-size: 15px; line-height: 1.75;">
                         디코더(Decoder)의 RNN 루프는 인코더의 최종 요약 은닉 상태인 문맥 벡터(<code>encoder h_n</code>)를 초기 기억(<code>h_0</code>)으로 주입받아 동작한다. 매 시점 예측된 <code>output_token</code>은 단어장 공간의 점수(<code>logit</code>)를 거치고 <code>argmax</code>로 디코딩된 후, 다음 시점의 입력으로 순환 피드백된다.
                     </p>
 
@@ -852,10 +837,11 @@
                                     <path d="M0,0 L0,6 L6,3 z" fill="#2563eb"/>
                                 </marker>
                             </defs>
-
+                            
+                            <g transform="translate(50, 0)">
                             <!-- 1행 연산 흐름 -->
                             <rect x="25" y="70" width="100" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="75" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_token</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="75" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">input_token</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="75" y="106" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="75" y="130" fill="#64748b" text-anchor="middle" dominant-baseline="central">(1차원 텐서)</text>
 
@@ -864,14 +850,14 @@
 
                             <!-- Embedding 연산 박스 -->
                             <rect x="160" y="77.5" width="95" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="207.5" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Embedding</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="207.5" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Embedding</text>
 
                             <!-- 화살표 2 -->
                             <line x1="260" y1="92.5" x2="285" y2="92.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- embedded [1, 768] -->
                             <rect x="290" y="70" width="110" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="345" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">embedded</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="345" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">embedded</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="345" y="106" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1, 768]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="345" y="130" fill="#64748b" text-anchor="middle" dominant-baseline="central">(2차원 텐서)</text>
 
@@ -879,20 +865,20 @@
                             <line x1="405" y1="92.5" x2="430" y2="92.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- 외부 입력 h_n 박스 (위에서 아래로 주입) -->
-                            <rect x="420" y="10" width="130" height="30" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,3"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="485" y="25" fill="#ef4444" text-anchor="middle" dominant-baseline="central">encoder h_n [1, 1024]</text>
+                            <rect x="390" y="10" width="190" height="30" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,3"/>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="485" y="25" fill="#ef4444" text-anchor="middle" dominant-baseline="central">encoder h_n [1, 1024]</text>
                             <path d="M 485,40 L 485,72.5" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- nn.RNN 연산 박스 -->
                             <rect x="435" y="77.5" width="100" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="485" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">nn.RNN</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="485" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">nn.RNN</text>
 
                             <!-- 화살표 4 -->
                             <line x1="540" y1="92.5" x2="565" y2="92.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- new h_n [1, 1024] -->
                             <rect x="570" y="70" width="120" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="630" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">new h_n</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="630" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">new h_n</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="630" y="106" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1, 1024]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="630" y="130" fill="#64748b" text-anchor="middle" dominant-baseline="central">(2차원 텐서)</text>
 
@@ -901,14 +887,14 @@
 
                             <!-- Linear 연산 박스 -->
                             <rect x="725" y="77.5" width="85" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="767.5" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Linear</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="767.5" y="92.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">Linear</text>
 
                             <!-- 화살표 6 -->
                             <line x1="815" y1="92.5" x2="840" y2="92.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- logit [1, 30000] -->
                             <rect x="845" y="70" width="130" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="910" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">logit</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="910" y="88" fill="#0f172a" text-anchor="middle" dominant-baseline="central">logit</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="910" y="106" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[1, 30000]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="910" y="130" fill="#64748b" text-anchor="middle" dominant-baseline="central">(2차원 텐서)</text>
 
@@ -917,14 +903,14 @@
 
                             <!-- 2행: squeeze -> argmax -> Token ID -> unsqueeze(0) -> output_token -->
                             <rect x="880" y="177.5" width="95" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="927.5" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.squeeze()</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="927.5" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.squeeze()</text>
 
                             <!-- 화살표 7 -->
                             <line x1="880" y1="192.5" x2="850" y2="192.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- logit (squeezed) [30000] -->
                             <rect x="715" y="170" width="130" height="45" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="780" y="188" fill="#0f172a" text-anchor="middle" dominant-baseline="central">logit (squeezed)</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="780" y="188" fill="#0f172a" text-anchor="middle" dominant-baseline="central">logit (squeezed)</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="780" y="206" fill="#ef4444" text-anchor="middle" dominant-baseline="central">[30000]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="780" y="230" fill="#64748b" text-anchor="middle" dominant-baseline="central">(1차원 텐서)</text>
 
@@ -933,14 +919,14 @@
 
                             <!-- argmax() 연산 박스 -->
                             <rect x="585" y="177.5" width="95" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="632.5" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.argmax()</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="632.5" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.argmax()</text>
 
                             <!-- 화살표 9 -->
                             <line x1="585" y1="192.5" x2="555" y2="192.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- Token ID [스칼라] -->
                             <rect x="430" y="170" width="120" height="45" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="490" y="188" fill="#047857" text-anchor="middle" dominant-baseline="central">Token ID '15'</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="490" y="188" fill="#047857" text-anchor="middle" dominant-baseline="central">Token ID '15'</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="490" y="206" fill="#10b981" text-anchor="middle" dominant-baseline="central">스칼라 (0차원)</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="490" y="230" fill="#047857" text-anchor="middle" dominant-baseline="central">(최종 추출 단어)</text>
 
@@ -949,27 +935,28 @@
 
                             <!-- unsqueeze(0) 연산 박스 -->
                             <rect x="270" y="177.5" width="120" height="30" rx="15" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="330" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.unsqueeze(0)</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="330" y="192.5" fill="#2563eb" text-anchor="middle" dominant-baseline="central">.unsqueeze(0)</text>
 
                             <!-- 화살표 11 -->
                             <line x1="270" y1="192.5" x2="235" y2="192.5" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-classic-dec)"/>
 
                             <!-- output_token [1, 1] (규격 완료) -->
                             <rect x="80" y="170" width="150" height="45" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
-                            <text font-family="Fira Code, monospace" font-size="13" font-weight="700" x="155" y="188" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">output_token</text>
+                            <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="155" y="188" fill="#1d4ed8" text-anchor="middle" dominant-baseline="central">output_token</text>
                             <text font-family="Fira Code, monospace" font-size="14" font-weight="700" x="155" y="206" fill="#2563eb" text-anchor="middle" dominant-baseline="central">[1, 1]</text>
                             <text font-family="Pretendard, sans-serif" font-size="14" x="155" y="230" fill="#1d4ed8" font-weight="700" text-anchor="middle" dominant-baseline="central">(2차원 텐서 ➔ 다음 스텝 주입!)</text>
 
                             <!-- 피드백 루프 곡선: output_token -> input_token -->
-                            <path d="M 155,215 L 155,260 A 20,20 0 0 1 135,280 L 35,280 A 20,20 0 0 1 15,260 L 15,115 A 15,15 0 0 1 30,100 L 75,100" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-blue-dec)"/>
-                            <text font-family="Pretendard, sans-serif" font-size="13" font-weight="700" x="80" y="275" fill="#2563eb" text-anchor="middle" dominant-baseline="central">다음 시점(t+1) 입력으로 피드백 순환</text>
+                            <path d="M 155,215 L 155,260 A 20,20 0 0 1 135,280 L 20,280 A 30,30 0 0 1 -10,250 L -10,130 A 30,30 0 0 1 20,100 L 22,100" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-blue-dec)"/>
+                            <text font-family="Pretendard, sans-serif" font-size="14" font-weight="700" x="15" y="295" fill="#2563eb" text-anchor="start" dominant-baseline="central">다음 시점(t+1) 입력으로 피드백 순환</text>
+                            </g>
                         </svg>
                     </div>
 
                     <!-- 디코더 차원 변화 해설 카드 -->
-                    <div class="p-3.5 bg-light rounded-3 border">
-                        <strong class="d-block mb-2 text-dark fs-6"><i class="fa-solid fa-lightbulb text-primary me-2"></i>💡 디코더 차원 변화 해설</strong>
-                        <ul class="mb-0 text-secondary" style="font-size: 14px; line-height: 1.75; padding-left: 1.2rem;">
+                    <div class="p-4 bg-light rounded-3 border mt-4" style="font-size: 15px;">
+                        <strong class="d-block mb-2 text-dark fs-6"><i class="fa-solid fa-lightbulb text-primary" style="margin-right: 10px;"></i>디코더 차원 변화 해설</strong>
+                        <ul class="mb-0 text-secondary" style="line-height: 1.75; padding-left: 1.2rem;">
                             <li><strong>초기 기억 주입 :</strong> 인코더의 최종 <code>context_vector (h_n) [1, 1024]</code>가 디코더 RNN의 초기 기억 <code>h_0</code>로 입력되어 문맥을 전달받는다.</li>
                             <li><strong>Logit & Argmax :</strong> RNN 출력이 Linear 레이어를 거쳐 전체 단어장 확률인 2차원 <code>logit [1, 30000]</code>이 되고, <code>squeeze()</code> 후 <code>argmax()</code>를 통해 0차원 스칼라 <code>Token ID '15'</code>를 선출한다.</li>
                             <li><strong>순환 피드백 :</strong> 선출된 정답 단어는 <code>unsqueeze(0)</code>를 거쳐 2차원 <code>output_token [1, 1]</code> 규격으로 포장된 후, 다음 시점(t+1)의 입력 토큰으로 되돌아간다.</li>
@@ -1122,8 +1109,6 @@
     const infoOutputShape = document.getElementById('info-output-shape');
     const infoOutputDim = document.getElementById('info-output-dim');
 
-    const meaningDesc = document.getElementById('meaning-desc-text');
-    const meaningList = document.getElementById('meaning-list-items');
     const mathCode = document.getElementById('math-code-text');
     const sampleCalc = document.getElementById('sample-calc-text');
     const tensorResult = document.getElementById('tensor-result-box');
@@ -1140,17 +1125,12 @@
       infoOutputShape.textContent = '[3, 4]';
       infoOutputDim.textContent = '2차원';
       
-      meaningDesc.innerHTML = `
-        배치 축(dim=0) 방향으로 단어 점수들을 평균하여, 전체 문장들의 평균적인 오차 흐름을 1장으로 융합하는 공정.<br>
-        • <strong>실제 활용 :</strong> 배치 내 각 문장들에서 계산된 손실(Loss)이나 피처값들을 배치 축 방향으로 평균 내어 대표 텐서를 얻을 때 사용.
+      mechTitle.textContent = 'dim=0 (배치 축) 축소 메커니즘';
+      mechDesc.innerHTML = `
+        배치 축(dim=0) 방향으로 데이터를 평균 내어, 2개 문장의 개별 단어 점수판을 <strong>배치 통합 보편적 평균 점수판 1장 [3, 4]</strong>로 압축합니다.<br><br>
+        • <strong>실제 활용 :</strong> 배치 내 각 문장들의 손실(Loss)이나 피처값들을 평균하여 문장 간 대표 오차를 구할 때 사용합니다.<br>
+        • <strong>직관적 이해 :</strong> 각 문장별 개별 통계를 배치 축을 따라 융합하여 모든 문장을 아우르는 공통의 대표성(2문장 평균 점수판)을 부여합니다.
       `;
-      meaningList.innerHTML = `
-        • <strong>직관적 이해 :</strong> 따로 있을 때는 각 문장에만 적합한 개별 통계지만, 배치 축(dim=0)을 따라 합쳐놓으면 모든 문장을 아우르는 공통의 보편적 통계(대표성)가 됨. 즉, 2개 문장[2, 3, 4]의 단어별 점수를 평균하여 <strong>두 문장 모두에 적합한 평균 점수판 1장 [3, 4]으로 압축하는 개념.</strong><br>
-        • <strong>핵심 용도 :</strong> 보편성 확보를 위한 데이터 융합 및 통계 분석
-      `;
-      
-      mechTitle.textContent = '💡 dim=0 (배치 축) 축소 메커니즘';
-      mechDesc.innerHTML = '배치 축(dim=0) 방향으로 데이터를 평균 내어, 2개 문장의 개별 단어 점수판을 <strong>배치 통합 보편적 평균 점수판 1장 [3, 4]</strong>로 압축합니다.';
       mathCode.textContent = `t.mean(dim=0) = (배치0: 4.0 + 배치1: 3.0) / 2 = 3.5`;
       tensorResult.textContent = `[[ 3.5,  1.5,  4.0,  3.0],
  [ 5.5,  7.5,  7.5,  7.5],
@@ -1195,17 +1175,12 @@
       infoOutputShape.textContent = '[2, 4]';
       infoOutputDim.textContent = '2차원';
       
-      meaningDesc.innerHTML = `
-        시퀀스 축(dim=1) 방향으로 문장 내 모든 단어 정보를 가로로 압축하여, 단어 순서는 없어지되 문장의 핵심 맥락 정보만 남기는 공정.<br>
-        • <strong>실제 활용 :</strong> 문장 전체의 감정 분류(긍정/부정)나 임베딩 유사도 계산 시 단어 순서와 무관하게 문장 요약 벡터를 뽑아낼 때 사용.
+      mechTitle.textContent = 'dim=1 (시퀀스 축) 축소 메커니즘';
+      mechDesc.innerHTML = `
+        시퀀스 축(dim=1) 방향으로 문장 내 단어들을 평균 내어 단어 순서를 소멸시키고, <strong>각 문장의 맥락 요약 벡터 [2, 4]</strong>로 압축합니다.<br><br>
+        • <strong>실제 활용 :</strong> 문장 전체의 감정 분류(긍정/부정)나 유사도 계산 시 단어 순서와 무관하게 문장 요약 벡터를 뽑아낼 때 사용합니다.<br>
+        • <strong>직관적 이해 :</strong> 3개 단어(Seq=3)의 점수들을 가로로 싹 평균 내면 단어 순서는 사라지지만, 문장 전체의 의미 성분이 담긴 요약 벡터만 남아 감정 분류 등을 쉽게 처리할 수 있습니다.
       `;
-      meaningList.innerHTML = `
-        • <strong>직관적 이해 :</strong> 문장을 구성하는 단어 집합 전체의 평균을 내어 문장의 종합적인 맥락을 대표하게 만드는 개념. 각 문장별로 3개 단어(Seq=3)의 점수들을 가로 방향으로 싹 평균 내면 단어 순서가 사라지므로 번역 같은 정교한 작업은 불가능해지지만, 문장 전체의 의미 성분이 담긴 요약 성적표 2장 [2, 4]으로 압축되어 문장의 감정 분류(긍정/부정) 등을 쉽게 처리하는 개념.<br>
-        • <strong>핵심 용도 :</strong> 문장 주제 파악 및 감정 분석
-      `;
-      
-      mechTitle.textContent = '💡 dim=1 (시퀀스 축) 축소 메커니즘';
-      mechDesc.innerHTML = '시퀀스 축(dim=1) 방향으로 문장 내 단어들을 평균 내어 단어 순서를 소멸시키고, <strong>각 문장의 맥락 요약 벡터 [2, 4]</strong>로 압축합니다.';
       mathCode.textContent = `t.mean(dim=1) = (피처: 4.0 + 5.0 + 9.0) / 3 = 6.0`;
       tensorResult.textContent = `[[6.0, 6.3, 7.0, 6.7],
  [7.3, 6.7, 8.0, 8.0]]`;
@@ -1259,17 +1234,12 @@
       infoOutputShape.textContent = '[2, 3]';
       infoOutputDim.textContent = '2차원 (정수)';
       
-      meaningDesc.innerHTML = `
-        단어장/피처 축(dim=2) 방향으로 수렴하여, 각 단어가 가진 4차원 점수판 중 <strong>가장 높은 점수를 낸 정답 단어의 번호(인덱스)</strong>를 선출하는 공정.<br>
-        • <strong>실제 활용 :</strong> 디코더 마지막 출력단에서 4개 보기 중 가장 확률이 높은 최종 번역 단어를 선출하기 위해 <strong>torch.argmax()</strong>를 사용하여 인덱스를 뽑아낼 때 사용.
+      mechTitle.textContent = 'dim=2 (단어장 축) Argmax 메커니즘';
+      mechDesc.innerHTML = `
+        단어장 축(dim=2) 방향 4개 어휘 점수 중 최대 점수의 정답 번호를 선출(Argmax)하여 <strong>최종 번역 정답지 [2, 3]</strong>로 압축합니다.<br><br>
+        • <strong>실제 활용 :</strong> 디코더 마지막 출력단에서 4개 보기 중 가장 확률이 높은 최종 번역 단어를 선출하기 위해 인덱스를 뽑아낼 때 사용합니다.<br>
+        • <strong>직관적 이해 :</strong> 단어마다 부여된 4개 보기 점수 중 가장 높은 득점을 낸 보기 번호(0~3)를 뽑아내어, 최종 텍스트 번역 결과 정답지로 압축하는 개념입니다.
       `;
-      meaningList.innerHTML = `
-        • <strong>직관적 이해 :</strong> 2개 문장(Batch=2)의 3개 단어(Seq=3)마다 부여된 4개 보기 점수 중 <strong>가장 높은 값을 득점한 보기 번호(0~3)</strong>를 뽑아내어, 최종 텍스트 번역 결과 정답지 1장 [2, 3]으로 압축하는 개념.<br>
-        • <strong>핵심 용도 :</strong> 모델의 최종 단어 예측 및 출력
-      `;
-      
-      mechTitle.textContent = '💡 dim=2 (단어장 축) Argmax 메커니즘';
-      mechDesc.innerHTML = '단어장 축(dim=2) 방향 4개 어휘 점수 중 최대 점수의 정답 번호를 선출(Argmax)하여 <strong>최종 번역 정답지 [2, 3]</strong>로 압축합니다.';
       mathCode.textContent = `t.argmax(dim=2) = argmax([4.0, 1.0, 3.0, 2.0]) = 0`;
       tensorResult.textContent = `[[0, 1, 2],
  [2, 2, 0]]`;
@@ -1325,13 +1295,11 @@
       infoOutputShape.textContent = '[] (스칼라)';
       infoOutputDim.textContent = '0차원';
       
-      meaningDesc.innerHTML = `
-        상자 안의 모든 축(문장, 단어, 단어장) 구분을 완전히 무시하고 전체 24개 값을 하나로 평균 내어 단 하나의 숫자로 요약하는 공정.<br>
-        • <strong>실제 활용 :</strong> 학습 시 전체 배치 문장 내 모든 단어의 오차를 싹 평균 내어 단 하나의 0차원 스칼라 손실(Loss)을 산출하고 역전파(Backpropagation) 학습을 진행할 때 사용.
-      `;
-      meaningList.innerHTML = `
-        • <strong>직관적 이해 :</strong> 딥러닝 학습 시 "이 배치 안의 모든 문장(2개)과 모든 단어(3개)에서 발생한 모든 개별 오차들을 싹 모아서 단 하나의 최종 오차 점수(Loss)로 요약하는 과정"임. 이 하나의 대표 실수값(예: 7.0)이 구해져야 비로소 모델 가중치를 학습시키기 위한 미분(역전파)을 개시할 수 있음.<br>
-        • <strong>핵심 용도 :</strong> 학습을 위한 최종 오차 전파
+      mechTitle.textContent = '전체 축 축소 메커니즘';
+      mechDesc.innerHTML = `
+        모든 축(배치, 시퀀스, 단어장)의 구분을 완전히 무시하고 전체 24개 값을 하나로 평균 내어 <strong>0차원 대표 스칼라 값 (7.0)</strong>으로 압축합니다.<br><br>
+        • <strong>실제 활용 :</strong> 학습 역전파(Backpropagation) 직전에 배치 내 모든 문장의 전체 오차 대표값 딱 1개를 계산하여 모델 최적화 지표(최종 Loss)로 활용합니다.<br>
+        • <strong>직관적 이해 :</strong> 배치 안의 모든 문장(2개)과 모든 단어(3개)의 개별 오차들을 싹 모아서 단 하나의 최종 오차 점수(Loss)로 요약 및 압축하는 과정입니다.
       `;
       
       mathCode.textContent = `t.mean() = (총합 168) / 24 = 7.0`;

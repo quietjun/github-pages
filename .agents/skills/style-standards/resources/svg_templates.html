@@ -1,0 +1,93 @@
+<!--
+  🏛️ github-pages 공식 1:1 SVG 컴포넌트 레고 블록 (SVG Block Templates)
+  모든 폰트는 14px(기본) 및 16px(제목)로 완전 정규화되어 있습니다.
+-->
+
+<!-- ========================================================================= -->
+<!-- 1. [1240px] 2칼럼 비교 분석 레이아웃 (LSTM vs Transformer 스타일)          -->
+<!-- ========================================================================= -->
+<div class="card border rounded-3 bg-white p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-code-compare text-secondary me-2"></i>[대제목] 아키텍처 비교 분석</h5>
+    <div class="svg-container">
+        <svg width="100%" height="160" viewBox="0 0 1240 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- 좌측 칼럼 (Red Theme) -->
+            <text x="30" y="26" font-size="16" font-weight="bold" fill="#ef4444">[좌측 항목 제목 (16px Bold)]</text>
+            <g opacity="0.40">
+                <rect x="30" y="65" width="100" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+                <text x="80" y="85" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">토큰 1</text>
+            </g>
+            <line x1="130" y1="84" x2="160" y2="84" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4,2" opacity="0.50" marker-end="url(#arr-red)"/>
+            <g opacity="1.0">
+                <rect x="160" y="65" width="100" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2.2"/>
+                <text x="210" y="85" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">토큰 2</text>
+            </g>
+            <text x="300" y="135" font-size="14" fill="#94a3b8" text-anchor="middle">➔ [하단 부가 설명 캡션 (14px)]</text>
+
+            <!-- 우측 칼럼 (Blue Theme: Full Self-Attention 완전 연결망) -->
+            <text x="650" y="26" font-size="16" font-weight="bold" fill="#0d6efd">[우측 항목 제목 (16px Bold)]</text>
+            
+            <!-- Full Attention Arcs (한 단어가 모든 단어를 동시 참조) -->
+            <path d="M697,65 Q932,12 1167,65" stroke="#9333ea" stroke-width="2.0" fill="none" stroke-dasharray="4,2" opacity="0.85"/>
+            <path d="M807,65 Q987,20 1167,65" stroke="#f59e0b" stroke-width="2.0" fill="none" stroke-dasharray="4,2" opacity="0.85"/>
+            <path d="M927,65 Q1047,28 1167,65" stroke="#10b981" stroke-width="2.2" fill="none" stroke-dasharray="4,2" opacity="0.90"/>
+            <path d="M1047,65 Q1107,36 1167,65" stroke="#0d6efd" stroke-width="2.4" fill="none" stroke-dasharray="4,2" opacity="0.95"/>
+
+            <rect x="640" y="55" width="580" height="58" rx="10" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.5"/>
+            <g>
+                <rect x="655" y="65" width="100" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                <text x="705" y="85" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">토큰 1</text>
+            </g>
+            <g>
+                <rect x="775" y="65" width="100" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                <text x="825" y="85" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">토큰 2</text>
+            </g>
+            <g>
+                <rect x="895" y="65" width="100" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                <text x="945" y="85" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">토큰 3</text>
+            </g>
+            <g>
+                <rect x="1015" y="65" width="100" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                <text x="1065" y="85" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">토큰 4</text>
+            </g>
+            <g>
+                <rect x="1135" y="65" width="75" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                <text x="1172" y="85" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">토큰 5</text>
+            </g>
+            <text x="930" y="138" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle">[하단 핵심 결론 캡션 (14px Bold)]</text>
+
+            <defs>
+                <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+                </marker>
+                <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="#0d6efd"/>
+                </marker>
+            </defs>
+        </svg>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. [1240px] 3단계 파이프라인 / 순환 루프 레이아웃                          -->
+<!-- ========================================================================= -->
+<div class="card border rounded-3 bg-white p-4 mb-4">
+    <div class="svg-container">
+        <svg width="100%" height="160" viewBox="0 0 1240 160" xmlns="http://www.w3.org/2000/svg">
+            <rect x="30" y="25" width="260" height="56" rx="10" fill="#eff6ff" stroke="#0d6efd" stroke-width="1.5"/>
+            <text x="160" y="53" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">1단계 입력 노드 (16px)</text>
+            <line x1="290" y1="53" x2="380" y2="53" stroke="#0d6efd" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+
+            <rect x="390" y="25" width="400" height="56" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+            <text x="590" y="44" font-size="16" font-weight="bold" fill="#334155" text-anchor="middle" dominant-baseline="central">2단계 처리 연산 블록 (16px)</text>
+            <text x="590" y="64" font-size="14" fill="#64748b" text-anchor="middle" dominant-baseline="central">세부 부가 설명 텍스트 (14px)</text>
+            <line x1="790" y1="53" x2="880" y2="53" stroke="#0d6efd" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+
+            <rect x="890" y="25" width="310" height="56" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+            <text x="1045" y="44" font-size="16" font-weight="bold" fill="#16a34a" text-anchor="middle" dominant-baseline="central">3단계 최종 출력 노드 (16px)</text>
+            <text x="1045" y="64" font-size="14" fill="#16a34a" text-anchor="middle" dominant-baseline="central">출력 확률 및 결과값 (14px)</text>
+
+            <path d="M1045,81 Q1045,140 590,140 Q160,140 160,81" stroke="#0d6efd" stroke-width="1.8" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+            <text x="590" y="130" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle">피드백 및 순환 파이프라인 경로 (14px Bold)</text>
+        </svg>
+    </div>
+</div>

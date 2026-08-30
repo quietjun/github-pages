@@ -1,1096 +1,1250 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Transformer & Self-Attention 시각화</title>
-<link rel="stylesheet" href="../../css/content.css">
-<script src="../../js/content.js"></script>
-<style>
-  /* ── Page Specific Visualization Styles ── */
-  :root {
-    --q:#4a7cf7;  --q-l:#dce8ff;
-    --k:#059669;  --k-l:#d1fae5;
-    --v:#9c4af7;  --v-l:#ecdcff;
-    --a:#f7774a;  --a-l:#ffe8dc;
-    --mask:#ef4444; --mask-l:#fee2e2;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer & Self-Attention 구조와 원리</title>
 
-  /* ── Callout ── */
-  .callout { border-radius: 12px; padding: 13px 16px; font-size: .875rem; color: var(--sub); line-height: 1.8; margin-bottom: 18px; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
-  .callout.blue  { background: var(--q-l); border: 1px solid #b6d0ff; border-left: 4px solid var(--q); }
-  .callout.green { background: var(--k-l); border: 1px solid #a7f3d0; border-left: 4px solid var(--k); }
-  .callout.purple{ background: var(--v-l); border: 1px solid #d8b4fe; border-left: 4px solid var(--v); }
-  .callout.orange{ background: var(--a-l); border: 1px solid #fcd9b6; border-left: 4px solid var(--a); }
-  .callout.red   { background: var(--mask-l); border: 1px solid #fca5a5; border-left: 4px solid var(--mask); }
-  .callout strong{ color: var(--text); } .callout .ni{ font-size: 1.1rem; flex-shrink: 0; margin-top: 3px; }
+    <!-- 1. 외부 라이브러리 & 표준 스타일시트 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/standards.css">
 
-  /* ── Compare ── */
-  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 8px; }
-  @media(max-width:600px){ .cmp-grid { grid-template-columns: 1fr; } }
-  .ccard { background: var(--surface); border-radius: var(--radius); padding: 18px; border: 2px solid var(--border); box-shadow: var(--shadow); }
-  .ccard.bad { border-color: #fca5a5; background: #fff8f8; }
-  .ccard.good { border-color: #93c5fd; background: #f8fbff; }
-  .cbadge { display: inline-block; font-size: .76rem; font-weight: 700; border-radius: 99px; padding: 3px 11px; margin-bottom: 9px; }
-  .ccard.bad .cbadge { background: #fee2e2; color: #ef4444; }
-  .ccard.good .cbadge { background: var(--q-l); color: var(--q); }
-  .ctitle { font-size: .97rem; font-weight: 700; margin-bottom: 10px; }
-  .pts { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-  .pts li { display: flex; align-items: flex-start; gap: 7px; font-size: .845rem; color: var(--sub); }
-  .pts em { color: var(--text); font-style: normal; font-weight: 600; }
+    <style>
+        :root {
+            --theme-primary: #0d6efd;
+            --q-color: #4a7cf7;
+            --q-light: #dce8ff;
+            --k-color: #059669;
+            --k-light: #d1fae5;
+            --v-color: #9c4af7;
+            --v-light: #ecdcff;
+            --a-color: #f7774a;
+            --a-light: #ffe8dc;
+            --mask-color: #ef4444;
+            --mask-light: #fee2e2;
+        }
 
+        /* ── Floating TOC ── */
+        .toc-floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1050;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .offcanvas-toc { width: 320px; }
+        .toc-list { list-style: none; padding-left: 0; }
+        .toc-list li { font-size: 15px; margin-bottom: 8px; }
+        .toc-list a { color: #4b5563; text-decoration: none; transition: color 0.2s; }
+        .toc-list a:hover { color: var(--theme-primary); font-weight: 600; }
 
-/* ── Legend ── */
-.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:12px;
-  padding:10px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);}
-.lg-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--sub);font-weight:600;}
-.lg-dot{width:11px;height:11px;border-radius:3px;border:2px solid;flex-shrink:0;}
+        /* ── Interactive Simulation & Wizard Styles ── */
+        .qkv-step-tab {
+            padding: 10px 14px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            background-color: #f8f9fa;
+            transition: all 0.2s;
+        }
 
-/* ── Diagram wrap ── */
-.dg-wrap{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
-  box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden;}
-.dg-wrap svg{width:100%;height:auto;display:block;}
+        .qkv-step-tab.current {
+            color: var(--theme-primary);
+            border-bottom-color: var(--theme-primary);
+            background-color: #eff6ff;
+        }
 
-/* ── 이미지 반응형 ── */
-.dg-wrap img{width:100%;height:auto;display:block;max-width:100%;}
+        .qkv-step {
+            display: none;
+        }
 
-/* ── Embedding demo ── */
-.emb-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
-@media(max-width:640px){.emb-row{grid-template-columns:repeat(2,1fr);}}
-.emb-card{background:var(--surface);border:2px solid var(--border);border-radius:12px;
-  padding:12px 10px;text-align:center;box-shadow:var(--shadow);}
-.emb-word{font-size:1.05rem;font-weight:800;margin-bottom:5px;}
-.emb-vec{font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--sub);
-  background:var(--surface2);border-radius:7px;padding:5px 7px;line-height:1.8;text-align:left;}
+        .qkv-step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
 
-/* ── Context update demo ── */
-.ctx-demo{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
-  box-shadow:var(--shadow);margin-bottom:18px;padding:18px 20px;}
-.ctx-title{font-size:.85rem;font-weight:700;color:var(--sub);margin-bottom:12px;}
-.ctx-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-.ctx-tok{border-radius:9px;padding:6px 13px;font-size:.875rem;font-weight:700;border:2px solid;}
-.ctx-tok.hi{background:var(--q-l);border-color:var(--q);color:var(--q);}
-.ctx-tok.adj{background:var(--k-l);border-color:var(--k);color:var(--k);}
-.ctx-tok.dim{background:var(--surface2);border-color:var(--border);color:var(--sub);}
-.ctx-arrow{font-size:1.2rem;color:var(--a);font-weight:700;}
-.ctx-tok.updated{background:var(--a-l);border-color:var(--a);color:var(--a);}
-.ctx-note{font-size:.78rem;color:var(--sub);margin-top:2px;padding-left:4px;}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-/* ── Causal mask ── */
-.mask-wrap{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
-  padding:18px;box-shadow:var(--shadow);margin-bottom:18px;}
+        .sm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
 
-/* ── Full flow ── */
-.flow-row{display:flex;align-items:center;gap:0;margin-bottom:18px;flex-wrap:wrap;}
-.flow-block{background:var(--surface);border-radius:11px;border:2px solid var(--border);
-  padding:9px 12px;text-align:center;font-size:.78rem;font-weight:700;color:var(--text);
-  min-width:76px;box-shadow:var(--shadow);}
-.flow-arrow{font-size:1rem;color:var(--sub);padding:0 3px;flex-shrink:0;}
-.flow-block.repeat{border-style:dashed;color:var(--sub);}
+        .sm-table th, .sm-table td {
+            padding: 8px 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
 
-/* ── Interactive sim ── */
-.sim-intro{background:var(--surface);border-radius:var(--radius);padding:14px 18px;
-  border:1px solid var(--border);font-size:.875rem;color:var(--sub);line-height:1.75;
-  margin-bottom:14px;box-shadow:var(--shadow);}
-.sim-intro strong{color:var(--text);}
-.sim-wrap{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
-  box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;}
-.sim-wrap svg{width:100%;height:auto;display:block;}
-.token-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
-  padding:14px 12px 6px;background:var(--surface);border-radius:var(--radius);
-  border:1px solid var(--border);margin-bottom:12px;box-shadow:var(--shadow);}
-.tok-btn{padding:8px 16px;border-radius:10px;border:2px solid var(--border);
-  background:var(--surface2);font-family:"Noto Sans KR",sans-serif;font-size:.88rem;
-  font-weight:700;color:var(--sub);cursor:pointer;transition:all .18s;}
-.tok-btn:hover{border-color:var(--q);color:var(--q);background:var(--q-l);}
-.tok-btn.active{background:var(--q);color:white;border-color:var(--q);
-  box-shadow:0 2px 10px rgba(74,124,247,.35);transform:translateY(-2px);}
-.tok-hint{width:100%;text-align:center;font-size:.76rem;color:var(--sub);padding-top:3px;}
-.attn-panel{background:var(--surface);border-radius:var(--radius);border:2px solid var(--border);
-  margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s;}
-.attn-hdr{padding:12px 18px 10px;border-bottom:1px solid var(--border);
-  background:var(--surface2);display:flex;align-items:center;gap:10px;}
-.attn-badge{background:var(--q);color:white;border-radius:7px;padding:3px 11px;
-  font-size:.8rem;font-weight:700;}
-.attn-ttl{font-size:.93rem;font-weight:700;color:var(--text);}
-.attn-body{padding:16px 18px;}
-.attn-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
-.attn-tok{width:78px;font-size:.875rem;font-weight:700;color:var(--text);text-align:right;flex-shrink:0;}
-.bar-track{flex:1;height:20px;background:var(--surface2);border-radius:99px;
-  overflow:hidden;border:1px solid var(--border);}
-.bar-fill{height:100%;border-radius:99px;background:var(--q);
-  transition:width .45s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;
-  justify-content:flex-end;padding-right:7px;}
-.bar-pct{font-size:.72rem;font-weight:700;color:white;}
-.attn-num{width:36px;font-size:.8rem;font-weight:700;color:var(--sub);
-  font-family:"JetBrains Mono",monospace;}
+        .sm-table td.hi { background-color: #ffe8dc; color: #c2410c; font-weight: 700; }
+        .sm-table td.mid { background-color: #fff0e8; color: #f7774a; font-weight: 600; }
+        .sm-table td.lo { background-color: #f0fdf4; color: #059669; }
+        .sm-table td.masked { background-color: #fee2e2; color: #ef4444; font-weight: 700; }
 
-/* ── Multi-head cards ── */
-.mh-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
-@media(max-width:640px){.mh-grid{grid-template-columns:repeat(2,1fr);}}
-.mh-card{background:var(--surface);border-radius:12px;border:2px solid var(--border);
-  padding:12px 10px;box-shadow:var(--shadow);text-align:center;transition:all .2s;}
-.mh-card:hover{transform:translateY(-2px);}
-.mh-icon{font-size:1.3rem;margin-bottom:6px;}
-.mh-title{font-size:.84rem;font-weight:700;margin-bottom:3px;}
-.mh-sub{font-size:.74rem;color:var(--sub);line-height:1.5;}
+        .tok-btn {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            background-color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-/* ══════════════════════════════════════════
-   Q·K·V 스텝 위저드
-══════════════════════════════════════════ */
-.qkv-wizard{background:var(--surface);border-radius:var(--radius);
-  border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px;}
+        .tok-btn:hover {
+            border-color: var(--q-color);
+            color: var(--q-color);
+            background-color: var(--q-light);
+        }
 
-.qkv-progress{display:flex;background:var(--surface2);border-bottom:1px solid var(--border);
-  padding:0;}
-.qkv-step-tab{flex:1;padding:10px 6px;text-align:center;font-size:.72rem;font-weight:700;
-  color:var(--sub);cursor:pointer;transition:all .25s;border-bottom:3px solid transparent;
-  line-height:1.3;}
-.qkv-step-tab.done{color:var(--k);border-bottom-color:var(--k);}
-.qkv-step-tab.current{color:var(--q);border-bottom-color:var(--q);background:var(--q-l);}
+        .tok-btn.active {
+            background-color: var(--q-color);
+            color: #fff;
+            border-color: var(--q-color);
+            box-shadow: 0 4px 12px rgba(74, 124, 247, 0.3);
+        }
 
-.qkv-body{padding:22px 24px 18px;}
-.qkv-step{display:none;}
-.qkv-step.active{display:block;animation:fadeIn .3s ease;}
+        .attn-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
 
-.qkv-step-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.qkv-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0;}
-.qkv-step-title{font-size:1.05rem;font-weight:800;color:var(--text);}
-.qkv-step-sub{font-size:.84rem;color:var(--sub);margin-top:1px;}
+        .attn-tok {
+            width: 80px;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: right;
+            flex-shrink: 0;
+        }
 
-.step-1 .qkv-num{background:var(--q-l);color:var(--q);}
-.step-2 .qkv-num{background:var(--k-l);color:var(--k);}
-.step-3 .qkv-num{background:var(--v-l);color:var(--v);}
-.step-4 .qkv-num{background:var(--a-l);color:var(--a);}
-.step-5 .qkv-num{background:#d1fae5;color:#059669;}
+        .bar-track {
+            flex: 1;
+            height: 22px;
+            background-color: #f1f5f9;
+            border-radius: 99px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
 
-.formula-box{font-family:"JetBrains Mono",monospace;font-size:.9rem;font-weight:700;
-  border-radius:10px;padding:11px 16px;margin:12px 0;display:inline-block;}
-.formula-box.q{background:var(--q-l);color:var(--q);}
-.formula-box.k{background:var(--k-l);color:var(--k);}
-.formula-box.v{background:var(--v-l);color:var(--v);}
-.formula-box.score{background:var(--a-l);color:var(--a);}
-.formula-box.final{background:#f0fdf4;color:#059669;border:1px solid #a7f3d0;}
+        .bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background-color: var(--q-color);
+            transition: width 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
 
-.transform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
-.transform-card{border-radius:12px;padding:12px;border:2px solid;text-align:center;}
-.transform-card.q-card{background:var(--q-l);border-color:var(--q);}
-.transform-card.k-card{background:var(--k-l);border-color:var(--k);}
-.transform-card.v-card{background:var(--v-l);border-color:var(--v);}
-.tc-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
-  margin-bottom:5px;opacity:.7;}
-.tc-title{font-size:.88rem;font-weight:800;margin-bottom:3px;}
-.tc-desc{font-size:.74rem;color:var(--sub);}
-.tc-vec{font-family:"JetBrains Mono",monospace;font-size:.65rem;color:var(--sub);
-  background:rgba(255,255,255,.6);border-radius:6px;padding:3px 6px;margin-top:5px;
-  text-align:left;line-height:1.6;}
+        .bar-pct {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+        }
 
-.score-matrix{margin:12px 0;}
-.sm-table{border-collapse:collapse;width:100%;}
-.sm-table th{font-size:.72rem;font-weight:700;padding:5px 8px;text-align:center;
-  background:var(--surface2);}
-.sm-table td{font-size:.78rem;font-weight:700;padding:6px 8px;text-align:center;
-  border:1px solid var(--border);border-radius:0;transition:background .3s;}
-.sm-table td.hi{background:#ffe8dc;color:#c2410c;}
-.sm-table td.mid{background:#fff0e8;color:#f7774a;}
-.sm-table td.lo{background:#f0fdf4;color:#059669;}
-.sm-table td.masked{background:var(--mask-l);color:var(--mask);opacity:.5;}
+        .attn-num {
+            width: 44px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b;
+            font-family: 'Fira Code', monospace;
+        }
 
-.sm-arrow{text-align:center;margin:8px 0;font-size:.85rem;font-weight:700;color:var(--a);}
-
-.wsum-row{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap;}
-.wsum-label{font-size:.82rem;font-weight:700;width:56px;text-align:right;color:var(--sub);}
-.wsum-bar-wrap{flex:1;min-width:120px;}
-.wsum-bar-bg{height:18px;background:var(--surface2);border-radius:99px;overflow:hidden;
-  border:1px solid var(--border);position:relative;}
-.wsum-bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1);}
-.wsum-pct{font-size:.75rem;font-weight:700;font-family:"JetBrains Mono",monospace;
-  width:36px;color:var(--sub);}
-.wsum-note{font-size:.74rem;color:var(--sub);width:100%;padding-left:68px;margin-top:-2px;}
-
-.update-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;
-  align-items:center;margin:12px 0;}
-.uc-box{border-radius:12px;padding:12px 14px;border:2px solid;}
-.uc-box.before{background:var(--surface2);border-color:var(--border);}
-.uc-box.after{background:var(--q-l);border-color:var(--q);}
-.uc-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
-  color:var(--sub);margin-bottom:5px;}
-.uc-title{font-size:.92rem;font-weight:800;margin-bottom:3px;}
-.uc-vec{font-family:"JetBrains Mono",monospace;font-size:.66rem;color:var(--sub);
-  line-height:1.7;}
-.uc-arrow{font-size:1.5rem;color:var(--a);font-weight:700;text-align:center;}
-
-.qkv-nav{display:flex;justify-content:space-between;align-items:center;
-  padding:14px 24px;border-top:1px solid var(--border);background:var(--surface2);}
-.nav-btn{padding:9px 20px;border-radius:10px;border:2px solid;font-family:"Noto Sans KR",sans-serif;
-  font-size:.85rem;font-weight:700;cursor:pointer;transition:all .18s;}
-.nav-btn.prev{background:var(--surface);border-color:var(--border);color:var(--sub);}
-.nav-btn.prev:hover{border-color:var(--q);color:var(--q);}
-.nav-btn.next{background:var(--q);border-color:var(--q);color:white;
-  box-shadow:0 2px 10px rgba(74,124,247,.3);}
-.nav-btn.next:hover{background:#3a6ce8;box-shadow:0 3px 14px rgba(74,124,247,.45);}
-.nav-btn:disabled{opacity:.35;cursor:not-allowed;}
-.step-counter{font-size:.82rem;font-weight:700;color:var(--sub);}
-
-/* ── Footer ── */
-.footer{text-align:center;margin-top:36px;padding-top:18px;border-top:1px solid var(--border);
-  font-size:.8rem;color:var(--sub);}
-</style>
+        .svg-container {
+            width: 100%;
+            overflow-x: auto;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ═══ -->
-<div class="container">
+    <!-- [마스터 표준 플로팅 목차 (TOC Drawer)] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5><i class="fa-solid fa-book-bookmark text-primary me-2"></i>문서 목차</h5>
+            <ul>
+                <li><a href="#sec-intro"><i class="fa-solid fa-bolt text-primary me-2"></i>1. LSTM vs Transformer</a></li>
+                <li><a href="#sec-pos"><i class="fa-solid fa-location-dot text-primary me-2"></i>2. 위치 인코딩</a></li>
+                <li><a href="#sec-intuition"><i class="fa-solid fa-lightbulb text-primary me-2"></i>3. Self-Attention 직관</a></li>
+                <li><a href="#sec-qkv"><i class="fa-solid fa-diagram-project text-primary me-2"></i>4. Q · K · V 5단계 연산</a></li>
+                <li><a href="#sec-sim"><i class="fa-solid fa-chart-simple text-primary me-2"></i>5. Attention 시뮬레이션</a></li>
+                <li><a href="#sec-unembed"><i class="fa-solid fa-arrows-rotate text-primary me-2"></i>6. 언임베딩 & 단어 예측</a></li>
+                <li><a href="#sec-multihead"><i class="fa-solid fa-layer-group text-primary me-2"></i>7. 다중 헤드 어텐션</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<header class="header-card">
-  <h1>Transformer & Self-Attention</h1>
-  <p class="subtitle">Transformer가 텍스트를 입력받아 다음 단어를 예측하는 추론 과정의 시각화 및 직관적 이해</p>
-  <div class="header-meta">
-    <span><strong>개념</strong> Self-Attention</span>
-    <span><strong>대상</strong> GPT / BERT 기반 모델</span>
-    <span><strong>난이도</strong> 중급</span>
-  </div>
-</header>
+    <!-- Main Container -->
+    <div class="container-custom">
+        <article>
+            <header id="header">
+                <h1>Transformer & Self-Attention</h1>
+                <p class="lead">순차적 처리의 한계를 극복하고 모든 단어를 병렬로 연결하는 <span class="kw">Self-Attention</span> 연산 메커니즘 및 텍스트 추론 파이프라인을 분석한다.</p>
+                
+                <!-- 인라인 빠른 목차 카드 -->
+                <div class="card-parent p-3 mb-4 bg-light border">
+                    <div class="fw-bold mb-2 text-primary small"><i class="fa-solid fa-list-ol me-2"></i>학습 로드맵 목차</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="#sec-intro" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-bolt text-danger me-1"></i>1. LSTM vs Transformer</a>
+                        <a href="#sec-pos" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-location-dot text-primary me-1"></i>2. 위치 인코딩</a>
+                        <a href="#sec-intuition" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-lightbulb text-warning me-1"></i>3. 핵심 직관</a>
+                        <a href="#sec-qkv" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-diagram-project text-success me-1"></i>4. Q·K·V 5단계 연산</a>
+                        <a href="#sec-sim" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-chart-simple text-info me-1"></i>5. Attention 시뮬레이션</a>
+                        <a href="#sec-unembed" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-arrows-rotate text-purple me-1"></i>6. 언임베딩 & 예측</a>
+                        <a href="#sec-multihead" class="btn btn-sm btn-outline-secondary bg-white"><i class="fa-solid fa-layer-group text-dark me-1"></i>7. 다중 헤드 어텐션</a>
+                    </div>
+                </div>
+            </header>
 
+            <!-- 1. LSTM vs Transformer -->
+            <section id="sec-intro">
+                <h2 id="toc-1"><i class="fa-solid fa-bolt text-primary me-2"></i>1. 도입 — LSTM의 한계와 Transformer의 등장</h2>
+                <p>기존 순환 신경망(Recurrent Neural Network, RNN) 및 <strong>장단기 메모리(Long Short-Term Memory, LSTM)</strong> 모델은 단어를 순차적으로 처리하므로 문장이 길어질수록 장거리 의존성 정보가 희석되고 GPU 병렬 연산이 불가능한 한계를 지닌다. 반면 <strong>트랜스포머(Transformer)</strong>는 모든 토큰의 쌍별 관계를 동시에 연산하여 완전한 병렬 처리를 달성한다.</p>
 
-<!-- ═══ TAB NAV ═══ -->
-<div class="tab-nav">
-  <button class="tab-btn active" onclick="switchTab(0)">① 도입 — 임베딩 · Attention 직관</button>
-  <button class="tab-btn" onclick="switchTab(1)">② 핵심 — Self-Attention</button>
-  <button class="tab-btn" onclick="switchTab(2)">③ 실습 — 시뮬레이션 · Multi-Head · 전체 흐름</button>
-</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger-subtle bg-danger-subtle bg-opacity-10 border rounded-3 p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-danger me-2">순차 처리</span>
+                                <h5 class="mb-0 text-danger fw-bold">LSTM</h5>
+                            </div>
+                            <ul class="mb-0 ps-3">
+                                <li>이전 은닉 상태(Hidden State, h) 연산 완료 후 다음 토큰 처리 (직렬 의존성)</li>
+                                <li>시퀀스 길이에 비례한 연산 병목 및 학습/추론 속도 저하</li>
+                                <li>하드웨어 가속기(GPU)의 다중 코어 병렬 연산 불가</li>
+                                <li>셀 상태(Cell State, C) 기반 장거리 문맥 보존의 본질적 한계</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary-subtle bg-primary-subtle bg-opacity-10 border rounded-3 p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">병렬 처리</span>
+                                <h5 class="mb-0 text-primary fw-bold">Transformer</h5>
+                            </div>
+                            <ul class="mb-0 ps-3">
+                                <li><strong>자기 어텐션(Self-Attention)</strong>을 통한 전체 토큰 쌍의 동시 병렬 관계 연산</li>
+                                <li>행렬곱 기반 연산 구조로 GPU 하드웨어 가속 극대화</li>
+                                <li>토큰 간 물리적 거리에 무관한 직접적 문맥 연결</li>
+                                <li>현대 초거대 언어 모델(LLM)의 핵심 표준 아키텍처</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- 1:1 SVG Diagram (컨테이너 1240px 1:1 실측 규격) -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-code-compare text-secondary me-2"></i>순차 처리 vs 병렬 처리 아키텍처 비교</h5>
+                    <div class="svg-container">
+                        <svg width="100%" height="160" viewBox="0 0 1240 160" xmlns="http://www.w3.org/2000/svg">
+                            <!-- LSTM Row (좌측: 순차 처리 & 점진적 기억 소실) -->
+                            <text x="30" y="26" font-size="16" font-weight="bold" fill="#ef4444">LSTM (순차 직렬 처리: 과거 정보 소실)</text>
+                            
+                            <g opacity="0.20">
+                                 <rect x="30" y="75" width="85" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+                                 <text x="72" y="95" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">나는</text>
+                            </g>
+                            <line x1="115" y1="94" x2="140" y2="94" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.30" marker-end="url(#arr-red)"/>
+                            
+                            <g opacity="0.40">
+                                 <rect x="145" y="75" width="85" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+                                 <text x="187" y="95" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">어제</text>
+                            </g>
+                            <line x1="230" y1="94" x2="255" y2="94" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4,2" opacity="0.50" marker-end="url(#arr-red)"/>
 
-<!-- ════════════════════════════════════
-  TAB 0 : 도입
-════════════════════════════════════ -->
-<div class="tab-panel active" id="tab-0">
+                            <g opacity="0.65">
+                                 <rect x="260" y="75" width="100" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+                                 <text x="310" y="95" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">학교에서</text>
+                            </g>
+                            <line x1="360" y1="94" x2="385" y2="94" stroke="#ef4444" stroke-width="2.0" stroke-dasharray="4,2" opacity="0.75" marker-end="url(#arr-red)"/>
 
-  <!-- LSTM vs Transformer -->
-  <div class="sec"><div class="ln"></div><span>LSTM이 Transformer에 밀린 이유</span><div class="ln"></div></div>
-  <div class="cmp-grid">
-    <div class="ccard bad">
-      <div class="cbadge">⏳ LSTM</div>
-      <div class="ctitle">순차 처리 — 한 단어가 끝나야 다음으로 넘어간다</div>
-      <ul class="pts">
-        <li><span>⚠️</span><span><em>순차 처리</em> — 앞 단어 완료 후 다음 처리</span></li>
-        <li><span>⚠️</span><span><em>병렬화 불가</em> — GPU 다수여도 본질적 한계</span></li>
-        <li><span>⚠️</span><span><em>병목 심화</em> — 문장이 길수록 학습 속도 저하</span></li>
-        <li><span>⚠️</span><span><em>장거리 의존성 희석</em> — Cell State로도 한계</span></li>
-      </ul>
+                            <g opacity="0.85">
+                                 <rect x="390" y="75" width="85" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="1.8"/>
+                                 <text x="432" y="95" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">밥을</text>
+                            </g>
+                            <line x1="475" y1="94" x2="500" y2="94" stroke="#ef4444" stroke-width="2.2" opacity="0.90" marker-end="url(#arr-red)"/>
+
+                            <g opacity="1.0">
+                                <rect x="505" y="75" width="100" height="38" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2.5"/>
+                                <text x="555" y="95" font-size="14" font-weight="bold" fill="#ef4444" text-anchor="middle" dominant-baseline="central">먹었다</text>
+                            </g>
+                            <text x="320" y="142" font-size="14" fill="#94a3b8" text-anchor="middle">➔ 순차 처리 진행 (과거 은닉 상태 점진적 희석)</text>
+
+                            <!-- Transformer Row (우측: 완전 병렬 처리 & 개별 토큰 박스) -->
+                            <text x="650" y="26" font-size="16" font-weight="bold" fill="#0d6efd">Transformer (완전 병렬 동시 처리: O(1) 단계)</text>
+                            
+                            <!-- Full Self-Attention 연결 곡선: '먹었다' 단어 박스(1167, 75)에서 각 단어 박스로 직접 화살표 연결 -->
+                            <path d="M1167,75 Q932,12 697,75" stroke="#9333ea" stroke-width="2.2" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+                            <path d="M1167,75 Q987,24 807,75" stroke="#f59e0b" stroke-width="2.2" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-orange)"/>
+                            <path d="M1167,75 Q1047,38 927,75" stroke="#10b981" stroke-width="2.2" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+                            <path d="M1167,75 Q1107,52 1047,75" stroke="#0d6efd" stroke-width="2.4" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+
+                            <!-- 개별 단어 토큰 상자 (y=75~113) -->
+                            <g>
+                                <rect x="655" y="75" width="85" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                                <text x="697" y="95" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">나는</text>
+                            </g>
+                            <g>
+                                <rect x="765" y="75" width="85" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                                <text x="807" y="95" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">어제</text>
+                            </g>
+                            <g>
+                                <rect x="875" y="75" width="105" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                                <text x="927" y="95" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">학교에서</text>
+                            </g>
+                            <g>
+                                <rect x="1005" y="75" width="85" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="1.5"/>
+                                <text x="1047" y="95" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">밥을</text>
+                            </g>
+                            <g>
+                                <rect x="1115" y="75" width="105" height="38" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="2.5"/>
+                                <text x="1167" y="95" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">먹었다</text>
+                            </g>
+                            
+                            <text x="930" y="142" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle">모든 토큰 간 직접 연결 (장거리 정보 희석 없음 ⚡)</text>
+
+                            <defs>
+                                <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+                                </marker>
+                                <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#0d6efd"/>
+                                </marker>
+                                <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#9333ea"/>
+                                </marker>
+                                <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+                                </marker>
+                                <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Positional Encoding -->
+            <section id="sec-pos">
+                <h2 id="toc-2"><i class="fa-solid fa-location-dot text-primary me-2"></i>2. 위치 인코딩 (Positional Encoding)</h2>
+                <div class="card border rounded-3 bg-white p-3 mb-4">
+                    <p class="mb-3">순환 구조를 배제한 트랜스포머는 입력 토큰들의 순서 정보를 기본적으로 인지하지 못한다. 따라서 각 단어의 고유 임베딩 벡터에 <strong>위치 인코딩(Positional Encoding, PE)</strong> 벡터를 직접 합산하여 순서 패턴을 주입한다.</p>
+                    <div class="bg-light rounded-3 p-3 border">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-secondary me-2 fs-6">원리</span>
+                            <span class="fw-bold">최종 입력 벡터 = 단어 임베딩(Embedding, E) + 위치 인코딩(PE)</span>
+                        </div>
+                        <p class="mb-0 text-secondary">삼각함수(Sine, Cosine) 주기 함수 또는 학습 가능한 위치 임베딩을 활용하여 시퀀스 내 상대적/절대적 거리를 모델에 전달한다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Self-Attention Intuition -->
+            <section id="sec-intuition">
+                <h2 id="toc-3"><i class="fa-solid fa-lightbulb text-primary me-2"></i>3. Self-Attention의 핵심 직관</h2>
+                <p>문맥이 반영되지 않은 초기 단어 임베딩은 고정된 사전적 의미만을 갖는다. Self-Attention은 문장 내 주변 단어들을 조회하여 <strong>"어떤 정보를 얼마나 흡수하여 임베딩을 갱신할 것인가"</strong>를 계산하는 연산이다.</p>
+
+                <div class="card border rounded-3 bg-white p-3 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-arrows-split-up-and-left text-primary me-2"></i>문맥에 따른 임베딩 동적 갱신 사례</h5>
+                    <div class="row g-3 text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">문맥 A (과일)</div>
+                                <div class="fw-bold fs-6">"달콤한 향기 <span class="px-2 py-0.5 rounded bg-warning text-dark fw-bold">배</span>를 먹었다"</div>
+                                <div class="text-primary fw-bold mt-2">➔ 과일 관련 특성 반영</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">문맥 B (선박)</div>
+                                <div class="fw-bold fs-6">"푸른 바다에서 <span class="px-2 py-0.5 rounded bg-info text-dark fw-bold">배</span>를 탔다"</div>
+                                <div class="text-primary fw-bold mt-2">➔ 선박 관련 특성 반영</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">문맥 C (신체)</div>
+                                <div class="fw-bold fs-6">"무리한 운동 후 <span class="px-2 py-0.5 rounded bg-danger text-white fw-bold">배</span>가 아프다"</div>
+                                <div class="text-primary fw-bold mt-2">➔ 복부 관련 특성 반영</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QKV 연산 도입 브릿지 -->
+                    <div class="principle-box mt-3 mb-0">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="badge bg-primary me-2 fs-6">핵심 메커니즘</span>
+                            <span class="fw-bold">문맥 반영을 위한 Q · K · V 선형 변환</span>
+                        </div>
+                        <p class="mb-0 text-secondary">Self-Attention은 이러한 문맥 기반 임베딩 동적 갱신을 실현하기 위해, 각 단어로부터 <strong>질의(Query, Q), 키(Key, K), 값(Value, V)</strong> 세 가지 고유 벡터를 도출하여 상호작용 연산을 수행한다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. QKV Mechanism Wizard -->
+            <section id="sec-qkv">
+                <h2 id="toc-4"><i class="fa-solid fa-diagram-project text-primary me-2"></i>4. Q · K · V 5단계 연산 메커니즘</h2>
+                <p>디코더(Decoder-Only) 모델 기준, 예시 문장 <code>"나는 밥을 먹었다"</code> (토큰 3개)의 단계별 Self-Attention 수식과 행렬 연산 과정을 전개한다.</p>
+
+                <div class="card border rounded-3 bg-white overflow-hidden mb-4">
+                    <!-- Progress Tabs -->
+                    <div class="d-flex border-bottom bg-light">
+                        <div class="qkv-step-tab current flex-fill" id="stt-0" onclick="qkvGoto(0)">① 입력 임베딩</div>
+                        <div class="qkv-step-tab flex-fill" id="stt-1" onclick="qkvGoto(1)">② Q · K · V 생성</div>
+                        <div class="qkv-step-tab flex-fill" id="stt-2" onclick="qkvGoto(2)">③ 유사도 Score</div>
+                        <div class="qkv-step-tab flex-fill" id="stt-3" onclick="qkvGoto(3)">④ 마스킹 & Softmax</div>
+                        <div class="qkv-step-tab flex-fill" id="stt-4" onclick="qkvGoto(4)">⑤ 가중합 & 업데이트</div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <!-- Step 0 -->
+                        <div class="qkv-step active" id="qkv-s0">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary fs-6 me-2">Step 1</span>
+                                <h4 class="mb-0 fw-bold">입력 임베딩 (Input Embedding)</h4>
+                            </div>
+                            <p>토큰 룩업 테이블에서 각 토큰에 해당하는 고유 임베딩 벡터를 추출하고 위치 인코딩(Positional Encoding)을 직접 가산한다.</p>
+                            
+                            <div class="row g-3 text-center mb-3">
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-3 border border-primary bg-primary bg-opacity-10 h-100">
+                                        <div class="fw-bold text-primary fs-6 mb-2">토큰 1: "나는"</div>
+                                        <code class="d-block text-start bg-white p-2 border rounded mb-2">E₁ = [0.82, -0.31, 0.14, 0.67, …]</code>
+                                        <div class="text-primary fw-bold fs-6">pos = 1</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-3 border border-success bg-success bg-opacity-10 h-100">
+                                        <div class="fw-bold text-success fs-6 mb-2">토큰 2: "밥을"</div>
+                                        <code class="d-block text-start bg-white p-2 border rounded mb-2">E₂ = [-0.14, 0.72, 0.38, -0.45, …]</code>
+                                        <div class="text-success fw-bold fs-6">pos = 2</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-3 border h-100" style="background-color: #f3e8ff; border-color: #d8b4fe;">
+                                        <div class="fw-bold fs-6 mb-2" style="color: #9333ea;">토큰 3: "먹었다"</div>
+                                        <code class="d-block text-start bg-white p-2 border rounded mb-2">E₃ = [0.45, 0.18, -0.63, 0.34, …]</code>
+                                        <div class="fw-bold fs-6" style="color: #9333ea;">pos = 3</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Positional Embedding 필수 콜아웃 -->
+                            <div class="principle-box mb-0">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-secondary me-2 fs-6">원리</span>
+                                    <span class="fw-bold">위치 임베딩 (Positional Embedding)의 필연성</span>
+                                </div>
+                                <p class="mb-0 text-secondary">
+                                    순환 신경망(RNN)과 달리 모든 토큰을 병렬 동시 처리하는 Transformer는 입력 순서 정보를 인지하지 못하므로, <strong>위치 정보 패턴을 임베딩에 직접 가산하는 과정이 필수적</strong>이다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 1 -->
+                        <div class="qkv-step" id="qkv-s1">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary fs-6 me-2">Step 2</span>
+                                <h4 class="mb-0 fw-bold">Q · K · V 벡터 생성 (Linear Projection)</h4>
+                            </div>
+
+                            <!-- 1. Q·K·V의 동작 직관 -->
+                            <div class="principle-box mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2 fs-6">1. 개념 & 동작 직관</span>
+                                    <span class="fw-bold">검색 엔진 메커니즘에 빗댄 3가지 역할</span>
+                                </div>
+                                <p class="mb-3">
+                                    Self-Attention은 각 토큰을 검색 엔진의 3요소인 <strong>질의(Query), 키(Key), 값(Value)</strong>로 분해하여 문맥을 파악한다.
+                                </p>
+                                <div class="row g-3 text-center mb-3">
+                                    <div class="col-md-4">
+                                        <div class="p-3 bg-white rounded-3 border border-primary-subtle h-100">
+                                            <div class="fw-bold text-primary mb-1">질의 (Query, Q)</div>
+                                            <div class="text-secondary">"내가 찾는 검색어"</div>
+                                            <p class="mb-0 mt-2">현재 토큰이 주변에서 흡수하고자 하는 정보</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 bg-white rounded-3 border border-success-subtle h-100">
+                                            <div class="fw-bold text-success mb-1">키 (Key, K)</div>
+                                            <div class="text-secondary">"내 정보의 식별 태그"</div>
+                                            <p class="mb-0 mt-2">각 단어가 가진 고유한 문법적·의미적 특성 라벨</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 bg-white rounded-3 border h-100" style="border-color: #d8b4fe;">
+                                            <div class="fw-bold mb-1" style="color: #9333ea;">값 (Value, V)</div>
+                                            <div class="text-secondary">"전달할 실제 내용"</div>
+                                            <p class="mb-0 mt-2">검색 결과로 다른 단어에 건네줄 실질적 문맥 벡터</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-0 text-secondary">
+                                    💬 예컨대 <strong>"밥을"</strong>이 <span class="text-primary fw-bold">'나를 설명할 주어가 누구인가?'라고 질의(Q₂)</span>를 던지면, 
+                                    주변 단어들이 <span class="text-success fw-bold">'나는 주어(나)·동사(먹다) 정보다'라고 키(K₁, K₃)</span>로 응답하고, 
+                                    가장 관련도 높은 단어의 <span class="fw-bold" style="color: #9333ea;">실제 내용(V)을 흡수</span>하여 <strong>"내가 먹은 음식"</strong>으로 의미가 구체화된다.
+                                </p>
+                            </div>
+
+                            <!-- 2. Q·K·V 선형 변환 수식 및 도출 벡터 (2 + 4 통합) -->
+                            <div class="card-parent p-3 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="fa-solid fa-calculator text-primary me-2"></i>2. 선형 변환 수식 및 9개 벡터 도출 예시 ("나는 밥을 먹었다")</h6>
+                                <p class="mb-3">단어 임베딩 행렬 <code>E</code>에 사전 학습된 가중치 행렬(<code>W_Q, W_K, W_V</code>)을 곱하여 각 토큰마다 3가지 독립적인 벡터를 도출한다.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 border border-primary bg-primary bg-opacity-10 h-100">
+                                            <div class="fw-bold text-primary mb-1">Query (질의 : 내가 찾는 검색어)</div>
+                                            <div class="fw-bold fs-6 text-primary mb-2">Q = E · W_Q</div>
+                                            <code class="d-block text-start bg-white p-2 border rounded">
+                                                Q₁: [0.60, -0.20, 0.40, …]<br>
+                                                Q₂: [0.10, &nbsp;0.70, 0.30, …]<br>
+                                                Q₃: [0.40, &nbsp;0.20, 0.80, …]
+                                            </code>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 border border-success bg-success bg-opacity-10 h-100">
+                                            <div class="fw-bold text-success mb-1">Key (키 : 내 정보의 식별 태그)</div>
+                                            <div class="fw-bold fs-6 text-success mb-2">K = E · W_K</div>
+                                            <code class="d-block text-start bg-white p-2 border rounded">
+                                                K₁: [0.50, &nbsp;0.30, 0.10, …]<br>
+                                                K₂: [0.20, &nbsp;0.60, 0.40, …]<br>
+                                                K₃: [0.40, &nbsp;0.10, 0.70, …]
+                                            </code>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 border h-100" style="background-color: #f3e8ff; border-color: #d8b4fe;">
+                                            <div class="fw-bold mb-1" style="color: #9333ea;">Value (값 : 전달할 실제 내용)</div>
+                                            <div class="fw-bold fs-6 mb-2" style="color: #9333ea;">V = E · W_V</div>
+                                            <code class="d-block text-start bg-white p-2 border rounded">
+                                                V₁: [0.30, &nbsp;0.50, 0.20, …]<br>
+                                                V₂: [0.70, -0.10, 0.40, …]<br>
+                                                V₃: [0.20, &nbsp;0.60, 0.80, …]
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. 핵심 원리 (결론 및 마무리) -->
+                            <div class="bg-light rounded-3 p-3 border mb-0">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-secondary me-2 fs-6">3. 핵심 원리</span>
+                                    <span class="fw-bold">학습 가중치 행렬과 Multi-Head Attention의 필요성</span>
+                                </div>
+                                <p class="mb-0 text-secondary">
+                                    가중치 행렬 <code>W_Q</code>, <code>W_K</code>, <code>W_V</code>는 사전 학습(Pre-training) 과정에서 최적화된다. 하나의 Q·K·V 세트(Single Head)는 주어-동사 관계 등 한 가지 유형의 문맥 패턴만을 포착하므로, 다양한 의미적 관계를 동시에 파악하기 위해 여러 개의 헤드를 병렬 배치하는 <strong>다중 헤드 어텐션(Multi-Head Attention)</strong> 구조가 필연적으로 요구된다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="qkv-step" id="qkv-s2">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary fs-6 me-2">Step 3</span>
+                                <h4 class="mb-0 fw-bold">유사도 Score 계산 (Scaled Dot-Product)</h4>
+                            </div>
+                            <p>질의와 키의 내적을 키 벡터 차원의 제곱근(√<code>d_k</code>)으로 정규화하여 유사도 점수를 산출한다.</p>
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <code>Score = (Q · Kᵀ) / √d_k</code>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-secondary">Raw Score 행렬 예시</h6>
+                                    <table class="sm-table">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>K₁ (나는)</th>
+                                                <th>K₂ (밥을)</th>
+                                                <th>K₃ (먹었다)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-bold bg-light">Q₁ (나는)</td>
+                                                <td class="hi">3.2</td>
+                                                <td class="lo">0.8</td>
+                                                <td class="mid">2.1</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold bg-light">Q₂ (밥을)</td>
+                                                <td class="lo">1.4</td>
+                                                <td class="mid">2.4</td>
+                                                <td class="hi">3.8</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold bg-light">Q₃ (먹었다)</td>
+                                                <td class="mid">1.9</td>
+                                                <td class="hi">2.9</td>
+                                                <td class="hi">3.5</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <div class="p-3 bg-light rounded-3 border w-100">
+                                        <h6 class="fw-bold mb-2"><i class="fa-solid fa-scale-balanced text-primary me-2"></i>왜 √d_k로 나누는가?</h6>
+                                        <ul class="list-unstyled mb-0" style="line-height: 1.8;">
+                                            <li class="mb-1">• <strong><code>d_k</code>: Key 벡터의 길이 (차원 수)</strong></li>
+                                            <li class="mb-1">• 벡터가 길수록 내적값(숫자의 합)이 <strong>비정상적으로 커짐</strong></li>
+                                            <li class="mb-0">• 너무 큰 값은 확률 분산을 왜곡함 ➔ <strong class="text-primary">적절히 줄여서 관계를 골고루 보려는 장치</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="qkv-step" id="qkv-s3">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary fs-6 me-2">Step 4</span>
+                                <h4 class="mb-0 fw-bold">인과적 마스킹 (Causal Masking) 및 Softmax</h4>
+                            </div>
+
+                            <!-- 1. 마스킹의 목적과 원리 -->
+                            <div class="principle-box mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-danger me-2 fs-6">🔒 미래 차단</span>
+                                    <span class="fw-bold">인과적 마스킹(Causal Masking)의 목적과 원리</span>
+                                </div>
+                                <ul class="list-unstyled mb-0" style="line-height: 1.8;">
+                                    <li class="mb-1">• <strong>답안지 미리보기 방지</strong>: 디코더(Decoder) 모델이 아직 생성되지 않은 미래 토큰을 참조하지 못하도록 방지한다.</li>
+                                    <li class="mb-1">• <strong>수학적 원리</strong>: 미래 위치 스코어에 <strong>−∞를 직접 가산</strong>하여, Softmax 계산 시 <code>e^(−∞) = 0</code>이 되도록 강제 차단한다.</li>
+                                    <li class="mb-0">• <strong>최종 결과</strong>: 각 토큰은 오직 <strong>자신과 과거(앞선) 위치의 토큰들만</strong> 합법적으로 참조할 수 있게 된다.</li>
+                                </ul>
+                            </div>
+
+                            <!-- 2. 전체 통합 수식 -->
+                            <div class="card-parent p-3 mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2 fs-6">수식</span>
+                                    <span class="fw-bold">마스킹이 포함된 어텐션 수식</span>
+                                </div>
+                                <div class="bg-light p-3 rounded-3 border text-center mb-2">
+                                    <span class="fw-bold fs-6 text-primary">Attention Weight = softmax( (Q · Kᵀ / √d_k) + Mask )</span>
+                                </div>
+                                <p class="mb-0 text-secondary">
+                                    Mask 행렬의 미래 위치에는 <code>−∞</code>가 들어가며, Softmax 지수 함수(<code>e^x</code>)를 거치면서 정확히 <code>0.00</code>(0%)의 가중치로 변환된다.
+                                </p>
+                            </div>
+
+                            <!-- 3. 3단계 행렬 변환 파이프라인 (Raw Score ➔ Masking ➔ Softmax) -->
+                            <div class="card-parent p-3 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="fa-solid fa-arrow-right-arrow-left text-primary me-2"></i>3단계 행렬 변환 흐름: Raw Score ➔ 마스킹 (-∞) ➔ Softmax</h6>
+                                
+                                <div class="row g-2 align-items-center text-center">
+                                    <!-- ① Raw Score -->
+                                    <div class="col-md-3">
+                                        <div class="p-2 bg-light rounded-3 border h-100">
+                                            <div class="fw-bold text-secondary mb-2">① Raw Score</div>
+                                            <table class="sm-table w-100">
+                                                <thead>
+                                                    <tr><th></th><th>나는</th><th>밥을</th><th>먹었다</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td class="fw-bold bg-light">나는</td><td class="hi">3.2</td><td class="lo">0.8</td><td class="mid">2.1</td></tr>
+                                                    <tr><td class="fw-bold bg-light">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="hi">3.8</td></tr>
+                                                    <tr><td class="fw-bold bg-light">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.5</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- 화살표 1 -->
+                                    <div class="col-md-1">
+                                        <div class="text-danger fw-bold fs-5">➔</div>
+                                        <div class="text-danger small fw-bold">Mask<br>+(-∞)</div>
+                                    </div>
+
+                                    <!-- ② After Masking -->
+                                    <div class="col-md-3">
+                                        <div class="p-2 bg-light rounded-3 border h-100">
+                                            <div class="fw-bold text-danger mb-2">② After Masking</div>
+                                            <table class="sm-table w-100">
+                                                <thead>
+                                                    <tr><th></th><th>나는</th><th>밥을</th><th>먹었다</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td class="fw-bold bg-light">나는</td><td class="hi">3.2</td><td class="masked">-∞</td><td class="masked">-∞</td></tr>
+                                                    <tr><td class="fw-bold bg-light">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="masked">-∞</td></tr>
+                                                    <tr><td class="fw-bold bg-light">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.5</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- 화살표 2 -->
+                                    <div class="col-md-1">
+                                        <div class="text-primary fw-bold fs-5">➔</div>
+                                        <div class="text-primary small fw-bold">Softmax<br>각 행</div>
+                                    </div>
+
+                                    <!-- ③ Attention Weight -->
+                                    <div class="col-md-4">
+                                        <div class="p-2 rounded-3 border h-100" style="background-color: #f0fdf4; border-color: #86efac;">
+                                            <div class="fw-bold text-success mb-2">③ Attention Weight (합=1.0)</div>
+                                            <table class="sm-table w-100">
+                                                <thead>
+                                                    <tr><th></th><th>나는</th><th>밥을</th><th>먹었다</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td class="fw-bold bg-light">나는</td><td class="hi">1.00</td><td class="masked">0.00</td><td class="masked">0.00</td></tr>
+                                                    <tr><td class="fw-bold bg-light">밥을</td><td class="lo">0.27</td><td class="hi">0.73</td><td class="masked">0.00</td></tr>
+                                                    <tr><td class="fw-bold bg-light">먹었다</td><td class="lo">0.14</td><td class="mid">0.38</td><td class="hi">0.48</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-secondary small mt-2">
+                                    <span class="text-danger fw-bold">🔴 −∞ 마스킹 적용</span> : 미래 참조 불가 (<code>e^(−∞) = 0</code>이므로 Softmax 후 정확히 0으로 소멸)
+                                </div>
+                            </div>
+
+                            <!-- 4. 가중합(다음 단계)으로 이어지는 개념 브릿지 -->
+                            <div class="bg-light rounded-3 p-3 border mb-0">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-success me-2 fs-6">가중합의 의미</span>
+                                    <span class="fw-bold">확률 가중치와 값(Value) 벡터의 결합</span>
+                                </div>
+                                <p class="mb-0 text-secondary">
+                                    도출된 <strong>Attention Weight</strong>는 각 토큰을 얼마나 참조할지 나타내는 <strong>비율(가중치)</strong>이다. 
+                                    다음 단계에서는 이 비율대로 각 단어의 <strong>값(Value, V)</strong> 벡터를 가중합하여, 이전 문맥이 풍부하게 녹아든 새로운 임베딩 벡터를 완성한다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="qkv-step" id="qkv-s4">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary fs-6 me-2">Step 5</span>
+                                <h4 class="mb-0 fw-bold">가중합 (Weighted Sum) 및 임베딩 갱신</h4>
+                            </div>
+                            <p>계산된 어텐션 가중치(Attention Weight)와 값(Value, V) 벡터를 곱하여 가중합을 도출한 후, 기존 임베딩에 문맥 정보 벡터(Δ)를 합산하여 새로운 표현(z)을 완성한다.</p>
+
+                            <!-- 1. 가중합 수식 박스 -->
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <div class="fw-bold fs-6 text-primary mb-1">가중합(Attention Output) = Attention Weight × V</div>
+                                <div class="text-secondary">기존 입력 임베딩(E)에 이 문맥 정보 벡터(Δ)를 더하여(<code>z = E + Δ</code>) 새로운 의미로 갱신한다.</div>
+                            </div>
+
+                            <!-- 2. "밥을" 토큰의 구체적 Output 계산 수식 -->
+                            <div class="card-parent p-3 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="fa-solid fa-calculator text-primary me-2"></i>Output 계산 예시 — "밥을" 토큰 (Attention Weight: 나는 27%, 밥을 73%, 먹었다 0%)</h6>
+                                <div class="p-3 bg-light rounded-3 border font-monospace mb-3">
+                                    <div class="text-primary fw-bold">0.27 × V₁ [0.30, &nbsp;0.50, 0.20, …] <span class="text-secondary fw-normal font-sans">(토큰 "나는")</span></div>
+                                    <div class="text-success fw-bold">+ 0.73 × V₂ [0.70, -0.10, 0.40, …] <span class="text-secondary fw-normal font-sans">(토큰 "밥을")</span></div>
+                                    <div class="text-danger fw-bold">+ 0.00 × V₃ [0.20, &nbsp;0.60, 0.80, …] <span class="text-secondary fw-normal font-sans">(토큰 "먹었다" ← 마스킹 차단)</span></div>
+                                    <div class="border-top pt-2 mt-2 fw-bold" style="color: #9333ea;">
+                                        = Δ [0.59, &nbsp;0.06, 0.35, …] <span class="text-secondary fw-normal font-sans">➔ 기존 임베딩에 합산할 문맥 정보 벡터</span>
+                                    </div>
+                                </div>
+
+                                <!-- 가중치 비율 바 시각화 -->
+                                <div class="row g-2 align-items-center mb-2">
+                                    <div class="col-md-2 fw-bold text-primary">나는 (V₁)</div>
+                                    <div class="col-md-7">
+                                        <div class="progress" style="height: 18px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 27%;">27%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-secondary small">앞 토큰이므로 참조 가능</div>
+                                </div>
+                                <div class="row g-2 align-items-center mb-2">
+                                    <div class="col-md-2 fw-bold text-success">밥을 (V₂)</div>
+                                    <div class="col-md-7">
+                                        <div class="progress" style="height: 18px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 73%;">73%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-secondary small">자기 자신의 핵심 정보</div>
+                                </div>
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-2 fw-bold text-danger">먹었다 (V₃)</div>
+                                    <div class="col-md-7">
+                                        <div class="progress" style="height: 18px;">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%;">0%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-danger small fw-bold">Causal Masking (미래 차단)</div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Before & After Attention 임베딩 갱신 비교 -->
+                            <div class="card-parent p-3 mb-0">
+                                <h6 class="fw-bold mb-3"><i class="fa-solid fa-arrows-rotate text-primary me-2"></i>Before & After Attention — "밥을" 임베딩 동적 갱신</h6>
+                                <div class="row g-3 text-center align-items-center">
+                                    <!-- Before -->
+                                    <div class="col-md-4">
+                                        <div class="p-3 bg-light rounded-3 border h-100">
+                                            <div class="text-secondary mb-1">Before Attention</div>
+                                            <h6 class="fw-bold text-dark mb-2">밥을 (문맥 없음)</h6>
+                                            <code class="d-block text-start bg-white p-2 border rounded mb-2">
+                                                E₂ = [-0.14, 0.72, 0.38, -0.45, …]
+                                            </code>
+                                            <div class="text-secondary fw-bold">초기 의미: 일반 "음식"</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Plus Delta Arrow (줄바꿈 방지) -->
+                                    <div class="col-md-4">
+                                        <div class="p-3 bg-white rounded-3 border border-primary-subtle shadow-sm">
+                                            <div class="fw-bold fs-5 text-primary mb-1">+ Δ (문맥 정보 벡터)</div>
+                                            <code class="d-block text-center bg-light p-2 border rounded text-primary mb-2 text-nowrap">
+                                                [0.59, 0.06, 0.35, …]
+                                            </code>
+                                            <div class="fw-bold fs-4 text-primary">➔</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- After -->
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 border h-100" style="background-color: #eff6ff; border-color: #93c5fd;">
+                                            <div class="text-primary mb-1 fw-bold">After Attention</div>
+                                            <h6 class="fw-bold text-primary mb-2">밥을 ("나는" 문맥 흡수)</h6>
+                                            <code class="d-block text-start bg-white p-2 border rounded mb-2 text-primary">
+                                                z₂ = [0.45, 0.78, 0.73, …]
+                                            </code>
+                                            <div class="text-primary fw-bold">갱신된 의미: "내가 먹은 음식"</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Footer -->
+                    <div class="card-footer bg-light d-flex justify-content-between p-3">
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-prev" onclick="qkvNav(-1)"><i class="fa-solid fa-arrow-left me-1"></i>이전 단계</button>
+                        <button class="btn btn-primary btn-sm" id="btn-next" onclick="qkvNav(1)">다음 단계<i class="fa-solid fa-arrow-right ms-1"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Interactive Simulation -->
+            <section id="sec-sim">
+                <h2 id="toc-5"><i class="fa-solid fa-chart-simple text-primary me-2"></i>5. 인터랙티브 Attention 시뮬레이션</h2>
+                <p>예시 문장 <code>"오늘 점심 뭐 먹을까 ?"</code>의 개별 토큰을 선택하여 인과적 어텐션 가중치 분포와 참조 연결선을 직접 확인한다.</p>
+
+                <div class="card border rounded-3 bg-white p-3 mb-4">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                        <button class="tok-btn active" data-idx="0" onclick="selectToken(0)">오늘</button>
+                        <button class="tok-btn" data-idx="1" onclick="selectToken(1)">점심</button>
+                        <button class="tok-btn" data-idx="2" onclick="selectToken(2)">뭐</button>
+                        <button class="tok-btn" data-idx="3" onclick="selectToken(3)">먹을까</button>
+                        <button class="tok-btn" data-idx="4" onclick="selectToken(4)">?</button>
+                    </div>
+
+                    <!-- SVG Canvas 1:1 Scale (컨테이너 1240px 실측 규격) -->
+                    <div class="svg-container mb-3 border rounded-3 p-3 bg-light">
+                        <svg id="attn-svg" width="100%" height="220" viewBox="0 0 1240 220" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="attn-arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#0d6efd"/>
+                                </marker>
+                            </defs>
+                            <g id="attn-arcs"></g>
+                            <g id="tok-boxes">
+                                <g id="tok-0"><rect x="50" y="105" width="150" height="40" rx="8" fill="#dce8ff" stroke="#0d6efd" stroke-width="2"/><text x="125" y="125" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">오늘</text></g>
+                                <g id="tok-1"><rect x="295" y="105" width="150" height="40" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><text x="370" y="125" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">점심</text></g>
+                                <g id="tok-2"><rect x="545" y="105" width="150" height="40" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><text x="620" y="125" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">뭐</text></g>
+                                <g id="tok-3"><rect x="795" y="105" width="150" height="40" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><text x="870" y="125" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">먹을까</text></g>
+                                <g id="tok-4"><rect x="1040" y="105" width="150" height="40" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><text x="1115" y="125" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">?</text></g>
+                            </g>
+                            <g id="attn-bars"></g>
+                        </svg>
+                    </div>
+
+                    <!-- Attention Explanation Box -->
+                    <div class="principle-box mb-0" id="attn-exp-box">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="badge bg-primary me-2 fs-6" id="attn-badge">Q: 오늘</span>
+                            <span class="fw-bold fs-6" id="attn-ttl">"오늘"이 바라보는 Attention 가중치 분포</span>
+                        </div>
+                        <p class="mb-0 text-secondary" id="attn-desc">
+                            인과적 마스킹(Causal Masking) 적용 ➔ <strong>"오늘"</strong>은 첫 번째 토큰이므로 자기 자신만 100% 참조한다.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Unembedding & Prediction -->
+            <section id="sec-unembed">
+                <h2 id="toc-6"><i class="fa-solid fa-arrows-rotate text-primary me-2"></i>6. 언임베딩(Unembedding)과 다음 토큰 예측</h2>
+                <p>Self-Attention 연산이 끝나면 문맥이 완벽히 반영된 마지막 토큰의 은닉 벡터를 선형 변환하여 전체 어휘 사전(Vocab)에 대한 확률 분포로 변환하고 다음 단어를 생성한다.</p>
+
+                <!-- 1. 언임베딩 핵심 원리 박스 -->
+                <div class="principle-box mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2 fs-6">핵심 메커니즘</span>
+                        <span class="fw-bold fs-6">입력 문맥 이해 완료 ➔ 다음 단어 생성 원리</span>
+                    </div>
+                    <ul class="list-unstyled mb-0" style="line-height: 1.8;">
+                        <li class="mb-1">• <strong>마지막 토큰 벡터만 사용</strong>: 앞의 모든 단어("오늘", "점심", "뭐", "먹을까")의 정보가 누적된 <strong>마지막 토큰 "?"의 문맥 벡터 v(?)</strong>만 언임베딩 레이어로 전달된다.</li>
+                        <li class="mb-1">• <strong>언임베딩 (Unembedding)</strong>: 문맥 벡터를 사전 학습된 어휘 사전(Vocab Size, GPT-3 기준 약 <strong>50,257개</strong>) 차원으로 사상하여 로짓(Logits)을 계산하고 Softmax 확률 분포로 변환한다.</li>
+                        <li class="mb-0">• <strong>자기회귀 반복 (Autoregressive Loop)</strong>: 최고 확률의 단어를 선택하여 기존 입력 문장 끝에 붙인 뒤, <strong>전체 시퀀스를 다시 모델에 넣어 다음 단어를 예측하는 과정</strong>을 종료 토큰([EOS])이 나올 때까지 반복한다.</li>
+                    </ul>
+                </div>
+
+                <!-- 2. 언임베딩 전체 파이프라인 1240px 1:1 SVG -->
+                <div class="card-parent p-3 mb-4">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-diagram-project text-primary me-2"></i>Unembedding & Autoregressive 생성 파이프라인</h6>
+                    <div class="svg-container mb-2">
+                        <svg width="100%" height="180" viewBox="0 0 1240 180" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#0d6efd"/>
+                                </marker>
+                                <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                    <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/>
+                                </marker>
+                            </defs>
+
+                            <!-- 1. 입력 & Transformer -->
+                            <rect x="30" y="25" width="280" height="60" rx="10" fill="#eff6ff" stroke="#0d6efd" stroke-width="1.5"/>
+                            <text x="170" y="45" font-size="16" font-weight="bold" fill="#0d6efd" text-anchor="middle" dominant-baseline="central">Self-Attention N층</text>
+                            <text x="170" y="65" font-size="14" fill="#64748b" text-anchor="middle" dominant-baseline="central">입력: "오늘 점심 뭐 먹을까 ?"</text>
+                            <line x1="310" y1="55" x2="380" y2="55" stroke="#0d6efd" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+
+                            <!-- 2. 마지막 토큰 벡터 -->
+                            <rect x="390" y="25" width="240" height="60" rx="10" fill="#fff" stroke="#9333ea" stroke-width="1.5"/>
+                            <text x="510" y="45" font-size="16" font-weight="bold" fill="#9333ea" text-anchor="middle" dominant-baseline="central">마지막 토큰 벡터 v(?)</text>
+                            <text x="510" y="65" font-size="14" fill="#64748b" text-anchor="middle" dominant-baseline="central">앞선 모든 단어 문맥 압축</text>
+                            <line x1="630" y1="55" x2="700" y2="55" stroke="#0d6efd" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+
+                            <!-- 3. Unembedding -->
+                            <rect x="710" y="25" width="230" height="60" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+                            <text x="825" y="45" font-size="16" font-weight="bold" fill="#334155" text-anchor="middle" dominant-baseline="central">언임베딩 (Unembedding)</text>
+                            <text x="825" y="65" font-size="14" fill="#64748b" text-anchor="middle" dominant-baseline="central">Vocab 50,257개 확률 사상</text>
+                            <line x1="940" y1="55" x2="1010" y2="55" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arr-green)"/>
+
+                            <!-- 4. 단어 선택 -->
+                            <rect x="1020" y="25" width="190" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                            <text x="1115" y="45" font-size="16" font-weight="bold" fill="#16a34a" text-anchor="middle" dominant-baseline="central">"오늘은" (45%)</text>
+                            <text x="1115" y="65" font-size="14" fill="#16a34a" text-anchor="middle" dominant-baseline="central">최고 확률 토큰 선택</text>
+
+                            <!-- 5. 피드백 루프 아크 -->
+                            <path d="M1115,85 Q1115,150 640,150 Q170,150 170,85" stroke="#0d6efd" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arr-blue)"/>
+                            <text x="640" y="140" font-size="14" font-weight="bold" fill="#0d6efd" text-anchor="middle">입력 문장에 추가 ➔ 다시 추론 반복 (Autoregressive Loop ♻️)</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 3. Vocab 상위 확률 분포 & 반복 생성 예시 (2칼럼 카드) -->
+                <div class="row g-3">
+                    <!-- Vocab 확률 분포 -->
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-chart-column text-primary me-2"></i>Vocab 다음 토큰 확률 분포 ("?" 기준)</h6>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-success">1. 오늘은 (선택됨)</span>
+                                    <span class="fw-bold text-success font-monospace">45%</span>
+                                </div>
+                                <div class="progress" style="height: 18px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 45%;">45%</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-primary">2. 점심으로</span>
+                                    <span class="fw-bold text-primary font-monospace">22%</span>
+                                </div>
+                                <div class="progress" style="height: 18px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 22%;">22%</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold" style="color: #9333ea;">3. 추천드리</span>
+                                    <span class="fw-bold font-monospace" style="color: #9333ea;">15%</span>
+                                </div>
+                                <div class="progress" style="height: 18px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 15%; background-color: #9333ea;">15%</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-secondary">기타 어휘 후보군 (…)</span>
+                                    <span class="text-secondary font-monospace">18%</span>
+                                </div>
+                                <div class="progress" style="height: 18px;">
+                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 18%;">18%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predict · Sample · Repeat 반복 루프 예시 -->
+                    <div class="col-md-6">
+                        <div class="card-parent p-3 h-100">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-arrows-spin text-primary me-2"></i>Predict · Sample · Repeat 생성 루프</h6>
+                            <p class="text-secondary small mb-3">한 번에 한 글자씩 문맥을 누적하며 완성될 때까지 반복한다.</p>
+
+                            <div class="d-flex flex-column gap-2">
+                                <div class="p-2 bg-light rounded-3 border">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">1회차</span>
+                                        <span>"오늘 점심 뭐 먹을까 ?" ➔ <strong class="text-success">오늘은</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="p-2 bg-light rounded-3 border">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">2회차</span>
+                                        <span>"… 먹을까 ? 오늘은" ➔ <strong class="text-success">짜장면이나</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="p-2 bg-light rounded-3 border">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">3회차</span>
+                                        <span>"… 오늘은 짜장면이나" ➔ <strong class="text-success">어떨까요</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="p-2 rounded-3 border border-dashed text-secondary text-center">
+                                    <span>➔ 문장 종료 토큰([EOS])이 나올 때까지 생성 루프 반복</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Multi-Head Attention -->
+            <section id="sec-multihead">
+                <h2 id="toc-7"><i class="fa-solid fa-layer-group text-primary me-2"></i>7. 다중 헤드 어텐션 (Multi-Head Attention)</h2>
+                <p>단일 어텐션 헤드는 한 가지 종류의 문맥 관계만을 포착한다. <strong>다중 헤드 어텐션(Multi-Head Attention, MHA)</strong>은 Q, K, V 벡터를 여러 서브스페이스로 분할하여 서로 다른 관점(문법 관계, 의미적 연관성, 위치 인접성 등)을 동시에 병렬 학습한다.</p>
+
+                <!-- 1. MHA 핵심 원리 박스 -->
+                <div class="principle-box mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge me-2 fs-6" style="background-color: #9333ea;">병렬 서브스페이스</span>
+                        <span class="fw-bold fs-6">다중 헤드 어텐션(Multi-Head Attention)의 동작 원리</span>
+                    </div>
+                    <ul class="list-unstyled mb-0" style="line-height: 1.8;">
+                        <li class="mb-1">• <strong>단일 Head의 한계</strong>: <code>W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub></code> 1세트만 사용하면 한 번에 오직 하나의 관계 패턴(예: 주어-서술어)만 학습할 수 있다.</li>
+                        <li class="mb-1">• <strong>서브스페이스 분할</strong>: 고차원 임베딩을 <code>h</code>개의 작은 하위 공간(Subspace)으로 쪼개어 Head 수만큼 어텐션을 <strong>완전 병렬로 동시 수행</strong>한다.</li>
+                        <li class="mb-0">• <strong>실제 모델 규모 (GPT-3 기준)</strong>: 총 <strong>96개의 Head</strong>를 사용하며, 각 Head의 차원은 128차원으로 총 12,288 은닉 차원을 구성한다.</li>
+                    </ul>
+                </div>
+
+                <!-- 2. 서로 다른 관계를 포착하는 4개 헤드 예시 카드 -->
+                <div class="row g-3 text-center mb-4">
+                    <div class="col-md-3">
+                        <div class="p-3 border border-danger-subtle bg-danger-subtle bg-opacity-10 rounded-3 h-100">
+                            <span class="badge bg-danger mb-2">Head 1</span>
+                            <h6 class="fw-bold text-danger mb-2">시간 맥락 관계</h6>
+                            <p class="text-secondary mb-0">"오늘" ↔ "점심"<br><small class="text-secondary">(시간적 배경 결합)</small></p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border border-primary-subtle bg-primary-subtle bg-opacity-10 rounded-3 h-100">
+                            <span class="badge bg-primary mb-2">Head 2</span>
+                            <h6 class="fw-bold text-primary mb-2">목적어 관계</h6>
+                            <p class="text-secondary mb-0">"뭐" ↔ "먹을까"<br><small class="text-secondary">(의문 대상 결합)</small></p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border border-success-subtle bg-success-subtle bg-opacity-10 rounded-3 h-100">
+                            <span class="badge bg-success mb-2">Head 3</span>
+                            <h6 class="fw-bold text-success mb-2">의문문 구조</h6>
+                            <p class="text-secondary mb-0">"먹을까" ↔ "?"<br><small class="text-secondary">(종결 어미 구조)</small></p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded-3 h-100" style="background-color: #f3e8ff; border-color: #d8b4fe;">
+                            <span class="badge mb-2" style="background-color: #9333ea;">Head 4~N</span>
+                            <h6 class="fw-bold mb-2" style="color: #9333ea;">기타 복합 관계</h6>
+                            <p class="text-secondary mb-0">"오늘" ↔ "먹을까 …"<br><small class="text-secondary">(원거리 문맥 포착)</small></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 핵심 교육적 통찰 (사후 분석 원리) -->
+                <div class="card-parent p-3 mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-secondary me-2 fs-6">중요</span>
+                        <span class="fw-bold fs-6">헤드의 역할은 사람이 사전에 지정한 것이 아니다</span>
+                    </div>
+                    <p class="mb-1 text-secondary">
+                        위 레이블("시간 맥락", "목적어 관계", "의문문 구조" 등)은 <strong>개발자나 언어학자가 사전에 규칙으로 지정한 것이 아니다.</strong>
+                    </p>
+                    <ul class="list-unstyled mb-0 text-secondary" style="line-height: 1.8;">
+                        <li class="mb-1">• <strong>설계 단계</strong>: 사람은 오직 Head의 개수(예: 96개)와 차원 수만 결정하여 모델을 생성한다.</li>
+                        <li class="mb-1">• <strong>학습 단계</strong>: 각 Head의 가중치 행렬이 어떤 언어적 역할을 전담할지는 <strong>모델이 데이터를 학습하며 스스로 분업화</strong>한다.</li>
+                        <li class="mb-0">• <strong>사후 분석 (Post-hoc Analysis)</strong>: 연구자들이 학습 완료 후 각 Head의 어텐션 맵을 분석해 <em>"Head 1은 시간 관계를, Head 2는 목적어를 주로 포착하고 있구나"</em>라고 사후에 의미를 부여한 것이다.</li>
+                    </ul>
+                </div>
+            </section>
+        </article>
     </div>
-    <div class="ccard good">
-      <div class="cbadge">⚡ Transformer</div>
-      <div class="ctitle">병렬 처리 — 모든 단어를 동시에 바라본다</div>
-      <ul class="pts">
-        <li><span>✅</span><span><em>Self-Attention</em> — 모든 단어 쌍 관계를 동시 계산</span></li>
-        <li><span>✅</span><span><em>완전한 병렬 처리</em> — GPU 최대 활용</span></li>
-        <li><span>✅</span><span><em>거리 무관</em> — 가깝든 멀든 동등하게 관계 파악</span></li>
-        <li><span>✅</span><span><em>현대 LLM의 핵심</em> — GPT, BERT, LLaMA 모두 Transformer 기반</span></li>
-      </ul>
-    </div>
-  </div>
 
-  <!-- 순차 vs 병렬 다이어그램 -->
-  <div class="dg-wrap">
-  <svg viewBox="0 0 880 110" font-family="Noto Sans KR, sans-serif">
-    <defs>
-      <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/></marker>
-    </defs>
-    <text x="10" y="18" font-size="11" font-weight="700" fill="#ef4444">LSTM — 순차 처리 (직렬)</text>
-    <g opacity=".15"><rect x="10" y="26" width="64" height="32" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/><text x="42" y="47" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">나는</text></g>
-    <path d="M76 42 L92 42" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" opacity=".2" marker-end="url(#ar)"/>
-    <g opacity=".3"><rect x="94" y="26" width="64" height="32" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/><text x="126" y="47" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">어제</text></g>
-    <path d="M160 42 L176 42" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4,2" opacity=".4" marker-end="url(#ar)"/>
-    <g opacity=".55"><rect x="178" y="26" width="76" height="32" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/><text x="216" y="47" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">학교에서</text></g>
-    <path d="M256 42 L272 42" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2" opacity=".65" marker-end="url(#ar)"/>
-    <g opacity=".78"><rect x="274" y="26" width="64" height="32" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/><text x="306" y="47" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">밥을</text></g>
-    <path d="M340 42 L356 42" stroke="#ef4444" stroke-width="2.2" opacity=".9" marker-end="url(#ar)"/>
-    <g><rect x="358" y="26" width="76" height="32" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2.5"/><text x="396" y="47" font-size="12" font-weight="700" fill="#ef4444" text-anchor="middle">먹었다</text></g>
-    <text x="222" y="72" font-size="11" fill="#94a3b8" text-anchor="middle">→ 순서대로만</text>
-
-    <text x="490" y="18" font-size="11" font-weight="700" fill="#4a7cf7">Transformer — 병렬 처리 (동시)</text>
-    <rect x="490" y="26" width="370" height="32" rx="9" fill="#f0f5ff" stroke="#4a7cf7" stroke-width="2"/>
-    <rect x="498" y="31" width="56" height="22" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text x="526" y="47" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">나는</text>
-    <rect x="560" y="31" width="56" height="22" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text x="588" y="47" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">어제</text>
-    <rect x="622" y="31" width="72" height="22" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text x="658" y="47" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">학교에서</text>
-    <rect x="700" y="31" width="56" height="22" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text x="728" y="47" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">밥을</text>
-    <rect x="762" y="31" width="72" height="22" rx="6" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-    <text x="798" y="47" font-size="11.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">먹었다</text>
-    <path d="M526,31 Q588,8 650,31" stroke="#4a7cf7" stroke-width="1.2" fill="none" stroke-dasharray="3,2" opacity=".6"/>
-    <path d="M526,31 Q728,2 798,31" stroke="#9c4af7" stroke-width="1" fill="none" stroke-dasharray="3,2" opacity=".4"/>
-    <path d="M650,31 Q728,8 798,31" stroke="#059669" stroke-width="1.2" fill="none" stroke-dasharray="3,2" opacity=".5"/>
-    <text x="675" y="72" font-size="11" font-weight="600" fill="#4a7cf7" text-anchor="middle">모든 단어 동시 처리 ⚡</text>
-  </svg>
-  </div>
-
-  <div class="callout orange">
-    <span class="ni">📌</span>
-    <div>
-      <strong>Positional Embedding — Transformer만의 필수 설계</strong><br>
-      · LSTM: 순차 처리 → 처리 순서 자체가 위치 정보<br>
-      · Transformer: 병렬 처리 → 위치 정보가 사라짐<br>
-      → <strong>위치 정보 패턴을 임베딩에 명시적으로 추가</strong><br>
-      <em>병렬 처리라는 구조적 선택이 만들어낸 필연적 요소</em>
-    </div>
-  </div>
-
-  <!-- Attention 직관 -->
-  <div class="sec"><div class="ln"></div><span>Attention의 핵심 직관</span><div class="ln"></div></div>
-  <div class="callout orange">
-    <span class="ni">🟠</span>
-    <div>
-      <strong>초기 임베딩 = 문맥 없는 단어 그 자체</strong><br>
-      · "모델" → 처음엔 패션모델인지 AI 모델인지 구분 불가<br>
-      · Attention: 주변 단어를 참조해 <strong>"무엇을 더할지" 계산 → 임베딩 업데이트</strong>
-    </div>
-  </div>
-  <div class="ctx-demo">
-    <div class="ctx-title">동일한 단어, 다른 문맥 → 다른 임베딩</div>
-    <div class="ctx-row">
-      <span class="ctx-tok dim">달콤한 향기</span>
-      <span class="ctx-tok hi">배</span>
-      <span class="ctx-tok dim">를 먹었다</span>
-      <span class="ctx-arrow">→</span>
-      <span class="ctx-tok updated">배 = 과일</span>
-    </div>
-    <div class="ctx-row">
-      <span class="ctx-tok dim">항구에서</span>
-      <span class="ctx-tok hi">배</span>
-      <span class="ctx-tok dim">를 탔다</span>
-      <span class="ctx-arrow">→</span>
-      <span class="ctx-tok" style="background:var(--k-l);border-color:var(--k);color:var(--k);">배 = 선박</span>
-    </div>
-    <div class="ctx-row">
-      <span class="ctx-tok dim">운동 후</span>
-      <span class="ctx-tok hi">배</span>
-      <span class="ctx-tok dim">가 아프다</span>
-      <span class="ctx-arrow">→</span>
-      <span class="ctx-tok" style="background:var(--v-l);border-color:var(--v);color:var(--v);">배 = 복부</span>
-    </div>
-    <div class="ctx-note">처음 임베딩은 세 "배" 모두 동일 — Attention 이후에야 의미가 분리된다.</div>
-  </div>
-
-  <div class="sec"><div class="ln"></div><span>Decoder-Only Transformer</span><div class="ln"></div></div>
-
-  <div class="callout blue">
-    <span class="ni">📐</span>
-    <div>
-      <strong>이 자료의 범위 — Decoder-only Transformer (GPT 계열)</strong><br>
-      원래 Transformer는 <strong>Encoder + Decoder</strong> 두 블록으로 구성된다 (번역 등에 사용).<br>
-      · <strong>Encoder</strong>: 입력 문장 전체를 양방향으로 이해<br>
-      · <strong>Decoder</strong>: Encoder 출력을 참조해 출력 문장을 순서대로 생성<br><br>
-      GPT는 <strong>Decoder만</strong> 사용하는 구조이다.<br>
-      · 입력과 출력을 구분하지 않고 <strong>하나의 토큰 시퀀스</strong>로 처리<br>
-      · <em>이 자료는 이 Decoder-only 구조를 기준으로 설명한다</em>
-    </div>
-  </div>
-
-
-
-</div><!-- /tab-0 -->
-
-<!-- ════════════════════════════════════
-  TAB 1 : 핵심 — Q·K·V 스텝 위저드
-════════════════════════════════════ -->
-<div class="tab-panel" id="tab-1">
-
-  <div class="callout purple" style="margin-bottom:18px;">
-    <span class="ni">🟣</span>
-    <div>
-      <strong>Self-Attention:</strong> 각 토큰이 문장 내 모든 토큰을 참조해 자신의 임베딩을 업데이트하는 연산<br>
-      학습이 완료된 Transformer가 텍스트를 입력받아 다음 단어를 예측하기까지, 내부에서 일어나는 추론 과정이다.<br><br>
-      예시: <strong>"나는 밥을 먹었다"</strong> (토큰 3개)
-    </div>
-  </div>
-
-  <!-- Q·K·V 스텝 위저드 -->
-  <div class="qkv-wizard">
-    <div class="qkv-progress" id="qkv-progress">
-      <div class="qkv-step-tab current" id="stt-0" onclick="qkvGoto(0)">① 입력 임베딩</div>
-      <div class="qkv-step-tab" id="stt-1" onclick="qkvGoto(1)">② Q · K · V 생성</div>
-      <div class="qkv-step-tab" id="stt-2" onclick="qkvGoto(2)">③ Score 계산</div>
-      <div class="qkv-step-tab" id="stt-3" onclick="qkvGoto(3)">④ Masking → Softmax</div>
-      <div class="qkv-step-tab" id="stt-4" onclick="qkvGoto(4)">⑤ 가중합 → 업데이트</div>
-    </div>
-
-    <div class="qkv-body">
-
-      <!-- ── STEP 0 : 입력 임베딩 ── -->
-      <div class="qkv-step step-1 active" id="qkv-s0">
-        <div class="qkv-step-hdr">
-          <div class="qkv-num">①</div>
-          <div>
-            <div class="qkv-step-title">입력 임베딩 — 각 토큰을 벡터로 변환한다</div>
-            <div class="qkv-step-sub">vocab 크기 × 임베딩 차원으로 구성된 룩업 테이블에서 각 토큰에 해당하는 벡터를 꺼낸다</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0;">
-          <div style="background:var(--q-l);border:2px solid var(--q);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:1.1rem;font-weight:800;color:var(--q);margin-bottom:6px;">나는</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--sub);background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px;text-align:left;line-height:1.7;">
-              E₁ = [ 0.82,<br>&nbsp;-0.31,<br>&nbsp; 0.14,<br>&nbsp; 0.67, … ]
-            </div>
-            <div style="font-size:.72rem;color:var(--q);margin-top:6px;font-weight:700;">pos=1 추가</div>
-          </div>
-          <div style="background:var(--k-l);border:2px solid var(--k);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:1.1rem;font-weight:800;color:var(--k);margin-bottom:6px;">밥을</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--sub);background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px;text-align:left;line-height:1.7;">
-              E₂ = [-0.14,<br>&nbsp; 0.72,<br>&nbsp; 0.38,<br>&nbsp;-0.45, … ]
-            </div>
-            <div style="font-size:.72rem;color:var(--k);margin-top:6px;font-weight:700;">pos=2 추가</div>
-          </div>
-          <div style="background:var(--v-l);border:2px solid var(--v);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:1.1rem;font-weight:800;color:var(--v);margin-bottom:6px;">먹었다</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--sub);background:rgba(255,255,255,.6);border-radius:7px;padding:5px 8px;text-align:left;line-height:1.7;">
-              E₃ = [ 0.45,<br>&nbsp; 0.18,<br>&nbsp;-0.63,<br>&nbsp; 0.34, … ]
-            </div>
-            <div style="font-size:.72rem;color:var(--v);margin-top:6px;font-weight:700;">pos=3 추가</div>
-          </div>
-        </div>
-        <div class="callout blue" style="margin-top:12px;">
-          <span class="ni">📌</span>
-          <div>Positional Embedding: <strong>위치 정보 패턴을 임베딩에 추가</strong> — Transformer는 순서 정보가 없으므로 필수</div>
-        </div>
-      </div>
-
-      <!-- ── STEP 1 : Q·K·V 생성 ── -->
-      <div class="qkv-step step-2" id="qkv-s1">
-        <div class="qkv-step-hdr">
-          <div class="qkv-num">②</div>
-          <div>
-            <div class="qkv-step-title">Q · K · V 벡터 생성</div>
-            <div class="qkv-step-sub">학습된 가중치 행렬 W_Q, W_K, W_V를 임베딩에 곱해 세 벡터를 만든다</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;margin:12px 0;">
-          <div style="background:var(--surface2);border-radius:12px;border:1px solid var(--border);padding:14px 16px;">
-            <div style="font-size:.75rem;font-weight:700;color:var(--sub);margin-bottom:10px;">임베딩 → 3가지 선형변환 (학습된 상수 행렬)</div>
-            <div class="formula-box q" style="display:block;margin-bottom:6px;">Q = E · W_Q</div>
-            <div class="formula-box k" style="display:block;margin-bottom:6px;">K = E · W_K</div>
-            <div class="formula-box v" style="display:block;">V = E · W_V</div>
-          </div>
-          <div>
-            <div style="font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:10px;">3 토큰 × 3종류 = 총 9개 벡터</div>
-            <div class="transform-grid">
-              <div class="transform-card q-card">
-                <div class="tc-label" style="color:var(--q);">Query</div>
-                <div class="tc-title" style="color:var(--q);">Q₁, Q₂, Q₃</div>
-                <div class="tc-desc">"내가 찾는 검색어"</div>
-                <div class="tc-vec">Q₁: [0.6, -0.2, 0.4, …]<br>Q₂: [0.1,  0.7, 0.3, …]<br>Q₃: [0.4,  0.2, 0.8, …]</div>
-              </div>
-              <div class="transform-card k-card">
-                <div class="tc-label" style="color:var(--k);">Key</div>
-                <div class="tc-title" style="color:var(--k);">K₁, K₂, K₃</div>
-                <div class="tc-desc">"내가 가진 정보의 제목·태그"</div>
-                <div class="tc-vec">K₁: [0.5,  0.3, 0.1, …]<br>K₂: [0.2,  0.6, 0.4, …]<br>K₃: [0.4,  0.1, 0.7, …]</div>
-              </div>
-              <div class="transform-card v-card">
-                <div class="tc-label" style="color:var(--v);">Value</div>
-                <div class="tc-title" style="color:var(--v);">V₁, V₂, V₃</div>
-                <div class="tc-desc">"검색 결과로 꺼내줄 실제 내용"</div>
-                <div class="tc-vec">V₁: [0.3,  0.5, 0.2, …]<br>V₂: [0.7, -0.1, 0.4, …]<br>V₃: [0.2,  0.6, 0.8, …]</div>
-              </div>
-            </div>
-            <div style="margin-top:10px;padding:10px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);font-size:.82rem;color:var(--sub);line-height:1.8;">
-              💬 <strong style="color:var(--text);">"밥을"</strong>이 문장을 둘러보며 <span style="color:var(--q);">'나를 이해하려면 어떤 단어가 필요하지?'라고 묻고(Q)</span>, 각 단어가 <span style="color:var(--k);">'나는 이런 정보야'라고 답하고(K)</span>, 관련 높은 단어에서 <span style="color:var(--v);">검색 결과로 얻을 실제 내용(V)</span><br>처음엔 그냥 음식이었던 "밥을"이, <strong style="color:var(--text);">"나는"의 정보를 흡수해 비로소 "내가 먹은 음식"이 된다</strong>
-            </div>
-          </div>
-        </div>
-        <div class="callout orange">
-          <span class="ni">💡</span>
-          <div>W_Q, W_K, W_V: <strong>사전 학습으로 확정된 가중치 행렬</strong><br>
-          · 이 행렬 한 세트(= <strong>Single Head</strong>)가 <strong>한 가지 관계 패턴</strong>을 포착하도록 학습된다<br>
-          · 예) 주어-동사 관계 세트, 시제-동사 관계 세트, 대명사-지시대상 관계 세트 등<br>
-          · Single Head만으로는 문장의 다양한 관계를 동시에 포착하기 어렵다 → <strong>Multi-Head Attention</strong> 필요
-          </div>
-        </div>
-      </div>
-
-      <!-- ── STEP 2 : Score 계산 ── -->
-      <div class="qkv-step step-3" id="qkv-s2">
-        <div class="qkv-step-hdr">
-          <div class="qkv-num">③</div>
-          <div>
-            <div class="qkv-step-title">Score 계산 — Q · Kᵀ / √d_k</div>
-            <div class="qkv-step-sub">각 Query와 모든 Key의 내적(dot product)으로 "얼마나 관련 있는지" Score를 계산한다</div>
-          </div>
-        </div>
-        <div class="formula-box score" style="display:block;margin-bottom:14px;">score(Qᵢ, Kⱼ) = Qᵢ · Kⱼᵀ / √d_k<br><span style="font-size:.78rem;opacity:.75;">d_k: Q · K 벡터의 차원 수 (GPT-3 기준 128)</span></div>
-        <div style="font-size:.82rem;font-weight:700;color:var(--sub);margin-bottom:10px;">예: Q₁("나는")과 각 Key의 유사도를 계산한다</div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;">
-          <div style="display:flex;flex-direction:column;">
-            <div style="font-size:.76rem;font-weight:700;color:var(--sub);margin-bottom:8px;">Raw Score (Masking 이전)</div>
-            <div class="score-matrix" style="flex:1;">
-              <table class="sm-table" style="font-size:.78rem;height:100%;">
-                <thead>
-                  <tr>
-                    <th style="background:transparent;"></th>
-                    <th style="color:var(--k);">K₁ 나는</th>
-                    <th style="color:var(--k);">K₂ 밥을</th>
-                    <th style="color:var(--k);">K₃ 먹었다</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="font-weight:700;color:var(--q);background:var(--surface2);">Q₁ 나는</td>
-                    <td class="hi">3.2</td><td class="lo">0.8</td><td class="mid">2.1</td>
-                  </tr>
-                  <tr>
-                    <td style="font-weight:700;color:var(--q);background:var(--surface2);">Q₂ 밥을</td>
-                    <td class="lo">0.4</td><td class="mid">2.4</td><td class="hi">3.8</td>
-                  </tr>
-                  <tr>
-                    <td style="font-weight:700;color:var(--q);background:var(--surface2);">Q₃ 먹었다</td>
-                    <td class="mid">1.9</td><td class="hi">3.1</td><td class="hi">3.5</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border);">
-            <div style="font-size:.78rem;font-weight:700;color:var(--sub);margin-bottom:10px;">왜 √d_k로 나누는가</div>
-            <div style="font-size:.82rem;color:var(--sub);line-height:2;">
-              · <strong>d_k: Key 벡터의 길이 (차원 수)</strong><br>
-              · 벡터가 길수록 내적값(숫자의 합)이 <strong style="color:var(--text);">비정상적으로 커짐</strong><br>
-              · 너무 큰 값은 확률 분산을 왜곡함 → <strong style="color:var(--mask);">적절히 줄여서 관계를 골고루 보려는 장치</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── STEP 3 : Masking → Softmax (수정됨) ── -->
-      <div class="qkv-step step-4" id="qkv-s3">
-        <div class="qkv-step-hdr">
-          <div class="qkv-num">④</div>
-          <div>
-            <div class="qkv-step-title">(Casual)Masking → Softmax</div>
-            <div class="qkv-step-sub">미래 토큰을 차단한 뒤, Score를 확률 분포로 변환한다</div>
-          </div>
-        </div>
-
-        <div class="callout red" style="margin-bottom:18px;">
-          <span class="ni">🔒</span>
-          <div>
-            · 아직 생성되지 않은 미래 토큰을 참조하여 '답안지를 미리 보는 것'을 방지<br>
-            · 원리: 미래 위치 스코어에 <strong>−∞를 더해</strong> Softmax 결과가 0이 되도록 강제 차단<br>
-            · 결과적으로 <strong>자신과 앞에 위치한 토큰만</strong> 참조할 수 있게 된다
-          </div>
-        </div>
-
-        <!-- 전체 수식 -->
-        <div class="formula-box score" style="display:block;margin-bottom:18px;line-height:2;">
-          가중합(Attention Output) = Attention Weight × V = softmax<span style="font-size:.8rem;">( Q·Kᵀ/√d_k <strong>+ Mask</strong> )</span> × V<br>
-          <span style="font-size:.75rem;opacity:.75;">Mask: 미래 위치 → −∞ &nbsp;|&nbsp; e<sup>−∞</sup> = 0 → softmax 후 자동으로 0이 됨</span>
-        </div>
-
-        <!-- 3단계 흐름: Raw Score → Masking → Softmax -->
-        <div style="font-size:.76rem;font-weight:700;color:var(--sub);margin-bottom:10px;">순서: Raw Score → Masking (-∞) → Softmax → Attention Weight</div>
-
-        <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:center;margin:12px 0;">
-          <!-- ① Raw Score -->
-          <div>
-            <div style="font-size:.72rem;font-weight:700;color:var(--sub);margin-bottom:6px;text-align:center;">① Raw Score</div>
-            <table class="sm-table" style="font-size:.74rem;">
-              <thead><tr><th></th><th style="color:var(--k);">나는</th><th style="color:var(--k);">밥을</th><th style="color:var(--k);">먹었다</th></tr></thead>
-              <tbody>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">나는</td><td class="hi">3.2</td><td class="lo">0.8</td><td class="mid">2.1</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="hi">3.8</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.15</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- 화살표 -->
-          <div style="text-align:center;">
-            <div style="font-size:1.3rem;color:var(--mask);font-weight:700;">→</div>
-            <div style="font-size:.65rem;color:var(--mask);font-weight:700;line-height:1.4;">Masking<br>+(-∞)</div>
-          </div>
-
-          <!-- ② After Masking -->
-          <div>
-            <div style="font-size:.72rem;font-weight:700;color:var(--sub);margin-bottom:6px;text-align:center;">② After Masking</div>
-            <table class="sm-table" style="font-size:.74rem;">
-              <thead><tr><th></th><th style="color:var(--k);">나는</th><th style="color:var(--k);">밥을</th><th style="color:var(--k);">먹었다</th></tr></thead>
-              <tbody>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">나는</td><td class="hi">3.2</td><td class="masked">−∞</td><td class="masked">−∞</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">1.4</td><td class="mid">2.4</td><td class="masked">−∞</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="mid">1.9</td><td class="hi">2.9</td><td class="hi">3.15</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- 화살표 -->
-          <div style="text-align:center;">
-            <div style="font-size:1.3rem;color:var(--a);font-weight:700;">→</div>
-            <div style="font-size:.65rem;color:var(--a);font-weight:700;line-height:1.4;">Softmax<br>각 행</div>
-          </div>
-
-          <!-- ③ Attention Weight -->
-          <div>
-            <div style="font-size:.72rem;font-weight:700;color:var(--sub);margin-bottom:6px;text-align:center;">③ Attention Weight (합=1.0)</div>
-            <table class="sm-table" style="font-size:.74rem;">
-              <thead><tr><th></th><th style="color:var(--k);">나는</th><th style="color:var(--k);">밥을</th><th style="color:var(--k);">먹었다</th></tr></thead>
-              <tbody>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">나는</td><td class="hi">1.00</td><td class="masked">0</td><td class="masked">0</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">밥을</td><td class="lo">0.27</td><td class="hi">0.73</td><td class="masked">0</td></tr>
-                <tr><td style="font-weight:700;color:var(--q);background:var(--surface2);">먹었다</td><td class="lo">0.14</td><td class="mid">0.38</td><td class="hi">0.48</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div style="font-size:.76rem;color:var(--sub);margin-top:8px;">
-          🔴 = −∞ 마스킹 적용 (미래 참조 불가) &nbsp;·&nbsp; e<sup>−∞</sup> = 0이므로 softmax 후 자동으로 0이 된다
-        </div>
-
-        <div class="callout green" style="margin-top:14px;">
-          <span class="ni">➡️</span>
-          <div>
-            <strong>가중합의 의미</strong><br>
-            · Attention Weight: 각 토큰을 얼마나 참조할지의 <strong>비율</strong><br>
-            · Value: 각 토큰이 전달할 <strong>정보 벡터</strong><br>
-            · 가중합: 이 비율대로 Value들을 섞어 <strong>하나의 벡터</strong>로 만드는 연산 → 다음 Step에서 임베딩에 더한다
-          </div>
-        </div>
-      </div>
-
-      <!-- ── STEP 4 : 가중합 → 업데이트 ── -->
-      <div class="qkv-step step-5" id="qkv-s4">
-        <div class="qkv-step-hdr">
-          <div class="qkv-num">⑤</div>
-          <div>
-            <div class="qkv-step-title">가중합 → 임베딩 업데이트</div>
-            <div class="qkv-step-sub">Attention Weight × V 벡터를 가중합해 각 토큰의 임베딩에 더한다</div>
-          </div>
-        </div>
-        <div class="formula-box final" style="display:block;margin-bottom:12px;">가중합(Attention Output) = Attention Weight × V &nbsp;→&nbsp; 기존 임베딩에 <strong>이 문맥 정보를 더해</strong> 새로운 의미로 갱신</div>
-
-        <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border);">
-          <div style="font-size:.76rem;font-weight:700;color:var(--sub);margin-bottom:10px;">Output 계산 예시 — "밥을" 토큰 (Causal Masking 적용, Attention Weight: 나는 27%, 밥을 73%, 먹었다 0%)</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:2.2;color:var(--sub);">
-            <span style="color:var(--q);">0.27</span> × V₁<span style="color:var(--q);font-size:.68rem;"> [0.3, 0.5, 0.2, …]</span><br>
-            + <span style="color:var(--k);">0.73</span> × V₂<span style="color:var(--k);font-size:.68rem;"> [0.7, -0.1, 0.4, …]</span><br>
-            + <span style="color:var(--mask);">0.00</span> × V₃<span style="color:var(--mask);font-size:.68rem;"> [0.2, 0.6, 0.8, …] ← 마스킹</span><br>
-            <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px;">
-            = <strong style="color:var(--a);">Δ</strong> <span style="color:var(--a);font-size:.68rem;">[0.59, 0.06, 0.35, …]</span>
-            &nbsp;&nbsp;<span style="color:var(--sub);font-size:.72rem;">← 임베딩에 더할 문맥 벡터</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:16px;">
-          <div class="wsum-row">
-            <div class="wsum-label">나는 V₁</div>
-            <div class="wsum-bar-wrap">
-              <div class="wsum-bar-bg"><div class="wsum-bar-fill" style="width:27%;background:var(--q);"></div></div>
-            </div>
-            <div class="wsum-pct">×27%</div>
-            <div class="wsum-note">앞 토큰이므로 참조 가능</div>
-          </div>
-          <div class="wsum-row">
-            <div class="wsum-label">밥을 V₂</div>
-            <div class="wsum-bar-wrap">
-              <div class="wsum-bar-bg"><div class="wsum-bar-fill" style="width:73%;background:var(--k);"></div></div>
-            </div>
-            <div class="wsum-pct">×73%</div>
-            <div class="wsum-note">자기 자신의 정보</div>
-          </div>
-          <div class="wsum-row">
-            <div class="wsum-label">먹었다 V₃</div>
-            <div class="wsum-bar-wrap">
-              <div class="wsum-bar-bg"><div class="wsum-bar-fill" style="width:0%;background:var(--mask);"></div></div>
-            </div>
-            <div class="wsum-pct" style="color:var(--mask);">×0%</div>
-            <div class="wsum-note" style="color:var(--mask);">Causal Masking — 미래 토큰 참조 불가</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:4px;">
-          <div class="uc-box before">
-            <div class="uc-label">Before Attention</div>
-            <div class="uc-title">밥을 (문맥 없음)</div>
-            <div class="uc-vec">E₂ = [-0.14, 0.72,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.38, -0.45, … ]<br><br>의미: "음식" 일반</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:1.3rem;color:var(--a);font-weight:700;">+Δ</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--a);margin:4px 0;">[0.59, 0.06,<br>0.35, …]</div>
-            <div style="font-size:1.2rem;color:var(--a);font-weight:700;">→</div>
-          </div>
-          <div class="uc-box after">
-            <div class="uc-label">After Attention</div>
-            <div class="uc-title">밥을 ("나는" 문맥 반영)</div>
-            <div class="uc-vec">z₂ = [0.45, 0.78,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.73, … ]<br><br>의미: "나의 음식"</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /qkv-body -->
-  </div><!-- /qkv-wizard -->
-
-</div><!-- /tab-1 -->
-
-<!-- ════════════════════════════════════
-  TAB 2 : 실습 — 시뮬레이션 + 전체 흐름
-════════════════════════════════════ -->
-<div class="tab-panel" id="tab-2">
-
-  <!-- 인터랙티브 시뮬레이션 -->
-  <div class="sec-div"><div class="ln"></div><div class="lbl">Self-Attention 인터랙티브 시뮬레이션</div><div class="ln"></div></div>
-  <div class="sim-intro">
-    예시 문장: <strong>"오늘 점심 뭐 먹을까 ?"</strong><br>
-    단어를 선택하면 해당 토큰의 <strong>Attention Weight</strong>를 확인할 수 있다 🔍<br>
-    <span style="font-size:.8rem;color:var(--sub);">📌 GPT 방식 — Causal Masking 적용. 각 토큰은 자신과 앞에 위치한 토큰만 참조할 수 있다. 사용자 입력을 GPT가 이해하는 과정이다.</span><br>
-    <span style="font-size:.8rem;opacity:.8;">* 직관적 이해를 위한 예시 값 — 실제 모델 값과 다를 수 있다.</span>
-  </div>
-  <div class="token-row" id="token-row">
-    <button class="tok-btn" data-idx="0" onclick="selectToken(0)">오늘</button>
-    <button class="tok-btn" data-idx="1" onclick="selectToken(1)">점심</button>
-    <button class="tok-btn" data-idx="2" onclick="selectToken(2)">뭐</button>
-    <button class="tok-btn" data-idx="3" onclick="selectToken(3)">먹을까</button>
-    <button class="tok-btn" data-idx="4" onclick="selectToken(4)">?</button>
-    <div class="tok-hint">👆 단어를 눌러 Attention 패턴을 확인해보면 된다</div>
-  </div>
-  <div class="sim-wrap">
-  <svg id="attn-svg" viewBox="0 0 960 170" font-family="Noto Sans KR, sans-serif">
-    <rect x="0" y="0" width="960" height="170" fill="white"/>
-    <g id="tok-boxes">
-      <g id="tok-0"><rect x="28" y="62" width="94" height="40" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="2"/><text x="75" y="87" font-size="13.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">오늘</text></g>
-      <g id="tok-1"><rect x="206" y="62" width="94" height="40" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="2"/><text x="253" y="87" font-size="13.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">점심</text></g>
-      <g id="tok-2"><rect x="384" y="62" width="104" height="40" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="2"/><text x="436" y="87" font-size="13.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">뭐</text></g>
-      <g id="tok-3"><rect x="562" y="62" width="94" height="40" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="2"/><text x="609" y="87" font-size="13.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">먹을까</text></g>
-      <g id="tok-4"><rect x="740" y="62" width="104" height="40" rx="11" fill="#f0f5ff" stroke="#c5d6ff" stroke-width="2"/><text x="792" y="87" font-size="13.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">?</text></g>
-    </g>
-    <g id="attn-arcs"></g>
-    <g id="attn-bars"></g>
-    <text id="svg-hint" x="480" y="148" font-size="12" fill="#94a3b8" text-anchor="middle">← 위의 단어 버튼을 눌러보면 된다 →</text>
-  </svg>
-  </div>
-  <div class="attn-panel" id="attn-panel">
-    <div class="attn-hdr" id="attn-hdr">
-      <span class="attn-badge" id="attn-badge">Q</span>
-      <span class="attn-ttl" id="attn-ttl">단어를 선택하면 Attention 가중치가 표시된다</span>
-    </div>
-    <div class="attn-body" id="attn-body">
-      <div style="color:var(--sub);font-size:.875rem;text-align:center;padding:10px 0;">위의 단어 버튼을 눌러보면 된다 👆</div>
-    </div>
-  </div>
-
-  <!-- 응답 생성 섹션 -->
-  <div class="sec-div"><div class="ln"></div><div class="lbl">응답 생성 — 다음 토큰 예측</div><div class="ln"></div></div>
-
-  <div class="callout green">
-    <span class="ni">🟢</span>
-    <div>
-      <strong>입력 이해 완료 → 응답 생성 시작</strong><br>
-      · Self-Attention을 거친 후 앞의 모든 토큰("오늘", "점심", "뭐", "먹을까")의 문맥이 반영된 <strong>마지막 토큰 "?"의 벡터</strong>만 Unembedding으로 전달<br>
-      · <strong>Unembedding</strong>: 문맥이 반영된 벡터를 vocab 전체에 대한 확률 분포로 변환 — 벡터 → 다음 토큰 예측<br>
-      <!-- [수정] vocab 크기: ~100,000 → ~50,257 (GPT-3 BPE 기준 실제 값) -->
-      · vocab은 학습 전 고정된 토큰 목록 (GPT-3 기준 약 <strong>50,257개</strong>)<br>
-      · 가장 높은 확률의 토큰을 선택 → 입력에 추가 → 다시 Self-Attention → 반복
-    </div>
-  </div>
-
-  <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:18px;">
-
-    <!-- 전체 흐름 다이어그램 -->
-    <div class="dg-wrap" style="margin-bottom:14px;">
-    <svg viewBox="0 0 960 170" font-family="Noto Sans KR, sans-serif">
-      <defs>
-        <marker id="rg" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#059669"/></marker>
-        <marker id="rb" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#4a7cf7"/></marker>
-        <marker id="ro" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#f7774a"/></marker>
-      </defs>
-
-      <text x="10" y="18" font-size="10" font-weight="700" fill="#64748b">사용자 입력</text>
-      <rect x="10" y="24" width="170" height="34" rx="9" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-      <text x="95" y="46" font-size="11" font-weight="700" fill="#4a7cf7" text-anchor="middle">오늘 점심 뭐 먹을까 ?</text>
-      <line x1="180" y1="41" x2="200" y2="41" stroke="#4a7cf7" stroke-width="2" marker-end="url(#rb)"/>
-
-      <rect x="202" y="12" width="360" height="90" rx="12" fill="#f8fbff" stroke="#4a7cf7" stroke-width="1.5" stroke-dasharray="5,3"/>
-      <text x="382" y="30" font-size="10.5" font-weight="700" fill="#4a7cf7" text-anchor="middle">Transformer — Self-Attention ×N층</text>
-      <rect x="214" y="40" width="56" height="26" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-      <text x="242" y="57" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle">오늘</text>
-      <rect x="278" y="40" width="56" height="26" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-      <text x="306" y="57" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle">점심</text>
-      <rect x="342" y="40" width="46" height="26" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-      <text x="365" y="57" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle">뭐</text>
-      <rect x="396" y="40" width="56" height="26" rx="7" fill="#dce8ff" stroke="#4a7cf7" stroke-width="1.5"/>
-      <text x="424" y="57" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle">먹을까</text>
-      <rect x="460" y="40" width="88" height="26" rx="7" fill="#ffe8dc" stroke="#f7774a" stroke-width="2"/>
-      <text x="504" y="57" font-size="10" font-weight="700" fill="#f7774a" text-anchor="middle">v(?) ← 문맥 반영</text>
-      <text x="382" y="96" font-size="9" fill="#64748b" text-anchor="middle">앞 모든 토큰의 문맥이 반영된 마지막 토큰 v(?)만 사용</text>
-      <line x1="562" y1="41" x2="582" y2="41" stroke="#f7774a" stroke-width="2" marker-end="url(#ro)"/>
-
-      <rect x="584" y="12" width="160" height="90" rx="12" fill="#fff8f0" stroke="#f7774a" stroke-width="1.5"/>
-      <text x="664" y="30" font-size="10.5" font-weight="700" fill="#f7774a" text-anchor="middle">Unembedding</text>
-      <text x="664" y="44" font-size="8.5" fill="#f7774a" text-anchor="middle">vocab ~50,257개 중 선택</text>
-      <rect x="594" y="52" width="120" height="14" rx="4" fill="#ffe8dc"/>
-      <rect x="594" y="52" width="86" height="14" rx="4" fill="#f7774a" opacity=".75"/>
-      <text x="718" y="63" font-size="9" font-weight="700" fill="#f7774a">오늘은 45%</text>
-      <rect x="594" y="70" width="120" height="14" rx="4" fill="#ffe8dc"/>
-      <rect x="594" y="70" width="38" height="14" rx="4" fill="#f7774a" opacity=".45"/>
-      <text x="718" y="81" font-size="9" font-weight="700" fill="#f7774a">점심으로 22%</text>
-      <rect x="594" y="88" width="120" height="14" rx="4" fill="#ffe8dc"/>
-      <rect x="594" y="88" width="22" height="14" rx="4" fill="#f7774a" opacity=".3"/>
-      <text x="718" y="99" font-size="9" font-weight="700" fill="#f7774a">추천드리 15%</text>
-      <line x1="744" y1="41" x2="764" y2="41" stroke="#059669" stroke-width="2" marker-end="url(#rg)"/>
-
-      <rect x="766" y="20" width="110" height="50" rx="12" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
-      <text x="821" y="44" font-size="12" font-weight="800" fill="#059669" text-anchor="middle">오늘은</text>
-      <text x="821" y="62" font-size="9.5" fill="#059669" text-anchor="middle">선택됨!</text>
-
-      <path d="M821 70 Q821 148 382 148 Q95 148 95 58" stroke="#4a7cf7" stroke-width="1.8" fill="none" stroke-dasharray="5,3" marker-end="url(#rb)"/>
-      <text x="460" y="164" font-size="10" font-weight="700" fill="#4a7cf7" text-anchor="middle">입력에 추가 → 다시 Self-Attention → Predict · Sample · Repeat ♻️</text>
-    </svg>
-    </div>
-
-    <div style="font-size:.78rem;font-weight:700;color:var(--sub);margin-bottom:14px;">"오늘 점심 뭐 먹을까 ?" → 마지막 토큰 "?"의 벡터 → vocab에서 다음 토큰 확률 분포</div>
-
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:72px;font-size:.82rem;font-weight:700;color:var(--text);text-align:right;">오늘은</div>
-        <div style="flex:1;height:22px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border);">
-          <div style="width:45%;height:100%;background:var(--k);border-radius:99px;display:flex;align-items:center;padding-left:8px;">
-            <span style="font-size:.72rem;font-weight:700;color:white;">45%</span>
-          </div>
-        </div>
-        <div style="width:36px;font-size:.8rem;font-weight:700;color:var(--k);font-family:'JetBrains Mono',monospace;">45%</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:72px;font-size:.82rem;font-weight:700;color:var(--text);text-align:right;">점심으로</div>
-        <div style="flex:1;height:22px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border);">
-          <div style="width:22%;height:100%;background:var(--q);border-radius:99px;display:flex;align-items:center;padding-left:8px;">
-            <span style="font-size:.72rem;font-weight:700;color:white;">22%</span>
-          </div>
-        </div>
-        <div style="width:36px;font-size:.8rem;font-weight:700;color:var(--q);font-family:'JetBrains Mono',monospace;">22%</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:72px;font-size:.82rem;font-weight:700;color:var(--text);text-align:right;">추천드리</div>
-        <div style="flex:1;height:22px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border);">
-          <div style="width:15%;height:100%;background:var(--v);border-radius:99px;display:flex;align-items:center;padding-left:8px;">
-            <span style="font-size:.72rem;font-weight:700;color:white;">15%</span>
-          </div>
-        </div>
-        <div style="width:36px;font-size:.8rem;font-weight:700;color:var(--v);font-family:'JetBrains Mono',monospace;">15%</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:72px;font-size:.82rem;font-weight:700;color:var(--sub);text-align:right;">…</div>
-        <div style="flex:1;height:22px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border);">
-          <div style="width:18%;height:100%;background:var(--border);border-radius:99px;"></div>
-        </div>
-        <div style="width:36px;font-size:.8rem;font-weight:700;color:var(--sub);font-family:'JetBrains Mono',monospace;">18%</div>
-      </div>
-    </div>
-
-    <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;border:1px solid var(--border);">
-      <div style="font-size:.76rem;font-weight:700;color:var(--sub);margin-bottom:10px;">Predict · Sample · Repeat — 응답이 완성될 때까지 반복</div>
-      <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="background:var(--q-l);border:1px solid var(--q);border-radius:8px;padding:4px 10px;font-weight:700;color:var(--q);white-space:nowrap;">1회</div>
-          <div style="color:var(--sub);">"오늘 점심 뭐 먹을까 ?" → 예측: <strong style="color:var(--k);">오늘은</strong> (vocab에서 선택)</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="background:var(--q-l);border:1px solid var(--q);border-radius:8px;padding:4px 10px;font-weight:700;color:var(--q);white-space:nowrap;">2회</div>
-          <div style="color:var(--sub);">"오늘 점심 뭐 먹을까 ? 오늘은" → 예측: <strong style="color:var(--k);">짜장면이나</strong> (vocab에서 선택)</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="background:var(--q-l);border:1px solid var(--q);border-radius:8px;padding:4px 10px;font-weight:700;color:var(--q);white-space:nowrap;">3회</div>
-          <div style="color:var(--sub);">"오늘 점심 뭐 먹을까 ? 오늘은 짜장면이나" → 예측: <strong style="color:var(--k);">어떨까요</strong> (vocab에서 선택)</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="background:var(--surface);border:1px dashed var(--border);border-radius:8px;padding:4px 10px;font-weight:700;color:var(--sub);white-space:nowrap;">…</div>
-          <div style="color:var(--sub);">종료 토큰이 나올 때까지 반복</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Multi-Head Attention -->
-  <div class="sec-div"><div class="ln"></div><div class="lbl">Multi-Head Attention — 여러 관점을 병렬로</div><div class="ln"></div></div>
-  <div class="callout purple">
-    <span class="ni">🟣</span>
-    <div>
-      <strong>Multi-Head Attention</strong> — 여러 관계 패턴을 병렬로 포착<br>
-      · 단일 Head: W_Q·W_K·W_V 한 세트 → 한 가지 관계 패턴만 학습<br>
-      · Q·K·V를 <strong>서브스페이스로 분할</strong> → Head 수만큼 병렬 수행 → 각 Head가 서로 다른 관계 패턴 학습<br>
-      · GPT-3: <strong>96개 Head</strong>, 각 Head 차원 = 128
-    </div>
-  </div>
-  <div class="mh-grid">
-    <div class="mh-card" style="border-color:#fca5a5;">
-      <div class="mh-icon">🔴</div>
-      <div class="mh-title" style="color:#ef4444;">Head 1</div>
-      <div class="mh-sub">시간 맥락 관계<br>"오늘 ↔ 점심"</div>
-    </div>
-    <div class="mh-card" style="border-color:#93c5fd;">
-      <div class="mh-icon">🔵</div>
-      <div class="mh-title" style="color:#4a7cf7;">Head 2</div>
-      <div class="mh-sub">목적어 관계<br>"뭐 ↔ 먹을까"</div>
-    </div>
-    <div class="mh-card" style="border-color:#a7f3d0;">
-      <div class="mh-icon">🟢</div>
-      <div class="mh-title" style="color:#059669;">Head 3</div>
-      <div class="mh-sub">의문문 구조<br>"먹을까 ↔ ?"</div>
-    </div>
-    <div class="mh-card" style="border-color:#d8b4fe;">
-      <div class="mh-icon">🟣</div>
-      <div class="mh-title" style="color:#9c4af7;">Head 4~N</div>
-      <div class="mh-sub">기타 관계 패턴<br>"오늘 ↔ 먹을까 …"</div>
-    </div>
-  </div>
-  <div class="callout blue" style="margin-top:4px;">
-    <span class="ni">📌</span>
-    <div>
-      위 레이블("주어-동사", "시제-동사" 등)은 <strong>사람이 미리 지정한 것이 아니다.</strong><br>
-      · 설계 시: Head 개수(예: 96개)만 결정<br>
-      · 학습 후: 각 Head의 W_Q·W_K·W_V가 어떤 관계를 포착할지는 <strong>학습이 스스로 결정</strong><br>
-      · 연구자들이 학습 완료 후 각 Head의 Attention 패턴을 <strong>사후 분석</strong>해 명명한 것
-    </div>
-  </div>
-
-</div><!-- /tab-2 -->
-
-
-
-<script>
-
-
-/* ── Q·K·V 스텝 위저드 ── */
-let qkvCurrent = 0;
-const QKV_TOTAL = 5;
-
-function qkvGoto(idx) {
-  qkvCurrent = idx;
-  document.querySelectorAll('.qkv-step').forEach((s,i)=>s.classList.toggle('active',i===qkvCurrent));
-  document.querySelectorAll('.qkv-step-tab').forEach((t,i)=>{
-    t.classList.remove('current','done');
-    if(i===qkvCurrent) t.classList.add('current');
-    else if(i<qkvCurrent) t.classList.add('done');
-  });
-}
-
-function qkvNav(dir) {
-  qkvGoto(Math.max(0, Math.min(QKV_TOTAL-1, qkvCurrent+dir)));
-}
-
-/* ── 인터랙티브 Attention 시뮬레이션 ── */
-const TOKENS = ["오늘","점심","뭐","먹을까","?"];
-const TOKEN_CX = [75, 253, 436, 609, 792];
-const ATTN_WEIGHTS = [
-  [1.00, 0.00, 0.00, 0.00, 0.00],
-  [0.25, 0.75, 0.00, 0.00, 0.00],
-  [0.10, 0.15, 0.75, 0.00, 0.00],
-  [0.15, 0.20, 0.20, 0.45, 0.00],
-  [0.10, 0.15, 0.15, 0.40, 0.20],
-];
-const EXPLANATIONS = [
-  'Causal Masking 적용 — <strong>"오늘"</strong>은 첫 번째 토큰이므로 자기 자신만 참조한다. (100%)',
-  'Causal Masking 적용 — <strong>"점심"</strong>은 "오늘"(시간 맥락 25%)과 자기 자신(75%)을 참조한다.',
-  'Causal Masking 적용 — <strong>"뭐"</strong>는 앞의 세 토큰을 참조한다. 자기 자신(75%)에 가장 집중한다.',
-  'Causal Masking 적용 — <strong>"먹을까"</strong>는 앞의 네 토큰을 참조한다. 자기 자신(45%)에 집중하며 "점심"(20%)·"뭐"(20%)와도 강하게 연결된다.',
-  '<strong>"?"</strong>는 마지막 토큰으로 문장 전체를 참조할 수 있다. "먹을까"(40%)에 가장 강하게 주목해 의문문임을 파악한다.',
-];
-const COLORS = [
-  {bg:"#dce8ff",stroke:"#4a7cf7",text:"#4a7cf7"},
-  {bg:"#d1fae5",stroke:"#059669",text:"#059669"},
-  {bg:"#ffe8dc",stroke:"#f7774a",text:"#f7774a"},
-  {bg:"#ecdcff",stroke:"#9c4af7",text:"#9c4af7"},
-  {bg:"#fee2e2",stroke:"#ef4444",text:"#ef4444"},
-];
-
-function selectToken(idx) {
-  document.querySelectorAll(".tok-btn").forEach((b,i)=>b.classList.toggle("active",i===idx));
-  const weights = ATTN_WEIGHTS[idx];
-  const C = COLORS[idx];
-
-  document.querySelectorAll("#tok-boxes g").forEach((g,i)=>{
-    const r=g.querySelector("rect"), t=g.querySelector("text");
-    const w=weights[i];
-    if(i===idx){
-      r.setAttribute("fill",C.bg); r.setAttribute("stroke",C.stroke);
-      r.setAttribute("stroke-width","3"); t.setAttribute("fill",C.text);
-    } else {
-      r.setAttribute("fill",`rgba(74,124,247,${(0.05+w*0.65).toFixed(2)})`);
-      r.setAttribute("stroke",`rgba(74,124,247,${(0.18+w*0.82).toFixed(2)})`);
-      r.setAttribute("stroke-width",(1.5+w*3).toFixed(1));
-      t.setAttribute("fill",w>0.25?"#1a2540":"#4a7cf7");
-    }
-  });
-
-  const arcsG=document.getElementById("attn-arcs"); arcsG.innerHTML="";
-  weights.forEach((w,i)=>{
-    if(i===idx||w<0.04)return;
-    const qx=TOKEN_CX[idx], kx=TOKEN_CX[i];
-    const cy=60-w*42;
-    const el=document.createElementNS("http://www.w3.org/2000/svg","path");
-    el.setAttribute("d",`M${qx},62 Q${(qx+kx)/2},${cy} ${kx},62`);
-    el.setAttribute("stroke",C.stroke);
-    el.setAttribute("stroke-width",(w*9).toFixed(1));
-    el.setAttribute("fill","none");
-    el.setAttribute("opacity",(0.12+w*0.88).toFixed(2));
-    arcsG.appendChild(el);
-  });
-
-  const barsG=document.getElementById("attn-bars"); barsG.innerHTML="";
-  weights.forEach((w,i)=>{
-    const cx=TOKEN_CX[i];
-    const bg=document.createElementNS("http://www.w3.org/2000/svg","rect");
-    bg.setAttribute("x",cx-42); bg.setAttribute("y",110); bg.setAttribute("width",84);
-    bg.setAttribute("height",9); bg.setAttribute("rx",5); bg.setAttribute("fill","#e2e8f0");
-    barsG.appendChild(bg);
-    const fg=document.createElementNS("http://www.w3.org/2000/svg","rect");
-    fg.setAttribute("x",cx-42); fg.setAttribute("y",110);
-    fg.setAttribute("width",Math.round(w*84)); fg.setAttribute("height",9);
-    fg.setAttribute("rx",5); fg.setAttribute("fill",C.stroke);
-    barsG.appendChild(fg);
-    const pt=document.createElementNS("http://www.w3.org/2000/svg","text");
-    pt.setAttribute("x",cx); pt.setAttribute("y",133);
-    pt.setAttribute("font-size",10); pt.setAttribute("font-weight","700");
-    pt.setAttribute("fill",C.text); pt.setAttribute("text-anchor","middle");
-    pt.textContent=Math.round(w*100)+"%";
-    barsG.appendChild(pt);
-  });
-
-  document.getElementById("svg-hint").setAttribute("opacity","0");
-
-  const panel=document.getElementById("attn-panel");
-  const hdr=document.getElementById("attn-hdr");
-  panel.style.borderColor=C.stroke;
-  hdr.style.background=C.bg; hdr.style.borderBottomColor=C.stroke+"88";
-  document.getElementById("attn-badge").style.background=C.stroke;
-  document.getElementById("attn-badge").textContent="Q: "+TOKENS[idx];
-  const ttl=document.getElementById("attn-ttl");
-  ttl.textContent=TOKENS[idx]+"가 바라보는 Attention 가중치";
-  ttl.style.color=C.text;
-
-  let html="";
-  weights.forEach((w,i)=>{
-    const pct=Math.round(w*100);
-    const isQ=(i===idx);
-    html+=`<div class="attn-row">
-      <div class="attn-tok" style="color:${isQ?C.text:"var(--text)"};">${isQ?"▶ ":""}${TOKENS[i]}</div>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:${pct}%;background:${C.stroke};">
-          ${pct>=12?`<span class="bar-pct">${pct}%</span>`:""}
-        </div>
-      </div>
-      <div class="attn-num" style="color:${C.text}">${pct}%</div>
-    </div>`;
-  });
-  html+=`<div style="margin-top:12px;padding:11px 13px;background:${C.bg};border-radius:9px;
-    font-size:.855rem;color:var(--sub);line-height:1.75;border-left:3px solid ${C.stroke};">
-    💡 ${EXPLANATIONS[idx]}</div>`;
-  document.getElementById("attn-body").innerHTML=html;
-}
-
-
-</script>
+    <!-- Bootstrap 5.3.2 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Interactive Simulation & Wizard Script -->
+    <script>
+        /* ── Q·K·V Wizard Logic ── */
+        let qkvCurrent = 0;
+        const QKV_TOTAL = 5;
+
+        function qkvGoto(idx) {
+            qkvCurrent = idx;
+            document.querySelectorAll('.qkv-step').forEach((s, i) => s.classList.toggle('active', i === qkvCurrent));
+            document.querySelectorAll('.qkv-step-tab').forEach((t, i) => {
+                t.classList.toggle('current', i === qkvCurrent);
+            });
+            document.getElementById('btn-prev').disabled = (qkvCurrent === 0);
+            document.getElementById('btn-next').disabled = (qkvCurrent === QKV_TOTAL - 1);
+        }
+
+        function qkvNav(dir) {
+            qkvGoto(Math.max(0, Math.min(QKV_TOTAL - 1, qkvCurrent + dir)));
+        }
+
+        /* ── Interactive Attention Simulation Logic ── */
+        const TOKENS = ["오늘", "점심", "뭐", "먹을까", "?"];
+        const TOKEN_CX = [125, 370, 620, 870, 1115];
+        const ATTN_WEIGHTS = [
+            [1.00, 0.00, 0.00, 0.00, 0.00],
+            [0.25, 0.75, 0.00, 0.00, 0.00],
+            [0.10, 0.15, 0.75, 0.00, 0.00],
+            [0.15, 0.20, 0.20, 0.45, 0.00],
+            [0.10, 0.15, 0.15, 0.40, 0.20],
+        ];
+
+        const EXPLANATIONS = [
+            '인과적 마스킹(Causal Masking) 적용 ➔ <strong>"오늘"</strong>은 첫 번째 토큰이므로 자기 자신만 100% 참조한다.',
+            '인과적 마스킹 적용 ➔ <strong>"점심"</strong>은 "오늘"(시간적 배경 25%)과 자기 자신(75%)을 참조한다.',
+            '인과적 마스킹 적용 ➔ <strong>"뭐"</strong>는 앞선 세 토큰을 참조하며 자기 자신(75%)에 가장 크게 집중한다.',
+            '인과적 마스킹 적용 ➔ <strong>"먹을까"</strong>는 이전 토큰들을 고루 참조하며 서술어로서 문맥을 통합한다.',
+            '<strong>"?"</strong>는 문장의 마지막 토큰으로 전체 문맥을 참조할 수 있으며 "먹을까"(40%)에 가장 강하게 집중하여 의문문 구조를 파악한다.'
+        ];
+
+        function selectToken(idx) {
+            document.querySelectorAll(".tok-btn").forEach((b, i) => b.classList.toggle("active", i === idx));
+            const weights = ATTN_WEIGHTS[idx];
+
+            // Update SVG Box Highlights
+            document.querySelectorAll("#tok-boxes g").forEach((g, i) => {
+                const rect = g.querySelector("rect");
+                const isSelected = (i === idx);
+                rect.setAttribute("fill", isSelected ? "#dce8ff" : "#fff");
+                rect.setAttribute("stroke", isSelected ? "#0d6efd" : "#cbd5e1");
+                rect.setAttribute("stroke-width", isSelected ? "2.5" : "1.5");
+            });
+
+            // Update SVG Arcs (시원하고 구분 명확한 동적 포물선 아크)
+            const arcsG = document.getElementById("attn-arcs");
+            arcsG.innerHTML = "";
+            weights.forEach((w, i) => {
+                if (i === idx || w < 0.05) return;
+                const qx = TOKEN_CX[idx], kx = TOKEN_CX[i];
+                const dist = Math.abs(qx - kx);
+                // 거리가 멀수록 더 높이 솟아오르는 시원한 포물선
+                const arcHeight = Math.min(85, 30 + (dist / 1000) * 45 + (w * 15));
+                const cy = 105 - arcHeight;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", `M${qx},105 Q${(qx + kx) / 2},${cy} ${kx},105`);
+                path.setAttribute("stroke", "#0d6efd");
+                path.setAttribute("stroke-width", Math.max(2, w * 5.5).toFixed(1));
+                path.setAttribute("fill", "none");
+                path.setAttribute("opacity", (0.35 + w * 0.65).toFixed(2));
+                path.setAttribute("stroke-dasharray", w < 0.2 ? "4,3" : "none");
+                path.setAttribute("marker-end", "url(#attn-arrow)");
+                arcsG.appendChild(path);
+            });
+
+            // Update SVG Bars & % Text Directly Below Each Token Box
+            const barsG = document.getElementById("attn-bars");
+            barsG.innerHTML = "";
+            weights.forEach((w, i) => {
+                const cx = TOKEN_CX[i];
+                const pct = Math.round(w * 100);
+                const isQ = (i === idx);
+
+                // Background track
+                const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                bg.setAttribute("x", cx - 50);
+                bg.setAttribute("y", 155);
+                bg.setAttribute("width", 100);
+                bg.setAttribute("height", 8);
+                bg.setAttribute("rx", 4);
+                bg.setAttribute("fill", "#e2e8f0");
+                barsG.appendChild(bg);
+
+                // Progress fill
+                if (pct > 0) {
+                    const fg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    fg.setAttribute("x", cx - 50);
+                    fg.setAttribute("y", 155);
+                    fg.setAttribute("width", Math.round(w * 100));
+                    fg.setAttribute("height", 8);
+                    fg.setAttribute("rx", 4);
+                    fg.setAttribute("fill", isQ ? "#0d6efd" : "#3b82f6");
+                    barsG.appendChild(fg);
+                }
+
+                // Percentage Text
+                const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txt.setAttribute("x", cx);
+                txt.setAttribute("y", 182);
+                txt.setAttribute("font-size", "14");
+                txt.setAttribute("font-weight", isQ ? "bold" : "600");
+                txt.setAttribute("fill", isQ ? "#0d6efd" : (pct > 0 ? "#1e293b" : "#94a3b8"));
+                txt.setAttribute("text-anchor", "middle");
+                txt.setAttribute("dominant-baseline", "central");
+                txt.textContent = `${pct}%`;
+                barsG.appendChild(txt);
+            });
+
+            // Update Explanation Box
+            document.getElementById("attn-badge").textContent = `Q: ${TOKENS[idx]}`;
+            document.getElementById("attn-ttl").textContent = `"${TOKENS[idx]}" 토큰이 바라보는 문맥 가중치`;
+            document.getElementById("attn-desc").innerHTML = EXPLANATIONS[idx];
+        }
+
+        // Initialize First Step and Simulation
+        document.addEventListener("DOMContentLoaded", () => {
+            qkvGoto(0);
+            selectToken(0);
+        });
+    </script>
+    <!-- 마스터 표준 공통 스크립트 -->
+    <script src="../../js/standards.js"></script>
 </body>
 </html>

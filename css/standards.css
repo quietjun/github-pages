@@ -1,0 +1,241 @@
+/* 
+  🏛️ github-pages Master Standards Style Sheet (standards.css)
+  - 5단계 타이포그래피 시각 계층 보장
+  - 중첩 카드(Nested Cards) 가독성 하한선(Floor: 16px) 보존
+  - 인라인 하이라이트 키워드 크기 보존
+  - 1:1 SVG 컨테이너 및 목차 드로어 표준
+*/
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary: #0d6efd;
+    --primary-light: #eff6ff;
+    --primary-border: #93c5fd;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-page: #f8fafc;
+    --border-color: #e2e8f0;
+}
+
+/* ── 전역 기본 폰트 설정 ── */
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-page);
+    line-height: 1.7;
+    font-size: 16px; /* 기본 텍스트 (Base Text Floor) */
+    word-break: keep-all;
+}
+
+.container-custom {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* ── 5단계 타이포그래피 계층 (Typography Scale) ── */
+/* Level 1: 대제목 */
+h1 {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 800;
+    border-left: 8px solid var(--primary);
+    padding-left: 18px;
+    margin-bottom: 24px;
+}
+h2 {
+    font-size: 1.625rem; /* 26px */
+    font-weight: 700;
+    margin-top: 50px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+/* Level 2: 상위 카드 중제목 */
+h5, .card-title-main {
+    font-size: 1.125rem !important; /* 18px */
+    font-weight: 700 !important;
+}
+
+/* Level 3: 하위 카드 소제목 & 기본 텍스트 */
+h6, .card-title-sub {
+    font-size: 1rem !important; /* 16px */
+    font-weight: 700 !important;
+}
+p, li, td, th, .text-base {
+    font-size: 1rem; /* 16px 불변 */
+    line-height: 1.7;
+}
+
+/* Level 4: 보조 / 메타데이터 라벨 */
+.meta-label, .card-category {
+    font-size: 0.875rem !important; /* 14px */
+    color: var(--text-muted) !important;
+    font-weight: 500;
+}
+
+/* Level 5: 결론 / 시사점 요약 */
+.takeaway-text {
+    font-size: 1rem !important; /* 16px */
+    font-weight: 700 !important;
+    color: var(--primary) !important;
+}
+
+/* ── 인라인 키워드 하이라이트 (16px 크기 100% 보존) ── */
+.kw-highlight, .kw-highlight-yellow {
+    font-size: inherit;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background-color: #fef08a;
+    color: #854d0e;
+}
+.kw-highlight-blue {
+    font-size: inherit;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+.kw-highlight-red {
+    font-size: inherit;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+.kw-highlight-green {
+    font-size: inherit;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+/* ── 카드 및 중첩 카드 (Nested Cards) 표준 ── */
+.card-parent {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.card-nested {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 18px;
+    height: 100%;
+}
+
+.principle-box {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+/* ── SVG 컨테이너 ── */
+.svg-container {
+    width: 100%;
+    overflow-x: auto;
+    text-align: center;
+    background: transparent;
+}
+.svg-container svg {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
+/* ── 코드 블록 (Fira Code 17px 고정) ── */
+pre {
+    margin: 24px 0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    text-align: left !important;
+}
+pre code {
+    font-family: 'Fira Code', monospace !important;
+    font-size: 17px !important;
+    padding: 20px !important;
+    line-height: 1.6;
+    display: block !important;
+    text-align: left !important;
+}
+
+/* ── 플로팅 목차 (TOC Drawer) ── */
+.toc-drawer {
+    position: fixed;
+    top: 100px;
+    right: 0;
+    z-index: 1050;
+    display: flex;
+    align-items: flex-start;
+    transform: translateX(calc(100% - 42px));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.toc-drawer:hover, .toc-drawer:focus-within {
+    transform: translateX(0);
+}
+.toc-handle {
+    width: 42px;
+    background: var(--primary);
+    color: white;
+    padding: 15px 8px;
+    writing-mode: vertical-rl;
+    border-radius: 12px 0 0 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+}
+.toc-content {
+    width: 320px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: -8px 8px 24px rgba(0,0,0,0.12);
+    border-radius: 0 0 0 16px;
+}
+.toc-content h5 {
+    font-size: 16px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+.toc-content ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.toc-content li {
+    margin-bottom: 8px;
+}
+.toc-content a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 14px;
+    display: block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.toc-content a:hover {
+    color: var(--primary);
+    background-color: var(--primary-light);
+    font-weight: 600;
+}

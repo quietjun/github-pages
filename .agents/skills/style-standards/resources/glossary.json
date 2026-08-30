@@ -1,0 +1,155 @@
+{
+  "description": "기술 문서 작성 시 통일성을 보장하기 위한 표준 기술 용어 및 영문/기호 병기 사전",
+  "terms": [
+    {
+      "korean": "은닉 상태",
+      "english": "Hidden State",
+      "symbol": "h",
+      "canonical": "은닉 상태(Hidden State, h)"
+    },
+    {
+      "korean": "셀 상태",
+      "english": "Cell State",
+      "symbol": "C",
+      "canonical": "셀 상태(Cell State, C)"
+    },
+    {
+      "korean": "배치 크기",
+      "english": "Batch Size",
+      "symbol": "N",
+      "canonical": "배치 크기(Batch Size, N)"
+    },
+    {
+      "korean": "시퀀스 길이",
+      "english": "Sequence Length",
+      "symbol": "L",
+      "canonical": "시퀀스 길이(Sequence Length, L)"
+    },
+    {
+      "korean": "임베딩 차원",
+      "english": "Embedding Dimension",
+      "symbol": "D",
+      "canonical": "임베딩 차원(Embedding Dimension, D)"
+    },
+    {
+      "korean": "역전파",
+      "english": "Backpropagation",
+      "symbol": null,
+      "canonical": "역전파(Backpropagation)"
+    },
+    {
+      "korean": "시간차 역전파",
+      "english": "Backpropagation Through Time",
+      "symbol": "BPTT",
+      "canonical": "시간차 역전파(Backpropagation Through Time, BPTT)"
+    },
+    {
+      "korean": "기울기 소실",
+      "english": "Vanishing Gradient",
+      "symbol": null,
+      "canonical": "기울기 소실(Vanishing Gradient)"
+    },
+    {
+      "korean": "기울기 폭발",
+      "english": "Exploding Gradient",
+      "symbol": null,
+      "canonical": "기울기 폭발(Exploding Gradient)"
+    },
+    {
+      "korean": "어텐션 메커니즘",
+      "english": "Attention Mechanism",
+      "symbol": null,
+      "canonical": "어텐션 메커니즘(Attention Mechanism)"
+    },
+    {
+      "korean": "질의",
+      "english": "Query",
+      "symbol": "Q",
+      "canonical": "질의(Query, Q)"
+    },
+    {
+      "korean": "키",
+      "english": "Key",
+      "symbol": "K",
+      "canonical": "키(Key, K)"
+    },
+    {
+      "korean": "값",
+      "english": "Value",
+      "symbol": "V",
+      "canonical": "값(Value, V)"
+    },
+    {
+      "korean": "다중 헤드 어텐션",
+      "english": "Multi-Head Attention",
+      "symbol": "MHA",
+      "canonical": "다중 헤드 어텐션(Multi-Head Attention, MHA)"
+    },
+    {
+      "korean": "위치 인코딩",
+      "english": "Positional Encoding",
+      "symbol": "PE",
+      "canonical": "위치 인코딩(Positional Encoding, PE)"
+    },
+    {
+      "korean": "손실 함수",
+      "english": "Loss Function",
+      "symbol": "L",
+      "canonical": "손실 함수(Loss Function, L)"
+    },
+    {
+      "korean": "경사 하강법",
+      "english": "Gradient Descent",
+      "symbol": null,
+      "canonical": "경사 하강법(Gradient Descent)"
+    },
+    {
+      "korean": "학습률",
+      "english": "Learning Rate",
+      "symbol": "η",
+      "canonical": "학습률(Learning Rate, η)"
+    },
+    {
+      "korean": "가중치",
+      "english": "Weight",
+      "symbol": "W",
+      "canonical": "가중치(Weight, W)"
+    },
+    {
+      "korean": "편향",
+      "english": "Bias",
+      "symbol": "b",
+      "canonical": "편향(Bias, b)"
+    },
+    {
+      "korean": "활성화 함수",
+      "english": "Activation Function",
+      "symbol": "σ",
+      "canonical": "활성화 함수(Activation Function, σ)"
+    },
+    {
+      "korean": "소프트맥스",
+      "english": "Softmax",
+      "symbol": null,
+      "canonical": "소프트맥스(Softmax)"
+    },
+    {
+      "korean": "드롭아웃",
+      "english": "Dropout",
+      "symbol": null,
+      "canonical": "드롭아웃(Dropout)"
+    },
+    {
+      "korean": "층 정규화",
+      "english": "Layer Normalization",
+      "symbol": "LayerNorm",
+      "canonical": "층 정규화(Layer Normalization)"
+    },
+    {
+      "korean": "잔차 연결",
+      "english": "Residual Connection",
+      "symbol": null,
+      "canonical": "잔차 연결(Residual Connection)"
+    }
+  ]
+}
