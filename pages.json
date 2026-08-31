@@ -262,6 +262,14 @@
       {
         "label": "Kubernetes 아키텍처",
         "path": "devops/kubearchitecture.html"
+      },
+      {
+        "label": "Oracle Cloud Always Free 기반 Spring Boot 호스팅 가이드",
+        "path": "devops/oracle_cloud.html"
+      },
+      {
+        "label": "Oracle Cloud ARM 호스팅 가이드 (Spring Boot)",
+        "path": "devops/oracle_cloud_백업.html"
       }
     ]
   },
