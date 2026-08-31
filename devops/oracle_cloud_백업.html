@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Cloud ARM 호스팅 가이드 (Spring Boot)</title>
+    <style>
+        :root {
+            --primary-color: #f80000;
+            --secondary-color: #2c3e50;
+            --bg-color: #f4f7f6;
+            --code-bg: #2d3436;
+            --code-text: #dfe6e9;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--secondary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 30px;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            background: #fff5f5;
+        }
+        h3 {
+            color: #d63031;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .tip {
+            background-color: #d1ecf1;
+            border-left: 5px solid #0dcaf0;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Oracle Cloud Always Free<br>Spring Boot 호스팅 가이드</h1>
+
+    <div class="tip">
+        <strong>서버 사양:</strong> VM.Standard.A1.Flex (ARM 기반)<br>
+        <strong>리소스:</strong> 2 OCPU / 12GB RAM / 47GB+ Disk (무료 한도 내 최적 사양)
+    </div>
+
+    <h2>1. ARM 인스턴스 생성 및 네트워크 설정</h2>
+    <ol>
+        <li><strong>컴퓨팅 > 인스턴스 > 인스턴스 생성</strong></li>
+        <li><strong>이미지:</strong> Canonical Ubuntu 22.04 선택</li>
+        <li><strong>셰이프:</strong> <code>VM.Standard.A1.Flex</code> (Ampere ARM) 선택
+            <ul>
+                <li>OCPU: 2 / RAM: 12GB 로 설정</li>
+            </ul>
+        </li>
+        <li><strong>네트워킹:</strong> <code>공용 IPv4 주소 할당</code> 반드시 체크</li>
+        <li><strong>SSH 키:</strong> <code>전용 키 저장</code> 및 <code>공용 키 저장</code> 클릭하여 파일 보관</li>
+        <li><strong>보안 목록(Ingress Rules) 추가:</strong> 
+            <ul>
+                <li><code>8080</code> (Spring Boot), <code>80</code> (HTTP), <code>3306</code> (MySQL) 포트 개방</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>2. 서버 접속 및 초기 환경 설정</h2>
+    <p>내 컴퓨터의 터미널(CMD/PowerShell/Mac Terminal)에서 접속합니다.</p>
+    <pre><code># SSH 접속 (키 권한 설정 필수 - Linux/Mac)
+chmod 400 private_key.key
+ssh -i private_key.key ubuntu@[서버_공용_IP]</code></pre>
+
+    <h3>가상 메모리(Swap) 설정 (12GB RAM이지만 안정성을 위해 권장)</h3>
+    <pre><code>sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab</code></pre>
+
+    <h2>3. Java 21 및 MySQL 설치</h2>
+    <h3>JDK 21 설치</h3>
+    <pre><code>sudo apt update
+sudo apt install openjdk-21-jdk -y
+java -version</code></pre>
+
+    <h3>MySQL 설치 및 계정 설정</h3>
+    <pre><code>sudo apt install mysql-server -y
+sudo mysql
+
+-- MySQL 내부 쿼리
+CREATE DATABASE ssafy_db;
+CREATE USER 'quietjun'@'%' IDENTIFIED BY 'dmstj@0205M';
+GRANT ALL PRIVILEGES ON ssafy_db.* TO 'quietjun'@'%';
+FLUSH PRIVILEGES;
+EXIT;</code></pre>
+
+    <h2>4. 포트 리다이렉션 (Nginx 없이 80포트 연결)</h2>
+    <p>사용자가 도메인 뒤에 <code>:8080</code>을 붙이지 않아도 되도록 설정합니다.</p>
+    <pre><code># 80번 포트로 오는 요청을 8080으로 전달
+sudo iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+
+# 방화벽 설정 저장
+sudo apt install iptables-persistent -y
+sudo netfilter-persistent save</code></pre>
+
+    <h2>5. 가비아 도메인 연결</h2>
+    <ul>
+        <li><strong>가비아 DNS 설정:</strong> 타입 <code>A</code>, 호스트 <code>@</code>, 값에 <code>서버 공용 IP</code> 입력</li>
+        <li><strong>확인:</strong> 이제 브라우저에서 <code>http://도메인</code>으로 접속 시 Spring Boot(8080)로 자동 연결됩니다.</li>
+    </ul>
+
+    <h2>6. 애플리케이션 상시 가동 (systemd)</h2>
+    <p><code>/etc/systemd/system/myapp.service</code> 파일을 생성하여 관리합니다.</p>
+    <pre><code>[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/java -jar /home/ubuntu/app.jar
+SuccessExitStatus=143
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+    <pre><code>sudo systemctl enable myapp
+sudo systemctl start myapp</code></pre>
+
+    <div class="warning">
+        <strong>주의:</strong> ARM 아키텍처(Aarch64)를 사용하므로, 만약 Native 라이브러리를 사용한다면 빌드 시 ARM용 바이너리가 포함되었는지 확인해야 합니다. 일반적인 Spring Boot 앱은 문제없이 작동합니다.
+    </div>
+</div>
+
+</body>
+</html>

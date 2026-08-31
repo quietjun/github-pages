@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Cloud Always Free 기반 Spring Boot 호스팅 가이드</title>
+    
+    <!-- 1. 외부 라이브러리 & 마스터 표준 스타일시트 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link rel="stylesheet" href="../css/standards.css">
+</head>
+<body>
+
+    <!-- [플로팅 목차 (TOC Drawer)] -->
+    <nav class="toc-drawer">
+        <div class="toc-handle">CONTENTS ☰</div>
+        <div class="toc-content">
+            <h5>문서 목차</h5>
+            <ul class="list-unstyled">
+                <li><a href="#sec-overview">1. 인프라 아키텍처 개요</a></li>
+                <li><a href="#sec-instance">2. 콘솔 한글화 & ARM 인스턴스 사양</a></li>
+                <li><a href="#sec-access-swap">3. SSH 접속 및 Swap 메모리 최적화</a></li>
+                <li><a href="#sec-runtime-db">4. Java 21 및 MySQL 8 환경 구축</a></li>
+                <li><a href="#sec-network-dns">5. 포트 포워딩 및 DNS 도메인 연동</a></li>
+                <li><a href="#sec-systemd">6. systemd 서비스 상시 가동 등록</a></li>
+                <li><a href="#sec-architecture-notice">7. ARM 아키텍처 운영 주의사항</a></li>
+                <li><a href="#summary">8. 핵심 요약</a></li>
+                <li><a href="#sec-verification">9. 원문 무결성 대조표</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <article>
+            <header id="header">
+                <h1>Oracle Cloud Always Free 기반 Spring Boot 호스팅 가이드</h1>
+                <p class="lead">OCI(Oracle Cloud Infrastructure) Ampere ARM 아키텍처 환경에서 <span class="kw-highlight-blue">Spring Boot</span> 및 <span class="kw-highlight-blue">MySQL</span> 서비스를 무중단으로 안정 배포하는 엔지니어링 표준 절차를 정의한다.</p>
+            </header>
+
+            <!-- 1. 전체 아키텍처 시각화 (SVG) -->
+            <section id="sec-overview">
+                <h2 id="toc-1">1. 인프라 아키텍처 개요</h2>
+                <p>클라이언트의 HTTP 요청이 가비아 DNS와 OCI 네트워크 계층을 거쳐 Spring Boot 애플리케이션 및 MySQL에 도달하는 트래픽 처리 흐름은 다음과 같다.</p>
+                
+                <div class="svg-wrapper mb-4">
+                    <svg width="100%" height="220" viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,1 L0,9 L9,5 Z" fill="#0d6efd"/>
+                            </marker>
+                            <marker id="arrow-gray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                                <path d="M0,1 L0,9 L9,5 Z" fill="#64748b"/>
+                            </marker>
+                        </defs>
+
+                        <!-- 클라이언트 영역 -->
+                        <rect x="15" y="65" width="110" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                        <text x="70" y="95" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1e293b">웹 클라이언트</text>
+                        <text x="70" y="118" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#64748b">HTTP (포트 80)</text>
+                        <text x="70" y="136" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#0d6efd">브라우저 요청</text>
+
+                        <!-- 연결선 1: 클라이언트 -> DNS -->
+                        <line x1="125" y1="110" x2="165" y2="110" stroke="#0d6efd" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- 가비아 DNS 영역 -->
+                        <rect x="175" y="65" width="115" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+                        <text x="232" y="95" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1d4ed8">가비아 DNS</text>
+                        <text x="232" y="118" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#1e40af">A 레코드</text>
+                        <text x="232" y="136" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">공용 IPv4 매핑</text>
+
+                        <!-- 연결선 2: DNS -> OCI VCN -->
+                        <line x1="290" y1="110" x2="330" y2="110" stroke="#0d6efd" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- OCI 인스턴스 경계 영역 -->
+                        <rect x="340" y="20" width="425" height="180" rx="10" fill="#ffffff" stroke="#0d6efd" stroke-width="2" stroke-dasharray="6,4"/>
+                        <text x="355" y="42" font-size="13" font-weight="bold" fill="#0d6efd">OCI Ampere ARM VM (2 OCPU / 12GB RAM)</text>
+
+                        <!-- iptables PREROUTING -->
+                        <rect x="355" y="65" width="115" height="90" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="412" y="93" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#92400e">iptables NAT</text>
+                        <text x="412" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#78350f">PREROUTING</text>
+                        <text x="412" y="135" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="#b45309">80 ➔ 8080</text>
+
+                        <!-- 연결선 3: iptables -> Spring Boot -->
+                        <line x1="470" y1="110" x2="500" y2="110" stroke="#0d6efd" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- Spring Boot App -->
+                        <rect x="510" y="65" width="120" height="90" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+                        <text x="570" y="93" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#065f46">Spring Boot</text>
+                        <text x="570" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#047857">OpenJDK 21</text>
+                        <text x="570" y="135" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">systemd 데몬</text>
+
+                        <!-- 연결선 4: Spring Boot -> MySQL -->
+                        <line x1="630" y1="110" x2="655" y2="110" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-gray)"/>
+
+                        <!-- MySQL DB -->
+                        <rect x="665" y="65" width="90" height="90" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+                        <text x="710" y="95" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e293b">MySQL 8</text>
+                        <text x="710" y="118" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">포트 3306</text>
+                        <text x="710" y="136" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#059669">Local DB</text>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- 2. OCI 콘솔 한글화 및 ARM 인스턴스 사양 -->
+            <section id="sec-instance">
+                <h2 id="toc-2">2. OCI 콘솔 한글화 & ARM 인스턴스 사양</h2>
+                <p>작업 효율을 높이기 위해 OCI 콘솔 언어를 한국어로 전환한 후, Oracle Cloud Always Free 티어에서 제공하는 최대 가용 리소스를 활용하여 고성능 ARM 인스턴스를 프로비저닝한다.</p>
+
+                <!-- 사전 준비: OCI 콘솔 한국어 설정 카드 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-language text-primary me-2"></i>사전 설정: OCI 웹 콘솔 한국어(Korean) 변경 절차</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">언어 변경 경로</div>
+                                <h6 class="fw-bold mb-2">프로필 아이콘 ➔ 언어: 한국어</h6>
+                                <p class="mb-0 text-secondary">
+                                    OCI 콘솔 우측 상단의 <strong>프로필(사람 아이콘)</strong>을 클릭한 뒤, 드롭다운 패널 하단의 <strong>[언어: 한국어 / Language]</strong> 항목을 선택하여 전환한다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">전환 효과</div>
+                                <h6 class="fw-bold mb-2">콘솔 전체 한국어 메뉴 적용</h6>
+                                <p class="mb-0 text-secondary">
+                                    컴퓨트, 가상 클라우드 네트워크(VCN), 보안 목록 및 서브넷 설정 등 모든 관리자 메뉴와 설명이 한글로 표기된다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 주요 메뉴 영한 대응 표 -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-custom text-center mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>영문 메뉴 명칭</th>
+                                    <th>한글 콘솔 메뉴 명칭</th>
+                                    <th>주요 설정 역할</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Compute > Instances</code></td>
+                                    <td><strong>컴퓨트 ➔ 인스턴스</strong></td>
+                                    <td>ARM 서버 VM 생성 및 관리</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Virtual Cloud Networks (VCN)</code></td>
+                                    <td><strong>가상 클라우드 네트워크(VCN)</strong></td>
+                                    <td>가상 사설망 및 서브넷 구성</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Security Lists > Ingress Rules</code></td>
+                                    <td><strong>보안 목록 ➔ 수신 규칙</strong></td>
+                                    <td>인바운드 방화벽 포트 개방 (80, 8080 등)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Shape: VM.Standard.A1.Flex</code></td>
+                                    <td><strong>셰이프: VM.Standard.A1.Flex</strong></td>
+                                    <td>Ampere ARM 프로세서 및 메모리 할당</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 사양 비교 카드 (Nested Card Level 2 -> Level 3) -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-server text-primary me-2"></i>인스턴스 권장 리소스 사양 (Always Free 최대치)</h5>
+                    <div class="row g-3 text-center">
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">인스턴스 셰이프</div>
+                                <h6 class="fw-bold mb-2">VM.Standard.A1.Flex</h6>
+                                <div class="text-primary fw-bold">Ampere ARM 기반</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">CPU 리소스</div>
+                                <h6 class="fw-bold mb-2">2 OCPU</h6>
+                                <div class="text-primary fw-bold">최대 4 OCPU 가용</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">메인 메모리</div>
+                                <h6 class="fw-bold mb-2">12 GB RAM</h6>
+                                <div class="text-primary fw-bold">고성능 JVM 구동 최적</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">운영체제 및 스토리지</div>
+                                <h6 class="fw-bold mb-2">Ubuntu 22.04 LTS</h6>
+                                <div class="text-primary fw-bold">47 GB+ 부트 볼륨</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>인스턴스 생성 5단계 프로세스 가이드</h5>
+                    <p class="text-secondary mb-4">OCI 콘솔 상단 <strong>컴퓨트 ➔ 인스턴스 ➔ 인스턴스 생성</strong> 메뉴로 이동한 뒤 아래 5개 섹션 순서대로 설정을 진행한다.</p>
+
+                    <div class="row g-3">
+                        <!-- 1. 기본 정보 -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 1</span>
+                                    <h6 class="fw-bold mb-0">기본 정보 (Name, Image & Shape)</h6>
+                                </div>
+                                <ul class="mb-0 text-secondary ps-3">
+                                    <li><strong>이름:</strong> 인스턴스 명칭 입력 (예: <code>spring-server</code>)</li>
+                                    <li><strong>배치:</strong> 가용성 도메인(AD) 기본값 유지</li>
+                                    <li><strong>이미지:</strong> <code>Canonical Ubuntu 22.04</code> 선택</li>
+                                    <li><strong>셰이프(Shape):</strong> <code>Ampere ARM</code> ➔ <code>VM.Standard.A1.Flex</code> 지정 (2 OCPU / 12GB RAM 할당)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 2. 보안 -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 2</span>
+                                    <h6 class="fw-bold mb-0">보안 (Security Options)</h6>
+                                </div>
+                                <ul class="mb-0 text-secondary ps-3">
+                                    <li><strong>실드된 인스턴스:</strong> <span class="badge bg-secondary">비활성화(끔) 유지</span> (기본값)</li>
+                                    <li><strong>기밀 컴퓨팅:</strong> <span class="badge bg-secondary">비활성화(끔) 유지</span> (ARM VM 미지원/비호환)</li>
+                                    <li>별도 변경 없이 하단의 <strong>[다음]</strong> 버튼을 눌러 이동</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 3. 네트워킹 -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 3</span>
+                                    <h6 class="fw-bold mb-0">네트워킹 & SSH 키 (Networking & Keys)</h6>
+                                </div>
+                                <ul class="mb-0 text-secondary ps-3">
+                                    <li><strong>기본 네트워크:</strong> <code>기존 가상 클라우드 네트워크 선택</code> 및 <code>기존 서브넷 선택</code> (기본값 유지)</li>
+                                    <li><strong>프라이빗 IPv4:</strong> <code>자동으로 프라이빗 IPv4 주소 지정</code> (기본값 유지)</li>
+                                    <li><strong>퍼블릭 IPv4 지정:</strong> <span class="kw-highlight">자동으로 퍼블릭 IPv4 주소 지정</span> 토글 <strong>[켜짐(활성화)]</strong> 필수 확인</li>
+                                    <li><strong>IPv6 주소 지정:</strong> <code>서브넷 풀에서 IPv6 주소 지정</code> 토글 <strong>[꺼짐(비활성화)]</strong> 유지</li>
+                                    <li><strong>SSH 키 추가:</strong> <code>자동으로 키 쌍 생성</code> 선택 ➔ <strong>[프라이빗 키 다운로드]</strong> 및 <strong>[퍼블릭 키 다운로드]</strong> 버튼 각각 클릭하여 안전 보관</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 4. 스토리지 -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 4</span>
+                                    <h6 class="fw-bold mb-0">스토리지 (Boot Volume)</h6>
+                                </div>
+                                <ul class="mb-0 text-secondary ps-3">
+                                    <li><strong>부트 볼륨 크기:</strong> 기본값 <code>47 GB</code> 유지 (Always Free 200GB 한도 내 무료)</li>
+                                    <li><strong>성능:</strong> 기본 VPU(10 VPU) 유지</li>
+                                    <li><strong>암호화:</strong> Oracle 관리 키 기본값 유지</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 5. 검토 -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-2">Step 5</span>
+                                    <h6 class="fw-bold mb-0">검토 (Review & Create)</h6>
+                                </div>
+                                <ul class="mb-0 text-secondary ps-3">
+                                    <li>입력한 기본 정보, 보안, 네트워킹, 스토리지 설정을 최종 검토한 후 하단의 <strong>[생성(Create)]</strong> 버튼 클릭</li>
+                                    <li>인스턴스 상태가 <span class="badge bg-warning text-dark">프로비저닝 중(Provisioning)</span>에서 <span class="badge bg-success">실행 중(Running)</span>으로 바뀐 후 할당된 <strong>공용 IP(Public IPv4)</strong>를 확인</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 트러블슈팅: ARM 인스턴스 용량 부족 오류 해결 가이드 -->
+                <div class="bg-light rounded-3 p-4 border mb-4 border-start border-4 border-warning">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning text-dark me-2 fs-6">트러블슈팅</span>
+                        <h5 class="fw-bold mb-0">인스턴스 생성 시 "용량 부족(Out of Capacity)" 오류 대처법</h5>
+                    </div>
+                    <p class="text-secondary mb-3">
+                        생성 버튼 클릭 시 <code>"가용성 도메인 VM.Standard.A1.Flex에서 AD-1 셰이프에 대한 용량이 부족합니다(Out of Capacity)"</code>라는 API 오류가 발생하는 경우, Always Free ARM 물리 서버 자원이 실시간으로 소진된 상태이다. 아래 4가지 방법으로 즉시 대처할 수 있다.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-primary mb-2">1. 가용성 도메인(AD) 변경 (가장 빠름 ★)</h6>
+                                <p class="text-secondary mb-0">
+                                    도쿄(Japan East) 등 멀티 AD 리전의 경우 <strong>Step 1 ➔ [배치]</strong>로 돌아가 <code>AD-1</code> 대신 <strong>`AD-2` 또는 `AD-3`</strong>를 선택 후 재생성한다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-primary mb-2">2. 결함 도메인(Fault Domain) 변경</h6>
+                                <p class="text-secondary mb-0">
+                                    서울/춘천 등 단일 AD 리전은 <strong>[배치] ➔ [고급 옵션]</strong>에서 결함 도메인을 <code>FD-1</code>, <code>FD-2</code>, <code>FD-3</code>로 변경하며 시도한다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-primary mb-2">3. 셰이프 자원 일시 축소 후 생성</h6>
+                                <p class="text-secondary mb-0">
+                                    처음부터 2 OCPU / 12GB 대신 <strong>1 OCPU / 6GB RAM</strong>으로 우선 생성한 뒤, 인스턴스 생성 후 [편집] 메뉴에서 2 OCPU / 12GB로 스케일업한다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <h6 class="fw-bold text-primary mb-2">4. 자원 반납 시간대(새벽) 재시도</h6>
+                                <p class="text-secondary mb-0">
+                                    사용자들의 자원이 회수 및 재배치되는 <strong>새벽 또는 이른 아침 시간대</strong>에 다시 시도하면 원활하게 생성된다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 보안 목록 (Ingress Rules) 테이블 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-shield-halved text-primary me-2"></i>가상 클라우드 네트워크(VCN) 인그레스 보안 규칙</h5>
+                    <table class="table table-bordered table-custom text-center mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>소스 CIDR</th>
+                                <th>IP 프로토콜</th>
+                                <th>대상 포트 범위</th>
+                                <th>용도 및 서비스</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>0.0.0.0/0</code></td>
+                                <td>TCP</td>
+                                <td><code>22</code></td>
+                                <td>SSH 원격 터미널 접속 포트</td>
+                            </tr>
+                            <tr>
+                                <td><code>0.0.0.0/0</code></td>
+                                <td>TCP</td>
+                                <td><code>80</code></td>
+                                <td>HTTP 웹 트래픽 표준 포트</td>
+                            </tr>
+                            <tr>
+                                <td><code>0.0.0.0/0</code></td>
+                                <td>TCP</td>
+                                <td><code>8080</code></td>
+                                <td>Spring Boot 기본 WAS 포트</td>
+                            </tr>
+                            <tr>
+                                <td><code>0.0.0.0/0</code></td>
+                                <td>TCP</td>
+                                <td><code>3306</code></td>
+                                <td>MySQL 데이터베이스 외부 접속 포트</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. SSH 접속 및 Swap 메모리 구성 -->
+            <section id="sec-access-swap">
+                <h2 id="toc-3">3. SSH 접속 및 Swap 메모리 최적화</h2>
+                <p>다운로드한 SSH 전용 키의 접근 권한을 400으로 제한하고 인스턴스에 접속한 뒤, 대용량 트래픽 급증 시 시스템 다운을 예방하기 위해 <span class="kw-highlight">4GB 가상 메모리(Swap)</span>를 할당한다.</p>
+
+                <!-- SSH 접속 코드 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-terminal text-primary me-2"></i>1. SSH 터미널 접속</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-ssh')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-ssh" class="language-bash"># SSH 전용 키 권한 제한 (Linux / macOS 필수)
+chmod 400 private_key.key
+
+# Ubuntu 원격 인스턴스 접속
+ssh -i private_key.key ubuntu@[서버_공용_IP]</code></pre>
+                </div>
+
+                <!-- Swap 메모리 설정 코드 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-microchip text-primary me-2"></i>2. 4GB Swap 가상 메모리 생성 및 영구 마운트</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-swap')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-swap" class="language-bash"># 4GB 크기의 스왑 파일 할당
+sudo fallocate -l 4G /swapfile
+
+# 파일 읽기/쓰기 보안 권한 부여
+sudo chmod 600 /swapfile
+
+# 스왑 영역 포맷 및 활성화
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# 부팅 시 자동 마운트를 위한 /etc/fstab 등록
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab</code></pre>
+                </div>
+            </section>
+
+            <!-- 4. Java 21 및 MySQL 설치 -->
+            <section id="sec-runtime-db">
+                <h2 id="toc-4">4. Java 21 및 MySQL 8 환경 구축</h2>
+                <p>Spring Boot 구동을 위한 최신 LTS <span class="kw-highlight-blue">OpenJDK 21</span>과 관계형 데이터베이스 <span class="kw-highlight-blue">MySQL 8.0</span>을 설치하고 사용자 권한을 구성한다.</p>
+
+                <!-- JDK 21 설치 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-brands fa-java text-primary me-2"></i>1. OpenJDK 21 설치 및 버전 확인</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-java')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-java" class="language-bash"># 패키지 인덱스 갱신 및 OpenJDK 21 설치
+sudo apt update
+sudo apt install openjdk-21-jdk -y
+
+# 설치된 Java 버전 및 아키텍처 검증
+java -version</code></pre>
+                </div>
+
+                <!-- MySQL 설치 및 계정 생성 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-database text-primary me-2"></i>2. MySQL Server 설치 및 계정 권한 설정</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-mysql')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-mysql" class="language-sql">-- MySQL 서버 패키지 설치 및 루트 셸 진입
+-- (Bash 실행: sudo apt install mysql-server -y && sudo mysql)
+
+-- 데이터베이스 생성
+CREATE DATABASE ssafy_db;
+
+-- 원격 접속 계정 생성 및 비밀번호 지정
+CREATE USER 'quietjun'@'%' IDENTIFIED BY 'dmstj@0205M';
+
+-- 데이터베이스 전체 권한 부여
+GRANT ALL PRIVILEGES ON ssafy_db.* TO 'quietjun'@'%';
+
+-- 권한 테이블 즉시 갱신 및 종료
+FLUSH PRIVILEGES;
+EXIT;</code></pre>
+                </div>
+            </section>
+
+            <!-- 5. 포트 리다이렉션 및 가비아 도메인 연결 -->
+            <section id="sec-network-dns">
+                <h2 id="toc-5">5. 포트 포워딩 및 DNS 도메인 연동</h2>
+                <p>Nginx와 같은 리버스 프록시 서버 없이도 사용자가 포트 번호(<code>:8080</code>) 없이 접속할 수 있도록 <span class="kw-highlight-yellow">iptables 포트 리다이렉션</span>을 구성하고 DNS A 레코드를 연결한다.</p>
+
+                <!-- iptables 설정 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-route text-primary me-2"></i>1. iptables 80 ➔ 8080 포트 리다이렉션 및 영구 저장</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-iptables')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-iptables" class="language-bash"># 외부 80번(HTTP) 포트 요청을 로컬 8080번 포트로 리다이렉트
+sudo iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+
+# 서버 재부팅 후에도 방화벽 규칙이 유지되도록 영구 저장
+sudo apt install iptables-persistent -y
+sudo netfilter-persistent save</code></pre>
+                </div>
+
+                <!-- 가비아 도메인 설정 안내 카드 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-globe text-primary me-2"></i>2. 가비아(Gabia) DNS 레코드 등록</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">DNS 설정 항목</div>
+                                <h6 class="fw-bold mb-2">타입: A / 호스트: @</h6>
+                                <p class="mb-0 text-secondary">값 위치에 OCI 인스턴스의 <code>공용 IPv4 주소</code>를 입력하여 도메인을 바인딩한다.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <div class="text-secondary mb-1">접속 테스트</div>
+                                <h6 class="fw-bold mb-2">http://[사용자도메인]</h6>
+                                <p class="mb-0 text-secondary">포트 번호(<code>:8080</code>) 입력 없이 표준 HTTP 접속 시 Spring Boot 서비스로 자동 연결된다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. systemd 서비스 등록 -->
+            <section id="sec-systemd">
+                <h2 id="toc-6">6. systemd 서비스 상시 가동 등록</h2>
+                <p>서버 재부팅 및 프로세스 예기치 않은 종료 시에도 자동으로 재시작될 수 있도록 <span class="kw-highlight">systemd 서비스 유닛</span>을 생성하여 데몬으로 등록한다.</p>
+
+                <!-- systemd Unit 정의 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-gear text-primary me-2"></i>1. 서비스 유닛 파일 생성 (<code>/etc/systemd/system/myapp.service</code>)</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-systemd')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-systemd" class="language-ini">[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/java -jar /home/ubuntu/app.jar
+SuccessExitStatus=143
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+                </div>
+
+                <!-- systemd 명령어 -->
+                <div class="card border rounded-3 bg-white p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-play text-primary me-2"></i>2. 서비스 활성화 및 백그라운드 구동</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyCode(this, 'code-service')"><i class="fa-regular fa-copy me-1"></i>코드 복사</button>
+                    </div>
+                    <pre><code id="code-service" class="language-bash"># 부팅 시 자동 시작 등록 및 서비스 즉시 구동
+sudo systemctl enable myapp
+sudo systemctl start myapp
+
+# 서비스 상태 확인
+sudo systemctl status myapp</code></pre>
+                </div>
+            </section>
+
+            <!-- 7. ARM 주의사항 -->
+            <section id="sec-architecture-notice">
+                <h2 id="toc-7">7. ARM 아키텍처 운영 주의사항</h2>
+                <div class="bg-light rounded-3 p-4 border mb-4 border-start border-4 border-warning">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning text-dark me-2 fs-6">주의사항</span>
+                        <h5 class="fw-bold mb-0">ARM 아키텍처(Aarch64) 바이너리 호환성</h5>
+                    </div>
+                    <p class="mb-2 text-secondary">
+                        OCI Always Free 인스턴스는 <strong>Ampere Aarch64 (ARM 64비트)</strong> 프로세서를 탑재하고 있다.
+                    </p>
+                    <ul class="mb-0 text-secondary">
+                        <li><strong>순수 Java 애플리케이션:</strong> JVM 바이트코드 기반으로 동작하므로 아키텍처와 무관하게 100% 정상 작동.</li>
+                        <li><strong>JNI / Native 라이브러리 사용 시:</strong> C/C++ 기반 바이너리가 포함된 라이브러리(예: 특정 암호화 모듈, SQLite 네이티브 등)를 사용할 경우, x86_64 전용 빌드가 아닌 ARM64 바이너리가 포함되어 있는지 빌드 단계에서 사전 점검 필요.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 핵심 요약 -->
+            <footer id="summary" class="summary-box mb-5">
+                <h2 class="h4" style="margin:0 0 20px 0; border:none; color: var(--primary);"><i class="fa-solid fa-clipboard-check me-2"></i>핵심 요약</h2>
+                <ul class="mb-0">
+                    <li><strong>무료 리소스 최적 활용:</strong> OCI Always Free ARM 인스턴스(2 OCPU, 12GB RAM, 47GB+ 디스크)로 고성능 인프라 확보</li>
+                    <li><strong>안정성 극대화:</strong> 4GB Swap 가상 메모리 생성 및 영구 마운트로 메모리 버퍼 확보</li>
+                    <li><strong>간소화된 라우팅:</strong> Nginx 없이 iptables NAT PREROUTING을 통해 80번 포트를 8080번으로 리다이렉션</li>
+                    <li><strong>데몬 자동 복구:</strong> systemd 서비스를 통해 서버 재부팅 및 크래시 시 무중단 자동 재시작 환경 구축</li>
+                </ul>
+            </footer>
+
+            <!-- 5단계 무결성 검증 대조표 -->
+            <section id="sec-verification" class="mt-5">
+                <h2 class="h4 text-muted"><i class="fa-solid fa-table-list me-2"></i>원문 무결성 대조표 (검증용)</h2>
+                <p class="text-secondary small">본 대조표는 원문(`oracle_cloud_백업.html`) 대비 기술 항목 및 설정값의 100% 반영 여부를 검증하기 위한 표이다.</p>
+                <table class="table table-bordered table-custom text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>핵심 항목</th>
+                            <th>원문 내용</th>
+                            <th>재작성 상태</th>
+                            <th>일치 여부</th>
+                            <th>변경 사유 / 보완점</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>콘솔 언어 설정</td>
+                            <td>(신규 추가 항목)</td>
+                            <td>프로필 ➔ 언어: 한국어 변경 가이드 및 영한 메뉴 표</td>
+                            <td><span class="badge bg-primary">신규 추가</span></td>
+                            <td>OCI 콘솔 한글 UI 작업 편의성 제공</td>
+                        </tr>
+                        <tr>
+                            <td>용량 부족 오류 대처</td>
+                            <td>(신규 추가 항목)</td>
+                            <td>Out of Capacity 오류 시 AD/FD 변경 및 자원 조절 가이드</td>
+                            <td><span class="badge bg-primary">신규 추가</span></td>
+                            <td>실전 프로비저닝 에러 즉시 해결 지원</td>
+                        </tr>
+                        <tr>
+                            <td>인스턴스 스펙</td>
+                            <td>VM.Standard.A1.Flex (2 OCPU / 12GB RAM / 47GB+ Disk)</td>
+                            <td>스펙 카드 및 표로 구조화</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>가독성 향상을 위한 4분할 그리드 카드 배치</td>
+                        </tr>
+                        <tr>
+                            <td>보안 규칙</td>
+                            <td>포트 8080, 80, 3306 개방 안내</td>
+                            <td>인그레스 규칙 테이블 및 SSH(22) 추가</td>
+                            <td><span class="badge bg-success">보완 일치</span></td>
+                            <td>표준 VCN 인그레스 규칙 표 형태로 명확화</td>
+                        </tr>
+                        <tr>
+                            <td>SSH & Swap</td>
+                            <td>chmod 400, ssh 접속, 4GB Swap 생성 명령어</td>
+                            <td>코드 블록 및 원클릭 복사 기능 연동</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>명령어 설명 주석 및 복사 편의성 강화</td>
+                        </tr>
+                        <tr>
+                            <td>Java & MySQL</td>
+                            <td>OpenJDK 21 설치, ssafy_db, quietjun 계정 생성 쿼리</td>
+                            <td>언어별 Syntax Highlighting 분리</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>Bash 및 SQL 블록으로 분리하여 가독성 증대</td>
+                        </tr>
+                        <tr>
+                            <td>포트 포워딩 & DNS</td>
+                            <td>iptables 80➔8080 리다이렉트, netfilter-persistent, 가비아 A 레코드</td>
+                            <td>트래픽 다이어그램(SVG) 및 코드 블록</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>SVG 시각화 추가로 데이터 흐름 직관화</td>
+                        </tr>
+                        <tr>
+                            <td>systemd 서비스</td>
+                            <td>myapp.service 유닛 파일 및 systemctl 명령어</td>
+                            <td>ini/bash 코드 블록 분리 및 등록 절차 명시</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>유닛 설정과 활성화 명령어 분리</td>
+                        </tr>
+                        <tr>
+                            <td>ARM 주의사항</td>
+                            <td>Aarch64 Native 바이너리 호환성 주의 문구</td>
+                            <td>표준 테마 콜아웃 카드로 배치</td>
+                            <td><span class="badge bg-success">일치</span></td>
+                            <td>시각적 강조 및 JVM vs Native 상세 설명 보완</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </article>
+    </div>
+
+    <!-- 스크립트 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- 마스터 표준 공통 스크립트 -->
+    <script src="../js/standards.js"></script>
+</body>
+</html>
