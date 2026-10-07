@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>서블릿(Servlet) 기초 및 백엔드 아키텍처 핵심 요약</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --accent: #7c3aed;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      
+      --bad-bg: #fff1f2;
+      --bad-border: #fecdd3;
+      --bad-text: #be123c;
+      
+      --good-bg: #f0fdf4;
+      --good-border: #bbf7d0;
+      --good-text: #15803d;
+
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 32px 16px 80px;
+    }
+
+    .container { max-width: 980px; margin: 0 auto; }
+
+    /* === Hero Header === */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4338ca 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: 26px; font-weight: 800; line-height: 1.35; margin-bottom: 10px; }
+    .hero p { font-size: 15px; color: #cbd5e1; max-width: 780px; }
+
+    /* === Tab Navigation === */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 6px;
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: calc(var(--radius) - 3px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.6); }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === Section Title === */
+    .section-title {
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      font-weight: 800;
+      font-size: 18.5px;
+      color: var(--text);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title:first-of-type { margin-top: 4px; }
+
+    /* === Cards & Grids === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .flow-step {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .flow-step-num {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .flow-step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .flow-step-desc { font-size: 13px; color: var(--text-sub); }
+
+    /* === Table === */
+    .table-wrapper { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; }
+    th { background: #f1f5f9; font-weight: 700; color: var(--text); }
+    td { background: #fff; }
+
+    /* === Syntax Highlighting in Code Blocks === */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #313244;
+    }
+    code { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; }
+    .inline-code {
+      background: #f1f5f9;
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Syntax Highlight Tokens */
+    .kwd { color: #cba6f7; font-weight: 600; }   /* keywords */
+    .ann { color: #f9e2af; font-weight: 600; }   /* annotations */
+    .typ { color: #89b4fa; }                     /* types, classes */
+    .str { color: #a6e3a1; }                     /* strings */
+    .com { color: #6c7086; font-style: italic; } /* comments */
+    .num { color: #fab387; }                     /* numbers */
+    .met { color: #74c7ec; }                     /* methods */
+    .tag { color: #f38ba8; }                     /* xml tags */
+    .att { color: #fab387; }                     /* xml attributes */
+
+    /* === Scenario-based Code Review Component === */
+    .review-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .review-header {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .review-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-bad { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-border); }
+    .badge-good { background: var(--good-bg); color: var(--good-text); border: 1px solid var(--good-border); }
+    
+    .review-body { padding: 20px; }
+    
+    .scenario-box {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #713f12;
+    }
+    .scenario-label { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    .review-accordion {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+    .review-accordion summary {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-accordion summary::-webkit-details-marker { display: none; }
+    .review-accordion summary::after {
+      content: "원인 분석 및 개선 코드 보기 ▼";
+      font-size: 12px;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .review-accordion[open] summary::after {
+      content: "접기 ▲";
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .review-content {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+    .bug-analysis { margin-bottom: 14px; font-size: 14px; }
+    .bug-analysis strong { color: var(--bad-text); }
+
+    /* === Quiz Component === */
+    .quiz-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .quiz-question {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-accordion { border-top: 1px solid var(--border); background: #f8fafc; }
+    .quiz-accordion summary {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quiz-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-accordion summary::after {
+      content: "정답 확인";
+      background: #e2e8f0;
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .quiz-accordion[open] summary::after { content: "닫기"; }
+    .quiz-answer { padding: 14px 20px; border-top: 1px dashed var(--border); background: #fff; font-size: 14px; }
+    .quiz-answer-title { font-weight: 700; color: var(--good-text); margin-bottom: 4px; }
+
+    /* === Click-to-Reveal Interview Component === */
+    .interview-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .interview-accordion { width: 100%; }
+    .interview-accordion summary {
+      padding: 18px 22px;
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+    .interview-accordion summary:hover { background: #f8fafc; }
+    .interview-accordion summary::-webkit-details-marker { display: none; }
+    .interview-toggle-btn {
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .interview-accordion[open] .interview-toggle-btn {
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .interview-content {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .speech-template {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-light);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+    }
+    .speech-section { margin-bottom: 12px; font-size: 14px; }
+    .speech-section:last-child { margin-bottom: 0; }
+    .speech-tag {
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--primary);
+      display: inline-block;
+      margin-bottom: 3px;
+    }
+    .followup-box {
+      background: #faf5ff;
+      border: 1px solid #f3e8ff;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #6b21a8;
+    }
+    .followup-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px 12px 60px; }
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .interview-accordion summary { font-size: 14.5px; padding: 14px 16px; }
+      .interview-content { padding: 16px; }
+    }
+  
+    /* === Interactive 30s Time-Attack Speed Quiz === */
+    .quiz-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .quiz-top-bar {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .quiz-progress-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+      background: #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    .quiz-timer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      transition: all 0.25s ease;
+    }
+    .quiz-timer-box.warning {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: timerPulse 0.8s infinite alternate;
+    }
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+    .quiz-timer-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width 1s linear, background-color 0.5s ease;
+    }
+    .quiz-timer-bar.warning {
+      background: #dc2626;
+    }
+    .quiz-slide {
+      display: none;
+      padding: 24px 22px;
+      min-height: 200px;
+    }
+    .quiz-slide.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .quiz-question-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .quiz-question-box .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-q-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .quiz-timeout-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-top: 14px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel.show {
+      display: block;
+    }
+    .quiz-answer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-answer-desc {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-complete-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .quiz-bottom-nav {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quiz-nav-btn {
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-nav-btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: var(--border-dark);
+    }
+    .quiz-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .quiz-nav-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .quiz-nav-btn.primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+    
+    /* === Quiz Mode Switcher & Dual Mode Styles === */
+    .quiz-mode-switch-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .quiz-mode-switch {
+      display: inline-flex;
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .quiz-mode-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .quiz-mode-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .quiz-mode-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .quiz-mode-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .quiz-view-panel {
+      display: none;
+    }
+    .quiz-view-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    /* === List Mode Components === */
+    .quiz-list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .quiz-list-count {
+      font-size: 13.5px;
+      color: var(--text-sub);
+    }
+    .quiz-list-count strong {
+      color: var(--primary);
+    }
+    .quiz-list-toggle-all-btn {
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-toggle-all-btn:hover {
+      background: #c7d2fe;
+      color: var(--primary-dark);
+    }
+    .quiz-list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.15s ease;
+    }
+    .quiz-list-card:hover {
+      border-color: var(--border-dark);
+    }
+    .quiz-list-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .quiz-list-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-list-q-text {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-list-accordion {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .quiz-list-accordion summary {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-accordion summary:hover {
+      background: #e2e8f0;
+    }
+    .quiz-list-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-list-accordion[open] summary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .quiz-list-answer {
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-list-ans-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-list-ans-desc {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+<!-- Hero Section -->
+<header class="hero">
+<div class="hero-badge">Backend Programming • Servlet-1</div>
+<h1>서블릿(Servlet) 기초 및 백엔드 아키텍처 핵심 요약</h1>
+<p>3-Tier 아키텍처, WAS와 컨테이너, Maven 빌드 관리, 서블릿 생명주기 및 요청/응답 API까지 교안의 핵심 내용을 체계적으로 복습하고 실전 코드 리뷰와 면접 훈련을 진행합니다.</p>
+</header>
+<!-- Tab Navigation -->
+<nav class="tabs-nav">
+<button class="tab-btn active" onclick="switchTab('tab-summary')">
+<span>📖 1. 핵심 정리</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-review')">
+<span>🔍 2. 코드 리뷰 (트러블슈팅)</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-quiz')">
+<span>⚡ 3. 핵심 스피드 퀴즈</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-interview')">
+<span>💼 4. 기술 면접 대비</span>
+</button>
+</nav>
+<!-- ========================================== -->
+<!-- TAB 1: 핵심 정리 -->
+<!-- ========================================== -->
+<main class="tab-panel active" id="tab-summary">
+<!-- 1. 웹 프로그램 & 3-Tier Architecture -->
+<h2 class="section-title">1. 웹 프로그램과 3-Tier 아키텍처</h2>
+<div class="card">
+<div class="card-title">3-Tier 아키텍처: Frontend • Backend • Database 계층 분리 운영</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+  웹 프로그램은 네트워크 너머의 서버에 존재하며 웹을 통해 서비스되는 시스템으로, 역할과 책임에 따라 <strong>Frontend</strong>, <strong>Backend</strong>, <strong>Database</strong> 3대 계층(Tier)으로 분리하여 개발 및 운영됩니다.
+</p>
+
+<div class="flow-grid">
+  <div class="flow-step">
+    <div class="flow-step-num">Tier 1 • Frontend</div>
+    <div class="flow-step-title">Presentation Tier (표현 계층)</div>
+    <div class="flow-step-desc">
+      • <strong>구성:</strong> 웹 브라우저, Web Server (Apache, Nginx)<br/>
+      • <strong>기술:</strong> HTML(구조), CSS(디자인), JS(상호작용)<br/>
+      • <strong>역할:</strong> 사용자 인터페이스(UI/UX) 제공 및 정적 리소스 즉시 전송
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">Tier 2 • Backend</div>
+    <div class="flow-step-title">Application Tier (로직 계층)</div>
+    <div class="flow-step-desc">
+      • <strong>구성:</strong> WAS (Tomcat 등 서블릿 컨테이너)<br/>
+      • <strong>기술:</strong> Java, Servlet, JSP, Spring, REST API<br/>
+      • <strong>역할:</strong> 동적 요청 처리, 핵심 비즈니스 로직 연산, 트랜잭션 및 인증 제어
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">Tier 3 • Database</div>
+    <div class="flow-step-title">Data Tier (영속 계층)</div>
+    <div class="flow-step-desc">
+      • <strong>구성:</strong> DBMS (MySQL, Oracle, PostgreSQL 등)<br/>
+      • <strong>기술:</strong> SQL, JDBC, MyBatis, JPA<br/>
+      • <strong>역할:</strong> 비즈니스 데이터의 영속성(Persistence) 보장, 데이터 CRUD 및 무결성 관리
+    </div>
+  </div>
+</div>
+
+<div class="table-wrapper" style="margin-top: 14px;">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">계층 구분</th>
+        <th style="width: 25%;">대표 컴포넌트/서버</th>
+        <th style="width: 25%;">주요 사용 기술</th>
+        <th style="width: 30%;">핵심 책임 및 처리 대상</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Frontend</strong><br/>(Presentation Tier)</td>
+        <td>웹 브라우저 (Client)<br/>+ <strong>Web Server</strong></td>
+        <td>HTML5, CSS3, JavaScript, Web Server</td>
+        <td>사용자 화면 렌더링, 사용자 입력 및 이벤트 감지, <strong>정적 리소스</strong>(HTML, CSS, 이미지) 고속 캐싱 및 응답</td>
+      </tr>
+      <tr>
+        <td><strong>Backend</strong><br/>(Application Tier)</td>
+        <td><strong>Web Application Server (WAS)</strong><br/>(Tomcat / Servlet Container)</td>
+        <td>Java, Servlet API, JSP, Business Service</td>
+        <td>클라이언트의 <strong>동적 요청 처리</strong>, 비즈니스 로직 연산, 데이터베이스 연동 및 동적 뷰/데이터(JSON) 생성</td>
+      </tr>
+      <tr>
+        <td><strong>Database</strong><br/>(Data Tier)</td>
+        <td><strong>DBMS</strong><br/>(MySQL, Oracle 등)</td>
+        <td>SQL, JDBC, 커넥션 풀(DBCP)</td>
+        <td>데이터의 <strong>영속성(Persistence)</strong> 관리, 트랜잭션(ACID) 제어, 대용량 데이터 질의 및 무결성 보장</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div style="background: #f1f5f9; padding: 12px 16px; border-radius: 6px; font-size: 13.5px; margin-top: 10px;">
+  💡 <strong>3-Tier 계층 분리의 핵심 이점:</strong> 각 계층이 독립된 물리적/논리적 인프라에서 실행되므로 모듈 간 결합도가 낮아집니다. 따라서 다른 계층에 영향을 주지 않고 특정 계층만 개별 개발·배포·스케일아웃(확장)이 가능하여 대규모 서비스 운영 및 유지보수에 매우 유리합니다.
+</div>
+</div>
+
+<!-- 2. WAS, Container, Context & 배포 구조 -->
+<h2 class="section-title">2. WAS, Container, Context 및 배포 구조</h2>
+<div class="card">
+<div class="card-title">요청 URL 체계 구조 분석</div>
+<pre><code><span class="com"># 요청 주소 체계 및 계층 분해 (각 항목 중앙 매핑)</span>
+http://localhost:8080/BE_01/index.html
+   │       │      │     │       │
+   │       │      │     │       └─ <span class="typ">URL Mapping</span> (개별 서블릿 또는 요청 리소스 식별 경로)
+   │       │      │     └───────── <span class="typ">Context Root</span> (웹 애플리케이션 격리/배포 경로: 기본 프로젝트명)
+   │       │      └─────────────── <span class="typ">Port</span> (WAS 서비스 포트: 일반 80, 개발용 8080)
+   │       └────────────────────── <span class="typ">Host / IP</span> (서버 주소: 도메인 또는 호스트 IP)
+   └────────────────────────────── <span class="typ">Protocol</span> (웹 통신 규약: HTTP / HTTPS)
+
+<span class="com">※ 주요 루트(Root) 범위 요약:</span>
+• <span class="typ">Container Root</span> : http://localhost:8080/ (WAS 컨테이너 및 포트 기준 최상위 경로)
+• <span class="typ">Context Root</span>   : /BE_01/ (컨테이너 내에서 개별 프로젝트가 실행되는 기본 경로)</code></pre>
+
+<div class="flow-grid" style="margin-top: 14px;">
+  <div class="flow-step">
+    <div class="flow-step-num">WAS ≈ Container</div>
+    <div class="flow-step-title">서블릿 컨테이너</div>
+    <div class="flow-step-desc">WAS 내부에 존재하며 Servlet/JSP를 실행하는 엔진</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">Context</div>
+    <div class="flow-step-title">실행 환경과 정보</div>
+    <div class="flow-step-desc">WAS 내에서 동시에 동작하는 각 애플리케이션의 독립된 실행 환경 (기본값: 프로젝트명)</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">Deployment</div>
+    <div class="flow-step-title">배포 (Deploy)</div>
+    <div class="flow-step-desc">애플리케이션을 개발 환경에서 운영 환경으로 이동시키는 과정</div>
+  </div>
+</div>
+
+<div class="card-title" style="margin-top: 18px;">표준 웹 애플리케이션 디렉터리 구조 및 WEB-INF 역할</div>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 36%;">디렉터리 / 파일 경로</th>
+        <th style="width: 64%;">특징 및 설명</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>src/main/java</code></td>
+        <td>서블릿(Servlet) 등 Java 백엔드 소스 코드를 패키지 구조에 맞춰 작성</td>
+      </tr>
+      <tr>
+        <td><code>src/main/webapp/</code></td>
+        <td><strong>공개 웹 루트(Context Root)</strong>. 브라우저가 URL을 통해 직접 접근할 수 있는 정적 리소스(HTML, CSS, JS, 이미지) 및 JSP 파일 작성</td>
+      </tr>
+      <tr>
+        <td><code>src/main/webapp/WEB-INF/</code><br/><span style="font-size: 11.5px; color: var(--primary);">↳ webapp 하위 비공개 폴더</span></td>
+        <td><strong>보안 비공개 영역</strong>. <code>src/main/webapp/</code> 내부에 위치하지만, 서블릿 명세상 외부 웹 브라우저에서 직접 URL(예: <code>/WEB-INF/...</code>)로 접근하는 것이 원천 차단된 보호 영역</td>
+      </tr>
+      <tr>
+        <td><code>src/main/webapp/WEB-INF/web.xml</code></td>
+        <td><strong>Deployment Descriptor (배포 서술자)</strong>. <code>&lt;welcome-file-list&gt;</code>(컨텍스트 접근 시 표시할 기본 페이지), 서블릿 등록 및 에러 페이지 등을 지정하는 WAS 환경 설정 파일</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- 3. Maven 프로젝트 관리와 pom.xml -->
+<h2 class="section-title">3. Maven 프로젝트 관리와 의존성 빌드</h2>
+<div class="card">
+<div class="card-title">Maven 도입 배경과 3대 주요 기능</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+  프로젝트 규모가 커지면서 사용해야 하는 라이브러리들이 다양해짐에 따라 발생하는 팀원 간 버전 동기화 문제를 해결하기 위해 도입된 Java 기반 빌드 자동화 및 의존성 관리 도구입니다.
+</p>
+
+<div class="flow-grid">
+  <div class="flow-step">
+    <div class="flow-step-num">기능 1</div>
+    <div class="flow-step-title">프로젝트 구조 표준화</div>
+    <div class="flow-step-desc">표준 디렉터리 구조를 통해 프로젝트 구성의 일관성 보장</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">기능 2</div>
+    <div class="flow-step-title">의존성(Dependency) 관리</div>
+    <div class="flow-step-desc">pom.xml 선언으로 중앙 저장소(mvnrepository)에서 라이브러리 자동 다운로드</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">기능 3</div>
+    <div class="flow-step-title">빌드 자동화</div>
+    <div class="flow-step-desc">컴파일, 패키징 등의 빌드 프로세스를 일관된 라이프사이클로 자동화</div>
+  </div>
+</div>
+
+<pre><code><span class="com">&lt;!-- pom.xml 주요 설정 구조 --&gt;</span>
+&lt;<span class="tag">project</span>&gt;
+    &lt;<span class="tag">modelVersion</span>&gt;4.0.0&lt;/<span class="tag">modelVersion</span>&gt;
+    &lt;<span class="tag">groupId</span>&gt;com.ssafy&lt;/<span class="tag">groupId</span>&gt;             <span class="com">&lt;!-- 소속 그룹의 identity --&gt;</span>
+    &lt;<span class="tag">artifactId</span>&gt;BE_01_maven&lt;/<span class="tag">artifactId</span>&gt;    <span class="com">&lt;!-- 현재 프로젝트 identity --&gt;</span>
+    &lt;<span class="tag">version</span>&gt;0.0.1-SNAPSHOT&lt;/<span class="tag">version</span>&gt;
+
+    &lt;<span class="tag">properties</span>&gt;
+        &lt;<span class="tag">jdk.version</span>&gt;17&lt;/<span class="tag">jdk.version</span>&gt;
+        &lt;<span class="tag">maven.compiler.release</span>&gt;${jdk.version}&lt;/<span class="tag">maven.compiler.release</span>&gt;
+        &lt;<span class="tag">jakarta.servlet.version</span>&gt;6.0.0&lt;/<span class="tag">jakarta.servlet.version</span>&gt; <span class="com">&lt;!-- 버전 정보 property 선언으로 재사용성 강화 --&gt;</span>
+    &lt;/<span class="tag">properties</span>&gt;
+
+    &lt;<span class="tag">dependencies</span>&gt;
+        &lt;<span class="tag">dependency</span>&gt;
+            &lt;<span class="tag">groupId</span>&gt;jakarta.servlet&lt;/<span class="tag">groupId</span>&gt;
+            &lt;<span class="tag">artifactId</span>&gt;jakarta.servlet-api&lt;/<span class="tag">artifactId</span>&gt;
+            &lt;<span class="tag">version</span>&gt;${jakarta.servlet.version}&lt;/<span class="tag">version</span>&gt;
+            &lt;<span class="tag">scope</span>&gt;provided&lt;/<span class="tag">scope</span>&gt;
+        &lt;/<span class="tag">dependency</span>&gt;
+    &lt;/<span class="tag">dependencies</span>&gt;
+&lt;/<span class="tag">project</span>&gt;</code></pre>
+<div style="background: #f1f5f9; padding: 12px 16px; border-radius: 6px; font-size: 13.5px;">
+  ※ <strong>web.xml 추가 시 주의사항:</strong> <code>Project Context Menu &gt; Java EE Tools &gt; Generate Deployment Descriptor Stub</code> 실행 전 반드시 <strong>Maven &gt; Update Project</strong>를 먼저 수행해야 최신 스펙 버전으로 올바르게 생성됩니다.
+</div>
+</div>
+
+<!-- 4. 서블릿(Servlet)의 특징과 URL 매핑 -->
+<h2 class="section-title">4. 서블릿(Servlet)의 특징과 URL 매핑</h2>
+<div class="card">
+<div class="card-title">서블릿의 정의 및 주요 장단점</div>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">구분</th>
+        <th style="width: 80%;">세부 내용</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Servlet이란?</strong></td>
+        <td>WAS에서 실행되는 Java Web Component (<code>jakarta.servlet.http.HttpServlet</code> 상속)</td>
+      </tr>
+      <tr>
+        <td><strong>주요 장점</strong></td>
+        <td>
+          • <strong>Java OOP 기반:</strong> 플랫폼 독립적이며 유지보수성 및 재활용성 우수<br/>
+          • <strong>높은 성능:</strong> 하나의 서블릿 객체만 생성(싱글톤)하며 멀티스레딩을 지원하여 요청의 동시 처리 가능<br/>
+          • <strong>확장성:</strong> 필터(Filter)를 통한 전/후처리, 리스너(Listener) 이벤트 제어, 프레임워크와 통합 용이
+        </td>
+      </tr>
+      <tr>
+        <td><strong>주요 단점</strong></td>
+        <td>비즈니스 로직과 프리젠테이션 로직(HTML 코드)이 섞여서 나타남 → Servlet + JSP의 <strong>Model 2 방식</strong>으로 처리</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card-title" style="margin-top: 18px;">서블릿 등록 및 URL 매핑 방식 2가지</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
+  <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;">
+    <div style="font-weight: 700; color: var(--text); margin-bottom: 6px;">1) 애너테이션 방식 (Servlet 3.0+ 권장)</div>
+    <p style="font-size: 13.5px; color: var(--text-sub); line-height: 1.5;">
+      서블릿 클래스 선언부에 <code>@WebServlet</code> 애너테이션을 선언하여 매핑. 별도의 XML 작성 없이 자바 소스코드 내에서 직관적으로 관리 (실무 표준)
+    </p>
+  </div>
+  <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;">
+    <div style="font-weight: 700; color: var(--text); margin-bottom: 6px;">2) web.xml 배포 서술자 방식</div>
+    <p style="font-size: 13.5px; color: var(--text-sub); line-height: 1.5;">
+      <code>&lt;servlet&gt;</code>과 <code>&lt;servlet-mapping&gt;</code> 태그를 활용하여 XML에 서블릿 이름과 URL 패턴을 매핑 (자바 컴파일 없이 설정 교체 가능)
+    </p>
+  </div>
+</div>
+
+<div class="card-title" style="margin-top: 20px;">@WebServlet 애너테이션 주요 속성</div>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">속성 (Attribute)</th>
+        <th style="width: 18%;">타입 (Type)</th>
+        <th style="width: 60%;">설명 및 작성 규칙</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>urlPatterns</code> / <code>value</code></td>
+        <td><code>String[]</code></td>
+        <td>
+          <strong>서블릿에 매핑할 요청 URL 경로 목록</strong> (필수).<br/>
+          • 기본 속성이므로 <code>@WebServlet("/hello")</code>처럼 속성명 생략 가능<br/>
+          • 복수 경로 지정 시 <code>urlPatterns = {"/hello", "/hi"}</code>로 작성<br/>
+          • <strong>경로 규칙:</strong> 반드시 <code>'/'</code>로 시작해야 함
+        </td>
+      </tr>
+      <tr>
+        <td><code>loadOnStartup</code></td>
+        <td><code>int</code></td>
+        <td><strong>서블릿 사전 로딩 우선순위</strong>. 기본값(-1)은 최초 요청 시 생성되지만, 0 이상의 양수를 지정하면 <strong>WAS 기동 시 즉시 로드되어 <code>init()</code>을 선제 호출</strong></td>
+      </tr>
+      <tr>
+        <td><code>initParams</code></td>
+        <td><code>WebInitParam[]</code></td>
+        <td>서블릿 초기화 시 전달할 설정 파라미터(<code>@WebInitParam(name="key", value="val")</code>) 지정</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card-title" style="margin-top: 20px;">경로의 종류와 '/'의 차이점 (Container Root vs Context Root)</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; margin-top: 8px;">
+  <!-- Container Root Card -->
+  <div style="background: #ffffff; border: 1px solid var(--border); border-top: 3px solid var(--primary); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <span style="font-weight: 700; font-size: 15px; color: var(--text);">Container root</span>
+      <span style="font-size: 11.5px; background: #e0e7ff; color: var(--primary-dark); font-weight: 600; padding: 2px 8px; border-radius: 4px;">컨테이너의 경로</span>
+    </div>
+    <ul style="margin: 0 0 0 16px; font-size: 13.5px; color: var(--text-sub); line-height: 1.6;">
+      <li><strong>기준 시점:</strong> Servlet 배우기 전에 사용했던 <code>'/'</code>는 container root</li>
+      <li><strong>해당 경로:</strong> <code>&lt;a&gt;</code>, <code>&lt;link&gt;</code>, <code>&lt;form&gt;</code>, <code>&lt;script&gt;</code>의 경로 등 (브라우저 기준 <code>http://localhost:8080/</code>)</li>
+      <li><strong>주의사항:</strong> 특정 context를 호출하기 위해서는 <code>/context_name/</code> 처럼 <strong>context_name을 반드시 개입</strong>시켜야 함</li>
+    </ul>
+  </div>
+
+  <!-- Context Root Card -->
+  <div style="background: #ffffff; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <span style="font-weight: 700; font-size: 15px; color: var(--text);">Context root</span>
+      <span style="font-size: 11.5px; background: #f3e8ff; color: #6b21a8; font-weight: 600; padding: 2px 8px; border-radius: 4px;">개별 Context 경로</span>
+    </div>
+    <ul style="margin: 0 0 0 16px; font-size: 13.5px; color: var(--text-sub); line-height: 1.6;">
+      <li><strong>기준 시점:</strong> servlet을 배우고 나서 배우는 경로는 <code>'/'</code>가 context root</li>
+      <li><strong>해당 경로:</strong> servlet url mapping (<code>@WebServlet</code>), <code>web.xml</code>의 경로, <code>include-directive</code>의 경로 등</li>
+      <li><strong>특징:</strong> 현재 애플리케이션 내부를 기준으로 하므로 context name을 제외하고 <code>/hello</code>처럼 직접 매핑</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<!-- 5. 서블릿 생명주기와 동작 메커니즘 -->
+<h2 class="section-title">5. 서블릿 생명주기(Life Cycle) 관리</h2>
+<div class="card">
+<div class="card-title">컨테이너에 의한 라이프사이클 제어</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+  개발자는 Servlet을 만들지만 객체를 만들거나 호출하지 않음 → <strong>Container가 life cycle에 따라 관리</strong>하며, 개발자가 작성한 각 라이프사이클 훅을 Container가 호출합니다.
+</p>
+<div class="flow-grid">
+  <div class="flow-step">
+    <div class="flow-step-num">최초 1회</div>
+    <div class="flow-step-title">1. init()</div>
+    <div class="flow-step-desc">서블릿 객체 생성 후 최초 1회 호출되어 초기화 작업 수행</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">매 요청마다</div>
+    <div class="flow-step-title">2. service()</div>
+    <div class="flow-step-desc">요청마다 호출되어 HTTP 요청 방식을 판단하고 <code>doGet()</code> 또는 <code>doPost()</code> 호출</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">종료 시 1회</div>
+    <div class="flow-step-title">3. destroy()</div>
+    <div class="flow-step-desc">컨테이너가 종료되거나 서블릿이 소멸될 때 호출되어 자원 정리 수행</div>
+  </div>
+</div>
+</div>
+
+<!-- 6. HttpServletRequest & HttpServletResponse API -->
+<h2 class="section-title">6. HttpServletRequest &amp; HttpServletResponse 및 처리 흐름</h2>
+<div class="card">
+<div class="card-title">HTTP Request와 Response 추상화 인터페이스</div>
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th style="width: 25%;">인터페이스</th>
+      <th style="width: 35%;">핵심 개념 및 특징</th>
+      <th style="width: 40%;">주요 메서드 및 설명</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>HttpServletRequest</strong></td>
+      <td>HTTP 요청 추상화 (헤더, 파라미터, 속성 및 요청 본문 접근)<br/>• <strong>HTTP Method:</strong> form 데이터 전달 방식 결정 (GET: 멱등, POST: 비멱등)<br/>• <strong>Request parameter:</strong> 언제나 문자열(String), 클라이언트 설정 후 조작 불가</td>
+      <td>
+        • <code>request.getParameter(name)</code>: 단일 값 조회<br/>
+        • <code>request.getParameterValues(name)</code>: 복수 값 배열 조회<br/>
+        • <code>request.getParameterMap()</code>: 전체 파라미터 맵 조회<br/>
+        • <code>request.getMethod()</code>, <code>request.getContextPath()</code>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>HttpServletResponse</strong></td>
+      <td>HTTP 응답 추상화 (헤더 조회/설정, 응답 상태, 응답 전송 처리)<br/>• <strong>Http Status:</strong> 처리 결과 카테고리별 숫자 코드 반환<br/>• <strong>Content-Type:</strong> 데이터 형식 사전 안내<br/>• <strong>Character Encoding:</strong> 기본 ISO-8859-1 → UTF-8 필요</td>
+      <td>
+        • <code>response.setContentType("text/html;charset=UTF-8")</code>: <strong>출력 스트림 생성 전에 설정 필수!</strong><br/>
+        • <code>response.getWriter()</code>: PrintWriter 획득 후 append/println 수행<br/>
+        • <code>response.setStatus(code)</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card-title" style="margin-top: 18px;">서블릿 표준 구조 및 요청 처리 5단계 흐름</div>
+<pre><code><span class="ann">@WebServlet</span>(description = <span class="str">"계산기 서블릿"</span>, urlPatterns = { <span class="str">"/calc"</span> })
+<span class="kwd">public class</span> <span class="typ">AddServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">init</span>() <span class="kwd">throws</span> <span class="typ">ServletException</span> {
+        <span class="com">// [Lifecycle] 서블릿 인스턴스 생성 후 최초 1회 호출 (초기화 및 자원 준비)</span>
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"AddServlet init() 초기화 완료"</span>);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="com">// 1. 요청 파라미터 조회 (logging 및 validation 포함)</span>
+        <span class="typ">String</span> sNum1 = request.<span class="met">getParameter</span>(<span class="str">"num1"</span>);
+        <span class="typ">String</span> sNum2 = request.<span class="met">getParameter</span>(<span class="str">"num2"</span>);
+
+        <span class="com">// 2. 요청에 대한 business logic 처리</span>
+        <span class="typ">int</span> result = <span class="typ">Integer</span>.<span class="met">parseInt</span>(sNum1) + <span class="typ">Integer</span>.<span class="met">parseInt</span>(sNum2);
+
+        <span class="com">// 3. 필요 시 persistence logic 연동 (DB 저장/조회 등)</span>
+
+        <span class="com">// 4. 응답 준비: content type 및 encoding 설정 (출력 전 설정 필수!)</span>
+        response.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+
+        <span class="com">// 5. 응답을 위한 presentation logic 처리</span>
+        <span class="typ">PrintWriter</span> out = response.<span class="met">getWriter</span>();
+        out.<span class="met">append</span>(<span class="str">"&lt;html&gt;&lt;body&gt;&lt;h2&gt;결과: "</span> + result + <span class="str">"&lt;/h2&gt;&lt;/body&gt;&lt;/html&gt;"</span>);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">destroy</span>() {
+        <span class="com">// [Lifecycle] 컨테이너 종료 또는 서블릿 소멸 시 1회 호출 (자원 해제 및 정리)</span>
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"AddServlet destroy() 자원 정리 완료"</span>);
+    }
+}</code></pre>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 2: 코드 리뷰 (상황 중심 트러블슈팅) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-review">
+<!-- Review Case 1 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 1: 동시 접속 부하 테스트 중 타인의 개인정보가 노출되는 사고</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "부하 테스트를 진행하던 중, 사용자 '철수'가 로그인하여 마이페이지를 조회했는데 화면에 엉뚱하게 사용자 '영희'의 이름과 방문 횟수가 노출되는 심각한 데이터 오염 사고가 발생했습니다. 코드를 보고 원인을 찾아보세요."
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/visit"</span>)
+<span class="kwd">public class</span> <span class="typ">VisitServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="kwd">private</span> <span class="typ">int</span> visitCount = <span class="num">0</span>;
+    <span class="kwd">private</span> <span class="typ">String</span> lastUser = <span class="str">""</span>;
+
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        lastUser = request.<span class="met">getParameter</span>(<span class="str">"name"</span>);
+        visitCount++;
+
+        response.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+        <span class="typ">PrintWriter</span> out = response.<span class="met">getWriter</span>();
+        out.<span class="met">println</span>(<span class="str">"&lt;p&gt;환영합니다, "</span> + lastUser + <span class="str">"님!&lt;/p&gt;"</span>);
+        out.<span class="met">println</span>(<span class="str">"&lt;p&gt;누적 방문: "</span> + visitCount + <span class="str">"&lt;/p&gt;"</span>);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 치명적 동시성 결함</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              서블릿 컨테이너는 메모리 절약과 고성능을 위해 서블릿 객체를 <strong>단 하나만 생성(싱글톤)</strong>하여 모든 요청 스레드가 공유합니다.<br/>
+              인스턴스 변수인 <code>lastUser</code>는 모든 스레드가 동시에 읽고 쓰므로, 철수의 요청 스레드가 변수에 값을 넣고 출력하기 직전에 영희의 요청 스레드가 값을 덮어써 버리는 <strong>Race Condition(경쟁 상태)</strong>이 발생했습니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/visit"</span>)
+<span class="kwd">public class</span> <span class="typ">VisitServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="kwd">private final</span> <span class="typ">AtomicInteger</span> visitCount = <span class="kwd">new</span> <span class="typ">AtomicInteger</span>(<span class="num">0</span>);
+
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">String</span> currentUser = request.<span class="met">getParameter</span>(<span class="str">"name"</span>);
+        <span class="typ">int</span> currentCount = visitCount.<span class="met">incrementAndGet</span>();
+
+        response.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+        <span class="typ">PrintWriter</span> out = response.<span class="met">getWriter</span>();
+        out.<span class="met">println</span>(<span class="str">"&lt;p&gt;환영합니다, "</span> + currentUser + <span class="str">"님!&lt;/p&gt;"</span>);
+        out.<span class="met">println</span>(<span class="str">"&lt;p&gt;누적 방문: "</span> + currentCount + <span class="str">"&lt;/p&gt;"</span>);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 2 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 2: 브라우저 화면에 한글이 전부 ??? 로 깨져 나오는 장애</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "분명히 코드에 setContentType과 charset=UTF-8을 명시해 두었는데도, 사용자의 브라우저 화면에는 '안녕하세요' 대신 '???' 문자가 깨져서 출력됩니다. 왜 그럴까요?"
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/greet"</span>)
+<span class="kwd">public class</span> <span class="typ">GreetServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">PrintWriter</span> out = response.<span class="met">getWriter</span>();
+
+        response.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+        out.<span class="met">println</span>(<span class="str">"&lt;h1&gt;안녕하세요! 서블릿 서비스입니다.&lt;/h1&gt;"</span>);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 응답 스트림 순서 버그</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>response.getWriter()</code>를 호출하는 시점에 서블릿 컨테이너는 당시 설정된 문자 인코딩(기본값 ISO-8859-1)으로 고정하여 출력 스트림 객체를 생성합니다.<br/>
+              스트림이 이미 생성된 뒤에 <code>setContentType(...)</code>을 호출하더라도 이미 만들어진 스트림의 인코딩은 변경되지 않으므로 한글이 깨지게 됩니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/greet"</span>)
+<span class="kwd">public class</span> <span class="typ">GreetServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        response.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+        <span class="typ">PrintWriter</span> out = response.<span class="met">getWriter</span>();
+
+        out.<span class="met">println</span>(<span class="str">"&lt;h1&gt;안녕하세요! 서블릿 서비스입니다.&lt;/h1&gt;"</span>);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 3 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 3: 신규 서블릿 추가 후 서버 구동 시 배포 실패</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "새로운 기능 개발을 위해 서블릿을 작성하고 톰캣 서버를 기동했으나, 콘솔에 IllegalArgumentException: Invalid urlPatterns 오류가 발생하며 애플리케이션 배포가 전면 중단되었습니다. 어느 부분이 원인일까요?"
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(name = <span class="str">"UserServlet"</span>, urlPatterns = {<span class="str">"user/profile"</span>})
+<span class="kwd">public class</span> <span class="typ">UserServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        response.<span class="met">getWriter</span>().<span class="met">println</span>(<span class="str">"User Profile"</span>);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 어노테이션 문법 누락</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              서블릿 공식 명세상 모든 서블릿 URL 패턴은 반드시 <strong>'/'</strong>(정확한 디렉터리 경로 매핑)로 시작하거나 <strong>'*.'</strong>(확장자 매핑)로 시작해야 합니다.<br/>
+<code>"user/profile"</code>처럼 슬래시 없이 상대 경로 형식으로 지정하면 컨테이너가 배포 시점에 유효하지 않은 매핑으로 판단하고 즉시 구동을 거부합니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebServlet</span>(name = <span class="str">"UserServlet"</span>, urlPatterns = {<span class="str">"/user/profile"</span>})
+<span class="kwd">public class</span> <span class="typ">UserServlet</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        response.<span class="met">getWriter</span>().<span class="met">println</span>(<span class="str">"User Profile"</span>);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 4 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 4: index.html에서 서블릿 호출 링크 클릭 시 404 Not Found 발생</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "컨텍스트 패스(Context Path)가 '/BE_01'인 웹 애플리케이션에서 서블릿 클래스는 @WebServlet('/hello')로 정상 매핑해 두었는데, index.html에서 &lt;a href='/hello'&gt;서블릿 호출&lt;/a&gt; 링크를 클릭하면 브라우저에 404 Not Found 오류가 발생합니다. 왜 서블릿을 찾지 못할까요?"
+        </div>
+<pre><code>&lt;<span class="tag">a</span> <span class="att">href</span>=<span class="str">"/hello"</span>&gt;Hello 서블릿 호출&lt;/<span class="tag">a</span>&gt;</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 경로 컨텍스트 누락</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              HTML 태그(<code>&lt;a&gt;</code>, <code>&lt;form&gt;</code>)에서 슬래시(<code>/</code>)로 시작하는 경로는 브라우저가 <strong>Container Root (http://localhost:8080/)</strong> 기준으로 해석합니다.<br/>
+              따라서 브라우저는 <code>http://localhost:8080/hello</code>로 요청을 보내게 되며, 애플리케이션의 Context Root(<code>/BE_01</code>)가 누락되어 톰캣이 해당 리소스를 찾지 못하고 404를 반환합니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="com">&lt;!-- [개선 1] 컨텍스트 루트를 포함한 절대 경로 작성 --&gt;</span>
+&lt;<span class="tag">a</span> <span class="att">href</span>=<span class="str">"/BE_01/hello"</span>&gt;Hello 서블릿 호출&lt;/<span class="tag">a</span>&gt;
+
+<span class="com">&lt;!-- [개선 2] 현재 폴더 기준의 상대 경로 작성 --&gt;</span>
+&lt;<span class="tag">a</span> <span class="att">href</span>=<span class="str">"hello"</span>&gt;Hello 서블릿 호출&lt;/<span class="tag">a</span>&gt;</code></pre>
+</div>
+</details>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 3: 핵심 스피드 퀴즈 -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-quiz">
+<!-- Mode Switcher -->
+<div class="quiz-mode-switch-wrap">
+<div class="quiz-mode-switch">
+<button class="quiz-mode-btn active" id="btn-mode-card" onclick="switchQuizMode('card')" type="button">
+<span>🃏 카드 모드 (30초 타임어택)</span>
+</button>
+<button class="quiz-mode-btn" id="btn-mode-list" onclick="switchQuizMode('list')" type="button">
+<span>📋 전체 목록 모드 (한눈에 보기)</span>
+</button>
+</div>
+<div class="quiz-mode-desc" id="quiz-mode-desc">
+        한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.
+      </div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 1: CARD VIEW (30s Time-Attack Carousel)   -->
+<!-- ============================================== -->
+<div class="quiz-view-panel active" id="quiz-card-view">
+<div class="quiz-container">
+<!-- Top Bar: Progress & 30s Countdown Timer -->
+<div class="quiz-top-bar">
+<div class="quiz-progress-badge" id="quiz-progress">문제 1 / 8</div>
+<div class="quiz-timer-box" id="quiz-timer-box">
+<span style="font-size: 15px;">⏱️</span>
+<span>남은 시간:</span>
+<span id="quiz-timer-sec" style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800;">30</span>초
+          </div>
+</div>
+<div class="quiz-timer-bar-wrap">
+<div class="quiz-timer-bar" id="quiz-timer-bar"></div>
+</div>
+<!-- Slides Container -->
+<div id="quiz-slides-container">
+<div class="quiz-slide active" data-quiz-index="0">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q1</span>
+<div class="quiz-q-text">서블릿 컨테이너는 클라이언트의 매 HTTP 요청마다 새로운 서블릿 객체(인스턴스)를 new 키워드로 생성한다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-0">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-0">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<div>서블릿 인스턴스는 최초 요청 시 단 한 번만 생성(싱글톤)되어 메모리에 상주하며, 이후 요청에는 객체를 새로 생성하지 않고 스레드 풀에서 스레드만 할당하여 service() 메서드를 재사용합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="1">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q2</span>
+<div class="quiz-q-text">URL 매핑 경로가 /order 이고 Context Root가 /shop 일 때, 포트 8080인 로컬 서버에서 이 서블릿을 호출하는 정확한 전체 URL 경로는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-1">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-1">
+<div class="quiz-answer-title">
+                정답: http://localhost:8080/shop/order
+              </div>
+<div class="quiz-answer-desc">
+<div>전체 요청 URL은 <code>http://[Container Root]/[Context Root]/[URL Mapping]</code> 구조로 조합됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="2">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q3</span>
+<div class="quiz-q-text">서블릿의 생명주기 메서드 중 서블릿 객체가 메모리에 로드된 후 초기화 작업을 위해 '최초 1회만' 호출되는 메서드는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-2">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-2">
+<div class="quiz-answer-title">
+                정답: init()
+              </div>
+<div class="quiz-answer-desc">
+<div>init()은 서블릿 생성 직후 자원 준비를 위해 1회 호출되며, 요청 처리는 service()가 매번 호출되고, 소멸 시에는 destroy()가 호출됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="3">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q4</span>
+<div class="quiz-q-text">정적 파일(HTML, CSS, JS, Image)은 반드시 WEB-INF 폴더 안에 위치시켜야 외부 웹 브라우저에서 직접 URL로 접근할 수 있다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-3">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-3">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<div>WEB-INF 디렉터리는 보안 영역으로 브라우저에서 직접 URL로 접근할 수 없습니다. 브라우저가 직접 접근해야 하는 정적 리소스는 <code>src/main/webapp/</code> 바로 아래에 위치시켜야 합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="4">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q5</span>
+<div class="quiz-q-text">서블릿 클래스에서 다중 선택 체크박스처럼 동일한 이름으로 여러 개의 파라미터가 전달될 때 사용하는 HttpServletRequest의 메서드는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-4">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-4">
+<div class="quiz-answer-title">
+                정답: request.getParameterValues("파라미터명")
+              </div>
+<div class="quiz-answer-desc">
+<div>단일 값은 <code>getParameter()</code>로 문자열을 수신하지만, 다중 값은 <code>getParameterValues()</code>를 통해 문자열 배열(<code>String[]</code>)로 수신합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="5">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q6</span>
+<div class="quiz-q-text">Maven의 pom.xml에서 jakarta.servlet-api 의존성의 scope를 'provided'로 지정하는 이유는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-5">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-5">
+<div class="quiz-answer-title">
+                정답: 톰캣(WAS) 런타임이 서블릿 라이브러리를 자체 제공하므로 패키징 충돌을 방지하기 위해
+              </div>
+<div class="quiz-answer-desc">
+<div>컴파일 시에는 서블릿 문법 검사를 위해 필요하지만, 최종 WAR 파일 패키징 시에는 컨테이너의 라이브러리와 중복되지 않도록 제외시키는 설정입니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="6">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q7</span>
+<div class="quiz-q-text">HTTP Method 중 동일한 요청을 여러 번 전송하더라도 서버의 리소스 상태가 매번 동일하게 유지되는 특성을 무엇이라 하는가?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-6">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-6">
+<div class="quiz-answer-title">
+                정답: 멱등성 (Idempotence)
+              </div>
+<div class="quiz-answer-desc">
+<div>GET, PUT, DELETE 등은 멱등한 메서드이며, 호출할 때마다 새로운 데이터가 생성되는 POST는 비멱등(Non-idempotent) 메서드입니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="7">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q8</span>
+<div class="quiz-q-text">HTML의 &lt;a&gt; 태그나 &lt;form&gt; 태그에서 href="/hello"처럼 슬래시(/)로 시작하는 경로는 Context Root가 아닌 Container Root(http://localhost:8080/) 기준으로 해석된다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-7">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-7">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>브라우저는 <code>'/'</code>를 WAS 포트 최상위(Container Root)로 해석하므로, 톰캣에 배포된 애플리케이션의 서블릿을 호출하려면 <code>/BE_01/hello</code>처럼 Context Root를 반드시 명시해야 404 오류를 방지할 수 있습니다.</div>
+</div>
+</div>
+</div>
+<!-- Completed Screen -->
+<div class="quiz-slide quiz-complete-card" id="quiz-complete-slide">
+<div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+<h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px;">스피드 퀴즈 완료!</h3>
+<p style="font-size: 14.5px; color: var(--text-sub); margin-bottom: 22px;">
+              모든 문제를 완주했습니다! 다시 도전하거나 전체 목록 모드에서 정리해 보세요.
+            </p>
+<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+<button class="quiz-nav-btn primary" onclick="resetQuiz()" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                처음부터 다시 풀기 🔄
+              </button>
+<button class="quiz-nav-btn" onclick="switchQuizMode('list')" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                전체 목록으로 복습 📋
+              </button>
+</div>
+</div>
+</div>
+<!-- Bottom Nav -->
+<div class="quiz-bottom-nav">
+<button class="quiz-nav-btn" disabled="" id="btn-quiz-prev" onclick="prevQuiz()" type="button">
+            ◀ 이전 문제
+          </button>
+<button class="quiz-nav-btn" id="btn-quiz-reveal" onclick="revealCurrentAnswer()" type="button">
+            정답 확인 👁️
+          </button>
+<button class="quiz-nav-btn primary" id="btn-quiz-next" onclick="nextQuiz()" type="button">
+            다음 문제 ▶
+          </button>
+</div>
+</div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 2: LIST VIEW (All Questions at Once)       -->
+<!-- ============================================== -->
+<div class="quiz-view-panel" id="quiz-list-view">
+<div class="quiz-list-toolbar">
+<span class="quiz-list-count">총 <strong>8</strong>문항 수록</span>
+<button class="quiz-list-toggle-all-btn" id="btn-toggle-all-list" onclick="toggleAllListAnswers()" type="button">
+          전체 정답 펼치기 ▼
+        </button>
+</div>
+<div class="quiz-list-container">
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q1</span>
+<div class="quiz-list-q-text">서블릿 컨테이너는 클라이언트의 매 HTTP 요청마다 새로운 서블릿 객체(인스턴스)를 new 키워드로 생성한다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><div>서블릿 인스턴스는 최초 요청 시 단 한 번만 생성(싱글톤)되어 메모리에 상주하며, 이후 요청에는 객체를 새로 생성하지 않고 스레드 풀에서 스레드만 할당하여 service() 메서드를 재사용합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q2</span>
+<div class="quiz-list-q-text">URL 매핑 경로가 /order 이고 Context Root가 /shop 일 때, 포트 8080인 로컬 서버에서 이 서블릿을 호출하는 정확한 전체 URL 경로는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: http://localhost:8080/shop/order</div>
+<div class="quiz-list-ans-desc"><div>전체 요청 URL은 <code>http://[Container Root]/[Context Root]/[URL Mapping]</code> 구조로 조합됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q3</span>
+<div class="quiz-list-q-text">서블릿의 생명주기 메서드 중 서블릿 객체가 메모리에 로드된 후 초기화 작업을 위해 '최초 1회만' 호출되는 메서드는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: init()</div>
+<div class="quiz-list-ans-desc"><div>init()은 서블릿 생성 직후 자원 준비를 위해 1회 호출되며, 요청 처리는 service()가 매번 호출되고, 소멸 시에는 destroy()가 호출됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q4</span>
+<div class="quiz-list-q-text">정적 파일(HTML, CSS, JS, Image)은 반드시 WEB-INF 폴더 안에 위치시켜야 외부 웹 브라우저에서 직접 URL로 접근할 수 있다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><div>WEB-INF 디렉터리는 보안 영역으로 브라우저에서 직접 URL로 접근할 수 없습니다. 브라우저가 직접 접근해야 하는 정적 리소스는 <code>src/main/webapp/</code> 바로 아래에 위치시켜야 합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q5</span>
+<div class="quiz-list-q-text">서블릿 클래스에서 다중 선택 체크박스처럼 동일한 이름으로 여러 개의 파라미터가 전달될 때 사용하는 HttpServletRequest의 메서드는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: request.getParameterValues("파라미터명")</div>
+<div class="quiz-list-ans-desc"><div>단일 값은 <code>getParameter()</code>로 문자열을 수신하지만, 다중 값은 <code>getParameterValues()</code>를 통해 문자열 배열(<code>String[]</code>)로 수신합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q6</span>
+<div class="quiz-list-q-text">Maven의 pom.xml에서 jakarta.servlet-api 의존성의 scope를 'provided'로 지정하는 이유는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 톰캣(WAS) 런타임이 서블릿 라이브러리를 자체 제공하므로 패키징 충돌을 방지하기 위해</div>
+<div class="quiz-list-ans-desc"><div>컴파일 시에는 서블릿 문법 검사를 위해 필요하지만, 최종 WAR 파일 패키징 시에는 컨테이너의 라이브러리와 중복되지 않도록 제외시키는 설정입니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q7</span>
+<div class="quiz-list-q-text">HTTP Method 중 동일한 요청을 여러 번 전송하더라도 서버의 리소스 상태가 매번 동일하게 유지되는 특성을 무엇이라 하는가?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 멱등성 (Idempotence)</div>
+<div class="quiz-list-ans-desc"><div>GET, PUT, DELETE 등은 멱등한 메서드이며, 호출할 때마다 새로운 데이터가 생성되는 POST는 비멱등(Non-idempotent) 메서드입니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q8</span>
+<div class="quiz-list-q-text">HTML의 &lt;a&gt; 태그나 &lt;form&gt; 태그에서 href="/hello"처럼 슬래시(/)로 시작하는 경로는 Context Root가 아닌 Container Root(http://localhost:8080/) 기준으로 해석된다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>브라우저는 <code>'/'</code>를 WAS 포트 최상위(Container Root)로 해석하므로, 톰캣에 배포된 애플리케이션의 서블릿을 호출하려면 <code>/BE_01/hello</code>처럼 Context Root를 반드시 명시해야 404 오류를 방지할 수 있습니다.</div></div>
+</div>
+</details>
+</div>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 4: 기술 면접 대비 (클릭 토글 방식) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-interview">
+<div style="background: #f8fafc; border: 1px solid var(--border); padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      💼 <strong>실전 기술 면접:</strong> 질문을 먼저 읽고 마음속으로 1분 답변을 정리해 본 뒤, 카드를 클릭하여 두괄식 모범 답변과 꼬리 질문 대비 포인트를 확인하세요.
+    </div>
+<!-- Interview Question 1 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q1. Web Server와 Web Application Server(WAS)의 차이점과, 둘을 연동하여 구성하는 이유를 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 정의]</span>
+<div>Web Server는 정적 콘텐츠를 신속하게 처리하는 서버이며, WAS는 서블릿 컨테이너를 내장하여 비즈니스 로직과 동적 데이터를 처리하는 서버입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[연동하는 3대 핵심 이유]</span>
+<div>
+                1. <strong>부하 분산:</strong> 이미지나 HTML 등 단순 정적 파일 요청을 앞단 웹 서버에서 즉시 응답함으로써, WAS가 값비싼 동적 연산과 DB 처리에만 스레드를 집중하도록 최적화합니다.<br/>
+                2. <strong>보안 강화:</strong> WAS를 외부 인터넷에 직접 노출하지 않고 웹 서버를 리버스 프록시로 배치하여 내부 인프라 구조를 은닉합니다.<br/>
+                3. <strong>무중단 배포:</strong> 앞단의 웹 서버가 로드밸런싱을 수행하여 여러 대의 WAS 인스턴스를 순차적으로 재시작할 수 있습니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"소규모 서비스라면 웹 서버 없이 톰캣(WAS) 단독으로 띄워도 문제없지 않나요?" → "네, 톰캣 내부에도 정적 리소스를 처리하는 DefaultServlet이 내장되어 있어 단독 운영이 가능하지만, 트래픽 증가 시 확장성과 보안 관점에서 분리 구성을 권장합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 2 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q2. 서블릿의 생명주기(Lifecycle)와 클라이언트 요청 처리 과정을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 정의]</span>
+<div>서블릿은 컨테이너에 의해 <strong>생성 → 초기화(init) → 요청 처리(service) → 소멸(destroy)</strong>의 4단계를 거칩니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[구체적 동작 흐름]</span>
+<div>
+                클라이언트의 최초 요청 시 서블릿 클래스가 메모리에 로드되고 기본 생성자와 <code>init()</code> 메서드가 딱 한 번 호출됩니다. 이후 요청이 올 때마다 서블릿 컨테이너는 스레드 풀에서 작업 스레드를 할당하여 <code>service()</code>를 실행하고, 요청 메서드에 따라 <code>doGet()</code>이나 <code>doPost()</code>로 라우팅합니다. 서버가 종료되거나 컨텍스트가 리로드될 때 <code>destroy()</code>가 호출되어 자원을 정리합니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"최초 요청 시 init()이 실행되면 첫 사용자의 응답 시간이 지연될 텐데 해결 방법이 있나요?" → "<code>load-on-startup</code> 속성(또는 <code>@WebServlet(loadOnStartup = 1)</code>)을 설정하면 첫 요청 전 서버 기동 시점에 미리 서블릿을 초기화하여 응답 지연을 방지할 수 있습니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 3 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q3. 서블릿에서 멤버 변수(인스턴스 필드)를 지양해야 하는 이유와 멀티스레드 안전성(Thread-Safety) 확보 방안은?</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>서블릿은 단일 인스턴스(싱글톤)로 생성되어 모든 요청 스레드가 공유하므로, 상태를 가지는 멤버 변수를 선언하면 동시성 문제(Race Condition)와 데이터 오염이 발생하기 때문입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[안전한 설계 방안]</span>
+<div>
+                서블릿은 원칙적으로 <strong>무상태(Stateless)</strong>로 설계해야 합니다. 각 요청에서 발생하는 데이터는 <code>doGet/doPost</code> 메서드 내부의 <strong>지역 변수(Local Variable)</strong>로 선언하여 스레드별 독립적인 스택 메모리 영역에 격리해야 합니다. 상태 유지가 필요한 경우라면 <code>HttpServletRequest</code>나 <code>HttpSession</code> 스코프 객체를 활용해야 합니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"동기화(synchronized) 블록을 적용하면 멤버 변수도 안전하게 쓸 수 있지 않나요?" → "안전성은 확보할 수 있으나 모든 요청이 직렬화(병목)되어 멀티스레드 기반 웹 서버의 동시 처리 성능이 급격히 저하되므로 웹 환경에서는 권장하지 않습니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 4 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q4. HTML에서 작성하는 '/' 경로와 서블릿 매핑의 '/' 경로의 차이점을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>해석 주체가 브라우저냐 WAS냐에 따라 루트의 기준이 완전히 다릅니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[상세 차이점]</span>
+<div>
+                HTML 태그(<code>&lt;a&gt;</code>, <code>&lt;form&gt;</code>)에서 사용하는 <code>/</code>는 브라우저가 해석하므로 <strong>Container Root (http://host:port/)</strong>를 가리킵니다. 따라서 컨텍스트 루트가 누락되지 않도록 <code>/context_name/path</code> 형태로 명시해야 합니다.<br/>
+                반면 서블릿의 <code>@WebServlet("/")</code>이나 <code>web.xml</code>에서 사용하는 <code>/</code>는 WAS가 해석하므로 <strong>Context Root (http://host:port/context_name/)</strong>를 기준으로 매핑됩니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"JSP나 서블릿 환경에서 컨텍스트 루트를 하드코딩하지 않고 유연하게 지정하는 방법은?" → "<code>request.getContextPath()</code> 메서드나 JSTL/EL의 <code>${pageContext.request.contextPath}</code>를 활용하여 동적으로 경로를 결합합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 5 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q5. Maven pom.xml에서 서블릿 라이브러리의 scope를 'provided'로 설정하는 이유는 무엇인가요?</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>컴파일 단계에서는 API 클래스 참조를 위해 필요하지만, 런타임에는 톰캣 컨테이너가 자체 라이브러리를 이미 제공하므로 중복 패키징을 막기 위해서입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[상세 이유]</span>
+<div>
+                만약 기본 스코프(compile)로 지정하여 WAR 파일 내부의 <code>WEB-INF/lib</code>에 서블릿 API JAR가 함께 배포되면, 톰캣 자체 클래스로더의 서블릿 API와 웹앱 클래스로더의 서블릿 API가 충돌하여 클래스 캐스팅 에러나 런타임 예외가 발생할 수 있습니다. <code>provided</code>를 통해 최종 패키징 산출물에서 제외시킵니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"Maven에서 scope의 종류(compile, runtime, provided, test) 간의 차이를 간단히 말씀해 주세요." → "compile은 빌드/런타임 전체 포함, runtime은 실행 시에만 필요(JDBC 드라이버 등), provided는 런타임 환경이 제공, test는 단위 테스트 수행 시에만 참조되는 스코프입니다."</div>
+</div>
+</div>
+</details>
+</div>
+</main>
+<footer>
+<p>Backend Programming Curriculum • Servlet-1 Summary Guide</p>
+</footer>
+</div>
+<script>
+  // === Tab Switching Logic ===
+  function switchTab(tabId) {
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = Array.from(buttons).find(btn => {
+      const attr = btn.getAttribute('onclick');
+      return attr && attr.includes(tabId);
+    });
+    if (clickedBtn) {
+      clickedBtn.classList.add('active');
+    }
+
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(panel => {
+      panel.classList.remove('active');
+      if (panel.id === tabId) {
+        panel.classList.add('active');
+      }
+    });
+
+    // Manage quiz timer on tab switch
+    if (tabId === 'tab-quiz') {
+      if (currentQuizMode === 'card' && !isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      pauseQuizTimer();
+    }
+  }
+
+  // === Quiz Mode Switching (Card Mode vs List Mode) ===
+  let currentQuizMode = 'card';
+
+  function switchQuizMode(mode) {
+    currentQuizMode = mode;
+    const cardPanel = document.getElementById('quiz-card-view');
+    const listPanel = document.getElementById('quiz-list-view');
+    const btnCard = document.getElementById('btn-mode-card');
+    const btnList = document.getElementById('btn-mode-list');
+    const modeDesc = document.getElementById('quiz-mode-desc');
+
+    if (mode === 'card') {
+      cardPanel.classList.add('active');
+      listPanel.classList.remove('active');
+      btnCard.classList.add('active');
+      btnList.classList.remove('active');
+      modeDesc.textContent = '한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.';
+      if (!isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      cardPanel.classList.remove('active');
+      listPanel.classList.add('active');
+      btnCard.classList.remove('active');
+      btnList.classList.add('active');
+      modeDesc.textContent = '모든 문제를 목록으로 펼쳐두고 타이머 부담 없이 자유롭게 자가 점검 및 복습하는 모드입니다.';
+      pauseQuizTimer();
+    }
+  }
+
+  // === List Mode Toggle All Answers ===
+  let isAllListAnswersOpen = false;
+  function toggleAllListAnswers() {
+    const accordions = document.querySelectorAll('.quiz-list-accordion');
+    const btn = document.getElementById('btn-toggle-all-list');
+    isAllListAnswersOpen = !isAllListAnswersOpen;
+    accordions.forEach(acc => {
+      acc.open = isAllListAnswersOpen;
+    });
+    btn.textContent = isAllListAnswersOpen ? '전체 정답 접기 ▲' : '전체 정답 펼치기 ▼';
+  }
+
+  // === Interactive 30s Time-Attack Speed Quiz Script (Card Mode) ===
+  const totalQuestions = 8;
+  let currentQuizIdx = 0;
+  let quizTimeLeft = 30;
+  let quizTimerInterval = null;
+  let isAnswerRevealed = new Array(totalQuestions).fill(false);
+  let isQuizCompleted = false;
+
+  function updateQuizUI() {
+    const slides = document.querySelectorAll('.quiz-slide');
+    slides.forEach(slide => slide.classList.remove('active'));
+
+    const completeSlide = document.getElementById('quiz-complete-slide');
+    const bottomNav = document.querySelector('.quiz-bottom-nav');
+
+    if (isQuizCompleted) {
+      completeSlide.classList.add('active');
+      document.getElementById('quiz-progress').textContent = '완료!';
+      document.getElementById('quiz-timer-sec').textContent = '0';
+      document.getElementById('quiz-timer-bar').style.width = '0%';
+      document.getElementById('quiz-timer-box').classList.remove('warning');
+      bottomNav.style.display = 'none';
+      pauseQuizTimer();
+      return;
+    }
+
+    bottomNav.style.display = 'flex';
+    const currentSlide = document.querySelector(`.quiz-slide[data-quiz-index="${currentQuizIdx}"]`);
+    if (currentSlide) {
+      currentSlide.classList.add('active');
+    }
+
+    // Update Progress
+    document.getElementById('quiz-progress').textContent = `문제 ${currentQuizIdx + 1} / ${totalQuestions}`;
+
+    // Update Navigation Buttons
+    const btnPrev = document.getElementById('btn-quiz-prev');
+    const btnNext = document.getElementById('btn-quiz-next');
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+
+    btnPrev.disabled = (currentQuizIdx === 0);
+
+    if (currentQuizIdx === totalQuestions - 1) {
+      btnNext.innerHTML = '결과 보기 🏁';
+    } else {
+      btnNext.innerHTML = '다음 문제 ▶';
+    }
+
+    if (isAnswerRevealed[currentQuizIdx]) {
+      btnReveal.textContent = '해설 닫기 ▲';
+    } else {
+      btnReveal.textContent = '정답 확인 👁️';
+    }
+  }
+
+  function startQuizTimer() {
+    pauseQuizTimer();
+    if (currentQuizMode !== 'card' || isQuizCompleted || isAnswerRevealed[currentQuizIdx]) return;
+
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    quizTimerInterval = setInterval(() => {
+      if (quizTimeLeft > 0) {
+        quizTimeLeft--;
+        timerSecEl.textContent = quizTimeLeft;
+        const pct = (quizTimeLeft / 30) * 100;
+        timerBarEl.style.width = `${pct}%`;
+
+        if (quizTimeLeft <= 5) {
+          timerBoxEl.classList.add('warning');
+          timerBarEl.classList.add('warning');
+        } else {
+          timerBoxEl.classList.remove('warning');
+          timerBarEl.classList.remove('warning');
+        }
+      } else {
+        // Time Over!
+        pauseQuizTimer();
+        timerSecEl.textContent = '0';
+        timerBarEl.style.width = '0%';
+        onQuizTimeout();
+      }
+    }, 1000);
+  }
+
+  function pauseQuizTimer() {
+    if (quizTimerInterval) {
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = null;
+    }
+  }
+
+  function resetTimerTo30() {
+    pauseQuizTimer();
+    quizTimeLeft = 30;
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    timerSecEl.textContent = '30';
+    timerBarEl.style.width = '100%';
+    timerBoxEl.classList.remove('warning');
+    timerBarEl.classList.remove('warning');
+  }
+
+  function onQuizTimeout() {
+    const timeoutMsg = document.getElementById(`timeout-msg-${currentQuizIdx}`);
+    if (timeoutMsg) timeoutMsg.style.display = 'block';
+
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    if (ansPanel) ansPanel.classList.add('show');
+
+    isAnswerRevealed[currentQuizIdx] = true;
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (btnReveal) btnReveal.textContent = '해설 닫기 ▲';
+  }
+
+  function revealCurrentAnswer() {
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (!ansPanel) return;
+
+    if (ansPanel.classList.contains('show')) {
+      ansPanel.classList.remove('show');
+      btnReveal.textContent = '정답 확인 👁️';
+      isAnswerRevealed[currentQuizIdx] = false;
+      // Resume timer if time left
+      if (quizTimeLeft > 0) {
+        startQuizTimer();
+      }
+    } else {
+      ansPanel.classList.add('show');
+      btnReveal.textContent = '해설 닫기 ▲';
+      isAnswerRevealed[currentQuizIdx] = true;
+      pauseQuizTimer();
+    }
+  }
+
+  function nextQuiz() {
+    if (currentQuizIdx < totalQuestions - 1) {
+      currentQuizIdx++;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      // Finished all
+      isQuizCompleted = true;
+      updateQuizUI();
+    }
+  }
+
+  function prevQuiz() {
+    if (currentQuizIdx > 0) {
+      currentQuizIdx--;
+      isQuizCompleted = false;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    }
+  }
+
+  function resetQuiz() {
+    currentQuizIdx = 0;
+    isQuizCompleted = false;
+    isAnswerRevealed = new Array(totalQuestions).fill(false);
+    
+    for (let i = 0; i < totalQuestions; i++) {
+      const p = document.getElementById(`answer-panel-${i}`);
+      if (p) p.classList.remove('show');
+      const m = document.getElementById(`timeout-msg-${i}`);
+      if (m) m.style.display = 'none';
+    }
+
+    resetTimerTo30();
+    updateQuizUI();
+    startQuizTimer();
+  }
+
+  // Initialize Interview Accordions
+  document.querySelectorAll('.interview-accordion').forEach(acc => {
+    acc.addEventListener('toggle', () => {
+      const btn = acc.querySelector('.interview-toggle-btn');
+      if (btn) {
+        btn.textContent = acc.open ? '답변 접기 ▲' : '답변 확인 ▼';
+      }
+    });
+  });
+
+  // Initial Quiz Setup
+  updateQuizUI();
+        </script>
+</body>
+</html>

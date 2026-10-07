@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JSP &amp; MVC 아키텍처 핵심 요약 및 복습 가이드</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --accent: #7c3aed;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      
+      --bad-bg: #fff1f2;
+      --bad-border: #fecdd3;
+      --bad-text: #be123c;
+      
+      --good-bg: #f0fdf4;
+      --good-border: #bbf7d0;
+      --good-text: #15803d;
+
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 32px 16px 80px;
+    }
+
+    .container { max-width: 980px; margin: 0 auto; }
+
+    /* === Hero Header === */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4338ca 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: 26px; font-weight: 800; line-height: 1.35; margin-bottom: 10px; }
+    .hero p { font-size: 15px; color: #cbd5e1; max-width: 780px; }
+
+    /* === Tab Navigation === */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 6px;
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: calc(var(--radius) - 3px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.6); }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === Section Title === */
+    .section-title {
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      font-weight: 800;
+      font-size: 18.5px;
+      color: var(--text);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title:first-of-type { margin-top: 4px; }
+
+    /* === Cards & Grids === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .flow-step {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .flow-step-num {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .flow-step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .flow-step-desc { font-size: 13px; color: var(--text-sub); }
+
+    /* === Table === */
+    .table-wrapper { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; }
+    th { background: #f1f5f9; font-weight: 700; color: var(--text); }
+    td { background: #fff; }
+
+    /* === Syntax Highlighting in Code Blocks === */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #313244;
+    }
+    code { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; }
+    .inline-code {
+      background: #f1f5f9;
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Syntax Highlight Tokens */
+    .kwd { color: #cba6f7; font-weight: 600; }   /* keywords */
+    .ann { color: #f9e2af; font-weight: 600; }   /* annotations/directives */
+    .typ { color: #89b4fa; }                     /* types, classes */
+    .str { color: #a6e3a1; }                     /* strings */
+    .com { color: #6c7086; font-style: italic; } /* comments */
+    .num { color: #fab387; }                     /* numbers */
+    .met { color: #74c7ec; }                     /* methods */
+    .tag { color: #f38ba8; }                     /* tags */
+    .att { color: #fab387; }                     /* attributes */
+
+    /* === Scenario-based Code Review Component === */
+    .review-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .review-header {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .review-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-bad { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-border); }
+    .badge-good { background: var(--good-bg); color: var(--good-text); border: 1px solid var(--good-border); }
+    
+    .review-body { padding: 20px; }
+    
+    .scenario-box {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #713f12;
+    }
+    .scenario-label { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    .review-accordion {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+    .review-accordion summary {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-accordion summary::-webkit-details-marker { display: none; }
+    .review-accordion summary::after {
+      content: "원인 분석 및 개선 코드 보기 ▼";
+      font-size: 12px;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .review-accordion[open] summary::after {
+      content: "접기 ▲";
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .review-content {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+    .bug-analysis { margin-bottom: 14px; font-size: 14px; }
+    .bug-analysis strong { color: var(--bad-text); }
+
+    /* === Quiz Component === */
+    .quiz-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .quiz-question {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-accordion { border-top: 1px solid var(--border); background: #f8fafc; }
+    .quiz-accordion summary {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quiz-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-accordion summary::after {
+      content: "정답 확인";
+      background: #e2e8f0;
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .quiz-accordion[open] summary::after { content: "닫기"; }
+    .quiz-answer { padding: 14px 20px; border-top: 1px dashed var(--border); background: #fff; font-size: 14px; }
+    .quiz-answer-title { font-weight: 700; color: var(--good-text); margin-bottom: 4px; }
+
+    /* === Click-to-Reveal Interview Component === */
+    .interview-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .interview-accordion { width: 100%; }
+    .interview-accordion summary {
+      padding: 18px 22px;
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+    .interview-accordion summary:hover { background: #f8fafc; }
+    .interview-accordion summary::-webkit-details-marker { display: none; }
+    .interview-toggle-btn {
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .interview-accordion[open] .interview-toggle-btn {
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .interview-content {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .speech-template {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-light);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+    }
+    .speech-section { margin-bottom: 12px; font-size: 14px; }
+    .speech-section:last-child { margin-bottom: 0; }
+    .speech-tag {
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--primary);
+      display: inline-block;
+      margin-bottom: 3px;
+    }
+    .followup-box {
+      background: #faf5ff;
+      border: 1px solid #f3e8ff;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #6b21a8;
+    }
+    .followup-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px 12px 60px; }
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .interview-accordion summary { font-size: 14.5px; padding: 14px 16px; }
+      .interview-content { padding: 16px; }
+    }
+  
+    /* === Interactive 30s Time-Attack Speed Quiz === */
+    .quiz-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .quiz-top-bar {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .quiz-progress-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+      background: #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    .quiz-timer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      transition: all 0.25s ease;
+    }
+    .quiz-timer-box.warning {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: timerPulse 0.8s infinite alternate;
+    }
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+    .quiz-timer-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width 1s linear, background-color 0.5s ease;
+    }
+    .quiz-timer-bar.warning {
+      background: #dc2626;
+    }
+    .quiz-slide {
+      display: none;
+      padding: 24px 22px;
+      min-height: 200px;
+    }
+    .quiz-slide.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .quiz-question-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .quiz-question-box .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-q-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .quiz-timeout-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-top: 14px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel.show {
+      display: block;
+    }
+    .quiz-answer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-answer-desc {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-complete-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .quiz-bottom-nav {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quiz-nav-btn {
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-nav-btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: var(--border-dark);
+    }
+    .quiz-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .quiz-nav-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .quiz-nav-btn.primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+    
+    /* === Quiz Mode Switcher & Dual Mode Styles === */
+    .quiz-mode-switch-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .quiz-mode-switch {
+      display: inline-flex;
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .quiz-mode-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .quiz-mode-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .quiz-mode-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .quiz-mode-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .quiz-view-panel {
+      display: none;
+    }
+    .quiz-view-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    /* === List Mode Components === */
+    .quiz-list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .quiz-list-count {
+      font-size: 13.5px;
+      color: var(--text-sub);
+    }
+    .quiz-list-count strong {
+      color: var(--primary);
+    }
+    .quiz-list-toggle-all-btn {
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-toggle-all-btn:hover {
+      background: #c7d2fe;
+      color: var(--primary-dark);
+    }
+    .quiz-list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.15s ease;
+    }
+    .quiz-list-card:hover {
+      border-color: var(--border-dark);
+    }
+    .quiz-list-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .quiz-list-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-list-q-text {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-list-accordion {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .quiz-list-accordion summary {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-accordion summary:hover {
+      background: #e2e8f0;
+    }
+    .quiz-list-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-list-accordion[open] summary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .quiz-list-answer {
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-list-ans-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-list-ans-desc {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+<!-- Hero Section -->
+<header class="hero">
+<div class="hero-badge">Backend Programming • JSP &amp; MVC</div>
+<h1>JSP(Jakarta Server Pages) &amp; MVC 아키텍처 핵심 요약</h1>
+<p>서블릿 기반 화면 구현의 한계를 극복하는 JSP의 동작 원리와 스크립트 요소, 4대 웹 스코프 및 Attribute 관리, 그리고 Model 2 MVC 아키텍처와 forward / redirect의 이동 메커니즘을 체계적으로 복습합니다.</p>
+</header>
+<!-- Tab Navigation -->
+<nav class="tabs-nav">
+<button class="tab-btn active" onclick="switchTab('tab-summary')">
+<span>📖 1. 핵심 정리</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-review')">
+<span>🔍 2. 코드 리뷰 (트러블슈팅)</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-quiz')">
+<span>⚡ 3. 핵심 스피드 퀴즈</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-interview')">
+<span>💼 4. 기술 면접 대비</span>
+</button>
+</nav>
+<!-- ========================================== -->
+<!-- TAB 1: 핵심 정리 -->
+<!-- ========================================== -->
+<main class="tab-panel active" id="tab-summary">
+<!-- 1. 기존 Servlet의 문제점과 JSP의 등장 -->
+<h2 class="section-title">1. Servlet의 한계와 JSP의 본질</h2>
+<div class="card">
+<div class="card-title">왜 JSP(Jakarta Server Pages)를 사용하는가?</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 20%;">구분</th>
+<th style="width: 40%;">Servlet (서블릿)</th>
+<th style="width: 40%;">JSP (Jakarta Server Pages)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>코드 형태</strong></td>
+<td><strong>Java 코드 중심</strong>에 HTML 태그를 문자열로 결합<br/><code>out.println("&lt;html&gt;&lt;body&gt;...");</code></td>
+<td><strong>HTML 태그 중심</strong>에 필요한 부분만 Java 코드를 삽입<br/><code>&lt;h1&gt;환영합니다 &lt;%= name %&gt;&lt;/h1&gt;</code></td>
+</tr>
+<tr>
+<td><strong>주요 역할</strong></td>
+<td>비즈니스 로직 연산, 요청 제어, DB 연동 (Controller)</td>
+<td>사용자 화면 표현, UI 프레젠테이션 (View)</td>
+</tr>
+<tr>
+<td><strong>장단점</strong></td>
+<td>로직 구현과 디버깅이 쉬우나 화면 디자인 수정이 극히 불편함</td>
+<td>화면 작성이 직관적이고 쉬우나 비즈니스 로직 작성 시 복잡성 증가</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 2. JSP의 동작 원리와 라이프사이클 -->
+<h2 class="section-title">2. JSP의 동작 원리와 라이프사이클 (중간단계로서의 JSP)</h2>
+<div class="card">
+<div class="card-title">"JSP는 중간단계! 최종 산출물은 Servlet이다."</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        브라우저가 <code>.jsp</code> 파일을 요청하면 컨테이너(WAS)는 JSP 파일을 그대로 실행하지 않고, <strong>Java 서블릿 소스코드로 자동 변환(Translation)한 뒤 바이트코드로 컴파일(Compilation)</strong>하여 실행합니다.
+      </p>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">1단계</div>
+<div class="flow-step-title">변환 (Translation)</div>
+<div class="flow-step-desc"><code>xxx.jsp</code> 파일이 <code>xxx_jsp.java</code> (서블릿 클래스 소스)로 변환됨</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">2단계</div>
+<div class="flow-step-title">컴파일 (Compilation)</div>
+<div class="flow-step-desc"><code>xxx_jsp.java</code>가 <code>xxx_jsp.class</code> 바이트코드로 컴파일되어 메모리 로드</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">3단계</div>
+<div class="flow-step-title">실행 (Execution)</div>
+<div class="flow-step-desc"><code>_jspService()</code> 메서드가 요청마다 호출되어 HTML 응답 스트림 출력</div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 18px;">JSP 생명주기 메서드 3가지</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 25%;">메서드</th>
+<th style="width: 25%;">호출 시점</th>
+<th style="width: 50%;">역할 및 특징</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jspInit()</code></td>
+<td>서블릿 인스턴스 생성 후 1회</td>
+<td>JSP 페이지의 초기화 작업 수행 (서블릿의 <code>init()</code>에 해당)</td>
+</tr>
+<tr>
+<td><code>_jspService()</code></td>
+<td>클라이언트 요청마다 매번</td>
+<td>JSP 내부의 HTML 템플릿과 스크립트릿 로직이 실행되어 응답을 생성하는 핵심 메서드</td>
+</tr>
+<tr>
+<td><code>jspDestroy()</code></td>
+<td>서블릿 인스턴스 소멸(재배포/코드 수정/서버 종료) 시 1회</td>
+<td>점유 자원을 해제하고 소멸 (서블릿의 <code>destroy()</code>에 해당)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 3. JSP 지시자와 스크립트 요소 -->
+<h2 class="section-title">3. JSP 지시자(Directive)와 스크립트 요소</h2>
+<div class="card">
+<div class="card-title">지시자 (Directive): 컨테이너에 페이지 환경 정보 전달</div>
+<pre><code><span class="com">&lt;%-- page 지시자: 인코딩 및 패키지 임포트 선언 --%&gt;</span>
+&lt;%@ <span class="ann">page</span> <span class="att">language</span>=<span class="str">"java"</span> <span class="att">contentType</span>=<span class="str">"text/html; charset=UTF-8"</span> <span class="att">pageEncoding</span>=<span class="str">"UTF-8"</span>%&gt;
+&lt;%@ <span class="ann">page</span> <span class="att">import</span>=<span class="str">"java.util.*, java.time.LocalDateTime"</span>%&gt;</code></pre>
+<div class="card-title" style="margin-top: 18px;">JSP 스크립트 3대 요소 비교 (서블릿 변환 위치가 핵심!)</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 20%;">스크립트 요소</th>
+<th style="width: 22%;">문법 형태</th>
+<th style="width: 30%;">서블릿 변환 위치</th>
+<th style="width: 28%;">용도 및 주의사항</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scriptlet<br/>(스크립트릿)</strong></td>
+<td><code>&lt;% 자바코드; %&gt;</code></td>
+<td><code>_jspService()</code> 메서드 내부<br/>(<strong>로컬 영역</strong>)</td>
+<td>일반 로직 처리, 내장 객체 직접 참조 가능, 로컬 변수로 선언됨</td>
+</tr>
+<tr>
+<td><strong>Declaration<br/>(선언문)</strong></td>
+<td><code>&lt;%! 선언코드; %&gt;</code></td>
+<td>서블릿 클래스 바디<br/>(<strong>멤버 변수/메서드 영역</strong>)</td>
+<td>인스턴스 필드/메서드 선언. 모든 스레드가 공유하므로 <strong>상태 관리 절대 금지</strong></td>
+</tr>
+<tr>
+<td><strong>Expression<br/>(표현식)</strong></td>
+<td><code>&lt;%= 출력값 %&gt;</code></td>
+<td><code>out.print(출력값)</code>으로 변환</td>
+<td>변수값, 연산식, 반환값이 있는 메서드 호출 결과 출력 (세미콜론 <code>;</code> 생략)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size: 13.5px; color: var(--text-sub); margin-top: 8px;">
+        ※ <strong>JSP 주석(<code>&lt;%-- --%&gt;</code>) vs HTML 주석(<code>&lt;!-- --&gt;</code>):</strong> JSP 주석은 서블릿 변환 시 완전히 제거되어 클라이언트 브라우저의 소스보기에서 보이지 않지만, HTML 주석은 브라우저로 그대로 전송되어 노출됩니다.
+      </p>
+</div>
+<!-- 4. 내장 객체와 4대 웹 스코프 -->
+<h2 class="section-title">4. Built-in Object(내장 객체)와 4대 Web Scope</h2>
+<div class="card">
+<div class="card-title">내장 객체(Built-in Object)의 개념</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        JSP가 서블릿으로 변환될 때 <code>_jspService()</code> 메서드 내부에 로컬 변수로 이미 선언되어 제공되는 객체들입니다. 별도의 <code>new</code> 생성 없이 바로 사용할 수 있습니다.<br/>
+        • 주요 객체: <code>request</code> (HttpServletRequest), <code>response</code> (HttpServletResponse), <code>session</code> (HttpSession), <code>application</code> (ServletContext), <code>out</code> (JspWriter), <code>pageContext</code> (PageContext)
+      </p>
+<div class="card-title" style="margin-top: 18px;">4대 웹 스코프(Web Scope)와 데이터 생명주기</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 20%;">웹 스코프</th>
+<th style="width: 25%;">담당 내장 객체</th>
+<th style="width: 35%;">유효 범위 및 생명주기</th>
+<th style="width: 20%;">주요 활용 예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>page</strong></td>
+<td><code>pageContext</code></td>
+<td>해당 JSP 페이지가 실행되는 동안에만 유효</td>
+<td>페이지 내부 임시 변수</td>
+</tr>
+<tr>
+<td><strong>request</strong></td>
+<td><code>request</code></td>
+<td>하나의 클라이언트 HTTP 요청이 완료될 때까지 유효 (<strong>forward 시 유지됨</strong>)</td>
+<td>컨트롤러가 조회한 목록/결과 데이터 전달</td>
+</tr>
+<tr>
+<td><strong>session</strong></td>
+<td><code>session</code></td>
+<td>동일 클라이언트(브라우저)가 유지되는 동안 유효 (세션 타임아웃 또는 브라우저 종료 시 소멸)</td>
+<td>로그인 사용자 정보, 장바구니</td>
+</tr>
+<tr>
+<td><strong>application</strong></td>
+<td><code>application</code> (ServletContext)</td>
+<td>웹 애플리케이션(Context) 전체에서 서버가 종료될 때까지 유효</td>
+<td>전역 설정, 공통 리소스 풀, 전체 방문자 수</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-title" style="margin-top: 18px;">Request Parameter vs Attribute 핵심 비교 (Slide 16)</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 25%;">비교 항목</th>
+<th style="width: 37%;">Request Parameter</th>
+<th style="width: 38%;">Request Attribute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>데이터 생성 주체</strong></td>
+<td>클라이언트 (브라우저 form 입력값, URL 쿼리스트링)</td>
+<td>서버 개발자 (서블릿, JSP 내부 로직)</td>
+</tr>
+<tr>
+<td><strong>저장 데이터 타입</strong></td>
+<td>언제나 <strong>문자열(String)</strong> 또는 <code>String[]</code></td>
+<td>모든 <strong>자바 객체(Object)</strong> (DTO, List 등)</td>
+</tr>
+<tr>
+<td><strong>수정 가능 여부</strong></td>
+<td>읽기 전용 (클라이언트 전송 후 변경 불가)</td>
+<td>읽기/쓰기 자유로움 (추가, 수정, 삭제 가능)</td>
+</tr>
+<tr>
+<td><strong>조작 API</strong></td>
+<td><code>getParameter(name)</code></td>
+<td><code>setAttribute(name, obj)</code>, <code>getAttribute(name)</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 5. MVC 패턴: Model 1 vs Model 2 -->
+<h2 class="section-title">5. MVC 패턴과 Model 1 vs Model 2 아키텍처</h2>
+<div class="card">
+<div class="card-title">Model 1과 Model 2 아키텍처 비교</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 20%;">아키텍처</th>
+<th style="width: 40%;">구조 및 처리 방식</th>
+<th style="width: 40%;">장단점 및 실무 적용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model 1</strong></td>
+<td>JSP가 클라이언트 요청 접수(Controller)와 화면 출력(View)을 동시에 수행하며 Service/DAO(Model) 호출</td>
+<td>구조가 단순하여 빠른 개발이 가능하지만, JSP 내에 자바 비즈니스 로직이 뒤섞여 유지보수가 극히 어려움</td>
+</tr>
+<tr>
+<td><strong>Model 2 (표준 MVC)</strong></td>
+<td><strong>Servlet이 Controller</strong>를 맡아 요청 접수 및 비즈니스 조절을 전담하고, <strong>JSP는 오직 화면(View)</strong>만 렌더링</td>
+<td>관심사 분리(SoC)로 역할이 명확하여 대규모 협업 및 유지보수성이 매우 뛰어남 (실무 표준)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-title" style="margin-top: 18px;">Model 2 MVC 처리 3단계 흐름</div>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">Step 1</div>
+<div class="flow-step-title">Controller (Servlet)</div>
+<div class="flow-step-desc">요청 접수, 파라미터 유효성 검증, 비즈니스 서비스 호출</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 2</div>
+<div class="flow-step-title">Model (Service/DAO)</div>
+<div class="flow-step-desc">업무 로직 연산 수행, DB 영속성 질의 처리 후 DTO/결과 반환</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 3</div>
+<div class="flow-step-title">View (JSP)</div>
+<div class="flow-step-desc">서블릿이 <code>request.setAttribute()</code>에 담아 forward한 데이터를 화면에 출력</div>
+</div>
+</div>
+</div>
+<!-- 6. 웹 컴포넌트 이동 방식: forward vs sendRedirect -->
+<h2 class="section-title">6. 웹 컴포넌트 호출 방식: forward vs sendRedirect</h2>
+<div class="card">
+<div class="card-title">두 이동 방식의 내부 메커니즘 완벽 비교 (핵심)</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 22%;">구분</th>
+<th style="width: 39%;">RequestDispatcher#forward</th>
+<th style="width: 39%;">HttpServletResponse#sendRedirect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>동작 주체</strong></td>
+<td><strong>서버 내부</strong>에서 제어권만 다음 컴포넌트로 위임</td>
+<td>서버가 브라우저에게 <strong>302 상태 코드</strong>를 보내어 브라우저가 새 요청 재전송</td>
+</tr>
+<tr>
+<td><strong>브라우저 URL</strong></td>
+<td><strong>변경되지 않음</strong> (클라이언트는 내부 이동을 모름)</td>
+<td><strong>새로운 URL로 변경됨</strong></td>
+</tr>
+<tr>
+<td><strong>Request 객체</strong></td>
+<td>기존 <code>request</code>, <code>response</code> 객체가 <strong>유지됨</strong></td>
+<td>기존 <code>request</code>는 소멸되고 <strong>새로운 request가 생성됨</strong></td>
+</tr>
+<tr>
+<td><strong>데이터 전달</strong></td>
+<td><code>request.setAttribute()</code>에 담은 데이터 확인 가능</td>
+<td>이전 요청의 <code>request.setAttribute()</code> 데이터 전달 불가</td>
+</tr>
+<tr>
+<td><strong>이동 범위</strong></td>
+<td>동일 컨테이너 내부 리소스만 가능</td>
+<td>서버 내부뿐 아니라 외부 사이트(ex: <code>http://google.com</code>)도 가능</td>
+</tr>
+<tr>
+<td><strong>적합한 업무</strong></td>
+<td>데이터 조회(SELECT), 폼 화면 렌더링</td>
+<td>데이터 변경(INSERT, UPDATE, DELETE) 후 <strong>새로고침 중복 방지 (PRG 패턴)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre><code><span class="com">// 1. forward 코드 예시 (데이터 유지 이동)</span>
+request.<span class="met">setAttribute</span>(<span class="str">"result"</span>, guguData);
+<span class="typ">RequestDispatcher</span> dispatcher = request.<span class="met">getRequestDispatcher</span>(<span class="str">"/gugu-result.jsp"</span>);
+dispatcher.<span class="met">forward</span>(request, response);
+
+<span class="com">// 2. sendRedirect 코드 예시 (새로운 요청 생성 이동)</span>
+response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/board/list"</span>);</code></pre>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 2: 코드 리뷰 (상황 중심 트러블슈팅) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-review">
+<!-- Review Case 1 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 1: 회원 등록 후 새로고침할 때마다 동일 회원이 중복 가입되는 사고</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "회원 가입 서블릿을 개발하여 배포했습니다. 그런데 사용자가 가입 완료 화면에서 F5(새로고침)를 누를 때마다 DB에 동일한 회원이 계속해서 추가 삽입되는 심각한 중복 결함 사고가 발생했습니다. 코드를 보고 원인을 찾아보세요."
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/member/regist"</span>)
+<span class="kwd">public class</span> <span class="typ">MemberRegistController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doPost</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">String</span> id = request.<span class="met">getParameter</span>(<span class="str">"id"</span>);
+        <span class="typ">String</span> name = request.<span class="met">getParameter</span>(<span class="str">"name"</span>);
+
+        <span class="com">// 비즈니스 로직: DB에 회원 정보 INSERT</span>
+        memberService.<span class="met">registMember</span>(<span class="kwd">new</span> <span class="typ">MemberDto</span>(id, name));
+
+        <span class="com">// 등록 완료 화면으로 이동</span>
+        <span class="typ">RequestDispatcher</span> dispatcher = request.<span class="met">getRequestDispatcher</span>(<span class="str">"/member/regist-success.jsp"</span>);
+        dispatcher.<span class="met">forward</span>(request, response);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 등록 작업 후 forward 오용 (PRG 패턴 미적용)</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>forward()</code>는 브라우저의 URL 주소를 변경하지 않습니다. 따라서 클라이언트 브라우저 주소창에는 여전히 <code>POST /member/regist</code> 요청이 남아 있습니다.<br/>
+              이 상태에서 사용자가 새로고침(F5)을 누르면 직전 요청인 <strong>회원 등록 POST 요청이 재전송</strong>되어 동일한 INSERT 작업이 반복 실행됩니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드: PRG 패턴 적용)</span>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/member/regist"</span>)
+<span class="kwd">public class</span> <span class="typ">MemberRegistController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doPost</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">String</span> id = request.<span class="met">getParameter</span>(<span class="str">"id"</span>);
+        <span class="typ">String</span> name = request.<span class="met">getParameter</span>(<span class="str">"name"</span>);
+
+        memberService.<span class="met">registMember</span>(<span class="kwd">new</span> <span class="typ">MemberDto</span>(id, name));
+
+        <span class="com">// [개선] 데이터 변경(POST) 후에는 sendRedirect로 브라우저가 GET 요청을 보내도록 전환</span>
+        response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/member/regist-success.jsp"</span>);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 2 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 2: 컨트롤러에서 전달한 조회 데이터가 JSP에서 null로 나오는 장애</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "컨트롤러에서 회원 정보를 조회한 뒤 request.setAttribute로 담고 상세 페이지로 이동시켰으나, JSP 화면에 모든 회원 정보가 빈 값으로 나오고 NullPointerException이 발생합니다. 왜 데이터가 전달되지 않았을까요?"
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/member/detail"</span>)
+<span class="kwd">public class</span> <span class="typ">MemberDetailController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">String</span> id = request.<span class="met">getParameter</span>(<span class="str">"id"</span>);
+        <span class="typ">MemberDto</span> member = memberService.<span class="met">getMember</span>(id);
+
+        request.<span class="met">setAttribute</span>(<span class="str">"member"</span>, member);
+        response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/member/detail.jsp"</span>);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: Request Scope 전달 시 sendRedirect 오용</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>response.sendRedirect()</code>는 브라우저에게 302 응답을 보내어 <strong>완전히 새로운 HTTP GET 요청</strong>을 발생시킵니다.<br/>
+              이 과정에서 첫 번째 요청의 <code>HttpServletRequest</code> 객체와 그 안에 담아둔 속성(Attribute)은 소멸되므로, 새 요청을 수신한 <code>detail.jsp</code>에서는 <code>member</code> 객체를 찾을 수 없어 <code>null</code>이 반환됩니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/member/detail"</span>)
+<span class="kwd">public class</span> <span class="typ">MemberDetailController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="typ">String</span> id = request.<span class="met">getParameter</span>(<span class="str">"id"</span>);
+        <span class="typ">MemberDto</span> member = memberService.<span class="met">getMember</span>(id);
+
+        request.<span class="met">setAttribute</span>(<span class="str">"member"</span>, member);
+
+        <span class="com">// [개선] request 속성을 유지하여 화면을 그릴 때는 forward를 사용</span>
+        <span class="typ">RequestDispatcher</span> dispatcher = request.<span class="met">getRequestDispatcher</span>(<span class="str">"/member/detail.jsp"</span>);
+        dispatcher.<span class="met">forward</span>(request, response);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 3 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 3: JSP 페이지에서 방문자 수가 다른 사용자와 꼬이는 동시성 장애</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "JSP 페이지에서 사용자의 해당 페이지 방문 횟수를 표시하기 위해 카운터를 구현했습니다. 그런데 사용자 A가 새로고침을 하지 않았는데도 숫자가 제멋대로 증가하거나 다른 사용자의 카운트와 뒤섞이는 현상이 발생합니다. 코드를 보고 원인을 찾아보세요."
+        </div>
+<pre><code>&lt;%@ <span class="ann">page</span> <span class="att">language</span>=<span class="str">"java"</span> <span class="att">contentType</span>=<span class="str">"text/html; charset=UTF-8"</span>%&gt;
+&lt;%! 
+    <span class="com">// 방문 횟수 카운터 선언</span>
+    <span class="kwd">int</span> pageVisitCount = <span class="num">0</span>; 
+%&gt;
+&lt;<span class="tag">html</span>&gt;
+&lt;<span class="tag">body</span>&gt;
+    &lt;<span class="tag">h2</span>&gt;현재 페이지 방문 횟수: &lt;%= ++pageVisitCount %&gt;&lt;/<span class="tag">h2</span>&gt;
+&lt;/<span class="tag">body</span>&gt;
+&lt;/<span class="tag">html</span>&gt;</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: JSP 선언문(&lt;%! %&gt;)으로 상태 관리 변수 선언</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>&lt;%! %&gt;</code>(선언문) 안에 작성된 코드는 서블릿으로 변환될 때 <code>_jspService()</code> 로컬 변수가 아니라, <strong>서블릿 클래스의 인스턴스 멤버 변수(필드)</strong>로 변환됩니다.<br/>
+              JSP 서블릿 역시 싱글톤 객체이므로 모든 클라이언트 요청 스레드가 <code>pageVisitCount</code> 멤버 변수를 공유하여 심각한 Race Condition과 데이터 왜곡이 발생했습니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code>&lt;%@ <span class="ann">page</span> <span class="att">language</span>=<span class="str">"java"</span> <span class="att">contentType</span>=<span class="str">"text/html; charset=UTF-8"</span>%&gt;
+&lt;<span class="tag">html</span>&gt;
+&lt;<span class="tag">body</span>&gt;
+    &lt;%
+        <span class="com">// [개선] 개별 사용자 방문 수는 세션 스코프에서 관리하거나 서블릿 로직에서 처리</span>
+        <span class="typ">Integer</span> userCount = (<span class="typ">Integer</span>) session.<span class="met">getAttribute</span>(<span class="str">"userCount"</span>);
+        userCount = (userCount == <span class="kwd">null</span>) ? <span class="num">1</span> : userCount + <span class="num">1</span>;
+        session.<span class="met">setAttribute</span>(<span class="str">"userCount"</span>, userCount);
+    %&gt;
+    &lt;<span class="tag">h2</span>&gt;나의 세션 방문 횟수: &lt;%= userCount %&gt;&lt;/<span class="tag">h2</span>&gt;
+&lt;/<span class="tag">body</span>&gt;
+&lt;/<span class="tag">html</span>&gt;</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 4 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 4: JSP 작성 후 페이지 요청 시 500 컴파일 에러 발생</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "JSP 페이지를 작성하고 브라우저로 요청했으나, 콘솔에 'Duplicate local variable request'라는 서블릿 컴파일 에러가 발생하며 HTTP 500 에러 화면이 출력되었습니다. 왜 컴파일에 실패했을까요?"
+        </div>
+<pre><code>&lt;%@ <span class="ann">page</span> <span class="att">language</span>=<span class="str">"java"</span> <span class="att">contentType</span>=<span class="str">"text/html; charset=UTF-8"</span>%&gt;
+&lt;<span class="tag">html</span>&gt;
+&lt;<span class="tag">body</span>&gt;
+    &lt;%
+        <span class="typ">String</span> request = <span class="str">"사용자 요청 메시지"</span>;
+        <span class="typ">String</span> out = <span class="str">"출력 내용"</span>;
+    %&gt;
+    &lt;<span class="tag">p</span>&gt;&lt;%= request %&gt; - &lt;%= out %&gt;&lt;/<span class="tag">p</span>&gt;
+&lt;/<span class="tag">body</span>&gt;
+&lt;/<span class="tag">html</span>&gt;</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: JSP 내장 객체 예약어와 로컬 변수명 충돌</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              JSP가 서블릿으로 변환될 때 <code>_jspService()</code> 메서드 내부에는 이미 <code>HttpServletRequest request</code>와 <code>JspWriter out</code>이라는 로컬 변수가 기본으로 선언되어 있습니다.<br/>
+              스크립트릿(<code>&lt;% %&gt;</code>) 역시 <code>_jspService()</code> 내부로 들어가므로, 내장 객체와 동일한 이름으로 로컬 변수를 선언하면 변수명 중복 선언(Duplicate local variable) 에러가 발생합니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code>&lt;%@ <span class="ann">page</span> <span class="att">language</span>=<span class="str">"java"</span> <span class="att">contentType</span>=<span class="str">"text/html; charset=UTF-8"</span>%&gt;
+&lt;<span class="tag">html</span>&gt;
+&lt;<span class="tag">body</span>&gt;
+    &lt;%
+        <span class="com">// [개선] 내장 객체명(request, response, session, out 등)과 중복되지 않는 식별자 사용</span>
+        <span class="typ">String</span> userMsg = <span class="str">"사용자 요청 메시지"</span>;
+        <span class="typ">String</span> printContent = <span class="str">"출력 내용"</span>;
+    %&gt;
+    &lt;<span class="tag">p</span>&gt;&lt;%= userMsg %&gt; - &lt;%= printContent %&gt;&lt;/<span class="tag">p</span>&gt;
+&lt;/<span class="tag">body</span>&gt;
+&lt;/<span class="tag">html</span>&gt;</code></pre>
+</div>
+</details>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 3: 핵심 스피드 퀴즈 -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-quiz">
+<!-- Mode Switcher -->
+<div class="quiz-mode-switch-wrap">
+<div class="quiz-mode-switch">
+<button class="quiz-mode-btn active" id="btn-mode-card" onclick="switchQuizMode('card')" type="button">
+<span>🃏 카드 모드 (30초 타임어택)</span>
+</button>
+<button class="quiz-mode-btn" id="btn-mode-list" onclick="switchQuizMode('list')" type="button">
+<span>📋 전체 목록 모드 (한눈에 보기)</span>
+</button>
+</div>
+<div class="quiz-mode-desc" id="quiz-mode-desc">
+        한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.
+      </div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 1: CARD VIEW (30s Time-Attack Carousel)   -->
+<!-- ============================================== -->
+<div class="quiz-view-panel active" id="quiz-card-view">
+<div class="quiz-container">
+<!-- Top Bar: Progress & 30s Countdown Timer -->
+<div class="quiz-top-bar">
+<div class="quiz-progress-badge" id="quiz-progress">문제 1 / 8</div>
+<div class="quiz-timer-box" id="quiz-timer-box">
+<span style="font-size: 15px;">⏱️</span>
+<span>남은 시간:</span>
+<span id="quiz-timer-sec" style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800;">30</span>초
+          </div>
+</div>
+<div class="quiz-timer-bar-wrap">
+<div class="quiz-timer-bar" id="quiz-timer-bar"></div>
+</div>
+<!-- Slides Container -->
+<div id="quiz-slides-container">
+<div class="quiz-slide active" data-quiz-index="0">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q1</span>
+<div class="quiz-q-text">JSP 파일은 브라우저에서 직접 파싱되어 실행되는 프론트엔드 기술이다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-0">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-0">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<div>JSP는 서버(WAS)에서 실행되는 서버 사이드 기술이며, 최초 요청 시 서블릿 자바 소스코드(xxx_jsp.java)로 자동 변환되고 바이트코드(.class)로 컴파일된 후 실행되어 결과 HTML만 브라우저로 전송됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="1">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q2</span>
+<div class="quiz-q-text">JSP 스크립트릿(&lt;% %&gt;)에 선언된 변수와 선언문(&lt;%! %&gt;)에 선언된 변수의 자바 서블릿 변환 위치 차이는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-1">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-1">
+<div class="quiz-answer-title">
+                정답: 스크립트릿은 _jspService() 로컬 변수, 선언문은 서블릿 클래스의 인스턴스 멤버 변수(필드)
+              </div>
+<div class="quiz-answer-desc">
+<div>선언문 변수는 싱글톤 서블릿의 멤버 변수가 되므로 모든 스레드가 공유하여 동시성 결함이 발생할 수 있으므로 상태 저장을 지양해야 합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="2">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q3</span>
+<div class="quiz-q-text">RequestDispatcher의 forward()와 HttpServletResponse의 sendRedirect() 중 브라우저 주소창의 URL이 변경되는 것은?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-2">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-2">
+<div class="quiz-answer-title">
+                정답: sendRedirect()
+              </div>
+<div class="quiz-answer-desc">
+<div>forward는 서버 내부에서 이동하므로 주소창 URL이 유지되지만, sendRedirect는 서버가 302 응답을 내려 브라우저가 새 URL로 재요청을 보내므로 주소창이 변경됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="3">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q4</span>
+<div class="quiz-q-text">클라이언트가 폼이나 쿼리스트링으로 전달한 Parameter는 항상 String 타입이지만, 서버에서 request.setAttribute()로 저장하는 Attribute는 어떤 자바 객체(Object)든 저장할 수 있다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-3">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-3">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>Parameter는 HTTP 프로토콜 텍스트 기반이라 String 타입이며 읽기 전용이지만, Attribute는 서버 메모리에 저장되는 Object 타입이므로 DTO, List, Map 등을 자유롭게 저장할 수 있습니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="4">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q5</span>
+<div class="quiz-q-text">4대 웹 스코프(page, request, session, application) 중 하나의 HTTP 요청이 유지되는 동안 유효하며 forward 이동 시에도 데이터가 유지되는 스코프는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-4">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-4">
+<div class="quiz-answer-title">
+                정답: request 스코프
+              </div>
+<div class="quiz-answer-desc">
+<div>request 스코프는 클라이언트의 하나의 요청 생명주기 동안 유효하며, 서버 내부에서 제어가 위임되는 forward 시에도 request 객체가 그대로 유지됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="5">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q6</span>
+<div class="quiz-q-text">게시글 등록(INSERT) 또는 결제와 같은 데이터 변경 작업 후, 사용자가 결과 화면에서 새로고침(F5)을 눌렀을 때 중복 처리가 발생하는 사고를 방지하기 위해 사용하는 웹 설계 패턴은?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-5">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-5">
+<div class="quiz-answer-title">
+                정답: PRG 패턴 (Post-Redirect-Get)
+              </div>
+<div class="quiz-answer-desc">
+<div>POST 요청 처리 후 바로 forward하지 않고 sendRedirect로 GET 결과 페이지로 이동시켜, 새로고침 시 안전하게 GET 조회만 재호출되도록 방어합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="6">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q7</span>
+<div class="quiz-q-text">MVC 패턴의 Model 1 방식과 Model 2 방식의 가장 결정적인 아키텍처 차이점은 무엇인가?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-6">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-6">
+<div class="quiz-answer-title">
+                정답: Controller(요청 접수 및 흐름 제어)의 주체가 JSP인가(Model 1), Servlet인가(Model 2)의 차이
+              </div>
+<div class="quiz-answer-desc">
+<div>Model 2에서는 서블릿이 전담 컨트롤러 역할을 하고 JSP는 순수 화면 렌더링(View)만 전담하여 완벽한 관심사 분리를 달성합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="7">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q8</span>
+<div class="quiz-q-text">JSP 스크립트릿 내부에서 'out' 또는 'request'라는 이름으로 로컬 변수를 선언할 수 없는 이유는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-7">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-7">
+<div class="quiz-answer-title">
+                정답: 컨테이너가 변환하는 _jspService() 메서드 내에 이미 동일한 이름의 내장 객체 로컬 변수가 선언되어 있기 때문
+              </div>
+<div class="quiz-answer-desc">
+<div>자바 문법상 동일한 블록 내에서 동일한 변수명을 중복 선언할 수 없으므로(Duplicate local variable) 컴파일 에러가 발생합니다.</div>
+</div>
+</div>
+</div>
+<!-- Completed Screen -->
+<div class="quiz-slide quiz-complete-card" id="quiz-complete-slide">
+<div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+<h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px;">스피드 퀴즈 완료!</h3>
+<p style="font-size: 14.5px; color: var(--text-sub); margin-bottom: 22px;">
+              모든 문제를 완주했습니다! 다시 도전하거나 전체 목록 모드에서 정리해 보세요.
+            </p>
+<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+<button class="quiz-nav-btn primary" onclick="resetQuiz()" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                처음부터 다시 풀기 🔄
+              </button>
+<button class="quiz-nav-btn" onclick="switchQuizMode('list')" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                전체 목록으로 복습 📋
+              </button>
+</div>
+</div>
+</div>
+<!-- Bottom Nav -->
+<div class="quiz-bottom-nav">
+<button class="quiz-nav-btn" disabled="" id="btn-quiz-prev" onclick="prevQuiz()" type="button">
+            ◀ 이전 문제
+          </button>
+<button class="quiz-nav-btn" id="btn-quiz-reveal" onclick="revealCurrentAnswer()" type="button">
+            정답 확인 👁️
+          </button>
+<button class="quiz-nav-btn primary" id="btn-quiz-next" onclick="nextQuiz()" type="button">
+            다음 문제 ▶
+          </button>
+</div>
+</div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 2: LIST VIEW (All Questions at Once)       -->
+<!-- ============================================== -->
+<div class="quiz-view-panel" id="quiz-list-view">
+<div class="quiz-list-toolbar">
+<span class="quiz-list-count">총 <strong>8</strong>문항 수록</span>
+<button class="quiz-list-toggle-all-btn" id="btn-toggle-all-list" onclick="toggleAllListAnswers()" type="button">
+          전체 정답 펼치기 ▼
+        </button>
+</div>
+<div class="quiz-list-container">
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q1</span>
+<div class="quiz-list-q-text">JSP 파일은 브라우저에서 직접 파싱되어 실행되는 프론트엔드 기술이다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><div>JSP는 서버(WAS)에서 실행되는 서버 사이드 기술이며, 최초 요청 시 서블릿 자바 소스코드(xxx_jsp.java)로 자동 변환되고 바이트코드(.class)로 컴파일된 후 실행되어 결과 HTML만 브라우저로 전송됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q2</span>
+<div class="quiz-list-q-text">JSP 스크립트릿(&lt;% %&gt;)에 선언된 변수와 선언문(&lt;%! %&gt;)에 선언된 변수의 자바 서블릿 변환 위치 차이는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 스크립트릿은 _jspService() 로컬 변수, 선언문은 서블릿 클래스의 인스턴스 멤버 변수(필드)</div>
+<div class="quiz-list-ans-desc"><div>선언문 변수는 싱글톤 서블릿의 멤버 변수가 되므로 모든 스레드가 공유하여 동시성 결함이 발생할 수 있으므로 상태 저장을 지양해야 합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q3</span>
+<div class="quiz-list-q-text">RequestDispatcher의 forward()와 HttpServletResponse의 sendRedirect() 중 브라우저 주소창의 URL이 변경되는 것은?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: sendRedirect()</div>
+<div class="quiz-list-ans-desc"><div>forward는 서버 내부에서 이동하므로 주소창 URL이 유지되지만, sendRedirect는 서버가 302 응답을 내려 브라우저가 새 URL로 재요청을 보내므로 주소창이 변경됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q4</span>
+<div class="quiz-list-q-text">클라이언트가 폼이나 쿼리스트링으로 전달한 Parameter는 항상 String 타입이지만, 서버에서 request.setAttribute()로 저장하는 Attribute는 어떤 자바 객체(Object)든 저장할 수 있다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>Parameter는 HTTP 프로토콜 텍스트 기반이라 String 타입이며 읽기 전용이지만, Attribute는 서버 메모리에 저장되는 Object 타입이므로 DTO, List, Map 등을 자유롭게 저장할 수 있습니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q5</span>
+<div class="quiz-list-q-text">4대 웹 스코프(page, request, session, application) 중 하나의 HTTP 요청이 유지되는 동안 유효하며 forward 이동 시에도 데이터가 유지되는 스코프는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: request 스코프</div>
+<div class="quiz-list-ans-desc"><div>request 스코프는 클라이언트의 하나의 요청 생명주기 동안 유효하며, 서버 내부에서 제어가 위임되는 forward 시에도 request 객체가 그대로 유지됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q6</span>
+<div class="quiz-list-q-text">게시글 등록(INSERT) 또는 결제와 같은 데이터 변경 작업 후, 사용자가 결과 화면에서 새로고침(F5)을 눌렀을 때 중복 처리가 발생하는 사고를 방지하기 위해 사용하는 웹 설계 패턴은?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: PRG 패턴 (Post-Redirect-Get)</div>
+<div class="quiz-list-ans-desc"><div>POST 요청 처리 후 바로 forward하지 않고 sendRedirect로 GET 결과 페이지로 이동시켜, 새로고침 시 안전하게 GET 조회만 재호출되도록 방어합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q7</span>
+<div class="quiz-list-q-text">MVC 패턴의 Model 1 방식과 Model 2 방식의 가장 결정적인 아키텍처 차이점은 무엇인가?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: Controller(요청 접수 및 흐름 제어)의 주체가 JSP인가(Model 1), Servlet인가(Model 2)의 차이</div>
+<div class="quiz-list-ans-desc"><div>Model 2에서는 서블릿이 전담 컨트롤러 역할을 하고 JSP는 순수 화면 렌더링(View)만 전담하여 완벽한 관심사 분리를 달성합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q8</span>
+<div class="quiz-list-q-text">JSP 스크립트릿 내부에서 'out' 또는 'request'라는 이름으로 로컬 변수를 선언할 수 없는 이유는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 컨테이너가 변환하는 _jspService() 메서드 내에 이미 동일한 이름의 내장 객체 로컬 변수가 선언되어 있기 때문</div>
+<div class="quiz-list-ans-desc"><div>자바 문법상 동일한 블록 내에서 동일한 변수명을 중복 선언할 수 없으므로(Duplicate local variable) 컴파일 에러가 발생합니다.</div></div>
+</div>
+</details>
+</div>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 4: 기술 면접 대비 (클릭 토글 방식) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-interview">
+<div style="background: #f8fafc; border: 1px solid var(--border); padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      💼 <strong>실전 기술 면접:</strong> 질문을 먼저 읽고 마음속으로 1분 답변을 정리해 본 뒤, 카드를 클릭하여 두괄식 모범 답변과 꼬리 질문 대비 포인트를 확인하세요.
+    </div>
+<!-- Interview Question 1 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q1. Servlet과 JSP의 차이점 및 각각의 장단점과 최적의 역할을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>Servlet은 자바 코드 중심의 비즈니스 로직 및 제어(Controller)에 적합하고, JSP는 HTML 태그 중심의 UI 화면 표현(View)에 최적화된 기술입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[핵심 동작 차이와 발전]</span>
+<div>
+                서블릿은 자바 클래스 내에서 HTML을 문자열 스트림으로 출력해야 하므로 화면 작성이 극히 비효율적입니다. 반면 JSP는 HTML 템플릿 기반에 필요한 자바 코드만 삽입하므로 화면 생산성이 우수합니다.<br/>
+                그러나 JSP에 모든 비즈니스 로직을 몰아넣으면 유지보수가 무너지므로, 실무에서는 <strong>서블릿이 비즈니스 연산과 데이터 조회를 제어하고, JSP는 오직 request 속성을 받아 화면만 출력하는 MVC (Model 2) 협업 구조</strong>로 운영합니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"JSP는 내부적으로 어떻게 실행되나요?" → "컨테이너에 의해 최초 요청 시 서블릿 자바 소스코드(xxx_jsp.java)로 자동 변환(Translation)된 후 바이트코드로 컴파일되어 `_jspService()` 메서드가 요청을 처리합니다. 즉, JSP의 본질도 결국 서블릿입니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 2 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q2. RequestDispatcher의 forward와 HttpServletResponse의 sendRedirect의 차이점을 상세히 비교해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>forward는 서버 내부에서 제어를 위임하여 URL과 request 객체가 유지되는 방식이고, sendRedirect는 브라우저에게 302 응답을 주어 새로운 GET 요청을 유도하는 방식입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[3대 핵심 차이점]</span>
+<div>
+                1. <strong>URL 변화:</strong> forward는 브라우저 주소창이 유지되지만, redirect는 새 URL로 변경됩니다.<br/>
+                2. <strong>Request 객체 및 데이터:</strong> forward는 기존 request와 response가 그대로 전달되어 <code>request.setAttribute()</code> 데이터를 공유할 수 있지만, redirect는 새 요청이 발생하므로 이전 request 데이터가 소멸됩니다.<br/>
+                3. <strong>적합한 업무:</strong> forward는 단순 조회(SELECT) 및 결과 뷰 렌더링에 적합하며, redirect는 데이터 생성/수정/삭제 후 새로고침 중복을 막는 PRG 패턴에 필수입니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"redirect 시에도 다음 페이지에 일회성 메시지(예: '가입 성공')를 전달하고 싶다면 어떻게 하나요?" → "request 대신 <code>session.setAttribute()</code>에 담아두고 꺼낸 뒤 삭제(Flash Attribute)하거나, URL 뒤에 쿼리스트링 파라미터로 넘겨 처리합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 3 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q3. 웹 애플리케이션의 4대 Web Scope(page, request, session, application)의 유효 범위와 생명주기를 비교해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>상태 데이터를 공유하는 범위에 따라 page(단일 페이지), request(단일 요청), session(사용자 브라우저 세션), application(전체 웹앱)의 4단계로 구분됩니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[범위별 생명주기 및 용도]</span>
+<div>
+                • <strong>page:</strong> 해당 JSP 실행 중에만 유지되며 가장 좁은 범위입니다.<br/>
+                • <strong>request:</strong> 클라이언트의 1개 HTTP 요청이 끝나거나 브라우저 응답이 완료될 때까지 유지되며, forward 이동 시에도 공유되어 컨트롤러와 뷰 사이의 데이터 전달 표준으로 사용됩니다.<br/>
+                • <strong>session:</strong> 동일 브라우저의 접속 유지 시간 동안 지속되며 로그인 사용자 세션 정보나 장바구니에 활용됩니다.<br/>
+                • <strong>application:</strong> 톰캣 컨텍스트 기동부터 종료까지 서버 메모리에 상주하며 전역 설정 및 공통 캐시 공유에 사용됩니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"데이터를 저장할 때 무조건 session이나 application에 넣으면 편하지 않나요?" → "세션과 애플리케이션 스코프는 서버 메모리(Heap)에 상주하므로 대규모 동시 접속 시 메모리 고갈(OOM)을 유발합니다. 따라서 데이터의 생명주기에 맞는 가장 좁은 스코프(가급적 request)를 사용하는 것이 원칙입니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 4 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q4. 웹 폼 처리 시 Post-Redirect-Get(PRG) 패턴이 필요한 이유와 동작 흐름을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>POST 요청 후 새로고침(F5) 시 동일한 데이터 등록이나 결제 트랜잭션이 중복 실행되는 사고를 방지하기 위한 핵심 웹 아키텍처 패턴입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[동작 흐름과 원리]</span>
+<div>
+                클라이언트가 POST로 등록 요청을 보내면 서블릿이 DB 작업을 수행한 뒤, forward하지 않고 <strong>sendRedirect</strong>를 통해 302 응답과 함께 결과 조회 URL(GET)을 전달합니다.<br/>
+                브라우저는 자동으로 해당 URL로 GET 요청을 재전송하여 화면을 띄우므로, 주소창의 최신 요청이 GET으로 갱신됩니다. 따라서 이후 사용자가 새로고침을 누르더라도 안전하게 GET 조회만 재수행되어 중복 결제나 중복 가입이 원천 차단됩니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"만약 PRG 패턴에서 사용자가 등록 폼에서 '뒤로가기'를 누르고 다시 제출하면 어떻게 되나요?" → "브라우저 캐시로 인해 이전 폼이 보일 수 있으므로, CSRF 토큰이나 중복 방지 세션 토큰(Token Pattern) 또는 DB 유니크 제약 조건을 함께 병행하여 방어해야 합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 5 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q5. MVC Model 1과 Model 2의 차이점 및 실무에서 Model 2를 채택하는 이유를 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>Model 1은 JSP가 컨트롤러와 뷰를 모두 처리하는 구조이고, Model 2는 서블릿이 컨트롤러, JSP가 뷰를 맡아 역할을 엄격히 분리한 구조입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[실무에서 Model 2를 쓰는 이유]</span>
+<div>
+                Model 1은 초기 구축은 빠르지만 JSP 안에 자바 비즈니스 로직과 HTML이 뒤섞여 디버깅이 어렵고 디자이너와 개발자 간 협업이 불가능합니다.<br/>
+                Model 2는 서블릿이 요청 분기와 비즈니스 호출을 전담하고 JSP는 순수 화면 표현만 전담하므로 관심사가 완벽히 분리됩니다. 이 구조는 유지보수성과 확장성이 우수하며, 현대적인 프레임워크(Spring MVC 등)의 근간 아키텍처가 됩니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"Model 2에서 컨트롤러(서블릿)와 뷰(JSP) 사이의 데이터 전달은 어떤 방식을 사용하나요?" → "서블릿에서 비즈니스 로직 결과를 <code>request.setAttribute()</code>에 객체로 저장한 뒤, <code>RequestDispatcher#forward()</code>를 호출하여 JSP로 제어권을 넘겨 화면을 렌더링합니다."</div>
+</div>
+</div>
+</details>
+</div>
+</main>
+<footer>
+<p>Backend Programming Curriculum • JSP &amp; MVC Summary Guide</p>
+</footer>
+</div>
+<script>
+  // === Tab Switching Logic ===
+  function switchTab(tabId) {
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = Array.from(buttons).find(btn => {
+      const attr = btn.getAttribute('onclick');
+      return attr && attr.includes(tabId);
+    });
+    if (clickedBtn) {
+      clickedBtn.classList.add('active');
+    }
+
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(panel => {
+      panel.classList.remove('active');
+      if (panel.id === tabId) {
+        panel.classList.add('active');
+      }
+    });
+
+    // Manage quiz timer on tab switch
+    if (tabId === 'tab-quiz') {
+      if (currentQuizMode === 'card' && !isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      pauseQuizTimer();
+    }
+  }
+
+  // === Quiz Mode Switching (Card Mode vs List Mode) ===
+  let currentQuizMode = 'card';
+
+  function switchQuizMode(mode) {
+    currentQuizMode = mode;
+    const cardPanel = document.getElementById('quiz-card-view');
+    const listPanel = document.getElementById('quiz-list-view');
+    const btnCard = document.getElementById('btn-mode-card');
+    const btnList = document.getElementById('btn-mode-list');
+    const modeDesc = document.getElementById('quiz-mode-desc');
+
+    if (mode === 'card') {
+      cardPanel.classList.add('active');
+      listPanel.classList.remove('active');
+      btnCard.classList.add('active');
+      btnList.classList.remove('active');
+      modeDesc.textContent = '한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.';
+      if (!isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      cardPanel.classList.remove('active');
+      listPanel.classList.add('active');
+      btnCard.classList.remove('active');
+      btnList.classList.add('active');
+      modeDesc.textContent = '모든 문제를 목록으로 펼쳐두고 타이머 부담 없이 자유롭게 자가 점검 및 복습하는 모드입니다.';
+      pauseQuizTimer();
+    }
+  }
+
+  // === List Mode Toggle All Answers ===
+  let isAllListAnswersOpen = false;
+  function toggleAllListAnswers() {
+    const accordions = document.querySelectorAll('.quiz-list-accordion');
+    const btn = document.getElementById('btn-toggle-all-list');
+    isAllListAnswersOpen = !isAllListAnswersOpen;
+    accordions.forEach(acc => {
+      acc.open = isAllListAnswersOpen;
+    });
+    btn.textContent = isAllListAnswersOpen ? '전체 정답 접기 ▲' : '전체 정답 펼치기 ▼';
+  }
+
+  // === Interactive 30s Time-Attack Speed Quiz Script (Card Mode) ===
+  const totalQuestions = 8;
+  let currentQuizIdx = 0;
+  let quizTimeLeft = 30;
+  let quizTimerInterval = null;
+  let isAnswerRevealed = new Array(totalQuestions).fill(false);
+  let isQuizCompleted = false;
+
+  function updateQuizUI() {
+    const slides = document.querySelectorAll('.quiz-slide');
+    slides.forEach(slide => slide.classList.remove('active'));
+
+    const completeSlide = document.getElementById('quiz-complete-slide');
+    const bottomNav = document.querySelector('.quiz-bottom-nav');
+
+    if (isQuizCompleted) {
+      completeSlide.classList.add('active');
+      document.getElementById('quiz-progress').textContent = '완료!';
+      document.getElementById('quiz-timer-sec').textContent = '0';
+      document.getElementById('quiz-timer-bar').style.width = '0%';
+      document.getElementById('quiz-timer-box').classList.remove('warning');
+      bottomNav.style.display = 'none';
+      pauseQuizTimer();
+      return;
+    }
+
+    bottomNav.style.display = 'flex';
+    const currentSlide = document.querySelector(`.quiz-slide[data-quiz-index="${currentQuizIdx}"]`);
+    if (currentSlide) {
+      currentSlide.classList.add('active');
+    }
+
+    // Update Progress
+    document.getElementById('quiz-progress').textContent = `문제 ${currentQuizIdx + 1} / ${totalQuestions}`;
+
+    // Update Navigation Buttons
+    const btnPrev = document.getElementById('btn-quiz-prev');
+    const btnNext = document.getElementById('btn-quiz-next');
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+
+    btnPrev.disabled = (currentQuizIdx === 0);
+
+    if (currentQuizIdx === totalQuestions - 1) {
+      btnNext.innerHTML = '결과 보기 🏁';
+    } else {
+      btnNext.innerHTML = '다음 문제 ▶';
+    }
+
+    if (isAnswerRevealed[currentQuizIdx]) {
+      btnReveal.textContent = '해설 닫기 ▲';
+    } else {
+      btnReveal.textContent = '정답 확인 👁️';
+    }
+  }
+
+  function startQuizTimer() {
+    pauseQuizTimer();
+    if (currentQuizMode !== 'card' || isQuizCompleted || isAnswerRevealed[currentQuizIdx]) return;
+
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    quizTimerInterval = setInterval(() => {
+      if (quizTimeLeft > 0) {
+        quizTimeLeft--;
+        timerSecEl.textContent = quizTimeLeft;
+        const pct = (quizTimeLeft / 30) * 100;
+        timerBarEl.style.width = `${pct}%`;
+
+        if (quizTimeLeft <= 5) {
+          timerBoxEl.classList.add('warning');
+          timerBarEl.classList.add('warning');
+        } else {
+          timerBoxEl.classList.remove('warning');
+          timerBarEl.classList.remove('warning');
+        }
+      } else {
+        // Time Over!
+        pauseQuizTimer();
+        timerSecEl.textContent = '0';
+        timerBarEl.style.width = '0%';
+        onQuizTimeout();
+      }
+    }, 1000);
+  }
+
+  function pauseQuizTimer() {
+    if (quizTimerInterval) {
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = null;
+    }
+  }
+
+  function resetTimerTo30() {
+    pauseQuizTimer();
+    quizTimeLeft = 30;
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    timerSecEl.textContent = '30';
+    timerBarEl.style.width = '100%';
+    timerBoxEl.classList.remove('warning');
+    timerBarEl.classList.remove('warning');
+  }
+
+  function onQuizTimeout() {
+    const timeoutMsg = document.getElementById(`timeout-msg-${currentQuizIdx}`);
+    if (timeoutMsg) timeoutMsg.style.display = 'block';
+
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    if (ansPanel) ansPanel.classList.add('show');
+
+    isAnswerRevealed[currentQuizIdx] = true;
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (btnReveal) btnReveal.textContent = '해설 닫기 ▲';
+  }
+
+  function revealCurrentAnswer() {
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (!ansPanel) return;
+
+    if (ansPanel.classList.contains('show')) {
+      ansPanel.classList.remove('show');
+      btnReveal.textContent = '정답 확인 👁️';
+      isAnswerRevealed[currentQuizIdx] = false;
+      // Resume timer if time left
+      if (quizTimeLeft > 0) {
+        startQuizTimer();
+      }
+    } else {
+      ansPanel.classList.add('show');
+      btnReveal.textContent = '해설 닫기 ▲';
+      isAnswerRevealed[currentQuizIdx] = true;
+      pauseQuizTimer();
+    }
+  }
+
+  function nextQuiz() {
+    if (currentQuizIdx < totalQuestions - 1) {
+      currentQuizIdx++;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      // Finished all
+      isQuizCompleted = true;
+      updateQuizUI();
+    }
+  }
+
+  function prevQuiz() {
+    if (currentQuizIdx > 0) {
+      currentQuizIdx--;
+      isQuizCompleted = false;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    }
+  }
+
+  function resetQuiz() {
+    currentQuizIdx = 0;
+    isQuizCompleted = false;
+    isAnswerRevealed = new Array(totalQuestions).fill(false);
+    
+    for (let i = 0; i < totalQuestions; i++) {
+      const p = document.getElementById(`answer-panel-${i}`);
+      if (p) p.classList.remove('show');
+      const m = document.getElementById(`timeout-msg-${i}`);
+      if (m) m.style.display = 'none';
+    }
+
+    resetTimerTo30();
+    updateQuizUI();
+    startQuizTimer();
+  }
+
+  // Initialize Interview Accordions
+  document.querySelectorAll('.interview-accordion').forEach(acc => {
+    acc.addEventListener('toggle', () => {
+      const btn = acc.querySelector('.interview-toggle-btn');
+      if (btn) {
+        btn.textContent = acc.open ? '답변 접기 ▲' : '답변 확인 ▼';
+      }
+    });
+  });
+
+  // Initial Quiz Setup
+  updateQuizUI();
+        </script>
+</body>
+</html>

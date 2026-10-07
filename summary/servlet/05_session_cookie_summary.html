@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>백엔드 상태 관리: Cookie &amp; Session, 예외 처리 아키텍처 핵심 요약</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --accent: #7c3aed;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      
+      --bad-bg: #fff1f2;
+      --bad-border: #fecdd3;
+      --bad-text: #be123c;
+      
+      --good-bg: #f0fdf4;
+      --good-border: #bbf7d0;
+      --good-text: #15803d;
+
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 32px 16px 80px;
+    }
+
+    .container { max-width: 980px; margin: 0 auto; }
+
+    /* === Hero Header === */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4338ca 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: 26px; font-weight: 800; line-height: 1.35; margin-bottom: 10px; }
+    .hero p { font-size: 15px; color: #cbd5e1; max-width: 780px; }
+
+    /* === Tab Navigation === */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 6px;
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: calc(var(--radius) - 3px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.6); }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === Section Title === */
+    .section-title {
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      font-weight: 800;
+      font-size: 18.5px;
+      color: var(--text);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title:first-of-type { margin-top: 4px; }
+
+    /* === Cards & Grids === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .flow-step {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .flow-step-num {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .flow-step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .flow-step-desc { font-size: 13px; color: var(--text-sub); }
+
+    /* === Table === */
+    .table-wrapper { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; }
+    th { background: #f1f5f9; font-weight: 700; color: var(--text); }
+    td { background: #fff; }
+
+    /* === Syntax Highlighting in Code Blocks === */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #313244;
+    }
+    code { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; }
+    .inline-code {
+      background: #f1f5f9;
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Syntax Highlight Tokens */
+    .kwd { color: #cba6f7; font-weight: 600; }   /* keywords */
+    .ann { color: #f9e2af; font-weight: 600; }   /* annotations/directives */
+    .typ { color: #89b4fa; }                     /* types, classes */
+    .str { color: #a6e3a1; }                     /* strings */
+    .com { color: #6c7086; font-style: italic; } /* comments */
+    .num { color: #fab387; }                     /* numbers */
+    .met { color: #74c7ec; }                     /* methods */
+    .tag { color: #f38ba8; }                     /* tags */
+    .att { color: #fab387; }                     /* attributes */
+
+    /* === Scenario-based Code Review Component === */
+    .review-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .review-header {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .review-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-bad { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-border); }
+    .badge-good { background: var(--good-bg); color: var(--good-text); border: 1px solid var(--good-border); }
+    
+    .review-body { padding: 20px; }
+    
+    .scenario-box {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #713f12;
+    }
+    .scenario-label { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    .review-accordion {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+    .review-accordion summary {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-accordion summary::-webkit-details-marker { display: none; }
+    .review-accordion summary::after {
+      content: "원인 분석 및 개선 코드 보기 ▼";
+      font-size: 12px;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .review-accordion[open] summary::after {
+      content: "접기 ▲";
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .review-content {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+    .bug-analysis { margin-bottom: 14px; font-size: 14px; }
+    .bug-analysis strong { color: var(--bad-text); }
+
+    /* === Quiz Component === */
+    .quiz-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .quiz-question {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-accordion { border-top: 1px solid var(--border); background: #f8fafc; }
+    .quiz-accordion summary {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quiz-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-accordion summary::after {
+      content: "정답 확인";
+      background: #e2e8f0;
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .quiz-accordion[open] summary::after { content: "닫기"; }
+    .quiz-answer { padding: 14px 20px; border-top: 1px dashed var(--border); background: #fff; font-size: 14px; }
+    .quiz-answer-title { font-weight: 700; color: var(--good-text); margin-bottom: 4px; }
+
+    /* === Click-to-Reveal Interview Component === */
+    .interview-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .interview-accordion { width: 100%; }
+    .interview-accordion summary {
+      padding: 18px 22px;
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+    .interview-accordion summary:hover { background: #f8fafc; }
+    .interview-accordion summary::-webkit-details-marker { display: none; }
+    .interview-toggle-btn {
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .interview-accordion[open] .interview-toggle-btn {
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .interview-content {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .speech-template {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-light);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+    }
+    .speech-section { margin-bottom: 12px; font-size: 14px; }
+    .speech-section:last-child { margin-bottom: 0; }
+    .speech-tag {
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--primary);
+      display: inline-block;
+      margin-bottom: 3px;
+    }
+    .followup-box {
+      background: #faf5ff;
+      border: 1px solid #f3e8ff;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #6b21a8;
+    }
+    .followup-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px 12px 60px; }
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .interview-accordion summary { font-size: 14.5px; padding: 14px 16px; }
+      .interview-content { padding: 16px; }
+    }
+  
+    /* === Interactive 30s Time-Attack Speed Quiz === */
+    .quiz-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .quiz-top-bar {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .quiz-progress-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+      background: #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    .quiz-timer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      transition: all 0.25s ease;
+    }
+    .quiz-timer-box.warning {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: timerPulse 0.8s infinite alternate;
+    }
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+    .quiz-timer-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width 1s linear, background-color 0.5s ease;
+    }
+    .quiz-timer-bar.warning {
+      background: #dc2626;
+    }
+    .quiz-slide {
+      display: none;
+      padding: 24px 22px;
+      min-height: 200px;
+    }
+    .quiz-slide.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .quiz-question-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .quiz-question-box .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-q-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .quiz-timeout-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-top: 14px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel.show {
+      display: block;
+    }
+    .quiz-answer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-answer-desc {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-complete-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .quiz-bottom-nav {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quiz-nav-btn {
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-nav-btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: var(--border-dark);
+    }
+    .quiz-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .quiz-nav-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .quiz-nav-btn.primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+    
+    /* === Quiz Mode Switcher & Dual Mode Styles === */
+    .quiz-mode-switch-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .quiz-mode-switch {
+      display: inline-flex;
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .quiz-mode-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .quiz-mode-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .quiz-mode-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .quiz-mode-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .quiz-view-panel {
+      display: none;
+    }
+    .quiz-view-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    /* === List Mode Components === */
+    .quiz-list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .quiz-list-count {
+      font-size: 13.5px;
+      color: var(--text-sub);
+    }
+    .quiz-list-count strong {
+      color: var(--primary);
+    }
+    .quiz-list-toggle-all-btn {
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-toggle-all-btn:hover {
+      background: #c7d2fe;
+      color: var(--primary-dark);
+    }
+    .quiz-list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.15s ease;
+    }
+    .quiz-list-card:hover {
+      border-color: var(--border-dark);
+    }
+    .quiz-list-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .quiz-list-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-list-q-text {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-list-accordion {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .quiz-list-accordion summary {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-accordion summary:hover {
+      background: #e2e8f0;
+    }
+    .quiz-list-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-list-accordion[open] summary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .quiz-list-answer {
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-list-ans-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-list-ans-desc {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+<!-- Hero Section -->
+<header class="hero">
+<div class="hero-badge">Backend Architecture • Cookie &amp; Session</div>
+<h1>백엔드 상태 관리: Cookie &amp; Session, 예외 처리 아키텍처 핵심 요약</h1>
+<p>HTTP 무상태(Stateless) 한계 극복을 위한 Cookie와 Session 메커니즘부터 보안 옵션(SameSite, HttpOnly, Secure), 4대 Scope 라이프사이클, 로그인/인증 필터 구현, 그리고 엔터프라이즈 예외 처리 아키텍처까지 교안의 전 핵심을 완벽하게 정리합니다.</p>
+</header>
+<!-- Tab Navigation -->
+<nav class="tabs-nav">
+<button class="tab-btn active" onclick="switchTab('tab-summary')">
+<span>📖 1. 핵심 정리</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-review')">
+<span>🔍 2. 코드 리뷰 (트러블슈팅)</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-quiz')">
+<span>⚡ 3. 핵심 스피드 퀴즈</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-interview')">
+<span>💼 4. 기술 면접 대비</span>
+</button>
+</nav>
+<!-- ========================================== -->
+<!-- TAB 1: 핵심 정리 -->
+<!-- ========================================== -->
+<main class="tab-panel active" id="tab-summary">
+<!-- 1.1 HTTP Stateless 특성과 상태 관리 필요성 -->
+<h2 class="section-title">1. HTTP Stateless 특성과 상태 관리 메커니즘</h2>
+<div class="card">
+<div class="card-title">📌 HTTP 무상태(Stateless) 프로토콜의 배경과 보완</div>
+<p style="margin-bottom: 12px; font-size: 14.5px;">
+        기본적으로 HTTP 프로토콜은 <strong>Stateless(무상태)</strong>로 동작합니다. 서버는 클라이언트의 이전 요청 상태를 기억하지 않으며, 각 요청은 완전히 독립된 단위로 처리됩니다.
+      </p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 25%;">Stateless 설계 이유</th>
+<th>상세 특징 및 효과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>단순성 (Simplicity)</strong></td>
+<td>요청 간의 연결 및 과거 컨텍스트를 추적할 필요가 없어 서버 구조가 간결해지고 처리 속도가 향상됩니다.</td>
+</tr>
+<tr>
+<td><strong>확장성 (Scalability)</strong></td>
+<td>서버 간 공유해야 할 세션 상태가 없으므로 여러 서버로 요청을 자유롭게 분산(로드 밸런싱)하고 수평 확장(Scale-out)이 매우 용이합니다.</td>
+</tr>
+<tr>
+<td><strong>신뢰성 (Reliability)</strong></td>
+<td>각 요청이 상호 독립적이므로 특정 요청 처리 실패나 한 서버의 장애가 다른 트랜잭션에 전파되지 않습니다.</td>
+</tr>
+<tr>
+<td><strong>자원 절약 (Resource Saving)</strong></td>
+<td>수천~수만 명의 접속자 상태를 서버 메모리에 계속 유지하지 않으므로 서버 자원을 효율적으로 보존합니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-top: 8px;">
+        💡 <strong>상태 관리의 필요성</strong>: 전자상거래 장바구니, 로그인 인증 유지, 사용자 맞춤 설정 등 실제 비즈니스 로직은 사용자의 식별과 연속된 상태 유지를 필수로 요구합니다. 이를 해결하기 위해 <strong>Cookie</strong>와 <strong>Session</strong> 기술이 도입되었습니다.
+      </p>
+</div>
+<!-- 1.2 Cookie 동작 원리 및 주요 속성 -->
+<h2 class="section-title">2. Cookie: 구조, 동작 흐름 및 핵심 프로퍼티</h2>
+<div class="card">
+<div class="card-title">📌 Cookie의 라이프사이클 및 전송 흐름</div>
+<p style="font-size: 14px; margin-bottom: 12px;">
+        쿠키는 <strong>웹 서버가 생성하여 HTTP 응답 헤더를 통해 클라이언트(웹 브라우저)에 전달하고, 브라우저 로컬에 저장되는 key-value 형태의 데이터</strong>입니다. (클래스: <span class="inline-code">jakarta.servlet.http.Cookie</span>)
+      </p>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">Step 1</div>
+<div class="flow-step-title">최초 요청</div>
+<div class="flow-step-desc">클라이언트가 서버 특정 리소스로 첫 HTTP 요청을 전송</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 2</div>
+<div class="flow-step-title">쿠키 생성</div>
+<div class="flow-step-desc">서블릿에서 <span class="inline-code">new Cookie(name, value)</span>로 생성 후 설정</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 3</div>
+<div class="flow-step-title">Set-Cookie 헤더 응답</div>
+<div class="flow-step-desc"><span class="inline-code">response.addCookie(cookie)</span>를 통해 응답 헤더로 브라우저에 전달</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 4</div>
+<div class="flow-step-title">브라우저 저장</div>
+<div class="flow-step-desc">브라우저의 쿠키 저장소에 도메인 및 경로별로 쿠키 보관</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 5</div>
+<div class="flow-step-title">이후 요청 시 자동 전송</div>
+<div class="flow-step-desc">동일 도메인/경로 요청 시 HTTP 요청 헤더(<span class="inline-code">Cookie</span>)에 실려 자동 전송</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-title">📌 Cookie의 핵심 프로퍼티(Property) 명세</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 18%;">프로퍼티</th>
+<th style="width: 25%;">접근 방식</th>
+<th>기능 및 제약 사항</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>name</strong></td>
+<td><span class="inline-code">getName()</span> (getter만 제공)</td>
+<td>
+                쿠키를 식별하는 고유한 이름. 생성자에서 지정하며 수정 불가.<br/>
+                알파벳, 숫자, 하이픈(<span class="inline-code">-</span>), 언더스코어(<span class="inline-code">_</span>), 물결(<span class="inline-code">~</span>), 점(<span class="inline-code">.</span>) 허용. 공백 및 기타 문자는 인코딩 필요. 동일 이름 설정 시 기존 쿠키를 덮어씁니다.
+              </td>
+</tr>
+<tr>
+<td><strong>value</strong></td>
+<td><span class="inline-code">getValue()</span> / <span class="inline-code">setValue()</span></td>
+<td>
+                쿠키에 저장되는 실제 값. 한글, 공백 등은 HTTP 헤더 규격상 직접 작성이 불가능하므로 반드시 <span class="inline-code">URLEncoder.encode(val, "UTF-8")</span>로 인코딩하여 저장하고, 읽을 때 <span class="inline-code">URLDecoder.decode()</span>로 복원해야 합니다.
+              </td>
+</tr>
+<tr>
+<td><strong>path</strong></td>
+<td><span class="inline-code">getPath()</span> / <span class="inline-code">setPath()</span></td>
+<td>
+                쿠키가 전송될 유효 경로.<br/>
+                • <strong>설정 경로 및 하위 경로</strong> 요청에 대해서만 브라우저가 쿠키를 전송합니다.<br/>
+                • <strong>미설정 시</strong>: 쿠키를 생성한 서블릿의 Context Root가 기본값으로 적용됩니다.<br/>
+                • <strong>컨테이너 루트(<span class="inline-code">/</span>) 지정 시</strong>: 동일 호스트 내 다른 컨텍스트 애플리케이션(예: <span class="inline-code">/out_app</span>, <span class="inline-code">/your_app</span>)과 쿠키가 공유되어 보안 이슈가 발생할 수 있습니다.
+              </td>
+</tr>
+<tr>
+<td><strong>maxAge</strong></td>
+<td><span class="inline-code">getMaxAge()</span> / <span class="inline-code">setMaxAge(int sec)</span></td>
+<td>
+                쿠키의 유효 기간(초 단위).<br/>
+                • <strong>양수</strong>: 설정된 시간(초) 동안 디스크/브라우저에 보관되며 시간 만료 시 자동 파기.<br/>
+                • <strong>음수(-1) 또는 미지정</strong>: <em>세션 쿠키(Session Cookie)</em>로 동작하며 브라우저 프로세스 종료 시 자동 파기.<br/>
+                • <strong>0</strong>: 브라우저 수신 즉시 삭제 (쿠키 삭제 시 동일한 name과 path로 maxAge를 0으로 설정하여 재전송).<br/>
+                • Chrome 등 모던 브라우저는 최대 유효 기간을 <strong>400일</strong>로 제한합니다.
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 1.3 보안 옵션 3종과 SameSite 심층 비교 -->
+<h2 class="section-title">3. 쿠키 보안 옵션 3종 세트 &amp; SameSite 매트릭스</h2>
+<div class="card">
+<div class="card-title">📌 웹 공격 대응을 위한 쿠키 보안 3종 속성</div>
+<div class="flow-grid">
+<div class="flow-step" style="border-left: 4px solid #ef4444;">
+<div class="flow-step-title" style="color: #b91c1c;">🔒 secure</div>
+<div class="flow-step-desc">
+<strong>HTTPS 프로토콜</strong> 암호화 통신에서만 쿠키 전송 허용.<br/>
+            ▶ 공공 Wi-Fi, 중간자 공격(MITM)에 의한 <strong>네트워크 스니핑 및 쿠키 가로채기 방지</strong>
+</div>
+</div>
+<div class="flow-step" style="border-left: 4px solid #3b82f6;">
+<div class="flow-step-title" style="color: #1d4ed8;">🛡️ httpOnly</div>
+<div class="flow-step-desc">
+            브라우저 JavaScript(<span class="inline-code">document.cookie</span>)에서 접근 불가능하도록 차단.<br/>
+            ▶ 악의적 스크립트 삽입을 통한 <strong>XSS(Cross-Site Scripting) 세션 탈취 방지</strong>
+</div>
+</div>
+<div class="flow-step" style="border-left: 4px solid #10b981;">
+<div class="flow-step-title" style="color: #047857;">🌐 SameSite</div>
+<div class="flow-step-desc">
+            Cross-Site 요청 시 쿠키 전송 허용 범위를 제어(Strict, Lax, None).<br/>
+            ▶ 타 사이트로부터의 위조 요청을 차단하는 <strong>CSRF(Cross-Site Request Forgery) 방지</strong>
+</div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 20px;">📌 SameSite 정책별 요청 유형 전송 매트릭스 (W3C / RFC 6265bis)</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 32%;">요청 상황 (출발지 → 목적지)</th>
+<th style="width: 20%;">요청 방식</th>
+<th style="text-align: center;">Strict</th>
+<th style="text-align: center;">Lax (모던 기본값)</th>
+<th style="text-align: center;">None (+Secure 필수)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>주소창 직접 입력 / 북마크</strong></td>
+<td>Direct Navigation</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>같은 사이트 내 이동 (A → A)</strong></td>
+<td>모든 요청 방식</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>타 사이트에서 링크 클릭 (B → A)</strong></td>
+<td><span class="inline-code">&lt;a href="A"&gt;</span></td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송 (Top-level)</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>타 사이트에서 폼 GET 전송 (B → A)</strong></td>
+<td><span class="inline-code">&lt;form method="GET"&gt;</span></td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송 (Safe GET)</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>타 사이트에서 폼 POST 전송 (B → A)</strong></td>
+<td><span class="inline-code">&lt;form method="POST"&gt;</span></td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단 (CSRF 방어)</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>타 사이트에서 리소스 로딩</strong></td>
+<td><span class="inline-code">&lt;img&gt;</span>, <span class="inline-code">&lt;iframe&gt;</span></td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+<tr>
+<td><strong>타 사이트에서 비동기 요청</strong></td>
+<td><span class="inline-code">fetch()</span>, <span class="inline-code">XHR (AJAX)</span></td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--bad-text); font-weight: 700;">❌ 차단</td>
+<td style="text-align: center; color: var(--good-text); font-weight: 700;">✅ 전송</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 1.4 Servlet 6.0+ setAttribute 및 쿠키 활용 코드 -->
+<div class="card">
+<div class="card-title">📌 Servlet 6.0+ 표준 Cookie 설정 및 사용 API</div>
+<p style="font-size: 14px; margin-bottom: 8px;">
+        Jakarta Servlet 6.0부터 도입된 <span class="inline-code">cookie.setAttribute(String name, String value)</span> 메서드를 통해 표준화된 방식으로 신규 속성을 정의할 수 있습니다.
+      </p>
+<pre><code><span class="typ">Cookie</span> cookie = <span class="kwd">new</span> <span class="typ">Cookie</span>(<span class="str">"sessionId"</span>, <span class="str">"abc123"</span>);
+
+<span class="com">// 1. 값이 있는 속성: "속성=값" 형태로 헤더에 추가</span>
+cookie.<span class="met">setAttribute</span>(<span class="str">"SameSite"</span>, <span class="str">"Strict"</span>);    <span class="com">// SameSite=Strict;</span>
+cookie.<span class="met">setAttribute</span>(<span class="str">"Domain"</span>, <span class="str">".mysite.com"</span>); <span class="com">// Domain=.mysite.com;</span>
+
+<span class="com">// 2. 값이 없는 boolean 속성: 빈 문자열("") 전달 시 이름만 헤더에 표시</span>
+cookie.<span class="met">setAttribute</span>(<span class="str">"HttpOnly"</span>, <span class="str">""</span>);            <span class="com">// HttpOnly;</span>
+cookie.<span class="met">setAttribute</span>(<span class="str">"Secure"</span>, <span class="str">""</span>);              <span class="com">// Secure;</span>
+
+<span class="com">// 3. 속성 제거: null 전달 시 헤더에서 완전히 제거</span>
+cookie.<span class="met">setAttribute</span>(<span class="str">"SameSite"</span>, <span class="kwd">null</span>);          <span class="com">// 속성 삭제</span>
+
+<span class="com">// 최종 Set-Cookie 헤더:</span>
+<span class="com">// Set-Cookie: sessionId=abc123; Domain=.mysite.com; HttpOnly; Secure;</span>
+response.<span class="met">addCookie</span>(cookie);</code></pre>
+<div class="card-title" style="margin-top: 16px;">📌 서블릿과 JSP(EL)에서의 쿠키 조회 비교</div>
+<pre><code><span class="com">// [Servlet] request.getCookies() 순회 (클라이언트 전송 시 name과 value만 전달됨)</span>
+<span class="typ">Cookie</span>[] cookies = request.<span class="met">getCookies</span>();
+<span class="kwd">if</span> (cookies != <span class="kwd">null</span>) {
+    <span class="kwd">for</span> (<span class="typ">Cookie</span> c : cookies) {
+        <span class="typ">String</span> key = c.<span class="met">getName</span>();
+        <span class="typ">String</span> val = <span class="typ">URLDecoder</span>.<span class="met">decode</span>(c.<span class="met">getValue</span>(), <span class="str">"UTF-8"</span>);
+        <span class="typ">System</span>.out.<span class="met">println</span>(key + <span class="str">" : "</span> + val);
+    }
+}
+
+<span class="com">&lt;!-- [JSP] EL 내장 객체 cookie 활용 (Map&lt;String, Cookie&gt; 구조) --&gt;</span>
+<span class="tag">&lt;span&gt;</span>최근 구구단: <span class="ann">${</span>cookie.recentGugu.value<span class="ann">}</span><span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;c:forEach</span> <span class="att">items</span>=<span class="str">"${cookie}"</span> <span class="att">var</span>=<span class="str">"entry"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td&gt;</span><span class="ann">${</span>entry.value.name<span class="ann">}</span><span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span><span class="ann">${</span>entry.value.value<span class="ann">}</span><span class="tag">&lt;/td&gt;</span>
+    <span class="tag">&lt;/tr&gt;</span>
+<span class="tag">&lt;/c:forEach&gt;</span></code></pre>
+</div>
+<!-- 1.5 웹의 4대 Scope 비교 -->
+<h2 class="section-title">4. 웹 애플리케이션의 4대 Scope (영역)</h2>
+<div class="card">
+<div class="card-title">📌 데이터 공유 범위 및 라이프사이클 비교</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 18%;">영역 (Scope)</th>
+<th style="width: 25%;">관리 객체</th>
+<th style="width: 25%;">유효 기간 (Lifecycle)</th>
+<th>공유 범위 및 주요 용도</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Page 영역</strong></td>
+<td><span class="inline-code">PageContext</span></td>
+<td>하나의 JSP 페이지 실행 동안만 존재</td>
+<td>해당 페이지 내부에서만 유효. EL의 기본 탐색 1순위 스코프.</td>
+</tr>
+<tr>
+<td><strong>Request 영역</strong></td>
+<td><span class="inline-code">HttpServletRequest</span></td>
+<td>하나의 HTTP 요청이 시작되어 응답할 때까지</td>
+<td>서블릿과 포워드(forward)되는 JSP 간의 데이터 전달 (단발성 조회 결과, 폼 오류 메시지 등).</td>
+</tr>
+<tr>
+<td><strong>Session 영역</strong></td>
+<td><span class="inline-code">HttpSession</span></td>
+<td>브라우저 세션 유지 시간 또는 비활성 만료 시까지</td>
+<td>동일 클라이언트(브라우저)의 여러 연속된 요청 간 공유 (로그인 사용자 정보, 장바구니 등).</td>
+</tr>
+<tr>
+<td><strong>Application 영역</strong></td>
+<td><span class="inline-code">ServletContext</span></td>
+<td>웹 애플리케이션 시작부터 서버 종료(shutdown) 시까지</td>
+<td>컨텍스트 전체의 모든 사용자와 모든 세션이 전역 공유 (방문자 총 집계, 전역 설정, 공통 코드 캐시 등).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 1.6 Session 동작 원리 및 유효기간 설정 -->
+<h2 class="section-title">5. Session 동작 원리 및 세션 관리 아키텍처</h2>
+<div class="card">
+<div class="card-title">📌 JSESSIONID를 매개로 한 세션 식별 메커니즘</div>
+<p style="font-size: 14px; margin-bottom: 12px;">
+        세션은 <strong>상태 값을 클라이언트가 아닌 서버 메모리에 저장</strong>하며, 클라이언트와 서버를 연결하는 열쇠(Key)로 <strong>JSESSIONID</strong>라는 세션 쿠키를 사용합니다.
+      </p>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">Step 1</div>
+<div class="flow-step-title">최초 요청</div>
+<div class="flow-step-desc">브라우저에 JSESSIONID 쿠키가 없는 상태로 요청 진입</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 2</div>
+<div class="flow-step-title">세션 생성 &amp; ID 발급</div>
+<div class="flow-step-desc">서버 메모리에 세션 객체 생성 후 고유한 JSESSIONID 발급</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 3</div>
+<div class="flow-step-title">Set-Cookie 헤더 전달</div>
+<div class="flow-step-desc">응답 시 <span class="inline-code">Set-Cookie: JSESSIONID=XXXX</span>를 브라우저에 전송</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 4</div>
+<div class="flow-step-title">브라우저 재요청</div>
+<div class="flow-step-desc">이후 요청마다 <span class="inline-code">Cookie: JSESSIONID=XXXX</span>를 서버로 전송</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Step 5</div>
+<div class="flow-step-title">세션 확인 및 복원</div>
+<div class="flow-step-desc">전달된 키로 서버 메모리에서 기존 세션을 찾아 상태 객체 복원</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-title">📌 HttpSession 핵심 메서드 및 유효기간 산정 방식</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 30%;">메서드 시그니처</th>
+<th>기능 설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="inline-code">request.getSession()</span></td>
+<td>현재 세션을 반환하며, 존재하지 않을 경우 새로운 세션을 생성하여 반환 (<span class="inline-code">getSession(true)</span>와 동일). <span class="inline-code">getSession(false)</span>는 없을 시 null 반환.</td>
+</tr>
+<tr>
+<td><span class="inline-code">Object getAttribute(String name)</span></td>
+<td>지정된 이름으로 세션에 저장된 객체를 조회합니다.</td>
+</tr>
+<tr>
+<td><span class="inline-code">void setAttribute(String name, Object val)</span></td>
+<td>세션에 데이터를 key-value로 바인딩합니다.</td>
+</tr>
+<tr>
+<td><span class="inline-code">void removeAttribute(String name)</span></td>
+<td>지정된 이름의 세션 속성만 개별 삭제합니다.</td>
+</tr>
+<tr>
+<td><span class="inline-code">void invalidate()</span></td>
+<td>현재 세션을 완전히 무효화(소멸)시키고 바인딩된 모든 객체를 언바인딩합니다. (로그아웃 처리의 표준)</td>
+</tr>
+<tr>
+<td><span class="inline-code">String getId()</span></td>
+<td>WAS가 발급한 세션 고유 식별자 문자열을 반환합니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-title" style="margin-top: 18px;">📌 세션 만료 기준과 2가지 타임아웃 설정법</div>
+<p style="font-size: 14px; margin-bottom: 10px;">
+        세션은 생성 시각(<span class="inline-code">creationTime</span>)이 아니라, <strong>마지막 클라이언트 접근 시각(<span class="inline-code">lastAccessedTime</span>)으로부터 <span class="inline-code">maxInactiveInterval</span> 동안 추가 요청이 없을 때</strong> 소멸합니다. 사용자가 요청을 보낼 때마다 <span class="inline-code">lastAccessedTime</span>은 최신 시각으로 자동 갱신됩니다.
+      </p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 25%;">설정 방식</th>
+<th style="width: 20%;">단위 (Unit)</th>
+<th>설정 코드 예시 및 적용 범위</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>web.xml 전역/컨텍스트 설정</strong></td>
+<td><span class="inline-code" style="color: #dc2626;">분 (Minute)</span></td>
+<td>
+<pre style="margin: 0; padding: 10px;"><code><span class="tag">&lt;session-config&gt;</span>
+    <span class="tag">&lt;session-timeout&gt;</span>30<span class="tag">&lt;/session-timeout&gt;</span> <span class="com">&lt;!-- 30분 --&gt;</span>
+<span class="tag">&lt;/session-config&gt;</span></code></pre>
+</td>
+</tr>
+<tr>
+<td><strong>자바 프로그래밍 방식 설정</strong></td>
+<td><span class="inline-code" style="color: #dc2626;">초 (Second)</span></td>
+<td>
+<pre style="margin: 0; padding: 10px;"><code><span class="typ">HttpSession</span> session = request.<span class="met">getSession</span>();
+session.<span class="met">setMaxInactiveInterval</span>(30 * 60); <span class="com">// 1800초 = 30분</span></code></pre>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 1.7 로그인/로그아웃 및 SessionFilter 실습 아키텍처 -->
+<h2 class="section-title">6. 인증(Login/Logout) 및 SessionFilter 보안 아키텍처</h2>
+<div class="card">
+<div class="card-title">📌 MVC 기반 로그인 / 로그아웃 처리 흐름</div>
+<p style="font-size: 14px; margin-bottom: 10px;">
+        로그인 성공 시 세션에 회원 객체를 바인딩하고 반드시 <strong>Redirect(PRG 패턴)</strong>를 사용하여 새로고침 시 로그인 POST 요청이 중복 실행되는 것을 방지합니다.
+      </p>
+<pre><code><span class="com">// [Controller] 로그인 처리</span>
+<span class="kwd">private void</span> <span class="met">login</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="typ">String</span> email = request.<span class="met">getParameter</span>(<span class="str">"email"</span>);
+    <span class="typ">String</span> pass = request.<span class="met">getParameter</span>(<span class="str">"pass"</span>);
+    
+    <span class="typ">Member</span> member = mService.<span class="met">login</span>(email, pass);
+    <span class="kwd">if</span> (member != <span class="kwd">null</span>) {
+        <span class="com">// 로그인 성공: 세션에 사용자 정보 바인딩</span>
+        request.<span class="met">getSession</span>().<span class="met">setAttribute</span>(<span class="str">"loginUser"</span>, member);
+        redirect(request, response, <span class="str">"/"</span>); <span class="com">// 메인 페이지로 리다이렉트</span>
+    } <span class="kwd">else</span> {
+        <span class="com">// 로그인 실패: request 영역에 안내 메시지 바인딩 후 포워드</span>
+        request.<span class="met">setAttribute</span>(<span class="str">"alertMsg"</span>, <span class="str">"아이디 또는 비밀번호가 일치하지 않습니다."</span>);
+        forward(request, response, <span class="str">"/member/login-form.jsp"</span>);
+    }
+}
+
+<span class="com">// [Controller] 로그아웃 처리</span>
+<span class="kwd">private void</span> <span class="met">logout</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="com">// 세션 완전 무효화</span>
+    request.<span class="met">getSession</span>().<span class="met">invalidate</span>();
+    redirect(request, response, <span class="str">"/"</span>);
+}</code></pre>
+<div class="card-title" style="margin-top: 18px;">📌 JSP 화면 분기 렌더링 &amp; SessionFilter 권한 제어</div>
+<pre><code><span class="com">&lt;!-- [JSP] 세션 로그인 여부에 따른 동적 UI 렌더링 --&gt;</span>
+<span class="tag">&lt;c:if</span> <span class="att">test</span>=<span class="str">"${empty loginUser}"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;a</span> <span class="att">href</span>=<span class="str">"${root}/member?action=login-form"</span><span class="tag">&gt;</span>로그인<span class="tag">&lt;/a&gt;</span> |
+    <span class="tag">&lt;a</span> <span class="att">href</span>=<span class="str">"${root}/member?action=regist-member-form"</span><span class="tag">&gt;</span>회원가입<span class="tag">&lt;/a&gt;</span>
+<span class="tag">&lt;/c:if&gt;</span>
+<span class="tag">&lt;c:if</span> <span class="att">test</span>=<span class="str">"${!empty loginUser}"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;span&gt;</span><span class="ann">${</span>loginUser.name<span class="ann">}</span>님 환영합니다!<span class="tag">&lt;/span&gt;</span> |
+    <span class="tag">&lt;a</span> <span class="att">href</span>=<span class="str">"${root}/member?action=logout"</span><span class="tag">&gt;</span>로그아웃<span class="tag">&lt;/a&gt;</span>
+<span class="tag">&lt;/c:if&gt;</span>
+
+<span class="com">// [Filter] 특정 경로(/auth/*) 인가 제어 필터 구현</span>
+<span class="ann">@WebFilter</span>(<span class="str">"/auth/*"</span>)
+<span class="kwd">public class</span> <span class="typ">SessionFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> res, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        <span class="typ">HttpSession</span> session = req.<span class="met">getSession</span>();
+        <span class="kwd">if</span> (session.<span class="met">getAttribute</span>(<span class="str">"loginUser"</span>) != <span class="kwd">null</span>) {
+            chain.<span class="met">doFilter</span>(req, res); <span class="com">// 로그인 상태: 정상 통과</span>
+        } <span class="kwd">else</span> {
+            <span class="com">// 미인증 상태: 안내 메시지 설정 후 로그인 폼으로 리다이렉트</span>
+            session.<span class="met">setAttribute</span>(<span class="str">"alertMsg"</span>, <span class="str">"로그인 후 이용 가능한 서비스입니다."</span>);
+            res.<span class="met">sendRedirect</span>(req.<span class="met">getContextPath</span>() + <span class="str">"/member?action=login-form"</span>);
+        }
+    }
+}</code></pre>
+</div>
+<!-- 1.8 Exception 처리 아키텍처 -->
+<h2 class="section-title">7. 엔터프라이즈 예외(Exception) 처리 아키텍처</h2>
+<div class="card">
+<div class="card-title">📌 예외 처리 정책의 대원칙</div>
+<div class="flow-grid">
+<div class="flow-step" style="border-left: 4px solid #ef4444;">
+<div class="flow-step-title" style="color: #b91c1c;">🚫 보안 결함 방지</div>
+<div class="flow-step-desc">
+            WAS 기본 에러 페이지(Stack Trace, 데이터베이스 스키마, 서버 버전 등)가 클라이언트에 날것으로 노출되면 심각한 보안 취약점이 됩니다.
+          </div>
+</div>
+<div class="flow-step" style="border-left: 4px solid #3b82f6;">
+<div class="flow-step-title" style="color: #1d4ed8;">🖥️ 사용자 친화적 UI</div>
+<div class="flow-step-desc">
+            시스템 내부 정보 노출을 배제한 친절한 안내 메시지(예: '일시적인 오류가 발생했습니다')와 함께 이전 페이지 이동, 홈으로 가기 등 다음 행동을 유도하는 공통 에러 화면을 제공합니다.
+          </div>
+</div>
+<div class="flow-step" style="border-left: 4px solid #10b981;">
+<div class="flow-step-title" style="color: #047857;">📝 서버 내부 로깅</div>
+<div class="flow-step-desc">
+            화면에는 단순 메시지만 보여주되, 서버 내부 로그에는 발생 일시, 요청 URL, 파라미터, 상세 스택트레이스를 완벽히 기록합니다.
+          </div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 18px;">📌 404 및 500 오류 처리 흐름과 web.xml 설정</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 18%;">오류 유형</th>
+<th style="width: 35%;">발생 케이스 및 처리 방식</th>
+<th>대응 아키텍처</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>404 (Not Found)</strong></td>
+<td>
+                • <strong>Case 1</strong>: Front Controller 진입 후 매핑 액션 부재시 <span class="inline-code">response.sendError(404)</span> 또는 404.jsp로 forward.<br/>
+                • <strong>Case 2</strong>: 잘못된 경로로 서블릿 자체에 진입하지 못한 요청은 WAS 차원에서 가로챔.
+              </td>
+<td>
+<span class="inline-code">web.xml</span>에 404 에러 코드별 커스텀 뷰 매핑
+              </td>
+</tr>
+<tr>
+<td><strong>500 (Internal Error)</strong></td>
+<td>
+                • <strong>예측 가능 예외</strong>: 서블릿 내부 <span class="inline-code">try~catch</span>로 처리 후 에러 메시지와 함께 폼으로 forward.<br/>
+                • <strong>예측 불가 런타임 예외</strong>: DB 커넥션 풀 고갈, NPE 등은 전파되어 최종 Fallback 에러 페이지로 유도.
+              </td>
+<td>
+<span class="inline-code">web.xml</span>에 500 및 전역 기본 에러 페이지 매핑
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-title" style="margin-top: 16px;">📌 web.xml 에러 페이지 매핑</div>
+<pre><code><span class="com">&lt;!-- web.xml 커스텀 에러 페이지 선언 --&gt;</span>
+<span class="tag">&lt;error-page&gt;</span>
+    <span class="tag">&lt;location&gt;</span>/error/error.jsp<span class="tag">&lt;/location&gt;</span> <span class="com">&lt;!-- 기본 Fallback 에러 페이지 --&gt;</span>
+<span class="tag">&lt;/error-page&gt;</span>
+<span class="tag">&lt;error-page&gt;</span>
+    <span class="tag">&lt;error-code&gt;</span>404<span class="tag">&lt;/error-code&gt;</span>
+    <span class="tag">&lt;location&gt;</span>/error/404.jsp<span class="tag">&lt;/location&gt;</span>
+<span class="tag">&lt;/error-page&gt;</span>
+<span class="tag">&lt;error-page&gt;</span>
+    <span class="tag">&lt;error-code&gt;</span>500<span class="tag">&lt;/error-code&gt;</span>
+    <span class="tag">&lt;location&gt;</span>/error/500.jsp<span class="tag">&lt;/location&gt;</span>
+<span class="tag">&lt;/error-page&gt;</span></code></pre>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 2: 코드 리뷰 (트러블슈팅) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-review">
+<!-- Review 1: 쿠키 삭제 실패 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">리뷰 대상 코드 1: 쿠키 삭제 로직</span>
+<span class="badge badge-bad">오류 코드</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">⚠️ 트러블슈팅 상황 시나리오</div>
+          앞선 요청에서 애플리케이션 전역 경로(<span class="inline-code">setPath(request.getContextPath())</span>)로 브라우저에 <strong><span class="inline-code">recentGugu</span> 쿠키를 발급</strong>해 두었습니다. 이후 사용자가 "최근 조회 기록 삭제" 버튼을 눌러 서블릿에서 <span class="inline-code">maxAge(0)</span> 쿠키를 응답 헤더에 담아 전송했는데, 브라우저 개발자 도구(Application &gt; Cookies)를 확인해 보면 기존 쿠키가 전혀 삭제되지 않고 여전히 남아있어 이전 기록이 계속 노출됩니다. 왜 그럴까요?
+        </div>
+<pre><code><span class="com">// [사전 상태] 앞선 요청에서 contextPath 전역 경로(/BE_05)로 쿠키를 발급해 둔 상태</span>
+<span class="com">// Cookie cookie = new Cookie("recentGugu", "7");</span>
+<span class="com">// cookie.setPath(request.getContextPath()); // Path: /BE_05</span>
+<span class="com">// response.addCookie(cookie);</span>
+
+<span class="com">// [Controller 서블릿] 사용자가 삭제 버튼 클릭 시 실행된 메서드</span>
+<span class="kwd">protected void</span> <span class="met">clearHistory</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="typ">Cookie</span> deleteCookie = <span class="kwd">new</span> <span class="typ">Cookie</span>(<span class="str">"recentGugu"</span>, <span class="str">""</span>);
+    deleteCookie.<span class="met">setMaxAge</span>(0);
+    response.<span class="met">addCookie</span>(deleteCookie);
+    
+    response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/main?action=gugu-form"</span>);
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 개선 코드</summary>
+<div class="review-content">
+<div style="margin-bottom: 10px;">
+<span class="badge badge-bad" style="margin-bottom: 8px;">쿠키 삭제 시 Path 속성 불일치 결함</span>
+</div>
+<div class="bug-analysis">
+<strong>원인 분석:</strong> 브라우저가 특정 쿠키를 고유하게 식별하는 기준은 <strong>[Domain + Path + Name]</strong>의 조합입니다.
+              기존 쿠키를 생성할 때 <span class="inline-code">setPath(request.getContextPath())</span> 등을 명시했거나 특정 하위 경로에서 생성되었다면, 삭제용 쿠키(<span class="inline-code">maxAge=0</span>)를 생성할 때도 <strong>반드시 기존 쿠키와 정확히 일치하는 Path를 설정</strong>해야 합니다.<br/>
+              위 코드처럼 <span class="inline-code">setPath()</span>를 생략하면 현재 요청 서블릿의 세부 경로가 기본 path로 지정되어, 기존 쿠키는 그대로 둔 채 다른 경로의 새로운 빈 쿠키를 생성했다가 즉시 파기하는 무의미한 동작이 수행됩니다.
+            </div>
+<div class="card-title" style="font-size: 14px; margin-top: 12px;">
+<span class="badge badge-good">개선 코드 (Refactored)</span>
+</div>
+<pre><code><span class="kwd">protected void</span> <span class="met">clearHistory</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="typ">Cookie</span> deleteCookie = <span class="kwd">new</span> <span class="typ">Cookie</span>(<span class="str">"recentGugu"</span>, <span class="str">""</span>);
+    <span class="com">// 생성 시점과 완전히 동일한 Path를 명시해야 대상 쿠키가 삭제됨</span>
+    deleteCookie.<span class="met">setPath</span>(request.<span class="met">getContextPath</span>());
+    deleteCookie.<span class="met">setMaxAge</span>(0);
+    response.<span class="met">addCookie</span>(deleteCookie);
+    
+    response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/main?action=gugu-form"</span>);
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review 2: 포워드 시 쿠키 즉시 조회 실패 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">리뷰 대상 코드 2: 서블릿 쿠키 생성 후 포워드</span>
+<span class="badge badge-bad">오류 코드</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">⚠️ 트러블슈팅 상황 시나리오</div>
+          사용자가 구구단 연산을 요청하여 서블릿에서 최근 계산한 단수를 쿠키로 저장한 뒤, 결과 화면을 렌더링하는 JSP로 <span class="inline-code">forward</span>했습니다. 그런데 이동한 JSP 화면에서 <span class="inline-code">${cookie.recentGugu.value}</span>를 출력하면 방금 저장한 단수가 나오지 않고 빈 값이거나 이전에 저장되었던 구 단수 값이 출력됩니다. 왜 그럴까요?
+        </div>
+<pre><code><span class="com">// [Controller 서블릿] 구구단 연산 처리</span>
+<span class="kwd">protected void</span> <span class="met">calculateGugu</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="kwd">int</span> dan = <span class="typ">Integer</span>.<span class="met">parseInt</span>(request.<span class="met">getParameter</span>(<span class="str">"dan"</span>));
+    
+    <span class="typ">Cookie</span> cookie = <span class="kwd">new</span> <span class="typ">Cookie</span>(<span class="str">"recentGugu"</span>, <span class="typ">String</span>.<span class="met">valueOf</span>(dan));
+    cookie.<span class="met">setMaxAge</span>(60 * 60 * 24);
+    cookie.<span class="met">setPath</span>(request.<span class="met">getContextPath</span>());
+    response.<span class="met">addCookie</span>(cookie);
+    
+    <span class="com">// 연산 결과는 request attribute에 저장</span>
+    request.<span class="met">setAttribute</span>(<span class="str">"result"</span>, simpleService.<span class="met">getGugu</span>(dan));
+    
+    <span class="com">// JSP 결과 화면으로 forward</span>
+    request.<span class="met">getRequestDispatcher</span>(<span class="str">"/gugu-result.jsp"</span>).<span class="met">forward</span>(request, response);
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 개선 코드</summary>
+<div class="review-content">
+<div style="margin-bottom: 10px;">
+<span class="badge badge-bad" style="margin-bottom: 8px;">쿠키 라이프사이클 및 클라이언트 전송 시점 오해</span>
+</div>
+<div class="bug-analysis">
+<strong>원인 분석:</strong> 쿠키의 라이프사이클을 이해하지 못한 데서 발생한 결함입니다.<br/>
+              서블릿에서 <span class="inline-code">response.addCookie()</span>를 호출하면 쿠키는 서버 메모리가 아니라 HTTP <strong>응답 헤더(<span class="inline-code">Set-Cookie</span>)</strong>에 적재됩니다. 이 쿠키가 브라우저에 저장된 후 다시 서버로 전달되는 시점은 <strong>'클라이언트의 다음 HTTP 요청'</strong>부터입니다.<br/>
+              하지만 <span class="inline-code">forward</span>는 서버 내부에서 제어권만 JSP로 넘기는 동일 요청 사이클이므로, 현재 <span class="inline-code">HttpServletRequest</span>가 보관하고 있는 쿠키 목록은 <strong>요청이 처음 들어왔을 때 클라이언트가 보낸 쿠키들뿐</strong>입니다. 따라서 방금 생성한 쿠키는 현재 포워드된 JSP의 <span class="inline-code">${cookie}</span> 객체에 존재하지 않습니다.
+            </div>
+<div class="card-title" style="font-size: 14px; margin-top: 12px;">
+<span class="badge badge-good">개선 코드 (Refactored)</span>
+</div>
+<pre><code><span class="kwd">protected void</span> <span class="met">calculateGugu</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response)
+        <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+    <span class="kwd">int</span> dan = <span class="typ">Integer</span>.<span class="met">parseInt</span>(request.<span class="met">getParameter</span>(<span class="str">"dan"</span>));
+    
+    <span class="com">// 1. 다음 요청을 위한 상태 유지는 쿠키에 등록</span>
+    <span class="typ">Cookie</span> cookie = <span class="kwd">new</span> <span class="typ">Cookie</span>(<span class="str">"recentGugu"</span>, <span class="typ">String</span>.<span class="met">valueOf</span>(dan));
+    cookie.<span class="met">setMaxAge</span>(60 * 60 * 24);
+    cookie.<span class="met">setPath</span>(request.<span class="met">getContextPath</span>());
+    response.<span class="met">addCookie</span>(cookie);
+    
+    <span class="com">// 2. 현재 요청(forward된 뷰)에서 즉시 사용할 데이터는 Request Scope에 바인딩!</span>
+    request.<span class="met">setAttribute</span>(<span class="str">"recentGugu"</span>, dan);
+    request.<span class="met">setAttribute</span>(<span class="str">"result"</span>, simpleService.<span class="met">getGugu</span>(dan));
+    
+    request.<span class="met">getRequestDispatcher</span>(<span class="str">"/gugu-result.jsp"</span>).<span class="met">forward</span>(request, response);
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review 3: 세션 유효기간 단위 혼동 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">리뷰 대상 코드 3: 로그인 컨트롤러 세션 타임아웃</span>
+<span class="badge badge-bad">오류 코드</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">⚠️ 트러블슈팅 상황 시나리오</div>
+          로그인 후 사용자의 세션이 30분 동안 유지되도록 설정하기 위해 컨트롤러에 타임아웃 코드를 추가했습니다. 그런데 사용자가 로그인에 성공한 뒤 페이지 내에서 1분도 채 머물지 않았는데 다른 메뉴를 누르면 갑자기 로그인이 풀리고 로그인 화면으로 튕기는 증상이 지속됩니다. 왜 그럴까요?
+        </div>
+<pre><code><span class="com">// [Controller 서블릿] 로그인 처리</span>
+<span class="typ">Member</span> member = mService.<span class="met">login</span>(email, pass);
+<span class="kwd">if</span> (member != <span class="kwd">null</span>) {
+    <span class="typ">HttpSession</span> session = request.<span class="met">getSession</span>();
+    session.<span class="met">setAttribute</span>(<span class="str">"loginUser"</span>, member);
+    
+    <span class="com">// 의도: 세션 유효시간을 30분으로 지정</span>
+    session.<span class="met">setMaxInactiveInterval</span>(30); 
+    
+    response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/"</span>);
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 개선 코드</summary>
+<div class="review-content">
+<div style="margin-bottom: 10px;">
+<span class="badge badge-bad" style="margin-bottom: 8px;">세션 타임아웃 API 시간 단위 오적용</span>
+</div>
+<div class="bug-analysis">
+<strong>원인 분석:</strong> 설정 위치별 시간 단위의 차이를 혼동하여 발생한 문제입니다.<br/>
+              • <span class="inline-code">web.xml</span>의 <span class="inline-code">&lt;session-timeout&gt;</span> 태그는 유효 시간 단위가 <strong>분(Minute)</strong>입니다.<br/>
+              • 반면 Java 서블릿의 <span class="inline-code">HttpSession.setMaxInactiveInterval(int interval)</span> 메서드는 단위가 <strong>초(Second)</strong>입니다.<br/>
+              따라서 <span class="inline-code">setMaxInactiveInterval(30)</span>을 호출하면 30분이 아니라 <strong>단 30초</strong> 만에 세션이 만료되므로, 사용자가 30초만 지나도 즉시 로그아웃되는 현상이 발생한 것입니다.
+            </div>
+<div class="card-title" style="font-size: 14px; margin-top: 12px;">
+<span class="badge badge-good">개선 코드 (Refactored)</span>
+</div>
+<pre><code><span class="typ">Member</span> member = mService.<span class="met">login</span>(email, pass);
+<span class="kwd">if</span> (member != <span class="kwd">null</span>) {
+    <span class="typ">HttpSession</span> session = request.<span class="met">getSession</span>();
+    session.<span class="met">setAttribute</span>(<span class="str">"loginUser"</span>, member);
+    
+    <span class="com">// 초 단위이므로 30분 = 30 * 60 = 1800초로 설정</span>
+    session.<span class="met">setMaxInactiveInterval</span>(30 * 60); 
+    
+    response.<span class="met">sendRedirect</span>(request.<span class="met">getContextPath</span>() + <span class="str">"/"</span>);
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review 4: SessionFilter 리다이렉트 후 체인 진행 버그 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">리뷰 대상 코드 4: 인증 인가 필터(SessionFilter)</span>
+<span class="badge badge-bad">오류 코드</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">⚠️ 트러블슈팅 상황 시나리오</div>
+          비로그인 사용자의 보호 자원(<span class="inline-code">/auth/*</span>) 접근을 차단하기 위해 필터를 적용했습니다. 그런데 비로그인 상태로 접근 시 브라우저는 로그인 폼으로 리다이렉트되지만, 톰캣 서버 콘솔에는 <span class="inline-code">java.lang.IllegalStateException: Cannot forward after response has been committed</span> 예외가 주기적으로 출력되며 보호 대상 서블릿의 내부 로직이 계속 실행되는 이상 현상이 발견되었습니다. 왜 그럴까요?
+        </div>
+<pre><code><span class="ann">@WebFilter</span>(<span class="str">"/auth/*"</span>)
+<span class="kwd">public class</span> <span class="typ">SessionFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> res, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        <span class="typ">HttpSession</span> session = req.<span class="met">getSession</span>();
+        <span class="kwd">if</span> (session.<span class="met">getAttribute</span>(<span class="str">"loginUser"</span>) != <span class="kwd">null</span>) {
+            chain.<span class="met">doFilter</span>(req, res);
+        } <span class="kwd">else</span> {
+            session.<span class="met">setAttribute</span>(<span class="str">"alertMsg"</span>, <span class="str">"로그인 후 사용하세요."</span>);
+            res.<span class="met">sendRedirect</span>(req.<span class="met">getContextPath</span>() + <span class="str">"/member?action=login-form"</span>);
+            chain.<span class="met">doFilter</span>(req, res);
+        }
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 개선 코드</summary>
+<div class="review-content">
+<div style="margin-bottom: 10px;">
+<span class="badge badge-bad" style="margin-bottom: 8px;">응답 커밋 후 필터 체인 계속 실행 결함</span>
+</div>
+<div class="bug-analysis">
+<strong>원인 분석:</strong> 
+              1. <span class="inline-code">res.sendRedirect()</span>는 브라우저에 302 상태 코드와 Location 헤더를 전송하여 응답 스트림을 커밋합니다. 그런데 그 직후 <span class="inline-code">chain.doFilter(req, res)</span>를 호출하여 뒤따르는 보호 대상 서블릿을 그대로 실행시켜 버립니다. 이로 인해 서블릿이 다시 forward나 렌더링을 시도하면서 <span class="inline-code">IllegalStateException</span>이 발생하며, 비인증 사용자에게 데이터가 유출될 위험이 있습니다.<br/>
+              2. 리다이렉트 후 반드시 <span class="inline-code">return;</span>을 선언하여 필터 메서드의 제어 흐름을 명시적으로 종료해야 합니다.
+            </div>
+<div class="card-title" style="font-size: 14px; margin-top: 12px;">
+<span class="badge badge-good">개선 코드 (Refactored)</span>
+</div>
+<pre><code><span class="ann">@WebFilter</span>(<span class="str">"/auth/*"</span>)
+<span class="kwd">public class</span> <span class="typ">SessionFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> res, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        <span class="typ">HttpSession</span> session = req.<span class="met">getSession</span>();
+        <span class="kwd">if</span> (session.<span class="met">getAttribute</span>(<span class="str">"loginUser"</span>) != <span class="kwd">null</span>) {
+            chain.<span class="met">doFilter</span>(req, res);
+        } <span class="kwd">else</span> {
+            session.<span class="met">setAttribute</span>(<span class="str">"alertMsg"</span>, <span class="str">"로그인 후 사용하세요."</span>);
+            res.<span class="met">sendRedirect</span>(req.<span class="met">getContextPath</span>() + <span class="str">"/member?action=login-form"</span>);
+            <span class="kwd">return</span>; <span class="com">// ★ 제어 흐름 즉시 종료 (chain.doFilter 미호출)</span>
+        }
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 3: 핵심 스피드 퀴즈 -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-quiz">
+<!-- Mode Switcher -->
+<div class="quiz-mode-switch-wrap">
+<div class="quiz-mode-switch">
+<button class="quiz-mode-btn active" id="btn-mode-card" onclick="switchQuizMode('card')" type="button">
+<span>🃏 카드 모드 (30초 타임어택)</span>
+</button>
+<button class="quiz-mode-btn" id="btn-mode-list" onclick="switchQuizMode('list')" type="button">
+<span>📋 전체 목록 모드 (한눈에 보기)</span>
+</button>
+</div>
+<div class="quiz-mode-desc" id="quiz-mode-desc">
+        한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.
+      </div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 1: CARD VIEW (30s Time-Attack Carousel)   -->
+<!-- ============================================== -->
+<div class="quiz-view-panel active" id="quiz-card-view">
+<div class="quiz-container">
+<!-- Top Bar: Progress & 30s Countdown Timer -->
+<div class="quiz-top-bar">
+<div class="quiz-progress-badge" id="quiz-progress">문제 1 / 8</div>
+<div class="quiz-timer-box" id="quiz-timer-box">
+<span style="font-size: 15px;">⏱️</span>
+<span>남은 시간:</span>
+<span id="quiz-timer-sec" style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800;">30</span>초
+          </div>
+</div>
+<div class="quiz-timer-bar-wrap">
+<div class="quiz-timer-bar" id="quiz-timer-bar"></div>
+</div>
+<!-- Slides Container -->
+<div id="quiz-slides-container">
+<div class="quiz-slide active" data-quiz-index="0">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q1</span>
+<div class="quiz-q-text">(O/X) HTTP는 기본적으로 Stateless(무상태) 프로토콜이므로 이전 요청의 상태를 서버가 자동으로 기억하지 못한다.</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-0">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-0">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<p>HTTP는 단순성, 확장성, 신뢰성, 자원 절약을 위해 요청 간 상태를 기억하지 않는 Stateless 설계를 취하고 있으며, 상태 유지가 필요할 경우 Cookie 또는 Session을 명시적으로 사용해야 합니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="1">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q2</span>
+<div class="quiz-q-text">(O/X) Cookie의 name 속성은 생성자에서 설정한 이후 setName() 메서드를 호출하여 언제든지 이름을 변경할 수 있다.</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-1">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-1">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<p>쿠키의 <span class="inline-code">name</span>은 쿠키를 고유하게 식별하는 유일한 키이므로 <span class="inline-code">getName()</span>만 제공되며 수정 메서드(<span class="inline-code">setName</span>)는 제공되지 않습니다. 반면 value, path, maxAge 등은 getter/setter를 모두 제공합니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="2">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q3</span>
+<div class="quiz-q-text">(단답형) 쿠키의 유효기간(maxAge)을 브라우저 프로세스가 종료될 때까지만 유지되는 '세션 쿠키(Session Cookie)'로 설정하고자 할 때 setMaxAge()에 전달하는 값은?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-2">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-2">
+<div class="quiz-answer-title">
+                정답: 음수 (또는 -1)
+              </div>
+<div class="quiz-answer-desc">
+<p>양수는 해당 시간(초) 동안 디스크에 유지되는 영속 쿠키, 0은 즉시 삭제용 쿠키이며, 음수(-1)나 값을 지정하지 않으면 브라우저 종료 시 소멸하는 세션 쿠키가 됩니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="3">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q4</span>
+<div class="quiz-q-text">(O/X) SameSite 속성을 'Strict'로 설정하면, 타 사이트에 걸려 있는 링크(<a href="...">)를 클릭하여 해당 사이트로 접속할 때도 브라우저가 쿠키를 자동으로 전송한다.</a></div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-3">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-3">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<p><span class="inline-code">Strict</span>는 오직 동일 사이트(Same-site) 내부 이동에서만 쿠키를 전송하며, 타 사이트의 링크 클릭이나 폼 전송을 완전히 차단합니다. 링크 클릭과 같은 안전한 Top-level 네비게이션에서 쿠키를 전송하려면 <span class="inline-code">Lax</span>(모던 브라우저 기본값)를 사용해야 합니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="4">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q5</span>
+<div class="quiz-q-text">(단답형) 자바스크립트의 document.cookie를 통한 쿠키 접근을 원천 차단하여 XSS(Cross-Site Scripting) 공격으로부터 세션 탈취를 방어하는 쿠키 보안 속성의 명칭은?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-4">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-4">
+<div class="quiz-answer-title">
+                정답: httpOnly (또는 HttpOnly)
+              </div>
+<div class="quiz-answer-desc">
+<p><span class="inline-code">httpOnly</span>가 적용된 쿠키는 오직 HTTP 네트워크 통신 시에만 헤더에 실려 전달되며, 브라우저 콘솔이나 악의적으로 삽입된 스크립트가 <span class="inline-code">document.cookie</span>로 값을 탈취할 수 없습니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="5">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q6</span>
+<div class="quiz-q-text">(단답형) 서블릿/JSP의 4대 영역(Scope) 중 동일한 브라우저(사용자)가 발생시키는 여러 번의 요청/응답 간에 데이터를 공유하며 브라우저 종료 시점까지 유지되는 영역의 이름은?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-5">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-5">
+<div class="quiz-answer-title">
+                정답: session 영역 (또는 HttpSession)
+              </div>
+<div class="quiz-answer-desc">
+<p>웹의 4대 영역은 Page(페이지 내부), Request(단일 요청 사이클), Session(단일 사용자 브라우저 세션), Application(서버 구동 전체)으로 구분됩니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="6">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q7</span>
+<div class="quiz-q-text">(O/X) web.xml의 <session-timeout> 설정과 서블릿의 session.setMaxInactiveInterval() 메서드는 모두 유효시간 단위로 '초(Second)'를 사용한다.</session-timeout></div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-6">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-6">
+<div class="quiz-answer-title">
+                정답: X
+              </div>
+<div class="quiz-answer-desc">
+<p><span class="inline-code">web.xml</span>의 <span class="inline-code">&lt;session-timeout&gt;</span>은 <strong>'분(Minute)'</strong> 단위이며, 자바 코드의 <span class="inline-code">setMaxInactiveInterval()</span>은 <strong>'초(Second)'</strong> 단위입니다.</p>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="7">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q8</span>
+<div class="quiz-q-text">(단답형) 로그아웃 처리 시 세션 객체 자체를 소멸시키고 발급된 JSESSIONID를 완전히 무효화하기 위해 호출하는 HttpSession의 표준 메서드는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-7">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-7">
+<div class="quiz-answer-title">
+                정답: invalidate()
+              </div>
+<div class="quiz-answer-desc">
+<p><span class="inline-code">removeAttribute()</span>는 특정 속성만 지우지만, <span class="inline-code">invalidate()</span>는 현재 세션을 서버 메모리에서 완전히 파기하여 세션 고정(Session Fixation) 공격을 예방합니다.</p>
+</div>
+</div>
+</div>
+<!-- Completed Screen -->
+<div class="quiz-slide quiz-complete-card" id="quiz-complete-slide">
+<div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+<h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px;">스피드 퀴즈 완료!</h3>
+<p style="font-size: 14.5px; color: var(--text-sub); margin-bottom: 22px;">
+              모든 문제를 완주했습니다! 다시 도전하거나 전체 목록 모드에서 정리해 보세요.
+            </p>
+<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+<button class="quiz-nav-btn primary" onclick="resetQuiz()" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                처음부터 다시 풀기 🔄
+              </button>
+<button class="quiz-nav-btn" onclick="switchQuizMode('list')" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                전체 목록으로 복습 📋
+              </button>
+</div>
+</div>
+</div>
+<!-- Bottom Nav -->
+<div class="quiz-bottom-nav">
+<button class="quiz-nav-btn" disabled="" id="btn-quiz-prev" onclick="prevQuiz()" type="button">
+            ◀ 이전 문제
+          </button>
+<button class="quiz-nav-btn" id="btn-quiz-reveal" onclick="revealCurrentAnswer()" type="button">
+            정답 확인 👁️
+          </button>
+<button class="quiz-nav-btn primary" id="btn-quiz-next" onclick="nextQuiz()" type="button">
+            다음 문제 ▶
+          </button>
+</div>
+</div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 2: LIST VIEW (All Questions at Once)       -->
+<!-- ============================================== -->
+<div class="quiz-view-panel" id="quiz-list-view">
+<div class="quiz-list-toolbar">
+<span class="quiz-list-count">총 <strong>8</strong>문항 수록</span>
+<button class="quiz-list-toggle-all-btn" id="btn-toggle-all-list" onclick="toggleAllListAnswers()" type="button">
+          전체 정답 펼치기 ▼
+        </button>
+</div>
+<div class="quiz-list-container">
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q1</span>
+<div class="quiz-list-q-text">(O/X) HTTP는 기본적으로 Stateless(무상태) 프로토콜이므로 이전 요청의 상태를 서버가 자동으로 기억하지 못한다.</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><p>HTTP는 단순성, 확장성, 신뢰성, 자원 절약을 위해 요청 간 상태를 기억하지 않는 Stateless 설계를 취하고 있으며, 상태 유지가 필요할 경우 Cookie 또는 Session을 명시적으로 사용해야 합니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q2</span>
+<div class="quiz-list-q-text">(O/X) Cookie의 name 속성은 생성자에서 설정한 이후 setName() 메서드를 호출하여 언제든지 이름을 변경할 수 있다.</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><p>쿠키의 <span class="inline-code">name</span>은 쿠키를 고유하게 식별하는 유일한 키이므로 <span class="inline-code">getName()</span>만 제공되며 수정 메서드(<span class="inline-code">setName</span>)는 제공되지 않습니다. 반면 value, path, maxAge 등은 getter/setter를 모두 제공합니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q3</span>
+<div class="quiz-list-q-text">(단답형) 쿠키의 유효기간(maxAge)을 브라우저 프로세스가 종료될 때까지만 유지되는 '세션 쿠키(Session Cookie)'로 설정하고자 할 때 setMaxAge()에 전달하는 값은?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 음수 (또는 -1)</div>
+<div class="quiz-list-ans-desc"><p>양수는 해당 시간(초) 동안 디스크에 유지되는 영속 쿠키, 0은 즉시 삭제용 쿠키이며, 음수(-1)나 값을 지정하지 않으면 브라우저 종료 시 소멸하는 세션 쿠키가 됩니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q4</span>
+<div class="quiz-list-q-text">(O/X) SameSite 속성을 'Strict'로 설정하면, 타 사이트에 걸려 있는 링크(<a href="...">)를 클릭하여 해당 사이트로 접속할 때도 브라우저가 쿠키를 자동으로 전송한다.</a></div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><p><span class="inline-code">Strict</span>는 오직 동일 사이트(Same-site) 내부 이동에서만 쿠키를 전송하며, 타 사이트의 링크 클릭이나 폼 전송을 완전히 차단합니다. 링크 클릭과 같은 안전한 Top-level 네비게이션에서 쿠키를 전송하려면 <span class="inline-code">Lax</span>(모던 브라우저 기본값)를 사용해야 합니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q5</span>
+<div class="quiz-list-q-text">(단답형) 자바스크립트의 document.cookie를 통한 쿠키 접근을 원천 차단하여 XSS(Cross-Site Scripting) 공격으로부터 세션 탈취를 방어하는 쿠키 보안 속성의 명칭은?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: httpOnly (또는 HttpOnly)</div>
+<div class="quiz-list-ans-desc"><p><span class="inline-code">httpOnly</span>가 적용된 쿠키는 오직 HTTP 네트워크 통신 시에만 헤더에 실려 전달되며, 브라우저 콘솔이나 악의적으로 삽입된 스크립트가 <span class="inline-code">document.cookie</span>로 값을 탈취할 수 없습니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q6</span>
+<div class="quiz-list-q-text">(단답형) 서블릿/JSP의 4대 영역(Scope) 중 동일한 브라우저(사용자)가 발생시키는 여러 번의 요청/응답 간에 데이터를 공유하며 브라우저 종료 시점까지 유지되는 영역의 이름은?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: session 영역 (또는 HttpSession)</div>
+<div class="quiz-list-ans-desc"><p>웹의 4대 영역은 Page(페이지 내부), Request(단일 요청 사이클), Session(단일 사용자 브라우저 세션), Application(서버 구동 전체)으로 구분됩니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q7</span>
+<div class="quiz-list-q-text">(O/X) web.xml의 <session-timeout> 설정과 서블릿의 session.setMaxInactiveInterval() 메서드는 모두 유효시간 단위로 '초(Second)'를 사용한다.</session-timeout></div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: X</div>
+<div class="quiz-list-ans-desc"><p><span class="inline-code">web.xml</span>의 <span class="inline-code">&lt;session-timeout&gt;</span>은 <strong>'분(Minute)'</strong> 단위이며, 자바 코드의 <span class="inline-code">setMaxInactiveInterval()</span>은 <strong>'초(Second)'</strong> 단위입니다.</p></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q8</span>
+<div class="quiz-list-q-text">(단답형) 로그아웃 처리 시 세션 객체 자체를 소멸시키고 발급된 JSESSIONID를 완전히 무효화하기 위해 호출하는 HttpSession의 표준 메서드는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: invalidate()</div>
+<div class="quiz-list-ans-desc"><p><span class="inline-code">removeAttribute()</span>는 특정 속성만 지우지만, <span class="inline-code">invalidate()</span>는 현재 세션을 서버 메모리에서 완전히 파기하여 세션 고정(Session Fixation) 공격을 예방합니다.</p></div>
+</div>
+</details>
+</div>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 4: 기술 면접 대비 -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-interview">
+<!-- Question 1 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q1. Cookie와 Session의 근본적인 차이점과 각각을 실무에서 선택하는 기준을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">1. 두괄식 결론 (Core Conclusion)</span>
+<p>쿠키와 세션의 가장 근본적인 차이는 <strong>'상태 데이터의 저장 위치'</strong>와 그에 따른 <strong>'보안성 및 서버 부하'</strong>입니다. 쿠키는 클라이언트(브라우저)에 데이터를 저장하는 반면, 세션은 서버 메모리에 데이터를 저장하고 클라이언트에는 이를 조회할 수 있는 고유 키인 JSESSIONID만 쿠키로 발급합니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">2. 핵심 근거 및 비교 (Details)</span>
+<p>첫째, <strong>보안성</strong> 측면에서 쿠키는 클라이언트 로컬에 노출되고 변조 위험이 있으므로 보안에 덜 민감한 단순 상태(아이디 기억하기, 팝업 '오늘 하루 보지 않기', 최근 본 상품 등)에 적합합니다. 반면 세션은 실제 데이터가 서버에 은닉되므로 로그인 인증 객체, 장바구니 등 민감한 비즈니스 데이터에 사용됩니다.<br/>
+              둘째, <strong>성능 및 자원</strong> 측면에서 쿠키는 클라이언트가 보관하므로 서버 메모리를 소모하지 않지만 매 HTTP 요청마다 헤더에 실려 네트워크 트래픽을 유발합니다. 세션은 네트워크 부하는 적으나 동시 접속자가 많아질수록 서버 메모리(RAM)를 직접 점유하므로 적절한 타임아웃 관리가 필수적입니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">3. 정리 및 실무 적용 (Wrap-up)</span>
+<p>따라서 실무에서는 보안성과 서버 리소스 트레이드오프를 고려하여, 민감한 인증 정보는 세션으로 보호하고 브라우저 단위의 경량 설정은 만료 기간을 지정한 쿠키로 분리하여 설계합니다.</p>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">💬 꼬리 질문 대비 포인트</div>
+            • <strong>서버를 여러 대 두는 대규모 분산 환경에서는 세션을 어떻게 관리하나요?</strong><br/>
+            ▶ Sticky Session(L4 스위치 기반 고정), 세션 클러스터링(WAS 간 세션 복제), 또는 Redis/Memcached 같은 외장 분산 인메모리 캐시 서버에 세션을 저장하는 Session Storage 아키텍처로 확장합니다.
+          </div>
+</div>
+</details>
+</div>
+<!-- Question 2 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q2. HTTP는 무상태(Stateless)인데, 세션은 서버에서 사용자를 어떻게 식별하고 상태를 유지하나요?</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">1. 두괄식 결론 (Core Conclusion)</span>
+<p>세션은 무상태인 HTTP 프로토콜 위에서 동작하기 위해 <strong>'JSESSIONID'라는 세션 쿠키를 식별 매개체로 활용</strong>하여 클라이언트와 서버 메모리의 세션 객체를 1:1로 매핑합니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">2. 핵심 근거 및 흐름 (Flow)</span>
+<p>1) 클라이언트가 서버에 최초로 접근하여 <span class="inline-code">request.getSession()</span>이 호출되면, WAS는 추측 불가능한 난수 기반의 고유한 <span class="inline-code">JSESSIONID</span>를 생성하고 서버 메모리에 세션 저장 공간을 할당합니다.<br/>
+              2) 서버는 HTTP 응답 헤더에 <span class="inline-code">Set-Cookie: JSESSIONID=XXXX; Path=/; HttpOnly</span>를 실어 브라우저로 보냅니다.<br/>
+              3) 브라우저는 이 쿠키를 세션 쿠키로 저장한 뒤, 이후 동일 호스트로 요청을 보낼 때마다 HTTP <span class="inline-code">Cookie: JSESSIONID=XXXX</span> 요청 헤더에 자동으로 첨부합니다.<br/>
+              4) 서버는 수신된 JSESSIONID를 키(Key)로 자신의 세션 관리 테이블에서 매핑된 <span class="inline-code">HttpSession</span> 인스턴스를 찾아내어 이전 요청의 상태를 그대로 복원합니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">3. 정리 및 요약 (Wrap-up)</span>
+<p>결과적으로 세션은 독자적인 네트워크 프로토콜이 아니라, 쿠키 기술을 서버의 메모리 저장소와 결합하여 상태 연속성을 구현한 고수준의 메커니즘입니다.</p>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">💬 꼬리 질문 대비 포인트</div>
+            • <strong>만약 클라이언트 브라우저가 쿠키 사용을 완전히 차단하면 세션이 동작하지 않나요?</strong><br/>
+            ▶ URL 뒤에 세션 ID를 파라미터 형태로 붙여 전달하는 <strong>URL 재작성(URL Rewriting, 예: <span class="inline-code">;jsessionid=...</span>)</strong> 기술을 fallback으로 사용할 수 있으나, URL 노출로 인한 세션 하이재킹 위험이 있어 현대 웹에서는 보안상 지양합니다.
+          </div>
+</div>
+</details>
+</div>
+<!-- Question 3 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q3. 쿠키의 3대 보안 옵션(HttpOnly, Secure, SameSite)의 역할과 방어하는 보안 취약점을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">1. 두괄식 결론 (Core Conclusion)</span>
+<p>쿠키의 보안 3종 세트는 웹의 3대 보안 위협인 <strong>XSS(크로스 사이트 스크립팅), 네트워크 도청(스니핑), CSRF(크로스 사이트 요청 위조)</strong>를 각각 원천 차단하기 위해 고안된 표준 방어 속성입니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">2. 세부 속성별 방어 메커니즘 (Details)</span>
+<p>• <strong>HttpOnly (XSS 방어)</strong>: 브라우저 JavaScript의 <span class="inline-code">document.cookie</span> 객체를 통한 쿠키 접근을 완전히 차단합니다. 게시판이나 인풋 필드에 악성 스크립트가 삽입되더라도 공격자가 JSESSIONID 등 인증 쿠키를 탈취할 수 없습니다.<br/>
+              • <strong>Secure (네트워크 도청 방어)</strong>: 쿠키가 오직 HTTPS 암호화 채널을 통해서만 전송되도록 강제합니다. 평문 HTTP 통신 구간에서 패킷 스니핑을 통해 쿠키가 노출되는 중간자(MITM) 공격을 방어합니다.<br/>
+              • <strong>SameSite (CSRF 방어)</strong>: 제3자 도메인(Cross-Site)에서 발생한 요청에 대해 쿠키 전송 여부를 제어합니다. <span class="inline-code">Strict</span>는 모든 타 사이트 요청에서 쿠키를 제외하고, 기본값인 <span class="inline-code">Lax</span>는 안전한 탑레벨 네비게이션(링크 클릭, GET 방식 폼)만 허용하고 POST 등 상태 변경 요청은 차단하여 사용자 권한을 도용한 위조 요청을 막습니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">3. 정리 (Wrap-up)</span>
+<p>엔터프라이즈 백엔드 환경에서는 인증 관련 쿠키에 대해 <span class="inline-code">HttpOnly</span>, <span class="inline-code">Secure</span>, <span class="inline-code">SameSite=Lax</span>를 기본 설정하는 것이 표준 보안 가이드라인입니다.</p>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">💬 꼬리 질문 대비 포인트</div>
+            • <strong>SameSite=None은 어떤 경우에 사용하며, 이때 주의할 점은 무엇인가요?</strong><br/>
+            ▶ 결제 창 연동, 타 도메인 임베디드 iframe 등 서드파티 쿠키 전송이 반드시 필요한 환경에서 사용하며, 보안상 반드시 <span class="inline-code">Secure</span> 속성이 함께 지정되어야 브라우저가 승인합니다.
+          </div>
+</div>
+</details>
+</div>
+<!-- Question 4 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q4. 웹 애플리케이션의 4대 Scope(Page, Request, Session, Application)의 생명주기를 비교 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">1. 두괄식 결론 (Core Conclusion)</span>
+<p>서블릿/JSP 컨테이너는 데이터의 수명과 공유 목적에 따라 <strong>Page, Request, Session, Application</strong>의 4단계 스코프 계층을 제공하며, 범위가 좁은 곳에서 넓은 곳으로 확장됩니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">2. 단계별 라이프사이클 비교 (Details)</span>
+<p>• <strong>Page Scope (<span class="inline-code">PageContext</span>)</strong>: 현재 JSP 페이지가 클라이언트에 렌더링되는 동안에만 유효하며, 페이지 처리가 끝나면 즉시 소멸합니다.<br/>
+              • <strong>Request Scope (<span class="inline-code">HttpServletRequest</span>)</strong>: 클라이언트의 HTTP 요청이 시작되어 응답이 완료될 때까지 유지됩니다. 특히 서버 내부 <span class="inline-code">forward</span> 시 서블릿과 JSP 간에 모델 데이터를 전달하는 핵심 통로입니다.<br/>
+              • <strong>Session Scope (<span class="inline-code">HttpSession</span>)</strong>: 동일 클라이언트(브라우저)가 서비스에 접속하여 활동하는 동안 여러 요청/응답에 걸쳐 유지되며, 로그아웃(<span class="inline-code">invalidate</span>)이나 설정된 타임아웃 만료 시 소멸합니다.<br/>
+              • <strong>Application Scope (<span class="inline-code">ServletContext</span>)</strong>: 웹 애플리케이션이 톰캣에 배포되어 시작될 때 생성되고 톰캣이 셧다운될 때 소멸하며, 모든 사용자와 모든 세션이 데이터를 공유합니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">3. 실무 설계 원칙 (Wrap-up)</span>
+<p>실무에서는 메모리 누수와 동시성 충돌을 방지하기 위해 <strong>'가능한 가장 좁은 스코프'</strong>를 선택하는 것이 원칙입니다. 1회성 데이터는 Request에, 로그인 유저는 Session에, 전역 상수는 Application에 배치해야 합니다.</p>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">💬 꼬리 질문 대비 포인트</div>
+            • <strong>EL(Expression Language)에서 <span class="inline-code">${user}</span>처럼 스코프 명시 없이 접근할 때 탐색 순서는 어떻게 되나요?</strong><br/>
+            ▶ Page → Request → Session → Application 순으로 좁은 스코프부터 우선 탐색하며, 먼저 발견된 속성을 반환합니다.
+          </div>
+</div>
+</details>
+</div>
+<!-- Question 5 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q5. 웹 애플리케이션 예외 처리에서 WAS 기본 에러 페이지 노출을 방지해야 하는 이유와 표준 예외 처리 전략을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">1. 두괄식 결론 (Core Conclusion)</span>
+<p>WAS의 기본 에러 페이지는 시스템 내부 스택트레이스, DB 쿼리 구조, 프레임워크 버전 등 <strong>민감한 내부 인프라 정보를 노출하여 해킹 공격의 빌미를 제공</strong>하므로 반드시 차단해야 합니다. 표준 전략은 <strong>'사용자 친화적 커스텀 뷰 제공'</strong>과 <strong>'서버 내부 전문 로깅'</strong>의 이원화입니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">2. 표준 아키텍처 및 구현 방식 (Architecture)</span>
+<p>1) <strong>web.xml의 커스텀 에러 페이지 매핑</strong>: 404(Not Found), 500(Internal Server Error), 그리고 처리되지 않은 모든 예외를 위한 기본 에러 페이지(<span class="inline-code">&lt;error-page&gt;</span>)를 등록하여 어떠한 예외 상황에서도 날것의 에러가 브라우저에 도달하지 않도록 Fallback 장치를 둡니다.<br/>
+              2) <strong>서버 내부 전문 로깅 및 모니터링</strong>: 클라이언트에게는 정제된 에러 화면을 제공하되, 서버 내부에서는 에러 발생 시점의 URL, 파라미터, 전체 스택트레이스를 Logback/Log4j2 등의 로거로 파일이나 모니터링 시스템에 정확히 기록합니다.<br/>
+              3) <strong>Controller 계층의 방어적 예외 처리</strong>: 비즈니스 로직 상 예측 가능한 검증 예외는 컨트롤러에서 <span class="inline-code">try~catch</span>로 처리하여 사용자에게 구체적인 재입력 안내 메시지를 제공합니다.</p>
+</div>
+<div class="speech-section">
+<span class="speech-tag">3. 정리 (Wrap-up)</span>
+<p>결과적으로 완벽한 예외 처리 아키텍처는 클라이언트의 사용자 경험을 보호함과 동시에 내부 시스템 보안성을 극대화하고 운영 트러블슈팅의 신속성을 보장합니다.</p>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">💬 꼬리 질문 대비 포인트</div>
+            • <strong>Spring Boot에서는 이와 같은 서블릿 에러 처리를 어떻게 추상화하여 지원하나요?</strong><br/>
+            ▶ Spring Boot는 <span class="inline-code">BasicErrorController</span>를 통해 기본 <span class="inline-code">/error</span> 경로를 자동 매핑하며, <span class="inline-code">@ControllerAdvice</span>와 <span class="inline-code">@ExceptionHandler</span>를 통해 전역 예외를 선언적으로 가로채어 처리합니다.
+          </div>
+</div>
+</details>
+</div>
+</main>
+<!-- Footer -->
+<footer>
+<p>백엔드 프로그래밍 핵심 요약 가이드 • Cookie, Session &amp; Exception Handling Architecture</p>
+</footer>
+</div>
+<script>
+  // === Tab Switching Logic ===
+  function switchTab(tabId) {
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = Array.from(buttons).find(btn => {
+      const attr = btn.getAttribute('onclick');
+      return attr && attr.includes(tabId);
+    });
+    if (clickedBtn) {
+      clickedBtn.classList.add('active');
+    }
+
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(panel => {
+      panel.classList.remove('active');
+      if (panel.id === tabId) {
+        panel.classList.add('active');
+      }
+    });
+
+    // Manage quiz timer on tab switch
+    if (tabId === 'tab-quiz') {
+      if (currentQuizMode === 'card' && !isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      pauseQuizTimer();
+    }
+  }
+
+  // === Quiz Mode Switching (Card Mode vs List Mode) ===
+  let currentQuizMode = 'card';
+
+  function switchQuizMode(mode) {
+    currentQuizMode = mode;
+    const cardPanel = document.getElementById('quiz-card-view');
+    const listPanel = document.getElementById('quiz-list-view');
+    const btnCard = document.getElementById('btn-mode-card');
+    const btnList = document.getElementById('btn-mode-list');
+    const modeDesc = document.getElementById('quiz-mode-desc');
+
+    if (mode === 'card') {
+      cardPanel.classList.add('active');
+      listPanel.classList.remove('active');
+      btnCard.classList.add('active');
+      btnList.classList.remove('active');
+      modeDesc.textContent = '한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.';
+      if (!isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      cardPanel.classList.remove('active');
+      listPanel.classList.add('active');
+      btnCard.classList.remove('active');
+      btnList.classList.add('active');
+      modeDesc.textContent = '모든 문제를 목록으로 펼쳐두고 타이머 부담 없이 자유롭게 자가 점검 및 복습하는 모드입니다.';
+      pauseQuizTimer();
+    }
+  }
+
+  // === List Mode Toggle All Answers ===
+  let isAllListAnswersOpen = false;
+  function toggleAllListAnswers() {
+    const accordions = document.querySelectorAll('.quiz-list-accordion');
+    const btn = document.getElementById('btn-toggle-all-list');
+    isAllListAnswersOpen = !isAllListAnswersOpen;
+    accordions.forEach(acc => {
+      acc.open = isAllListAnswersOpen;
+    });
+    btn.textContent = isAllListAnswersOpen ? '전체 정답 접기 ▲' : '전체 정답 펼치기 ▼';
+  }
+
+  // === Interactive 30s Time-Attack Speed Quiz Script (Card Mode) ===
+  const totalQuestions = 8;
+  let currentQuizIdx = 0;
+  let quizTimeLeft = 30;
+  let quizTimerInterval = null;
+  let isAnswerRevealed = new Array(totalQuestions).fill(false);
+  let isQuizCompleted = false;
+
+  function updateQuizUI() {
+    const slides = document.querySelectorAll('.quiz-slide');
+    slides.forEach(slide => slide.classList.remove('active'));
+
+    const completeSlide = document.getElementById('quiz-complete-slide');
+    const bottomNav = document.querySelector('.quiz-bottom-nav');
+
+    if (isQuizCompleted) {
+      completeSlide.classList.add('active');
+      document.getElementById('quiz-progress').textContent = '완료!';
+      document.getElementById('quiz-timer-sec').textContent = '0';
+      document.getElementById('quiz-timer-bar').style.width = '0%';
+      document.getElementById('quiz-timer-box').classList.remove('warning');
+      bottomNav.style.display = 'none';
+      pauseQuizTimer();
+      return;
+    }
+
+    bottomNav.style.display = 'flex';
+    const currentSlide = document.querySelector(`.quiz-slide[data-quiz-index="${currentQuizIdx}"]`);
+    if (currentSlide) {
+      currentSlide.classList.add('active');
+    }
+
+    // Update Progress
+    document.getElementById('quiz-progress').textContent = `문제 ${currentQuizIdx + 1} / ${totalQuestions}`;
+
+    // Update Navigation Buttons
+    const btnPrev = document.getElementById('btn-quiz-prev');
+    const btnNext = document.getElementById('btn-quiz-next');
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+
+    btnPrev.disabled = (currentQuizIdx === 0);
+
+    if (currentQuizIdx === totalQuestions - 1) {
+      btnNext.innerHTML = '결과 보기 🏁';
+    } else {
+      btnNext.innerHTML = '다음 문제 ▶';
+    }
+
+    if (isAnswerRevealed[currentQuizIdx]) {
+      btnReveal.textContent = '해설 닫기 ▲';
+    } else {
+      btnReveal.textContent = '정답 확인 👁️';
+    }
+  }
+
+  function startQuizTimer() {
+    pauseQuizTimer();
+    if (currentQuizMode !== 'card' || isQuizCompleted || isAnswerRevealed[currentQuizIdx]) return;
+
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    quizTimerInterval = setInterval(() => {
+      if (quizTimeLeft > 0) {
+        quizTimeLeft--;
+        timerSecEl.textContent = quizTimeLeft;
+        const pct = (quizTimeLeft / 30) * 100;
+        timerBarEl.style.width = `${pct}%`;
+
+        if (quizTimeLeft <= 5) {
+          timerBoxEl.classList.add('warning');
+          timerBarEl.classList.add('warning');
+        } else {
+          timerBoxEl.classList.remove('warning');
+          timerBarEl.classList.remove('warning');
+        }
+      } else {
+        // Time Over!
+        pauseQuizTimer();
+        timerSecEl.textContent = '0';
+        timerBarEl.style.width = '0%';
+        onQuizTimeout();
+      }
+    }, 1000);
+  }
+
+  function pauseQuizTimer() {
+    if (quizTimerInterval) {
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = null;
+    }
+  }
+
+  function resetTimerTo30() {
+    pauseQuizTimer();
+    quizTimeLeft = 30;
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    timerSecEl.textContent = '30';
+    timerBarEl.style.width = '100%';
+    timerBoxEl.classList.remove('warning');
+    timerBarEl.classList.remove('warning');
+  }
+
+  function onQuizTimeout() {
+    const timeoutMsg = document.getElementById(`timeout-msg-${currentQuizIdx}`);
+    if (timeoutMsg) timeoutMsg.style.display = 'block';
+
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    if (ansPanel) ansPanel.classList.add('show');
+
+    isAnswerRevealed[currentQuizIdx] = true;
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (btnReveal) btnReveal.textContent = '해설 닫기 ▲';
+  }
+
+  function revealCurrentAnswer() {
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (!ansPanel) return;
+
+    if (ansPanel.classList.contains('show')) {
+      ansPanel.classList.remove('show');
+      btnReveal.textContent = '정답 확인 👁️';
+      isAnswerRevealed[currentQuizIdx] = false;
+      // Resume timer if time left
+      if (quizTimeLeft > 0) {
+        startQuizTimer();
+      }
+    } else {
+      ansPanel.classList.add('show');
+      btnReveal.textContent = '해설 닫기 ▲';
+      isAnswerRevealed[currentQuizIdx] = true;
+      pauseQuizTimer();
+    }
+  }
+
+  function nextQuiz() {
+    if (currentQuizIdx < totalQuestions - 1) {
+      currentQuizIdx++;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      // Finished all
+      isQuizCompleted = true;
+      updateQuizUI();
+    }
+  }
+
+  function prevQuiz() {
+    if (currentQuizIdx > 0) {
+      currentQuizIdx--;
+      isQuizCompleted = false;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    }
+  }
+
+  function resetQuiz() {
+    currentQuizIdx = 0;
+    isQuizCompleted = false;
+    isAnswerRevealed = new Array(totalQuestions).fill(false);
+    
+    for (let i = 0; i < totalQuestions; i++) {
+      const p = document.getElementById(`answer-panel-${i}`);
+      if (p) p.classList.remove('show');
+      const m = document.getElementById(`timeout-msg-${i}`);
+      if (m) m.style.display = 'none';
+    }
+
+    resetTimerTo30();
+    updateQuizUI();
+    startQuizTimer();
+  }
+
+  // Initialize Interview Accordions
+  document.querySelectorAll('.interview-accordion').forEach(acc => {
+    acc.addEventListener('toggle', () => {
+      const btn = acc.querySelector('.interview-toggle-btn');
+      if (btn) {
+        btn.textContent = acc.open ? '답변 접기 ▲' : '답변 확인 ▼';
+      }
+    });
+  });
+
+  // Initial Quiz Setup
+  updateQuizUI();
+        </script>
+</body>
+</html>
