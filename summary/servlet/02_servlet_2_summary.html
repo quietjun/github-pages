@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>서블릿(Servlet) 심화: Front Controller, Filter, Listener, Multi-Thread 핵심 요약</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --accent: #7c3aed;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      
+      --bad-bg: #fff1f2;
+      --bad-border: #fecdd3;
+      --bad-text: #be123c;
+      
+      --good-bg: #f0fdf4;
+      --good-border: #bbf7d0;
+      --good-text: #15803d;
+
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 32px 16px 80px;
+    }
+
+    .container { max-width: 980px; margin: 0 auto; }
+
+    /* === Hero Header === */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4338ca 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: 26px; font-weight: 800; line-height: 1.35; margin-bottom: 10px; }
+    .hero p { font-size: 15px; color: #cbd5e1; max-width: 780px; }
+
+    /* === Tab Navigation === */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: #e2e8f0;
+      padding: 6px;
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: calc(var(--radius) - 3px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.6); }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === Section Title === */
+    .section-title {
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      font-weight: 800;
+      font-size: 18.5px;
+      color: var(--text);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title:first-of-type { margin-top: 4px; }
+
+    /* === Cards & Grids === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .flow-step {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .flow-step-num {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .flow-step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .flow-step-desc { font-size: 13px; color: var(--text-sub); }
+
+    /* === Table === */
+    .table-wrapper { overflow-x: auto; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; }
+    th { background: #f1f5f9; font-weight: 700; color: var(--text); }
+    td { background: #fff; }
+
+    /* === Syntax Highlighting in Code Blocks === */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 12px 0;
+      border: 1px solid #313244;
+    }
+    code { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; }
+    .inline-code {
+      background: #f1f5f9;
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Syntax Highlight Tokens */
+    .kwd { color: #cba6f7; font-weight: 600; }   /* keywords */
+    .ann { color: #f9e2af; font-weight: 600; }   /* annotations */
+    .typ { color: #89b4fa; }                     /* types, classes */
+    .str { color: #a6e3a1; }                     /* strings */
+    .com { color: #6c7086; font-style: italic; } /* comments */
+    .num { color: #fab387; }                     /* numbers */
+    .met { color: #74c7ec; }                     /* methods */
+    .tag { color: #f38ba8; }                     /* xml tags */
+    .att { color: #fab387; }                     /* xml attributes */
+
+    /* === Scenario-based Code Review Component === */
+    .review-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .review-header {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .review-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-bad { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-border); }
+    .badge-good { background: var(--good-bg); color: var(--good-text); border: 1px solid var(--good-border); }
+    
+    .review-body { padding: 20px; }
+    
+    .scenario-box {
+      background: #fefce8;
+      border-left: 4px solid #eab308;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #713f12;
+    }
+    .scenario-label { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    .review-accordion {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+    .review-accordion summary {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-accordion summary::-webkit-details-marker { display: none; }
+    .review-accordion summary::after {
+      content: "원인 분석 및 개선 코드 보기 ▼";
+      font-size: 12px;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .review-accordion[open] summary::after {
+      content: "접기 ▲";
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .review-content {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+    .bug-analysis { margin-bottom: 14px; font-size: 14px; }
+    .bug-analysis strong { color: var(--bad-text); }
+
+    /* === Quiz Component === */
+    .quiz-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .quiz-question {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-accordion { border-top: 1px solid var(--border); background: #f8fafc; }
+    .quiz-accordion summary {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quiz-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-accordion summary::after {
+      content: "정답 확인";
+      background: #e2e8f0;
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .quiz-accordion[open] summary::after { content: "닫기"; }
+    .quiz-answer { padding: 14px 20px; border-top: 1px dashed var(--border); background: #fff; font-size: 14px; }
+    .quiz-answer-title { font-weight: 700; color: var(--good-text); margin-bottom: 4px; }
+
+    /* === Click-to-Reveal Interview Component === */
+    .interview-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .interview-accordion { width: 100%; }
+    .interview-accordion summary {
+      padding: 18px 22px;
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+    .interview-accordion summary:hover { background: #f8fafc; }
+    .interview-accordion summary::-webkit-details-marker { display: none; }
+    .interview-toggle-btn {
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .interview-accordion[open] .interview-toggle-btn {
+      background: #cbd5e1;
+      color: var(--text);
+    }
+    .interview-content {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .speech-template {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-light);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+    }
+    .speech-section { margin-bottom: 12px; font-size: 14px; }
+    .speech-section:last-child { margin-bottom: 0; }
+    .speech-tag {
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--primary);
+      display: inline-block;
+      margin-bottom: 3px;
+    }
+    .followup-box {
+      background: #faf5ff;
+      border: 1px solid #f3e8ff;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #6b21a8;
+    }
+    .followup-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px 12px 60px; }
+      .hero { padding: 24px 20px; }
+      .hero h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .interview-accordion summary { font-size: 14.5px; padding: 14px 16px; }
+      .interview-content { padding: 16px; }
+    }
+  
+    /* === Interactive 30s Time-Attack Speed Quiz === */
+    .quiz-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .quiz-top-bar {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .quiz-progress-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-sub);
+      background: #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    .quiz-timer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      transition: all 0.25s ease;
+    }
+    .quiz-timer-box.warning {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: timerPulse 0.8s infinite alternate;
+    }
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+    .quiz-timer-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width 1s linear, background-color 0.5s ease;
+    }
+    .quiz-timer-bar.warning {
+      background: #dc2626;
+    }
+    .quiz-slide {
+      display: none;
+      padding: 24px 22px;
+      min-height: 200px;
+    }
+    .quiz-slide.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .quiz-question-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .quiz-question-box .quiz-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-q-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .quiz-timeout-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-top: 14px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-answer-panel.show {
+      display: block;
+    }
+    .quiz-answer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-answer-desc {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-complete-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .quiz-bottom-nav {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quiz-nav-btn {
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-nav-btn:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: var(--border-dark);
+    }
+    .quiz-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .quiz-nav-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .quiz-nav-btn.primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+    
+    /* === Quiz Mode Switcher & Dual Mode Styles === */
+    .quiz-mode-switch-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .quiz-mode-switch {
+      display: inline-flex;
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .quiz-mode-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .quiz-mode-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .quiz-mode-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .quiz-mode-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .quiz-view-panel {
+      display: none;
+    }
+    .quiz-view-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    /* === List Mode Components === */
+    .quiz-list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .quiz-list-count {
+      font-size: 13.5px;
+      color: var(--text-sub);
+    }
+    .quiz-list-count strong {
+      color: var(--primary);
+    }
+    .quiz-list-toggle-all-btn {
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-toggle-all-btn:hover {
+      background: #c7d2fe;
+      color: var(--primary-dark);
+    }
+    .quiz-list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.15s ease;
+    }
+    .quiz-list-card:hover {
+      border-color: var(--border-dark);
+    }
+    .quiz-list-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .quiz-list-q-num {
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .quiz-list-q-text {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .quiz-list-accordion {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .quiz-list-accordion summary {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .quiz-list-accordion summary:hover {
+      background: #e2e8f0;
+    }
+    .quiz-list-accordion summary::-webkit-details-marker { display: none; }
+    .quiz-list-accordion[open] summary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .quiz-list-answer {
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .quiz-list-ans-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--good-text);
+      margin-bottom: 6px;
+    }
+    .quiz-list-ans-desc {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+<!-- Hero Section -->
+<header class="hero">
+<div class="hero-badge">Backend Programming • Servlet-2</div>
+<h1>서블릿 심화: Front Controller, Filter, Listener &amp; 멀티스레드 핵심 요약</h1>
+<p>개별 서블릿 1:1 매칭의 한계를 극복하는 Front Controller 패턴부터, 규칙 기반 부가 기능 제어(Filter), 애플리케이션 라이프사이클 모니터링(Listener), 멀티스레드 동시성 및 공유 자원 제어까지 교안의 핵심을 체계적으로 복습합니다.</p>
+</header>
+<!-- Tab Navigation -->
+<nav class="tabs-nav">
+<button class="tab-btn active" onclick="switchTab('tab-summary')">
+<span>📖 1. 핵심 정리</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-review')">
+<span>🔍 2. 코드 리뷰 (트러블슈팅)</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-quiz')">
+<span>⚡ 3. 핵심 스피드 퀴즈</span>
+</button>
+<button class="tab-btn" onclick="switchTab('tab-interview')">
+<span>💼 4. 기술 면접 대비</span>
+</button>
+</nav>
+<!-- ========================================== -->
+<!-- TAB 1: 핵심 정리 -->
+<!-- ========================================== -->
+<main class="tab-panel active" id="tab-summary">
+<!-- 1. 기존 서블릿 작성 방식의 문제점과 Front Controller 도입 -->
+<h2 class="section-title">1. 기존 서블릿 방식의 한계와 Front Controller 패턴</h2>
+<div class="card">
+<div class="card-title">기존 1:1 서블릿 매칭의 문제점</div>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">문제 1</div>
+<div class="flow-step-title">서블릿 수의 폭증</div>
+<div class="flow-step-desc">요청마다 새로운 서블릿이 1:1로 필요하여 클래스 상속 및 메서드 재정의 루틴이 반복됨</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">문제 2</div>
+<div class="flow-step-title">공통 로직 중복</div>
+<div class="flow-step-desc">로깅, 예외 처리, 인코딩 설정, 인증 검사 등 공통 작업이 각 서블릿마다 분산되어 중복 발생</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">문제 3</div>
+<div class="flow-step-title">유지보수성 저하</div>
+<div class="flow-step-desc">전체 요청 처리 흐름이 산발적으로 흩어져 애플리케이션의 개발 생산성과 가독성이 급격히 저하됨</div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 18px;">Front Controller 패턴의 장점</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+<strong>Front Controller란:</strong> 전면에서 모든 클라이언트 요청을 대표로 받아들이는 단일 창구 서블릿입니다.
+      </p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 25%;">장점</th>
+<th style="width: 75%;">세부 내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>단일 진입점</strong></td>
+<td>모든 요청을 Front Controller에서 접수하므로 전체 요청 흐름의 일관성 보장</td>
+</tr>
+<tr>
+<td><strong>공통 처리 일원화</strong></td>
+<td>로깅, 파라미터 사전 분석, 응답 인코딩, 보안 검사 등 필요한 전/후 작업을 일괄 처리</td>
+</tr>
+<tr>
+<td><strong>유연한 확장성</strong></td>
+<td>신규 기능 추가 시 새로운 서블릿을 등록하지 않고 기존 구조 내에서 쉽게 확장 가능</td>
+</tr>
+<tr>
+<td><strong>코드 간결성</strong></td>
+<td>서블릿 개수가 대폭 감소하며, 비즈니스 로직은 일반 클래스(POJO Controller)나 메서드로 깔끔하게 위임</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- 2. 요청 구분 방식과 URL 매핑 우선순위 -->
+<h2 class="section-title">2. 요청 구분 방식과 URL 매핑 우선순위</h2>
+<div class="card">
+<div class="card-title">Front Controller에서 요청을 식별하는 2가지 방식</div>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">Case 1</div>
+<div class="flow-step-title">URL 파라미터 기반</div>
+<div class="flow-step-desc">URL에 작업 식별용 파라미터(ex: <code>action</code>) 추가<br/><code>/main?action=gugu&amp;dan=3</code><br/><code>/main?action=login</code></div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">Case 2</div>
+<div class="flow-step-title">와일드카드 URL 매핑</div>
+<div class="flow-step-desc">경로 또는 확장자 기반으로 패턴 매핑<br/><code>/main/*</code> (도메인 경로)<br/><code>*.do</code> (확장자 매핑)<br/><code>/</code> (기본 디폴트 매핑)</div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 18px;">와일드카드 URL 매핑 특성과 우선순위</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 22%;">URL 매핑 패턴</th>
+<th style="width: 48%;">특성 및 식별 방식</th>
+<th style="width: 30%;">주의사항 및 비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. 정확한 매핑</strong><br/><code>/main/hello</code></td>
+<td>지정된 경로와 정확히 일치하는 요청만 수신</td>
+<td>우선순위가 가장 높음</td>
+</tr>
+<tr>
+<td><strong>2. 경로 매핑</strong><br/><code>/main/*</code>, <code>/board/*</code></td>
+<td>도메인 경로 아래의 모든 요청 접수<br/>→ <code>request.getPathInfo()</code>로 하위 세부 경로 파악</td>
+<td>⚠️ <code>/*</code> 형태로 선언 시 정적 리소스(CSS, 이미지)까지 흡수하는 블랙홀 문제 발생!</td>
+</tr>
+<tr>
+<td><strong>3. 확장자 매칭</strong><br/><code>*.do</code>, <code>*.action</code></td>
+<td>특정 확장자 기반 요청 처리 (경로 무관)<br/>→ <code>request.getServletPath()</code>로 호출 경로 파악</td>
+<td>경로 구분자 <code>/</code>를 함께 결합할 수 없음 (ex: <code>/main/*.do</code> 불가)</td>
+</tr>
+<tr>
+<td><strong>4. 디폴트 매핑</strong><br/><code>/</code></td>
+<td>앞선 규칙에 매핑되지 않은 모든 요청 처리</td>
+<td>기본 정적 리소스 처리 재정의 필요 (Spring MVC 기본 매핑 방식)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-title" style="margin-top: 18px;">Front Controller 구현 패턴 (ControllerHelper)</div>
+<pre><code><span class="com">// 공통 인터페이스: 로깅, 파라미터 추출, 공통 응답 처리 default 메서드 제공</span>
+<span class="kwd">public interface</span> <span class="typ">ControllerHelper</span> {
+    <span class="kwd">default</span> <span class="typ">String</span> <span class="met">getActionParameter</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> resp) {
+        <span class="typ">System</span>.out.<span class="met">printf</span>(<span class="str">"##요청 경로: %s, 요청 방식: %s##\n"</span>, req.<span class="met">getRequestURI</span>(), req.<span class="met">getMethod</span>());
+        <span class="typ">String</span> action = req.<span class="met">getParameter</span>(<span class="str">"action"</span>);
+        <span class="kwd">return</span> (action == <span class="kwd">null</span> || action.<span class="met">isBlank</span>()) ? <span class="str">"index"</span> : action;
+    }
+
+    <span class="kwd">default void</span> <span class="met">responseHtml</span>(<span class="typ">String</span> title, <span class="typ">String</span> content, <span class="typ">HttpServletResponse</span> resp) <span class="kwd">throws</span> <span class="typ">IOException</span> {
+        resp.<span class="met">setContentType</span>(<span class="str">"text/html;charset=UTF-8"</span>);
+        resp.<span class="met">getWriter</span>().<span class="met">write</span>(<span class="str">"&lt;html&gt;&lt;body&gt;&lt;h1&gt;%s&lt;/h1&gt;%s&lt;/body&gt;&lt;/html&gt;"</span>.<span class="met">formatted</span>(title, content));
+    }
+}
+
+<span class="ann">@WebServlet</span>(<span class="str">"/main"</span>)
+<span class="kwd">public class</span> <span class="typ">MainController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> <span class="kwd">implements</span> <span class="typ">ControllerHelper</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> resp) <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        <span class="typ">String</span> action = <span class="met">getActionParameter</span>(req, resp);
+        <span class="kwd">switch</span> (action) {
+            <span class="kwd">case</span> <span class="str">"gugu"</span> -&gt; <span class="met">gugu</span>(req, resp);
+            <span class="kwd">default</span>     -&gt; <span class="met">responseHtml</span>(<span class="str">"메인"</span>, <span class="str">"환영합니다"</span>, resp);
+        }
+    }
+}</code></pre>
+</div>
+<!-- 3. Filter와 Filter Chain -->
+<h2 class="section-title">3. Filter와 Filter Chain</h2>
+<div class="card">
+<div class="card-title">Filter의 개념과 도입 배경</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        여러 컨트롤러에 부분적으로 필요한 공통 기능(로그인 인증, CSRF 방어, XSS 방지, 인코딩 변환 등)은 상속이나 클래스 계층 구조로 모듈화하기 어렵습니다. 따라서 특정 URL 규칙을 기반으로 요청/응답을 가로채는 <strong>Filter</strong>를 사용합니다.
+      </p>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">정의</div>
+<div class="flow-step-title">Filter란?</div>
+<div class="flow-step-desc">서블릿/JSP 등 웹 컴포넌트가 실행되기 전/후에 요청과 응답을 가로채서 부가적인 기능을 수행하는 웹 컴포넌트</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">연결</div>
+<div class="flow-step-title">Filter Chain</div>
+<div class="flow-step-desc">여러 필터가 체인 형태로 연결되어 순차적으로 전처리 수행 후 서블릿 실행, 다시 역순으로 후처리 수행</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">주요 용도</div>
+<div class="flow-step-title">적용 분야</div>
+<div class="flow-step-desc">• 인증/권한 검사 (비로그인 차단)<br/>• 요청/응답 로깅<br/>• 보안 (XSS 방지, 입력값 검증)</div>
+</div>
+</div>
+<div class="card-title" style="margin-top: 18px;">Filter 생명주기와 구현 흐름</div>
+<pre><code><span class="ann">@WebFilter</span>(dispatcherTypes = { <span class="typ">DispatcherType</span>.REQUEST }, urlPatterns = { <span class="str">"/*"</span> })
+<span class="kwd">public class</span> <span class="typ">PerformanceFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">init</span>(<span class="typ">FilterConfig</span> filterConfig) <span class="kwd">throws</span> <span class="typ">ServletException</span> {
+        <span class="com">// 필터 객체 생성 시 1회 초기화</span>
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">ServletRequest</span> request, <span class="typ">ServletResponse</span> response, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        
+        <span class="com">// 1. 전처리 (요청 가로채기): 서블릿 실행 전 로직</span>
+        <span class="kwd">long</span> start = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+
+        <span class="com">// 2. 체인 진행: 다음 필터 또는 대상 서블릿으로 제어 전달 (필수 호출!)</span>
+        chain.<span class="met">doFilter</span>(request, response);
+
+        <span class="com">// 3. 후처리 (응답 가로채기): 서블릿 실행 후 응답 반환 시 로직</span>
+        <span class="kwd">long</span> end = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"소요 시간: "</span> + (end - start) + <span class="str">"ms"</span>);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">destroy</span>() {
+        <span class="com">// 필터 소멸 시 1회 자원 정리</span>
+    }
+}</code></pre>
+<p style="font-size: 13.5px; color: var(--text-sub); margin-top: 8px;">
+        • <strong>등록 방법:</strong> <code>@WebFilter</code> 애너테이션 또는 <code>web.xml</code>의 <code>&lt;filter&gt;</code>, <code>&lt;filter-mapping&gt;</code> 선언<br/>
+        • <strong>DispatcherType:</strong> 필터가 적용될 시점 지정 (기본값: <code>REQUEST</code> - 클라이언트 직접 요청 시)
+      </p>
+</div>
+<!-- 4. XSS 보안과 HttpServletRequestWrapper -->
+<h2 class="section-title">4. XSS 공격 방어와 HttpServletRequestWrapper</h2>
+<div class="card">
+<div class="card-title">XSS(Cross-Site Scripting) 방어 원리</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        사용자 입력값에 악의적인 스크립트 코드(<code>&lt;script&gt;</code> 등)가 포함되어 웹 페이지에 렌더링될 때 브라우저에서 실행되는 보안 취약점입니다.<br/>
+        이를 방지하기 위해 입력 문자열에서 <code>&lt;</code> → <code>&amp;lt;</code>, <code>&gt;</code> → <code>&amp;gt;</code> 등으로 HTML 엔티티 치환을 수행해야 합니다.
+      </p>
+<div class="card-title">HttpServletRequestWrapper를 활용한 요청 래핑</div>
+<p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 8px;">
+<code>HttpServletRequest</code>의 파라미터는 읽기 전용이므로 직접 수정할 수 없습니다. 따라서 <code>HttpServletRequestWrapper</code>를 상속하여 <code>getParameter()</code> 메서드를 재정의하고, 필터에서 래퍼 객체로 교체하여 체인에 전달합니다.
+      </p>
+<pre><code><span class="com">// 1. 파라미터 값을 가공하는 RequestWrapper 작성</span>
+<span class="kwd">public class</span> <span class="typ">XssRequestWrapper</span> <span class="kwd">extends</span> <span class="typ">HttpServletRequestWrapper</span> {
+    <span class="kwd">public</span> <span class="met">XssRequestWrapper</span>(<span class="typ">HttpServletRequest</span> request) {
+        <span class="kwd">super</span>(request);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public</span> <span class="typ">String</span> <span class="met">getParameter</span>(<span class="typ">String</span> name) {
+        <span class="typ">String</span> value = <span class="kwd">super</span>.<span class="met">getParameter</span>(name);
+        <span class="kwd">if</span> (value != <span class="kwd">null</span>) {
+            value = value.<span class="met">replace</span>(<span class="str">"&lt;"</span>, <span class="str">"&amp;lt;"</span>).<span class="met">replace</span>(<span class="str">"&gt;"</span>, <span class="str">"&amp;gt;"</span>);
+        }
+        <span class="kwd">return</span> value;
+    }
+}
+
+<span class="com">// 2. 필터에서 래퍼 객체로 감싸서 다음 컴포넌트로 전달</span>
+<span class="ann">@WebFilter</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">XssRequestFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        chain.<span class="met">doFilter</span>(<span class="kwd">new</span> <span class="typ">XssRequestWrapper</span>(request), response);
+    }
+}</code></pre>
+</div>
+<!-- 5. Listener와 이벤트 모니터링 -->
+<h2 class="section-title">5. Listener와 애플리케이션 이벤트 모니터링</h2>
+<div class="card">
+<div class="card-title">웹 애플리케이션 이벤트 감시자 (Listener)</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        웹 애플리케이션의 특정 라이프사이클 이벤트(컨텍스트 생성/소멸, 세션 생성/소멸 등)가 발생할 때 자동으로 호출되는 모니터링 객체입니다.
+      </p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th style="width: 30%;">리스너 인터페이스</th>
+<th style="width: 70%;">주요 역할 및 활용 사례</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ServletContextListener</strong></td>
+<td>
+                웹 애플리케이션(Context)의 생성(시작) 및 소멸(종료) 시점 모니터링<br/>
+                • <code>contextInitialized(ServletContextEvent sce)</code>: 서버 구동 시 개별 서블릿 동작 전에 초기화 비용이 큰 <strong>공유 자원(DB 커넥션 풀 등)의 일괄 초기화</strong>에 주로 사용<br/>
+                • <code>contextDestroyed(ServletContextEvent sce)</code>: 서버 종료 시 자원 안전 반납
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre><code><span class="ann">@WebListener</span>
+<span class="kwd">public class</span> <span class="typ">MyContextListener</span> <span class="kwd">implements</span> <span class="typ">ServletContextListener</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">contextInitialized</span>(<span class="typ">ServletContextEvent</span> sce) {
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"context 초기화: 애플리케이션 전체 초기화 및 무거운 공유 자원 준비"</span>);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">contextDestroyed</span>(<span class="typ">ServletContextEvent</span> sce) {
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"context 소멸: 점유 자원 해제 및 정리"</span>);
+    }
+}</code></pre>
+<p style="font-size: 13.5px; color: var(--text-sub); margin-top: 6px;">
+        • 등록 방식: 클래스 상단 <code>@WebListener</code> 또는 <code>web.xml</code>의 <code>&lt;listener&gt;</code> 선언
+      </p>
+</div>
+<!-- 6. Servlet과 Multi-Thread 동시성 문제 -->
+<h2 class="section-title">6. Servlet과 Multi-Thread (공유 자원과 동시성)</h2>
+<div class="card">
+<div class="card-title">서블릿 멀티스레드 모델과 데이터 보호</div>
+<p style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px;">
+        서블릿은 하나의 객체만 생성(싱글톤)되어 멀티스레드에 의해 공유됩니다. 따라서 <strong>서블릿은 Thread-Safe하지 않습니다.</strong>
+</p>
+<div class="flow-grid">
+<div class="flow-step">
+<div class="flow-step-num">기법 1</div>
+<div class="flow-step-title">뮤텍스 (Mutex)</div>
+<div class="flow-step-desc">공유 구역에 들어갈 수 있는 통로가 단 하나 (자리가 1개뿐인 화장실과 열쇠 1개)<br/>ex: <code>synchronized</code> 블록</div>
+</div>
+<div class="flow-step">
+<div class="flow-step-num">기법 2</div>
+<div class="flow-step-title">세마포어 (Semaphore)</div>
+<div class="flow-step-desc">공유 구역에 들어갈 수 있는 통로가 여러 개 (자리가 여러 개인 유료 주차장과 주차권)<br/>ex: <code>Connection Pool</code></div>
+</div>
+</div>
+<div style="background: #fef2f2; border: 1px solid #fecaca; padding: 14px 18px; border-radius: 6px; font-size: 13.5px; color: #991b1b; margin-top: 12px;">
+        ⚠️ <strong>서블릿 동시성 제어의 핵심 결론:</strong><br/>
+        서블릿 내부에서 <code>synchronized</code> 키워드로 동기화하면 데이터는 보호할 수 있으나, 모든 요청 스레드가 줄을 서서 대기하므로 <strong>멀티스레드 동시 처리 성능이 급락</strong>합니다.<br/>
+        따라서 <strong>"가급적 서블릿에는 멤버 변수를 통해 상태를 관리하지 않는다(무상태/Stateless 원칙)"</strong>가 웹 서버 아키텍처의 필수 규칙입니다.
+      </div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 2: 코드 리뷰 (상황 중심 트러블슈팅) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-review">
+<!-- Review Case 1 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 1: 필터 적용 후 브라우저가 무한 대기하거나 빈 화면만 반환되는 장애</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "요청 실행 시간을 측정하기 위해 신규 필터를 구현하여 배포했습니다. 그런데 웹 사이트 접속 시 서블릿이 전혀 실행되지 않고 브라우저에 빈 화면(White Page)만 나타납니다. 코드를 보고 원인을 찾아보세요."
+        </div>
+<pre><code><span class="ann">@WebFilter</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">LoggingFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"요청 접수: "</span> + request.<span class="met">getRequestURI</span>());
+        
+        <span class="kwd">long</span> start = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+        <span class="kwd">long</span> end = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"소요 시간: "</span> + (end - start) + <span class="str">"ms"</span>);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 필터 체인 중단</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              필터는 다음 필터나 최종 대상 서블릿으로 요청을 전달하기 위해 반드시 <strong><code>chain.doFilter(request, response)</code></strong>를 호출해야 합니다.<br/>
+              코드에서 <code>chain.doFilter(...)</code> 호출이 누락되어 제어가 서블릿으로 넘어가지 못하고 필터 내부에서 요청 처리가 끝나버려 브라우저에 아무런 응답도 전송되지 않았습니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebFilter</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">LoggingFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"요청 접수: "</span> + request.<span class="met">getRequestURI</span>());
+        <span class="kwd">long</span> start = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+
+        <span class="com">// 다음 필터 또는 서블릿으로 제어를 정상 전달</span>
+        chain.<span class="met">doFilter</span>(request, response);
+
+        <span class="kwd">long</span> end = <span class="typ">System</span>.<span class="met">currentTimeMillis</span>();
+        <span class="typ">System</span>.out.<span class="met">println</span>(<span class="str">"소요 시간: "</span> + (end - start) + <span class="str">"ms"</span>);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 2 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 2: Front Controller 도입 후 모든 CSS/JS/이미지가 깨지는 장애</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "모든 요청을 단일 Front Controller로 모으기 위해 URL 패턴을 선언하고 실행했더니, 정적 리소스인 style.css, logo.png 등까지 모두 서블릿으로 호출되어 화면 스타일이 완전히 깨지고 이미지가 나오지 않습니다. 원인이 무엇일까요?"
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">FrontController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> resp) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        <span class="typ">String</span> action = req.<span class="met">getParameter</span>(<span class="str">"action"</span>);
+        <span class="com">// 비즈니스 로직 분기 수행...</span>
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 와일드카드 블랙홀 매핑</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>/*</code> 경로는 톰캣의 DefaultServlet(정적 리소스 전담 서블릿)보다 높은 우선순위로 모든 경로를 낚아채는 <strong>블랙홀 매핑</strong>입니다.<br/>
+              따라서 브라우저가 CSS, JS, 이미지를 요청할 때도 정적 파일 제공자 대신 이 서블릿이 실행되어 리소스를 찾지 못하고 화면이 깨지게 됩니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="com">// [개선 1] 업무 도메인별 하위 경로로 한정 매핑</span>
+<span class="ann">@WebServlet</span>(<span class="str">"/main/*"</span>)
+<span class="kwd">public class</span> <span class="typ">FrontController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> { ... }
+
+<span class="com">// [개선 2] 또는 확장자 패턴 매핑 활용</span>
+<span class="ann">@WebServlet</span>(<span class="str">"*.do"</span>)
+<span class="kwd">public class</span> <span class="typ">FrontController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> { ... }</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 3 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 3: 동시성 보호를 위해 synchronized를 적용한 후 시스템 마비</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "방문자 수 카운터의 동시성 오류를 막기 위해 doGet 메서드에 synchronized 키워드를 붙여 배포했습니다. 그런데 동시 접속자가 50명만 넘어가도 전체 사용자의 응답 시간이 10초 이상 지연되며 서버가 사실상 마비되었습니다. 왜 그럴까요?"
+        </div>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/main"</span>)
+<span class="kwd">public class</span> <span class="typ">MainController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="kwd">private long</span> visitCount = <span class="num">0</span>;
+
+    <span class="ann">@Override</span>
+    <span class="kwd">protected synchronized void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> resp) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        visitCount++;
+        <span class="com">// 무거운 비즈니스 로직 연산 및 DB 조회 수행...</span>
+        resp.<span class="met">getWriter</span>().<span class="met">println</span>(<span class="str">"방문자 수: "</span> + visitCount);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: 성능 급락 안티패턴</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+              서블릿은 싱글톤 인스턴스 1개만 존재합니다. 여기에 <code>synchronized</code>를 걸면 수많은 클라이언트 요청 스레드가 병렬로 처리되지 못하고 <strong>단 하나의 스레드만 메서드를 실행하는 직렬(Queue) 대기 상태</strong>가 됩니다.<br/>
+              웹 서버의 가장 큰 장점인 멀티스레드 동시 처리 능력이 상실되므로, 서블릿 메서드 자체에 동기화를 거는 것은 심각한 안티패턴입니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="ann">@WebServlet</span>(<span class="str">"/main"</span>)
+<span class="kwd">public class</span> <span class="typ">MainController</span> <span class="kwd">extends</span> <span class="typ">HttpServlet</span> {
+    <span class="com">// [개선] 서블릿은 무상태(Stateless)로 유지하며, 필수 카운터는 Atomic 클래스 활용</span>
+    <span class="kwd">private final</span> <span class="typ">AtomicLong</span> visitCount = <span class="kwd">new</span> <span class="typ">AtomicLong</span>(<span class="num">0</span>);
+
+    <span class="ann">@Override</span>
+    <span class="kwd">protected void</span> <span class="met">doGet</span>(<span class="typ">HttpServletRequest</span> req, <span class="typ">HttpServletResponse</span> resp) 
+            <span class="kwd">throws</span> <span class="typ">ServletException</span>, <span class="typ">IOException</span> {
+        
+        <span class="kwd">long</span> count = visitCount.<span class="met">incrementAndGet</span>();
+        <span class="com">// synchronized 없이 병렬로 안전하고 빠르게 실행</span>
+        resp.<span class="met">getWriter</span>().<span class="met">println</span>(<span class="str">"방문자 수: "</span> + count);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+<!-- Review Case 4 -->
+<div class="review-card">
+<div class="review-header">
+<span class="review-title">Review Case 4: 필터에서 파라미터 값 변경 불가로 인한 XSS 치환 실패</span>
+</div>
+<div class="review-body">
+<div class="scenario-box">
+<div class="scenario-label">🚨 발생 증상 (Trouble Scenario)</div>
+          "XSS 공격을 막기 위해 필터에서 파라미터 값을 꺼내 &lt; 태그를 &amp;lt;로 치환한 뒤 다시 request에 세팅하려고 했으나 컴파일 에러가 발생하거나 서블릿에 원래의 위험한 악성 스크립트가 그대로 전달됩니다. 왜 그럴까요?"
+        </div>
+<pre><code><span class="ann">@WebFilter</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">BadXssFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response, <span class="typ">FilterChain</span> chain) 
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        
+        <span class="typ">String</span> raw = request.<span class="met">getParameter</span>(<span class="str">"content"</span>);
+        <span class="kwd">if</span> (raw != <span class="kwd">null</span>) {
+            <span class="typ">String</span> clean = raw.<span class="met">replace</span>(<span class="str">"&lt;"</span>, <span class="str">"&amp;lt;"</span>);
+            <span class="com">// request에는 setParameter() 메서드가 존재하지 않아 수정 불가능!</span>
+        }
+        chain.<span class="met">doFilter</span>(request, response);
+    }
+}</code></pre>
+<details class="review-accordion">
+<summary>원인 분석 및 리팩토링 코드 확인</summary>
+<div class="review-content">
+<div style="margin-bottom: 12px;"><span class="badge badge-bad">핵심 결함: Request 객체 불변성 위반</span></div>
+<div class="bug-analysis">
+<strong>[원인 분석]</strong><br/>
+<code>HttpServletRequest</code>의 파라미터 맵은 컨테이너가 불변(Immutable) 상태로 캡슐화하여 <code>setParameter()</code> 같은 수정 API를 제공하지 않습니다.<br/>
+              따라서 파라미터 값을 가공하려면 <strong><code>HttpServletRequestWrapper</code>를 상속받아 <code>getParameter()</code>를 오버라이드</strong>한 후, 이 래퍼 인스턴스를 체인에 전달해야 합니다.
+            </div>
+<span class="badge badge-good">Refactored Code (개선 코드)</span>
+<pre><code><span class="kwd">public class</span> <span class="typ">XssRequestWrapper</span> <span class="kwd">extends</span> <span class="typ">HttpServletRequestWrapper</span> {
+    <span class="kwd">public</span> <span class="met">XssRequestWrapper</span>(<span class="typ">HttpServletRequest</span> request) { <span class="kwd">super</span>(request); }
+
+    <span class="ann">@Override</span>
+    <span class="kwd">public</span> <span class="typ">String</span> <span class="met">getParameter</span>(<span class="typ">String</span> name) {
+        <span class="typ">String</span> val = <span class="kwd">super</span>.<span class="met">getParameter</span>(name);
+        <span class="kwd">return</span> (val != <span class="kwd">null</span>) ? val.<span class="met">replace</span>(<span class="str">"&lt;"</span>, <span class="str">"&amp;lt;"</span>).<span class="met">replace</span>(<span class="str">"&gt;"</span>, <span class="str">"&amp;gt;"</span>) : <span class="kwd">null</span>;
+    }
+}
+
+<span class="ann">@WebFilter</span>(<span class="str">"/*"</span>)
+<span class="kwd">public class</span> <span class="typ">XssFilter</span> <span class="kwd">extends</span> <span class="typ">HttpFilter</span> <span class="kwd">implements</span> <span class="typ">Filter</span> {
+    <span class="ann">@Override</span>
+    <span class="kwd">public void</span> <span class="met">doFilter</span>(<span class="typ">HttpServletRequest</span> request, <span class="typ">HttpServletResponse</span> response, <span class="typ">FilterChain</span> chain)
+            <span class="kwd">throws</span> <span class="typ">IOException</span>, <span class="typ">ServletException</span> {
+        <span class="com">// 래퍼 객체를 전달하여 투명하게 치환 처리</span>
+        chain.<span class="met">doFilter</span>(<span class="kwd">new</span> <span class="typ">XssRequestWrapper</span>(request), response);
+    }
+}</code></pre>
+</div>
+</details>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 3: 핵심 스피드 퀴즈 -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-quiz">
+<!-- Mode Switcher -->
+<div class="quiz-mode-switch-wrap">
+<div class="quiz-mode-switch">
+<button class="quiz-mode-btn active" id="btn-mode-card" onclick="switchQuizMode('card')" type="button">
+<span>🃏 카드 모드 (30초 타임어택)</span>
+</button>
+<button class="quiz-mode-btn" id="btn-mode-list" onclick="switchQuizMode('list')" type="button">
+<span>📋 전체 목록 모드 (한눈에 보기)</span>
+</button>
+</div>
+<div class="quiz-mode-desc" id="quiz-mode-desc">
+        한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.
+      </div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 1: CARD VIEW (30s Time-Attack Carousel)   -->
+<!-- ============================================== -->
+<div class="quiz-view-panel active" id="quiz-card-view">
+<div class="quiz-container">
+<!-- Top Bar: Progress & 30s Countdown Timer -->
+<div class="quiz-top-bar">
+<div class="quiz-progress-badge" id="quiz-progress">문제 1 / 8</div>
+<div class="quiz-timer-box" id="quiz-timer-box">
+<span style="font-size: 15px;">⏱️</span>
+<span>남은 시간:</span>
+<span id="quiz-timer-sec" style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800;">30</span>초
+          </div>
+</div>
+<div class="quiz-timer-bar-wrap">
+<div class="quiz-timer-bar" id="quiz-timer-bar"></div>
+</div>
+<!-- Slides Container -->
+<div id="quiz-slides-container">
+<div class="quiz-slide active" data-quiz-index="0">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q1</span>
+<div class="quiz-q-text">Front Controller 패턴은 모든 사용자 요청을 단일 진입점(Front Controller)에서 접수하여 공통 처리를 일원화하는 디자인 패턴이다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-0">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-0">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>모든 요청을 전면의 단일 서블릿이 받아 로깅, 인코딩, 보안 등 공통 전/후처리를 수행한 뒤 세부 비즈니스 컨트롤러로 위임합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="1">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q2</span>
+<div class="quiz-q-text">서블릿 URL 매핑 우선순위 중 가장 높은 우선순위를 가지는 패턴 유형은 무엇인가?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-1">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-1">
+<div class="quiz-answer-title">
+                정답: 정확한 매핑 (Exact Matching, ex: /main/hello)
+              </div>
+<div class="quiz-answer-desc">
+<div>우선순위 순서: 정확한 매핑(/path) &gt; 경로 와일드카드(/path/*) &gt; 확장자 매칭(*.do) &gt; 기본 디폴트 매핑(/)</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="2">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q3</span>
+<div class="quiz-q-text">Filter에서 전처리 작업 후 다음 필터나 대상 서블릿으로 제어를 넘겨주기 위해 필수로 호출해야 하는 메서드는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-2">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-2">
+<div class="quiz-answer-title">
+                정답: chain.doFilter(request, response)
+              </div>
+<div class="quiz-answer-desc">
+<div>이 호출이 누락되면 필터 체인이 중단되어 대상 서블릿이 실행되지 않고 빈 화면(화이트 페이지)이 반환됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="3">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q4</span>
+<div class="quiz-q-text">서블릿 URL 매핑 시 '/*'로 매핑하면 정적 리소스(CSS, JS, 이미지)까지 모두 서블릿으로 라우팅되어 화면이 깨질 수 있다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-3">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-3">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>/*는 DefaultServlet보다 높은 우선순위로 모든 경로를 낚아채는 블랙홀 매핑이 되므로, 비즈니스 도메인 경로(/main/*)나 확장자 매칭(*.do)을 권장합니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="4">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q5</span>
+<div class="quiz-q-text">웹 애플리케이션 시작 시 DB 커넥션 풀처럼 초기화 비용이 큰 공유 자원을 미리 준비하기 위해 사용하는 리스너 인터페이스는?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-4">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-4">
+<div class="quiz-answer-title">
+                정답: ServletContextListener (contextInitialized 메서드)
+              </div>
+<div class="quiz-answer-desc">
+<div>웹 애플리케이션(Context) 라이프사이클의 시작과 종료를 모니터링하여 전체 애플리케이션 공유 자원을 준비하는 데 사용됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="5">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q6</span>
+<div class="quiz-q-text">필터 체인(Filter Chain)에 여러 개의 필터가 연결되어 있을 때, 클라이언트 요청(Request) 시의 전처리 실행 순서와 서버 응답(Response) 시의 후처리 실행 순서는 서로 역순(반대)이다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-5">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-5">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>필터 체인은 스택(Stack) 구조처럼 동작하므로, 요청 전처리는 등록 순서(Filter 1 → Filter 2 → 서블릿)대로 진행되고, 응답 후처리는 서블릿 실행 후 역순(Filter 2 → Filter 1)으로 반환되며 실행됩니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="6">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q7</span>
+<div class="quiz-q-text">공유 구역에 들어갈 수 있는 통로가 단 하나인 '화장실 열쇠 1개' 모델을 뮤텍스(Mutex)라 하고, 통로가 여러 개인 '주차 공간' 모델을 세마포어(Semaphore)라 한다. (O / X)</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-6">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-6">
+<div class="quiz-answer-title">
+                정답: O
+              </div>
+<div class="quiz-answer-desc">
+<div>뮤텍스의 대표 예시는 synchronized 블록이며, 세마포어의 대표 예시는 Connection Pool입니다.</div>
+</div>
+</div>
+</div>
+<div class="quiz-slide" data-quiz-index="7">
+<div class="quiz-question-box">
+<span class="quiz-q-num">Q8</span>
+<div class="quiz-q-text">서블릿에서 멀티스레드 동시성 문제를 해결하기 위해 가장 권장되는 기본 원칙은 무엇인가?</div>
+</div>
+<div class="quiz-timeout-msg" id="timeout-msg-7">
+              ⏰ 30초가 경과했습니다! 정답과 해설을 확인해 보세요.
+            </div>
+<div class="quiz-answer-panel" id="answer-panel-7">
+<div class="quiz-answer-title">
+                정답: 서블릿을 무상태(Stateless)로 설계하고 지역 변수 사용
+              </div>
+<div class="quiz-answer-desc">
+<div>synchronized를 적용하면 스레드가 직렬화되어 성능이 급락하므로, 상태를 가지는 멤버 변수를 선언하지 않는 무상태 설계가 원칙입니다.</div>
+</div>
+</div>
+</div>
+<!-- Completed Screen -->
+<div class="quiz-slide quiz-complete-card" id="quiz-complete-slide">
+<div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+<h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px;">스피드 퀴즈 완료!</h3>
+<p style="font-size: 14.5px; color: var(--text-sub); margin-bottom: 22px;">
+              모든 문제를 완주했습니다! 다시 도전하거나 전체 목록 모드에서 정리해 보세요.
+            </p>
+<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+<button class="quiz-nav-btn primary" onclick="resetQuiz()" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                처음부터 다시 풀기 🔄
+              </button>
+<button class="quiz-nav-btn" onclick="switchQuizMode('list')" style="padding: 10px 22px; font-size: 14.5px;" type="button">
+                전체 목록으로 복습 📋
+              </button>
+</div>
+</div>
+</div>
+<!-- Bottom Nav -->
+<div class="quiz-bottom-nav">
+<button class="quiz-nav-btn" disabled="" id="btn-quiz-prev" onclick="prevQuiz()" type="button">
+            ◀ 이전 문제
+          </button>
+<button class="quiz-nav-btn" id="btn-quiz-reveal" onclick="revealCurrentAnswer()" type="button">
+            정답 확인 👁️
+          </button>
+<button class="quiz-nav-btn primary" id="btn-quiz-next" onclick="nextQuiz()" type="button">
+            다음 문제 ▶
+          </button>
+</div>
+</div>
+</div>
+<!-- ============================================== -->
+<!-- MODE 2: LIST VIEW (All Questions at Once)       -->
+<!-- ============================================== -->
+<div class="quiz-view-panel" id="quiz-list-view">
+<div class="quiz-list-toolbar">
+<span class="quiz-list-count">총 <strong>8</strong>문항 수록</span>
+<button class="quiz-list-toggle-all-btn" id="btn-toggle-all-list" onclick="toggleAllListAnswers()" type="button">
+          전체 정답 펼치기 ▼
+        </button>
+</div>
+<div class="quiz-list-container">
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q1</span>
+<div class="quiz-list-q-text">Front Controller 패턴은 모든 사용자 요청을 단일 진입점(Front Controller)에서 접수하여 공통 처리를 일원화하는 디자인 패턴이다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>모든 요청을 전면의 단일 서블릿이 받아 로깅, 인코딩, 보안 등 공통 전/후처리를 수행한 뒤 세부 비즈니스 컨트롤러로 위임합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q2</span>
+<div class="quiz-list-q-text">서블릿 URL 매핑 우선순위 중 가장 높은 우선순위를 가지는 패턴 유형은 무엇인가?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 정확한 매핑 (Exact Matching, ex: /main/hello)</div>
+<div class="quiz-list-ans-desc"><div>우선순위 순서: 정확한 매핑(/path) &gt; 경로 와일드카드(/path/*) &gt; 확장자 매칭(*.do) &gt; 기본 디폴트 매핑(/)</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q3</span>
+<div class="quiz-list-q-text">Filter에서 전처리 작업 후 다음 필터나 대상 서블릿으로 제어를 넘겨주기 위해 필수로 호출해야 하는 메서드는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: chain.doFilter(request, response)</div>
+<div class="quiz-list-ans-desc"><div>이 호출이 누락되면 필터 체인이 중단되어 대상 서블릿이 실행되지 않고 빈 화면(화이트 페이지)이 반환됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q4</span>
+<div class="quiz-list-q-text">서블릿 URL 매핑 시 '/*'로 매핑하면 정적 리소스(CSS, JS, 이미지)까지 모두 서블릿으로 라우팅되어 화면이 깨질 수 있다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>/*는 DefaultServlet보다 높은 우선순위로 모든 경로를 낚아채는 블랙홀 매핑이 되므로, 비즈니스 도메인 경로(/main/*)나 확장자 매칭(*.do)을 권장합니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q5</span>
+<div class="quiz-list-q-text">웹 애플리케이션 시작 시 DB 커넥션 풀처럼 초기화 비용이 큰 공유 자원을 미리 준비하기 위해 사용하는 리스너 인터페이스는?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: ServletContextListener (contextInitialized 메서드)</div>
+<div class="quiz-list-ans-desc"><div>웹 애플리케이션(Context) 라이프사이클의 시작과 종료를 모니터링하여 전체 애플리케이션 공유 자원을 준비하는 데 사용됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q6</span>
+<div class="quiz-list-q-text">필터 체인(Filter Chain)에 여러 개의 필터가 연결되어 있을 때, 클라이언트 요청(Request) 시의 전처리 실행 순서와 서버 응답(Response) 시의 후처리 실행 순서는 서로 역순(반대)이다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>필터 체인은 스택(Stack) 구조처럼 동작하므로, 요청 전처리는 등록 순서(Filter 1 → Filter 2 → 서블릿)대로 진행되고, 응답 후처리는 서블릿 실행 후 역순(Filter 2 → Filter 1)으로 반환되며 실행됩니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q7</span>
+<div class="quiz-list-q-text">공유 구역에 들어갈 수 있는 통로가 단 하나인 '화장실 열쇠 1개' 모델을 뮤텍스(Mutex)라 하고, 통로가 여러 개인 '주차 공간' 모델을 세마포어(Semaphore)라 한다. (O / X)</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: O</div>
+<div class="quiz-list-ans-desc"><div>뮤텍스의 대표 예시는 synchronized 블록이며, 세마포어의 대표 예시는 Connection Pool입니다.</div></div>
+</div>
+</details>
+</div>
+<div class="quiz-list-card">
+<div class="quiz-list-header">
+<span class="quiz-list-q-num">Q8</span>
+<div class="quiz-list-q-text">서블릿에서 멀티스레드 동시성 문제를 해결하기 위해 가장 권장되는 기본 원칙은 무엇인가?</div>
+</div>
+<details class="quiz-list-accordion">
+<summary>정답 및 해설 확인</summary>
+<div class="quiz-list-answer">
+<div class="quiz-list-ans-title">정답: 서블릿을 무상태(Stateless)로 설계하고 지역 변수 사용</div>
+<div class="quiz-list-ans-desc"><div>synchronized를 적용하면 스레드가 직렬화되어 성능이 급락하므로, 상태를 가지는 멤버 변수를 선언하지 않는 무상태 설계가 원칙입니다.</div></div>
+</div>
+</details>
+</div>
+</div>
+</div>
+</main>
+<!-- ========================================== -->
+<!-- TAB 4: 기술 면접 대비 (클릭 토글 방식) -->
+<!-- ========================================== -->
+<main class="tab-panel" id="tab-interview">
+<div style="background: #f8fafc; border: 1px solid var(--border); padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+      💼 <strong>실전 기술 면접:</strong> 질문을 먼저 읽고 마음속으로 1분 답변을 정리해 본 뒤, 카드를 클릭하여 두괄식 모범 답변과 꼬리 질문 대비 포인트를 확인하세요.
+    </div>
+<!-- Interview Question 1 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q1. Front Controller 패턴의 도입 배경과 기존 서블릿 매칭 방식 대비 장점을 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>요청별로 서블릿을 1:1 매칭하던 레거시 구조의 서블릿 수 폭증과 공통 로직 중복 문제를 해결하기 위해 도입된 단일 진입점 아키텍처 패턴입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[주요 장점 3가지]</span>
+<div>
+                1. <strong>단일 진입점:</strong> 모든 요청이 하나의 Front Controller를 통과하므로 요청 흐름을 일관되게 제어합니다.<br/>
+                2. <strong>공통 로직 일원화:</strong> 인코딩, 파라미터 분석, 로깅, 인증/보안 등 반복되는 전/후처리를 중앙에서 일괄 수행합니다.<br/>
+                3. <strong>유지보수 및 생산성 향상:</strong> 비즈니스 로직을 일반 Java 클래스(POJO)나 메서드로 분리하여 서블릿 상속 오버헤드를 줄이고 가독성을 높입니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"Spring MVC 프레임워크에서도 Front Controller 패턴이 적용되어 있나요?" → "네, Spring MVC의 핵심인 <code>DispatcherServlet</code>이 바로 Front Controller 역할을 수행하여 모든 요청을 중앙에서 가로채고 핸들러 매핑을 통해 세부 컨트롤러로 위임합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 2 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q2. Servlet Filter와 Filter Chain의 동작 원리 및 주요 활용 사례를 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 정의]</span>
+<div>Filter는 서블릿이나 JSP가 호출되기 전과 후에 요청과 응답을 가로채서 부가 기능을 수행하는 웹 컴포넌트이며, 여러 필터가 연결된 구조를 Filter Chain이라 합니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[동작 원리 및 활용]</span>
+<div>
+                클라이언트 요청 발생 시 <code>doFilter()</code> 내부에서 전처리 로직을 수행한 후 <code>chain.doFilter(request, response)</code>를 호출하여 다음 필터나 서블릿으로 제어를 넘깁니다. 서블릿 실행이 완료되어 응답이 반환되면 <code>chain.doFilter()</code> 뒤의 후처리 로직이 역순으로 실행됩니다.<br/>
+                주로 <strong>로그인 인증/인가 검사, 문자 인코딩 설정, 실행 시간 측정 로깅, XSS 방어</strong> 등에 활용됩니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"필터에서 인증에 실패했을 때 서블릿 실행을 막으려면 어떻게 하나요?" → "<code>chain.doFilter()</code>를 호출하지 않고, <code>response.sendRedirect('/login')</code>을 호출하여 흐름을 즉시 차단하고 로그인 페이지로 전환합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 3 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q3. XSS(Cross-Site Scripting) 공격의 원리와 Filter에서 RequestWrapper를 활용해 방어하는 이유를 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>XSS는 사용자가 입력한 악성 스크립트가 브라우저에서 실행되는 취약점이며, HttpServletRequest의 파라미터가 불변 객체이므로 RequestWrapper를 통해 치환 로직을 캡슐화하여 방어합니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[래퍼 활용 메커니즘]</span>
+<div>
+                서블릿 스펙상 <code>request.getParameter()</code>로 조회되는 데이터는 읽기 전용이어서 값을 직접 수정(setter)할 수 없습니다. 따라서 <code>HttpServletRequestWrapper</code>를 상속한 <code>XssRequestWrapper</code>를 구현하여 <code>getParameter()</code> 호출 시 <code>&lt;</code>를 <code>&amp;lt;</code>로 치환하도록 오버라이드하고, 필터에서 이 래퍼 인스턴스를 체인에 넘겨줌으로써 비즈니스 서블릿 수정 없이 전역에서 안전하게 방어합니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"XSS 방어를 클라이언트 측(FrontEnd)에서만 수행하면 충분하지 않나요?" → "아닙니다. 악의적인 공격자는 Postman이나 curl 등을 통해 프론트엔드 유효성 검사를 완전히 우회할 수 있으므로, 반드시 서버 측 필터나 렌더링 단계에서 방어해야 합니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 4 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q4. ServletContextListener의 역할과 서블릿의 init() 메서드 대신 사용하는 이유를 설명해 주세요.</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 정의]</span>
+<div>웹 애플리케이션의 시작과 종료 라이프사이클 이벤트를 감지하여 전체 애플리케이션 수준의 공통 자원을 초기화/해제하는 리스너입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[서블릿 init() 대비 이점]</span>
+<div>
+                개별 서블릿의 <code>init()</code>은 해당 서블릿이 처음 호출될 때 실행되므로, DB 커넥션 풀 등 초기화 비용이 큰 무거운 자원을 서블릿에 두면 첫 번째 사용자의 응답 지연이 심해집니다.<br/>
+                반면 <code>ServletContextListener</code>의 <code>contextInitialized()</code>는 <strong>서버 기동 시점(어떤 서블릿도 호출되기 전)</strong>에 실행되므로, 애플리케이션 전체에서 공유할 자원을 미리 안전하게 준비할 수 있습니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"서블릿의 load-on-startup과 ServletContextListener는 어떻게 다른가요?" → "load-on-startup은 특정 서블릿의 인스턴스를 조기 기동시키는 설정이고, ServletContextListener는 서블릿보다 앞서 전체 애플리케이션 컨텍스트 차원의 전역 환경을 구성하는 리스너입니다."</div>
+</div>
+</div>
+</details>
+</div>
+<!-- Interview Question 5 -->
+<div class="interview-card">
+<details class="interview-accordion">
+<summary>
+<span>Q5. 서블릿 동시성 제어 시 synchronized 메서드를 지양하고 무상태(Stateless) 설계를 권장하는 이유는 무엇인가요?</span>
+<span class="interview-toggle-btn">답변 확인 ▼</span>
+</summary>
+<div class="interview-content">
+<div class="speech-template">
+<div class="speech-section">
+<span class="speech-tag">[두괄식 결론]</span>
+<div>서블릿은 싱글톤으로 운영되므로 메서드에 synchronized를 적용하면 동시 요청이 직렬화되어 대규모 트래픽 처리 성능이 치명적으로 저하되기 때문입니다.</div>
+</div>
+<div class="speech-section">
+<span class="speech-tag">[아키텍처 원칙]</span>
+<div>
+                수천 명의 동시 사용자를 처리해야 하는 웹 애플리케이션에서 스레드가 락(Lock)을 획득하기 위해 대기하면 심각한 병목(Bottleneck)이 발생합니다.<br/>
+                따라서 서블릿 인스턴스 필드(멤버 변수)에 상태를 두지 않고, 모든 요청 데이터는 메서드 내부의 <strong>지역 변수(Local Variable)</strong>나 <code>request</code> 스코프에 격리하여 스레드 간 간섭이 없는 <strong>무상태(Stateless) 아키텍처</strong>를 유지해야 합니다.
+              </div>
+</div>
+</div>
+<div class="followup-box">
+<div class="followup-title">🎯 꼬리 질문 대비</div>
+<div>"Mutex와 Semaphore의 차이를 서블릿 및 자원 관리 관점에서 설명해 보세요." → "뮤텍스는 공유 구역의 열쇠가 1개여서 1개 스레드만 진입 가능한 상호 배제 모델(synchronized)이고, 세마포어는 가용 티켓 수만큼 여러 스레드가 동시 접근 가능한 모델로 대표적으로 Connection Pool이 있습니다."</div>
+</div>
+</div>
+</details>
+</div>
+</main>
+<footer>
+<p>Backend Programming Curriculum • Servlet-2 Summary Guide</p>
+</footer>
+</div>
+<script>
+  // === Tab Switching Logic ===
+  function switchTab(tabId) {
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = Array.from(buttons).find(btn => {
+      const attr = btn.getAttribute('onclick');
+      return attr && attr.includes(tabId);
+    });
+    if (clickedBtn) {
+      clickedBtn.classList.add('active');
+    }
+
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(panel => {
+      panel.classList.remove('active');
+      if (panel.id === tabId) {
+        panel.classList.add('active');
+      }
+    });
+
+    // Manage quiz timer on tab switch
+    if (tabId === 'tab-quiz') {
+      if (currentQuizMode === 'card' && !isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      pauseQuizTimer();
+    }
+  }
+
+  // === Quiz Mode Switching (Card Mode vs List Mode) ===
+  let currentQuizMode = 'card';
+
+  function switchQuizMode(mode) {
+    currentQuizMode = mode;
+    const cardPanel = document.getElementById('quiz-card-view');
+    const listPanel = document.getElementById('quiz-list-view');
+    const btnCard = document.getElementById('btn-mode-card');
+    const btnList = document.getElementById('btn-mode-list');
+    const modeDesc = document.getElementById('quiz-mode-desc');
+
+    if (mode === 'card') {
+      cardPanel.classList.add('active');
+      listPanel.classList.remove('active');
+      btnCard.classList.add('active');
+      btnList.classList.remove('active');
+      modeDesc.textContent = '한 문제씩 30초 카운트다운 타이머와 함께 긴박감 있게 풀어보는 실전 인출 모드입니다.';
+      if (!isQuizCompleted && !isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      cardPanel.classList.remove('active');
+      listPanel.classList.add('active');
+      btnCard.classList.remove('active');
+      btnList.classList.add('active');
+      modeDesc.textContent = '모든 문제를 목록으로 펼쳐두고 타이머 부담 없이 자유롭게 자가 점검 및 복습하는 모드입니다.';
+      pauseQuizTimer();
+    }
+  }
+
+  // === List Mode Toggle All Answers ===
+  let isAllListAnswersOpen = false;
+  function toggleAllListAnswers() {
+    const accordions = document.querySelectorAll('.quiz-list-accordion');
+    const btn = document.getElementById('btn-toggle-all-list');
+    isAllListAnswersOpen = !isAllListAnswersOpen;
+    accordions.forEach(acc => {
+      acc.open = isAllListAnswersOpen;
+    });
+    btn.textContent = isAllListAnswersOpen ? '전체 정답 접기 ▲' : '전체 정답 펼치기 ▼';
+  }
+
+  // === Interactive 30s Time-Attack Speed Quiz Script (Card Mode) ===
+  const totalQuestions = 8;
+  let currentQuizIdx = 0;
+  let quizTimeLeft = 30;
+  let quizTimerInterval = null;
+  let isAnswerRevealed = new Array(totalQuestions).fill(false);
+  let isQuizCompleted = false;
+
+  function updateQuizUI() {
+    const slides = document.querySelectorAll('.quiz-slide');
+    slides.forEach(slide => slide.classList.remove('active'));
+
+    const completeSlide = document.getElementById('quiz-complete-slide');
+    const bottomNav = document.querySelector('.quiz-bottom-nav');
+
+    if (isQuizCompleted) {
+      completeSlide.classList.add('active');
+      document.getElementById('quiz-progress').textContent = '완료!';
+      document.getElementById('quiz-timer-sec').textContent = '0';
+      document.getElementById('quiz-timer-bar').style.width = '0%';
+      document.getElementById('quiz-timer-box').classList.remove('warning');
+      bottomNav.style.display = 'none';
+      pauseQuizTimer();
+      return;
+    }
+
+    bottomNav.style.display = 'flex';
+    const currentSlide = document.querySelector(`.quiz-slide[data-quiz-index="${currentQuizIdx}"]`);
+    if (currentSlide) {
+      currentSlide.classList.add('active');
+    }
+
+    // Update Progress
+    document.getElementById('quiz-progress').textContent = `문제 ${currentQuizIdx + 1} / ${totalQuestions}`;
+
+    // Update Navigation Buttons
+    const btnPrev = document.getElementById('btn-quiz-prev');
+    const btnNext = document.getElementById('btn-quiz-next');
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+
+    btnPrev.disabled = (currentQuizIdx === 0);
+
+    if (currentQuizIdx === totalQuestions - 1) {
+      btnNext.innerHTML = '결과 보기 🏁';
+    } else {
+      btnNext.innerHTML = '다음 문제 ▶';
+    }
+
+    if (isAnswerRevealed[currentQuizIdx]) {
+      btnReveal.textContent = '해설 닫기 ▲';
+    } else {
+      btnReveal.textContent = '정답 확인 👁️';
+    }
+  }
+
+  function startQuizTimer() {
+    pauseQuizTimer();
+    if (currentQuizMode !== 'card' || isQuizCompleted || isAnswerRevealed[currentQuizIdx]) return;
+
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    quizTimerInterval = setInterval(() => {
+      if (quizTimeLeft > 0) {
+        quizTimeLeft--;
+        timerSecEl.textContent = quizTimeLeft;
+        const pct = (quizTimeLeft / 30) * 100;
+        timerBarEl.style.width = `${pct}%`;
+
+        if (quizTimeLeft <= 5) {
+          timerBoxEl.classList.add('warning');
+          timerBarEl.classList.add('warning');
+        } else {
+          timerBoxEl.classList.remove('warning');
+          timerBarEl.classList.remove('warning');
+        }
+      } else {
+        // Time Over!
+        pauseQuizTimer();
+        timerSecEl.textContent = '0';
+        timerBarEl.style.width = '0%';
+        onQuizTimeout();
+      }
+    }, 1000);
+  }
+
+  function pauseQuizTimer() {
+    if (quizTimerInterval) {
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = null;
+    }
+  }
+
+  function resetTimerTo30() {
+    pauseQuizTimer();
+    quizTimeLeft = 30;
+    const timerSecEl = document.getElementById('quiz-timer-sec');
+    const timerBarEl = document.getElementById('quiz-timer-bar');
+    const timerBoxEl = document.getElementById('quiz-timer-box');
+
+    timerSecEl.textContent = '30';
+    timerBarEl.style.width = '100%';
+    timerBoxEl.classList.remove('warning');
+    timerBarEl.classList.remove('warning');
+  }
+
+  function onQuizTimeout() {
+    const timeoutMsg = document.getElementById(`timeout-msg-${currentQuizIdx}`);
+    if (timeoutMsg) timeoutMsg.style.display = 'block';
+
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    if (ansPanel) ansPanel.classList.add('show');
+
+    isAnswerRevealed[currentQuizIdx] = true;
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (btnReveal) btnReveal.textContent = '해설 닫기 ▲';
+  }
+
+  function revealCurrentAnswer() {
+    const ansPanel = document.getElementById(`answer-panel-${currentQuizIdx}`);
+    const btnReveal = document.getElementById('btn-quiz-reveal');
+    if (!ansPanel) return;
+
+    if (ansPanel.classList.contains('show')) {
+      ansPanel.classList.remove('show');
+      btnReveal.textContent = '정답 확인 👁️';
+      isAnswerRevealed[currentQuizIdx] = false;
+      // Resume timer if time left
+      if (quizTimeLeft > 0) {
+        startQuizTimer();
+      }
+    } else {
+      ansPanel.classList.add('show');
+      btnReveal.textContent = '해설 닫기 ▲';
+      isAnswerRevealed[currentQuizIdx] = true;
+      pauseQuizTimer();
+    }
+  }
+
+  function nextQuiz() {
+    if (currentQuizIdx < totalQuestions - 1) {
+      currentQuizIdx++;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    } else {
+      // Finished all
+      isQuizCompleted = true;
+      updateQuizUI();
+    }
+  }
+
+  function prevQuiz() {
+    if (currentQuizIdx > 0) {
+      currentQuizIdx--;
+      isQuizCompleted = false;
+      resetTimerTo30();
+      updateQuizUI();
+      if (!isAnswerRevealed[currentQuizIdx]) {
+        startQuizTimer();
+      }
+    }
+  }
+
+  function resetQuiz() {
+    currentQuizIdx = 0;
+    isQuizCompleted = false;
+    isAnswerRevealed = new Array(totalQuestions).fill(false);
+    
+    for (let i = 0; i < totalQuestions; i++) {
+      const p = document.getElementById(`answer-panel-${i}`);
+      if (p) p.classList.remove('show');
+      const m = document.getElementById(`timeout-msg-${i}`);
+      if (m) m.style.display = 'none';
+    }
+
+    resetTimerTo30();
+    updateQuizUI();
+    startQuizTimer();
+  }
+
+  // Initialize Interview Accordions
+  document.querySelectorAll('.interview-accordion').forEach(acc => {
+    acc.addEventListener('toggle', () => {
+      const btn = acc.querySelector('.interview-toggle-btn');
+      if (btn) {
+        btn.textContent = acc.open ? '답변 접기 ▲' : '답변 확인 ▼';
+      }
+    });
+  });
+
+  // Initial Quiz Setup
+  updateQuizUI();
+        </script>
+</body>
+</html>

@@ -314,6 +314,36 @@
     ]
   },
   {
+    "label": "summary",
+    "children": [
+      {
+        "label": "servlet",
+        "children": [
+          {
+            "label": "서블릿(Servlet) 기초 및 백엔드 아키텍처 핵심 요약",
+            "path": "summary/servlet/01_servlet_1_summary.html"
+          },
+          {
+            "label": "서블릿(Servlet) 심화: Front Controller, Filter, Listener, Multi-Thread 핵심 요약",
+            "path": "summary/servlet/02_servlet_2_summary.html"
+          },
+          {
+            "label": "JSP &amp; MVC 아키텍처 핵심 요약 및 복습 가이드",
+            "path": "summary/servlet/03_jsp_summary.html"
+          },
+          {
+            "label": "EL &amp; JSTL 및 페이지 모듈화 핵심 요약",
+            "path": "summary/servlet/04_el_jstl_summary.html"
+          },
+          {
+            "label": "백엔드 상태 관리: Cookie &amp; Session, 예외 처리 아키텍처 핵심 요약",
+            "path": "summary/servlet/05_session_cookie_summary.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "label": "tools",
     "children": [
       {
